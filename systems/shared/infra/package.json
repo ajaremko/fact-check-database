@@ -1,0 +1,27 @@
+{
+  "name": "@news-research/shared-infra",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "deploy": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pulumi up --stack={args.stack} --cwd={projectRoot}",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "configurations": {
+          "dev": {
+            "command": "pulumi up --stack=dev --cwd={projectRoot}"
+          },
+          "prod": {
+            "command": "pulumi up --stack=prod --cwd={projectRoot}"
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}
