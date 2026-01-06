@@ -16,3 +16,4 @@ RUN mkdir -p /home/node/.ssh && chown -R node:node /home/node/.ssh
 RUN curl -fsSL https://get.pulumi.com | sh -s -- --install-root "/home/node/.pulumi"
 ENV PATH="/home/node/.pulumi/bin:${PATH}"
 
+RUN npm install -g nx@v22.3.3
