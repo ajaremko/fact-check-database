@@ -1,0 +1,14 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    environment:
+      SSH_AUTH_SOCK: /ssh-agent.sock
+    volumes:
+      - ../..:/workspaces:cached
+      - ~/.ssh:/home/node/.ssh:cached
+      - type: bind
+        source: ${SSH_AUTH_SOCK:-/tmp/ssh-agent.sock}
+        target: /ssh-agent.sock
