@@ -18,7 +18,8 @@
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "ms-azuretools.vscode-containers"
+        "ms-azuretools.vscode-containers",
+        "nrwl.angular-console"
       ],
       "settings": {
         "extensions.verifySignature": false,
