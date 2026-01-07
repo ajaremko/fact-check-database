@@ -1,9 +1,5 @@
-import * as gcp from '@pulumi/gcp'
+import { githubActionOidcProvider } from './oidc'
 
-// Create a Google Cloud resource (Storage Bucket)
-const bucket = new gcp.storage.Bucket('my-bucket', {
-  location: 'US',
-})
+export const githubActionOidcProviderName = githubActionOidcProvider.name
 
-// Export the DNS name of the bucket
-export const bucketName = bucket.url
+export { githubOrg, githubRepo } from './config'
