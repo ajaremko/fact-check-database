@@ -1,0 +1,3 @@
+config:
+  gcp:project: news-research-dev
+  gcp:region: us-central1

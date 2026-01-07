@@ -20,6 +20,23 @@
             "command": "pulumi up --stack=prod --cwd={projectRoot}"
           }
         }
+      },
+      "destroy": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pulumi destroy --stack={args.stack} --cwd={projectRoot}",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "configurations": {
+          "dev": {
+            "command": "pulumi destroy --stack=dev --cwd={projectRoot}"
+          },
+          "prod": {
+            "command": "pulumi destroy --stack=prod --cwd={projectRoot}"
+          }
+        }
       }
     }
   },
