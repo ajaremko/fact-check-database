@@ -2,6 +2,11 @@
 
 echo "Running devcontainer setup script..."
 
+# Configure gcloud CLI with service account key and project ID
+echo "Configuring gcloud..."
+gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+gcloud config set project $PROJECT_ID
+
 # Install npm dependencies 
 if [ ! -d "node_modules" ]; then
   echo "Installing npm dependencies..."

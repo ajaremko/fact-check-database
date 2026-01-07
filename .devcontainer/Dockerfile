@@ -15,6 +15,8 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 RUN mkdir -p /home/node/.ssh && chown -R node:node /home/node/.ssh
 
 # Install Pulumi CLI
+RUN mkdir -p /home/node/.pulumi && chown -R node:node /home/node/.pulumi
+
 RUN curl -fsSL https://get.pulumi.com | sh -s -- --install-root "/home/node/.pulumi"
 
 ENV PATH="/home/node/.pulumi/bin:${PATH}"

@@ -6,9 +6,13 @@ services:
     command: sleep infinity
     environment:
       SSH_AUTH_SOCK: /ssh-agent.sock
+      GOOGLE_APPLICATION_CREDENTIALS: /var/secrets/$GOOGLE_APPLICATION_CREDENTIALS
+      PROJECT_ID: $PROJECT_ID
+      PULUMI_ACCESS_TOKEN: $PULUMI_ACCESS_TOKEN
     volumes:
       - ../..:/workspaces:cached
       - ~/.ssh:/home/node/.ssh:cached
+      - ~/.gcp:/var/secrets:cached
       - type: bind
         source: ${SSH_AUTH_SOCK:-/tmp/ssh-agent.sock}
         target: /ssh-agent.sock
