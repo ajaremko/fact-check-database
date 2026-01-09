@@ -28,4 +28,6 @@ jobs:
 
       - run: npm ci
 
-      - run: npx nx run-many -t lint preview
+      - run: npx nx run-many -t lint
+
+      - run: npx nx run-many -t preview --configuration=prod

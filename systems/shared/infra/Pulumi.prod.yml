@@ -1,0 +1,6 @@
+config:
+  gcp:project: news-research
+  gcp:region: us-central1
+  github_custom:org: ajaremko
+  github_custom:repo: news-research
+  github:owner: ajaremko
