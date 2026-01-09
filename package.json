@@ -12,6 +12,7 @@
     "@nx/js": "22.3.3",
     "@nx/node": "^22.3.3",
     "@pulumi/gcp": "^9.7.0",
+    "@pulumi/github": "^6.10.1",
     "@pulumi/pulumi": "^3.214.1",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
