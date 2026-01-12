@@ -8,6 +8,7 @@ on:
 permissions:
   actions: read
   contents: read
+  id-token: write
 
 jobs:
   main:
@@ -27,6 +28,7 @@ jobs:
       - name: Setup GCP Credentials
         uses: google-github-actions/auth@v2
         with:
+          project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
           workload_identity_provider: ${{ vars.OIDC_PROVIDER_NAME_DEV }}
           service_account: ${{ vars.OIDC_SERVICE_ACCOUNT_DEV }}
 
