@@ -12,8 +12,6 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    env:
-      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,8 +24,19 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Setup GCP Credentials
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.OIDC_PROVIDER_NAME_DEV }}
+          service_account: ${{ vars.OIDC_SERVICE_ACCOUNT_DEV }}
+
+      - name: Set up Gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
       - run: npm ci
 
       - run: npx nx run-many -t lint
 
-      - run: npx nx run-many -t preview --configuration=prod
+      - run: npx nx run-many -t preview --configuration=dev
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
