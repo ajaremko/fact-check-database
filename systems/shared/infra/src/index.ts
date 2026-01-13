@@ -7,4 +7,9 @@ import { observationsTopic } from './pubsub'
 
 export const observationsTopicName = observationsTopic.name
 
+import { bigQueryKey, gcsArchiveKey } from './kms'
+
+export const bigQueryKeyName = bigQueryKey.name
+export const gcsArchiveKeyName = gcsArchiveKey.name
+
 export { githubOrg, githubRepo } from './config'
