@@ -1,5 +1,13 @@
 import * as gcp from '@pulumi/gcp'
 
-export const observationsTopic = new gcp.pubsub.Topic('observations-topic', {
-  name: 'observations-topic',
-})
+import { pubsubService } from './services'
+
+export const observationsTopic = new gcp.pubsub.Topic(
+  'observations-topic',
+  {
+    name: 'observations-topic',
+  },
+  {
+    dependsOn: [pubsubService],
+  }
+)
