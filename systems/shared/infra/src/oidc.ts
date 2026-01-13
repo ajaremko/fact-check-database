@@ -4,6 +4,9 @@ import * as pulumi from '@pulumi/pulumi'
 import { IAMService, IAMCredentialsService } from './services'
 import { gcpProject, githubOrg, githubRepo } from './config'
 
+/**
+ * The service account to be impersonated by GitHub Actions runner to access GCP resources
+ */
 export const githubActionServiceAccount = new gcp.serviceaccount.Account(
   'github-actions-service-account',
   {
@@ -42,6 +45,9 @@ export const githubActionOidcProvider =
     attributeCondition: `assertion.repository == '${githubOrg}/${githubRepo}'`,
   })
 
+/**
+ * The binding that allows the GitHub Actions OIDC provider to impersonate the service account
+ */
 export const githubActionServiceAccountBinding =
   new gcp.serviceaccount.IAMMember(
     'github-actions-service-account-workload-id-user-binding',
@@ -52,6 +58,10 @@ export const githubActionServiceAccountBinding =
     }
   )
 
+/**
+ * Broadly allow GitHub Actions service account to act as editor on the project.
+ * This could be constrained further based on the specific needs of the project.
+ */
 export const githubActionServiceAccountEditorIamMember =
   new gcp.projects.IAMMember(
     'github-actions-service-account-editor-iam-member',
@@ -63,7 +73,10 @@ export const githubActionServiceAccountEditorIamMember =
     { dependsOn: [githubActionServiceAccount] }
   )
 
-export const githubActionServiceAccountStorageAdminIamMember =
+/**
+ * Allow GitHub Actions service account to enable cloud services.
+ */
+export const githubActionServiceAccountServiceAdminIamMember =
   new gcp.projects.IAMMember(
     'github-actions-service-account-serviceusage-admin-iam-member',
     {

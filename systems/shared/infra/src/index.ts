@@ -3,8 +3,8 @@ import { githubActionOidcProvider, githubActionServiceAccount } from './oidc'
 export const githubActionOidcProviderName = githubActionOidcProvider.name
 export const githubActionServiceAccountId = githubActionServiceAccount.id
 
-// import { oidcProviderNameVar } from './action-vars'
+import { observationsTopic } from './pubsub'
 
-// export const oidcProviderNameVarName = oidcProviderNameVar.variableName
+export const observationsTopicName = observationsTopic.name
 
 export { githubOrg, githubRepo } from './config'
