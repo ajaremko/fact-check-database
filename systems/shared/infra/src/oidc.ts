@@ -46,7 +46,7 @@ export const githubActionOidcProvider =
   })
 
 /**
- * The binding that allows the GitHub Actions OIDC provider to impersonate the service account
+ * The binding that allows the GitHub Actions runner to impersonate the service account
  */
 export const githubActionServiceAccountBinding =
   new gcp.serviceaccount.IAMMember(
@@ -57,6 +57,18 @@ export const githubActionServiceAccountBinding =
       member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
     }
   )
+
+/**
+ * The binding that allows the GitHub Actions runner to create tokens for the service account
+ */
+export const githubActionTokenCreator = new gcp.serviceaccount.IAMMember(
+  'github-actions-token-creator',
+  {
+    serviceAccountId: githubActionServiceAccount.name,
+    role: 'roles/iam.serviceAccountTokenCreator',
+    member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
+  }
+)
 
 /**
  * Broadly allow GitHub Actions service account to act as editor on the project.
