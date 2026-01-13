@@ -3,5 +3,7 @@ config:
   gcp:region: us-central1
   github:owner: ajaremko
   platform:kmsLocation: us
+  platform:archiveLocation: US
+  platform:archiveTTL: 30
   platform:githubOrg: ajaremko
   platform:githubRepo: news-research
