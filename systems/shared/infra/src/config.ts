@@ -5,8 +5,9 @@ export const stackSuffix = stackName.toUpperCase()
 
 const gcpConfig = new pulumi.Config('gcp')
 export const gcpProject = gcpConfig.require('project')
-export const gcpLocation = gcpConfig.require('location')
+export const gcpRegion = gcpConfig.require('region')
 
-const githubConfig = new pulumi.Config('github_custom')
-export const githubOrg = githubConfig.require('org')
-export const githubRepo = githubConfig.require('repo')
+const platformConfig = new pulumi.Config('platform')
+export const kmsLocation = platformConfig.require('kmsLocation')
+export const githubOrg = platformConfig.require('githubOrg')
+export const githubRepo = platformConfig.require('githubRepo')

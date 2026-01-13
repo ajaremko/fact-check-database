@@ -1,7 +1,7 @@
 config:
   gcp:project: news-research-dev
   gcp:region: us-central1
-  gcp:location: us
-  github_custom:org: ajaremko
-  github_custom:repo: news-research
   github:owner: ajaremko
+  platform:kmsLocation: us
+  platform:githubOrg: ajaremko
+  platform:githubRepo: news-research

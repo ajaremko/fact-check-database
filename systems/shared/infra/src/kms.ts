@@ -1,9 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpLocation } from './config'
+import { kmsLocation } from './config'
 
 export const keyRing = new gcp.kms.KeyRing('key-ring', {
-  location: gcpLocation,
+  location: kmsLocation,
 })
 
 /**
