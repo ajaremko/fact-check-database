@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import { IAMService, IAMCredentialsService } from './services'
-import { githubOrg, githubRepo } from './config'
+import { gcpProject, githubOrg, githubRepo } from './config'
 
 export const githubActionServiceAccount = new gcp.serviceaccount.Account(
   'github-actions-service-account',
@@ -43,8 +43,33 @@ export const githubActionOidcProvider =
   })
 
 export const githubActionServiceAccountBinding =
-  new gcp.serviceaccount.IAMMember('github-actions-service-account-binding', {
-    serviceAccountId: githubActionServiceAccount.name,
-    role: 'roles/iam.workloadIdentityUser',
-    member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
-  })
+  new gcp.serviceaccount.IAMMember(
+    'github-actions-service-account-workload-id-user-binding',
+    {
+      serviceAccountId: githubActionServiceAccount.name,
+      role: 'roles/iam.workloadIdentityUser',
+      member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
+    }
+  )
+
+export const githubActionServiceAccountEditorIamMember =
+  new gcp.projects.IAMMember(
+    'github-actions-service-account-editor-iam-member',
+    {
+      project: gcpProject,
+      role: 'roles/editor',
+      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
+    },
+    { dependsOn: [githubActionServiceAccount] }
+  )
+
+export const githubActionServiceAccountStorageAdminIamMember =
+  new gcp.projects.IAMMember(
+    'github-actions-service-account-serviceusage-admin-iam-member',
+    {
+      project: gcpProject,
+      role: 'roles/serviceusage.serviceUsageAdmin',
+      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
+    },
+    { dependsOn: [githubActionServiceAccount] }
+  )
