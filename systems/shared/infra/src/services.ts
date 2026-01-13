@@ -21,3 +21,7 @@ export const securityTokenService = new gcp.projects.Service(
 export const pubsubService = new gcp.projects.Service('pubsub-service', {
   service: 'pubsub.googleapis.com',
 })
+
+export const kmsService = new gcp.projects.Service('kms-service', {
+  service: 'cloudkms.googleapis.com',
+})

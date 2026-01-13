@@ -1,10 +1,17 @@
 import * as gcp from '@pulumi/gcp'
 
 import { kmsLocation } from './config'
+import { kmsService } from './services'
 
-export const keyRing = new gcp.kms.KeyRing('key-ring', {
-  location: kmsLocation,
-})
+export const keyRing = new gcp.kms.KeyRing(
+  'key-ring',
+  {
+    location: kmsLocation,
+  },
+  {
+    dependsOn: [kmsService],
+  }
+)
 
 /**
  * CryptoKey for GCS bucket encryption
