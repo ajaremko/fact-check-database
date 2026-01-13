@@ -17,3 +17,7 @@ export const securityTokenService = new gcp.projects.Service(
     service: 'sts.googleapis.com',
   }
 )
+
+export const pubsubService = new gcp.projects.Service('pubsub-service', {
+  service: 'pubsub.googleapis.com',
+})
