@@ -12,4 +12,8 @@ import { bigQueryKey, gcsArchiveKey } from './kms'
 export const bigQueryKeyName = bigQueryKey.name
 export const gcsArchiveKeyName = gcsArchiveKey.name
 
+import { rawArchiveBucket } from './storage'
+
+export const rawArchiveBucketName = rawArchiveBucket.name
+
 export { githubOrg, githubRepo } from './config'
