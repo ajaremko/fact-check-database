@@ -3,10 +3,16 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, archiveLocation, archiveTTL } from './config'
 import { gcsArchiveKey } from './kms'
+import { storageService } from './services'
 
-const storageServiceAccount = gcp.storage.getProjectServiceAccountOutput({
-  project: gcpProject,
-})
+const storageServiceAccount = gcp.storage.getProjectServiceAccountOutput(
+  {
+    project: gcpProject,
+  },
+  {
+    dependsOn: [storageService],
+  }
+)
 
 /**
  * Allow storage service account to use the KMS key for encryption/decryption

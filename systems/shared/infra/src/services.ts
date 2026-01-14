@@ -25,3 +25,7 @@ export const pubsubService = new gcp.projects.Service('pubsub-service', {
 export const kmsService = new gcp.projects.Service('kms-service', {
   service: 'cloudkms.googleapis.com',
 })
+
+export const storageService = new gcp.projects.Service('storage-service', {
+  service: 'storage.googleapis.com',
+})
