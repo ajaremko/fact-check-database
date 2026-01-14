@@ -14,13 +14,14 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           filter: tree:0
           fetch-depth: 0
 
-      # Cache node_modules
-      - uses: actions/setup-node@v4
+      - name: Setup Node, cache dependencies
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
@@ -29,8 +30,8 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
-          workload_identity_provider: ${{ vars.OIDC_PROVIDER_NAME_DEV }}
-          service_account: ${{ vars.OIDC_SERVICE_ACCOUNT_DEV }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER_DEV }}
+          service_account: ${{ vars.WORKLOAD_SERVICE_ACCOUNT_ID_DEV }}
 
       - name: Set up Gcloud
         uses: google-github-actions/setup-gcloud@v2

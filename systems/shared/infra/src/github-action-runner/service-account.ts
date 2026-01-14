@@ -1,8 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { IAMService, IAMCredentialsService } from './services'
-import { gcpProject, githubOrg, githubRepo } from './config'
+import { gcpProject, githubOrg, githubRepo } from '../config'
+import { identityPool } from '../identity-pool'
 
 /**
  * The service account to be impersonated by GitHub Actions runner to access GCP resources
@@ -15,35 +15,6 @@ export const githubActionServiceAccount = new gcp.serviceaccount.Account(
     description: 'Service account for GitHub Actions to access GCP resources',
   }
 )
-
-export const identityPool = new gcp.iam.WorkloadIdentityPool(
-  'shared-identity-pool',
-  {
-    workloadIdentityPoolId: 'shared-identity-pool',
-    displayName: 'Shared Identity Pool',
-    description: 'Identity pool for shared services',
-  },
-  {
-    dependsOn: [IAMService, IAMCredentialsService],
-  }
-)
-
-export const githubActionOidcProvider =
-  new gcp.iam.WorkloadIdentityPoolProvider('github-actions-oidc-provider', {
-    workloadIdentityPoolId: identityPool.workloadIdentityPoolId,
-    workloadIdentityPoolProviderId: 'github-actions-oidc-provider',
-    displayName: 'GitHub Actions OIDC Provider',
-    description: 'OIDC Provider for github actions',
-    oidc: {
-      issuerUri: 'https://token.actions.githubusercontent.com',
-    },
-    attributeMapping: {
-      'google.subject': 'assertion.sub',
-      'attribute.actor': 'assertion.actor',
-      'attribute.repository': 'assertion.repository',
-    },
-    attributeCondition: `assertion.repository == '${githubOrg}/${githubRepo}'`,
-  })
 
 /**
  * The binding that allows the GitHub Actions runner to impersonate the service account
@@ -61,14 +32,12 @@ export const githubActionServiceAccountBinding =
 /**
  * The binding that allows the GitHub Actions runner to create tokens for the service account
  */
-export const githubActionTokenCreator = new gcp.serviceaccount.IAMMember(
-  'github-actions-token-creator',
-  {
+export const githubActionTokenCreatorServiceAccountBinding =
+  new gcp.serviceaccount.IAMMember('github-actions-token-creator', {
     serviceAccountId: githubActionServiceAccount.name,
     role: 'roles/iam.serviceAccountTokenCreator',
     member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
-  }
-)
+  })
 
 /**
  * Broadly allow GitHub Actions service account to act as editor on the project.

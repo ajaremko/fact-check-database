@@ -2,7 +2,6 @@ import * as gcp from '@pulumi/gcp'
 
 import { kmsLocation } from './config'
 import { kmsService } from './services'
-import { githubActionServiceAccountKmsAdminIamMember } from './oidc'
 
 export const keyRing = new gcp.kms.KeyRing(
   'key-ring',
@@ -10,7 +9,7 @@ export const keyRing = new gcp.kms.KeyRing(
     location: kmsLocation,
   },
   {
-    dependsOn: [githubActionServiceAccountKmsAdminIamMember, kmsService],
+    dependsOn: [kmsService],
   }
 )
 

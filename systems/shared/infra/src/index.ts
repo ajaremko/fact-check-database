@@ -1,6 +1,10 @@
-import { githubActionOidcProvider, githubActionServiceAccount } from './oidc'
+import {
+  githubActionIdentityPoolProvider,
+  githubActionServiceAccount,
+} from './github-action-runner'
 
-export const githubActionOidcProviderName = githubActionOidcProvider.name
+export const githubActionIdentityPoolProviderName =
+  githubActionIdentityPoolProvider.name
 export const githubActionServiceAccountId = githubActionServiceAccount.id
 
 import { observationsTopic } from './pubsub'
