@@ -26,15 +26,22 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Setup GCP Credentials
+      - id: auth
+        name: Setup GCP Credentials
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER_DEV }}
-          service_account: ${{ vars.WORKLOAD_SERVICE_ACCOUNT_ID_DEV }}
+          service_account: github-actions-sa@${{ vars.GCP_PROJECT_ID_DEV }}.iam.gserviceaccount.com
+          create_credentials_file: true
+          export_environment_variables: true
 
       - name: Set up Gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          version: '>= 416.0.0'
+          project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
+          credentials_file_path: ${{ steps.auth.outputs.credentials_file_path }}
 
       - name: Print WIF inputs
         run: |
