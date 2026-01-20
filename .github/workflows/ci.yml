@@ -26,6 +26,20 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Read bootstrap stack outputs
+        id: bootstrap
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          cd systems/shared/infra
+
+          # Pull outputs as JSON, then extract the values we need
+          OUT="$(pulumi stack output --json --stack=dev)"
+
+          echo "gcp_project_id=$(echo "$OUT" | jq -r '.gcpProjectId')" >> "$GITHUB_OUTPUT"
+          echo "wif_provider=$(echo "$OUT" | jq -r '.wifProviderResourceName')" >> "$GITHUB_OUTPUT"
+          echo "service_account_email=$(echo "$OUT" | jq -r '.deployerServiceAccountEmail')" >> "$GITHUB_OUTPUT"
+
       - id: auth
         name: Setup GCP Credentials
         uses: google-github-actions/auth@v2
