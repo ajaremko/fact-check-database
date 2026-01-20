@@ -16,7 +16,7 @@ export const githubActionServiceAccountIdVar = new github.ActionsVariable(
   'github-actions-service-account-id-var',
   {
     repository: githubRepo,
-    variableName: `WORKLOAD_SERVICE_ACCOUNT_ID_${stackSuffix}`,
-    value: githubActionServiceAccount.id,
+    variableName: `WORKLOAD_SERVICE_ACCOUNT_${stackSuffix}`,
+    value: githubActionServiceAccount.email,
   }
 )
