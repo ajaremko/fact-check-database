@@ -43,18 +43,6 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
           credentials_file_path: ${{ steps.auth.outputs.credentials_file_path }}
 
-      - name: Print WIF inputs
-        run: |
-          echo "project_id=${{ vars.GCP_PROJECT_ID_DEV }}"
-          echo "provider=${{ vars.WORKLOAD_IDENTITY_PROVIDER_DEV }}"
-          echo "service_account=${{ vars.WORKLOAD_SERVICE_ACCOUNT_ID_DEV }}"
-
-      - name: Show project info
-        run: |
-          gcloud auth list
-          gcloud config list project
-          gcloud projects describe ${{ vars.GCP_PROJECT_ID_DEV }}
-
       - run: npm ci
 
       - run: npx nx run-many -t lint
