@@ -79,6 +79,17 @@ export const githubActionServiceAccountIamAdminIamMember =
     { dependsOn: [githubActionServiceAccount] }
   )
 
+export const githubActionServiceAccountComputeIamMember =
+  new gcp.projects.IAMMember(
+    'github-actions-service-account-compute-admin-iam-member',
+    {
+      project: gcpProject,
+      role: 'roles/compute.admin',
+      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
+    },
+    { dependsOn: [githubActionServiceAccount] }
+  )
+
 /**
  * Broadly allow GitHub Actions service account to act as admin of Cloud KMS.
  * This could be constrained further based on the specific needs of the project.
