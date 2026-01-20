@@ -7,6 +7,11 @@ export const githubActionIdentityPoolProviderName =
   githubActionIdentityPoolProvider.name
 export const githubActionServiceAccountId = githubActionServiceAccount.id
 
+import { githubActionProjectIdVar } from './actions-variable'
+
+export const githubActionProjectIdVarName =
+  githubActionProjectIdVar.variableName
+
 import { observationsTopic } from './pubsub'
 
 export const observationsTopicName = observationsTopic.name

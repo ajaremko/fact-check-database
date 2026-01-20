@@ -36,7 +36,7 @@ jobs:
       - name: Set up Gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deployment
+      - name: Show project info
         run: |
           gcloud auth list
           gcloud config list project
