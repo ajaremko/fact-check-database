@@ -68,9 +68,6 @@ export const githubActionServiceAccountServiceAdminIamMember =
     { dependsOn: [githubActionServiceAccount] }
   )
 
-/**
- * Allow GitHub Actions service account to enable cloud services.
- */
 export const githubActionServiceAccountIamAdminIamMember =
   new gcp.projects.IAMMember(
     'github-actions-service-account-iam-admin-iam-member',
