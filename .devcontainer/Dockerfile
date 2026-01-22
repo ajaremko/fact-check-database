@@ -31,4 +31,4 @@ RUN mkdir -p /usr/local/gcloud \
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
 # Install Nx CLI
-RUN npm install -g nx@v22.3.3
+RUN npm install -g nx@v22.3.3 @anthropic-ai/claude-code
