@@ -20,4 +20,4 @@ import { rawArchiveBucket } from './storage'
 
 export const rawArchiveBucketName = rawArchiveBucket.name
 
-export * from './config'
+export { gcpProject, platformName, stackName, labels } from './config'

@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpProject, archiveLocation, archiveTTL } from './config'
+import { gcpProject, archiveLocation, archiveTTL, labels } from './config'
 import { gcsArchiveKey } from './kms'
 import { storageService } from './services'
 
@@ -32,6 +32,7 @@ export const rawArchiveBucket = new gcp.storage.Bucket(
     location: archiveLocation,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
+    labels,
     encryption: {
       defaultKmsKeyName: gcsArchiveKey.id,
     },
