@@ -27,7 +27,7 @@ export const storageServiceAccountKmsBinding = new gcp.kms.CryptoKeyIAMMember(
 )
 
 export const rawArchiveBucket = new gcp.storage.Bucket(
-  'raw-archive',
+  'raw-archive-bucket',
   {
     location: archiveLocation,
     uniformBucketLevelAccess: true,
