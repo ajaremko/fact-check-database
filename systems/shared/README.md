@@ -11,7 +11,11 @@ nx preview shared-infra   # Preview changes
 nx deploy shared-infra    # Apply changes
 ```
 
-Shared infrastructure should be deployed via running the deploy command locally using a service account with elevated permissions before any consumer system (including CI deployments). See [bootstap documentation](./docs/bootstrap.md) for additional information on the initial deployment step.
+Shared infrastructure should be deployed via running the deploy command locally using a service account with elevated permissions before any consumer system (including CI deployments).
+
+See [bootstap documentation](./docs/bootstrap.md) for additional information on the initial deployment step.
+
+The [runbook](./docs/runbook.md) documents the process of running and troubleshooting subsequent deployments.
 
 ## What Shared Infrastructure Provides
 
