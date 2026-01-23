@@ -85,6 +85,15 @@ systems/<system-name>/
 └── README.md # System-specific overview and responsibilities
 ```
 
+## System Documentation
+
+| System                                       | Description                                     |
+| -------------------------------------------- | ----------------------------------------------- |
+| [Analysis](./systems/analysis/README.md)     | View and query ingested data                    |
+| [Ingestion](./systems/ingestion/README.md)   | Data collection and sanitization                |
+| [Operations](./systems/operations/README.md) | Cost tracking, logging and error reporting      |
+| [Shared](./systems/shared/README.md)         | Shared infrastructure consumed by other systems |
+
 ## Key Technologies
 
 ### Nx
