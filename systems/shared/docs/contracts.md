@@ -15,10 +15,6 @@ Core outputs are designed to be:
 - **Project-agnostic for consumers**: feature systems should not hardcode resource names.
 - **Minimal**: core exports only shared primitives needed by multiple systems.
 
-## Output Namespaces & Stability
-
-All outputs are exported at the root level (no nested objects) to simplify consumption.
-
 Stability expectations:
 
 - **Breaking changes**: renaming an output key, changing meaning, or changing resource identity (e.g. replacing a topic/bucket with a new one).
@@ -26,7 +22,7 @@ Stability expectations:
 
 ## How to Consume Outputs
 
-Consumer systems reference shared infrastructure via Pulumi StackReferences:
+Consumer systems reference shared infrastructure via Pulumi stack references:
 
 ```typescript
 import * as pulumi from '@pulumi/pulumi'
