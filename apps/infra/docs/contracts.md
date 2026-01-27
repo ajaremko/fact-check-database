@@ -1,19 +1,16 @@
-# Shared Stack Output Contract
+# Infrastructure Output Contract
 
-The `systems/shared/infra` project provisions shared platform primitives (KMS keys, Pub/Sub topics, archival buckets, and standard labels). Other systems (ingest, persist, analysis, ops) consume these primitives via **Pulumi StackReferences**.
+The `apps/infra` project provisions all platform infrastructure. Stack outputs provide a stable interface for services, CI/CD pipelines, and operational tooling to discover resource identifiers without hardcoding names or project-specific values.
 
-This document defines the **stable output contract** exposed by `systems/shared/infra`.
-
-**Treat these outputs like a public API. Changing names or semantics can break downstream deployments.**
+**Treat these outputs like a public API. Changing names or semantics can break downstream consumers.**
 
 ## Contract Goals
 
-Core outputs are designed to be:
+Outputs are designed to be:
 
 - **Stable**: output names should rarely change.
 - **Environment-aware**: values differ by stack (dev/prod) via Pulumi config.
-- **Project-agnostic for consumers**: feature systems should not hardcode resource names.
-- **Minimal**: core exports only shared primitives needed by multiple systems.
+- **Consumer-agnostic**: services and pipelines should not hardcode resource names.
 
 Stability expectations:
 
@@ -22,22 +19,23 @@ Stability expectations:
 
 ## How to Consume Outputs
 
-Consumer systems reference shared infrastructure via Pulumi stack references:
+Outputs can be retrieved via the Pulumi CLI for use in scripts, CI/CD workflows, or application configuration:
 
-```typescript
-import * as pulumi from '@pulumi/pulumi'
+```bash
+# Get a specific output
+pulumi stack output observationsTopicName --stack dev
 
-const sharedStack = new pulumi.StackReference(
-  'organization/news-research-shared/dev'
-)
-const topicName = sharedStack.getOutput('observationsTopicName')
+# Get all outputs as JSON
+pulumi stack output --json --stack dev
 ```
+
+In CI/CD workflows (e.g. GitHub Actions), outputs are typically read once and passed to downstream steps as environment variables or configuration.
 
 ## Stack Outputs
 
 | Output                                 | Type     | Description                              |
 | -------------------------------------- | -------- | ---------------------------------------- |
-| `gcpProject`                           | `string` | Shared GCP project ID                    |
+| `gcpProject`                           | `string` | GCP project ID                           |
 | `platformName`                         | `string` | Platform name for labeling and naming    |
 | `stackName`                            | `string` | Current Pulumi stack (environment)       |
 | `labels`                               | `object` | Standard labels applied to all resources |

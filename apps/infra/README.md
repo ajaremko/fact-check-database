@@ -1,23 +1,39 @@
-# Shared Infrastructure
+# Platform Infrastructure
 
-Shared infrastructure provides platform-wide primitives that other systems consume but do not own. It exists to centralize governance-sensitive resources and ensure consistent security, encryption, and deployment identity across the platform.
+This project provisions all platform infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
+
+## Project Structure
+
+```
+apps/infra/
+├── src/
+│   ├── index.ts              # Main entrypoint, composes modules
+│   ├── config.ts             # Shared configuration
+│   ├── modules/              # Capability-specific infrastructure (future)
+│   │   └── <module>/         # e.g. ingestion, persistence, analysis
+│   └── ...                   # Core infrastructure components
+├── docs/                     # Infrastructure documentation
+├── Pulumi.yml                # Project definition
+├── Pulumi.dev.yml            # Development stack config
+└── Pulumi.prod.yml           # Production stack config
+```
+
+This structure simplifies deployment ordering and state management compared to per-capability Pulumi projects, while maintaining logical separation of concerns.
 
 ## Deployment
 
-Shared infrastructure is deployed via Pulumi through Nx:
+Infrastructure is deployed via Pulumi through Nx:
 
 ```bash
 nx preview shared-infra   # Preview changes
 nx deploy shared-infra    # Apply changes
 ```
 
-Shared infrastructure should be deployed via running the deploy command locally using a service account with elevated permissions before any consumer system (including CI deployments).
+The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
 
-See [bootstap documentation](./docs/bootstrap.md) for additional information on the initial deployment step.
+The [runbook](./docs/runbook.md) documents operational procedures for subsequent deployments.
 
-The [runbook](./docs/runbook.md) documents the process of running and troubleshooting subsequent deployments.
-
-## What Shared Infrastructure Provides
+## What This Project Provisions
 
 ### GCP Service Enablement
 
@@ -62,21 +78,21 @@ The [runbook](./docs/runbook.md) documents the process of running and troublesho
 | `github-actions-sa`                     | Service account impersonated by GitHub Actions                                            |
 | `github-actions-identity-pool-provider` | Facilitates authentication from GitHub Actions workflows via workload identity federation |
 
-## Why These Resources Are Centralized
+## Adding New Infrastructure Modules
 
-Shared infrastructure owns resources that:
+As the platform evolves, capability-specific infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
 
-1. **Require consistent governance** - Encryption keys and identity pools must be managed uniformly to ensure access revocation and audit capabilities work across all systems
-2. **Are consumed by multiple systems** - Topics, buckets, and keys are used by ingestion, persistence, analysis, and operations
-3. **Define platform-wide conventions** - Labels, naming patterns, and environment configuration
+- Encapsulates resources for a specific capability
+- Imports shared primitives (keys, topics, buckets) from the main project
+- Is composed into the main entrypoint (`src/index.ts`)
 
-Resources remain in shared infrastructure only if they meet at least one of these criteria. System-specific resources belong in the owning system's infrastructure.
+This keeps related resources together while maintaining a single deployment unit.
 
 ## Related Documentation
 
 | Document                                   | Purpose                                      |
 | ------------------------------------------ | -------------------------------------------- |
-| [docs/contracts.md](./docs/contracts.md)   | Full stack output contract definitions       |
+| [docs/contracts.md](./docs/contracts.md)   | Stack output contract definitions            |
 | [docs/bootstrap.md](./docs/bootstrap.md)   | Initial GCP project setup instructions       |
 | [docs/encryption.md](./docs/encryption.md) | CMEK key management and rotation details     |
 | [docs/iam-model.md](./docs/iam-model.md)   | IAM boundaries and access patterns           |

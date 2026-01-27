@@ -65,34 +65,34 @@ This makes the platform easier to understand for non-engineering stakeholders an
 
 ## Repository Structure
 
-High-level layout:
+This repository is organized as an Nx monorepo with a pulumi infrastructure in apps/infra alongside other services.
 
 ```
 /
-├── docs/ # High-level, cross-cutting documentation
-├── packages/ # Cross-cutting libraries (schemas, config, utilities)
-├── scripts/ # Deployment and operational helpers
-├── systems/ # Capability-specific systems (ingestion, persistence, analysis, operations, etc.)
+├── apps/
+│   ├── infra/                # Consolidated Pulumi infrastructure project
+│   │   ├── src/
+│   │   │   ├── modules/      # Capability-specific infrastructure modules
+│   │   │   └── ...           # Core platform primitives
+│   │   └── docs/             # Infrastructure documentation
+│   └── <service>/            # Dockerized applications (Cloud Run, workers, etc.)
+├── packages/                 # Shared libraries (schemas, config, utilities)
+├── docs/                     # Cross-cutting documentation
+└── scripts/                  # Deployment and operational helpers
 ```
 
-Individual systems are self-contained:
+### Infrastructure
 
-```
-systems/<system-name>/
-├── infra/ # Pulumi project for this feature
-├── services/ # Applications, workers, etc.
-├── docs/ # System-specific documentation & runbooks
-└── README.md # System-specific overview and responsibilities
-```
+All infrastructure is provisioned through a single Pulumi project at `apps/infra/`. This simplifies deployment ordering and state management while maintaining logical separation via modules.
 
-## System Documentation
+See [apps/infra/README.md](./apps/infra/README.md) for infrastructure documentation.
 
-| System                                       | Description                                     |
-| -------------------------------------------- | ----------------------------------------------- |
-| [Analysis](./systems/analysis/README.md)     | View and query ingested data                    |
-| [Ingestion](./systems/ingestion/README.md)   | Data collection and sanitization                |
-| [Operations](./systems/operations/README.md) | Cost tracking, logging and error reporting      |
-| [Shared](./systems/shared/README.md)         | Shared infrastructure consumed by other systems |
+### Services
+
+Dockerized applications (API services, workers, scheduled jobs) live in `apps/` as separate Nx projects. Each service:
+
+- Has its own Dockerfile and deployment configuration
+- Is deployed to managed compute (e.g. Cloud Run)
 
 ## Key Technologies
 
@@ -113,20 +113,20 @@ This supports the platform’s emphasis on modularity while still enabling share
 
 ### Pulumi
 
-Pulumi is used for provisioning infrastructure. Each system owns its own Pulumi project and deployment lifecycle, while a small shared project defines common infrastructure. This approach enables:
+Pulumi provisions all infrastructure through a single project at `apps/infra/`. This modular monolith approach:
 
-- independent deployments per capability
-- explicit infrastructure contracts via stack outputs
-- environment parity without code changes (single-project dev vs multi-project prod)
-- clear ownership of resources and access boundaries
+- consolidates deployment into a single state and lifecycle
+- eliminates cross-project stack references and ordering complexity
+- maintains logical separation via modules within `apps/infra/src/modules/`
+- exposes stable outputs for services and CI/CD to consume
 
 Pulumi is used in a configuration-driven manner:
 
-- target GCP projects are defined in stack configuration
-- systems are unaware of where they are deployed
-- cross-system dependencies are resolved via stack references, not hardcoded values
+- target GCP projects are defined in stack configuration (dev, prod)
+- services discover resources via stack outputs, not hardcoded values
+- environment parity is achieved through stack-specific configuration
 
-This model aligns well with grant-funded and multi-stakeholder environments, where infrastructure boundaries, access control, and auditability are as important as functionality.
+This model simplifies operations for a portfolio project while demonstrating infrastructure patterns appropriate for grant-funded and multi-stakeholder environments.
 
 ### Docker
 
