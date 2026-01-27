@@ -47,30 +47,6 @@ Documentation should:
 - avoid product-marketing language
 - avoid assuming access to institutional knowledge
 
-# Architectural Orientation
-
-This platform is organized around capability-oriented systems, not technical layers.
-
-Each system (e.g. core, ingest, persist, analysis, ops):
-
-- owns its own infrastructure, services, and documentation
-- is independently deployable
-- exposes explicit contracts to other systems
-- has clearly defined responsibilities and non-responsibilities
-
-Shared infrastructure is intentionally minimal and exists to provide:
-
-- governance anchors (e.g. encryption keys)
-- shared messaging primitives
-- archival storage
-- deployment identity and conventions
-
-When generating documentation:
-
-- do not collapse multiple systems into a single conceptual unit
-- do not assume a monolithic deployment
-- treat cross-system interactions as contracts, not implicit coupling
-
 # Scope & Non-Goals
 
 This project explicitly does not aim to:
@@ -136,7 +112,7 @@ This repository is managed as an Nx monorepo.
 
 Nx is used to:
 
-- scaffold systems, services, and shared libraries
+- scaffold apps, services, and shared libraries
 - enforce consistent tooling and conventions
 - orchestrate builds, tests, and deployments
 
@@ -146,7 +122,7 @@ When generating documentation:
 
 - describe systems in terms of their capabilities and responsibilities
 - do not rely on Nx-specific terminology unless relevant
-- assume systems may be deployed independently despite living in one repo
+- assume projects may be deployed independently despite living in one repo
 
 # What to Optimize For
 
