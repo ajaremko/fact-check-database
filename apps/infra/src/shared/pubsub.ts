@@ -1,15 +1,17 @@
 import * as gcp from '@pulumi/gcp'
 
-import { labels } from './config'
+import { sharedLabels } from './config'
 import { pubsubService } from './services'
+import { provider } from './provider'
 
 export const observationsTopic = new gcp.pubsub.Topic(
   'observations-topic',
   {
     name: 'observations-topic',
-    labels,
+    labels: sharedLabels,
   },
   {
     dependsOn: [pubsubService],
+    provider,
   }
 )

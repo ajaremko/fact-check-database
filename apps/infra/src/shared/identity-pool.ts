@@ -1,6 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
 import { IAMService, IAMCredentialsService } from './services'
+import { provider } from './provider'
 
 export const identityPool = new gcp.iam.WorkloadIdentityPool(
   'shared-identity-pool',
@@ -11,5 +12,6 @@ export const identityPool = new gcp.iam.WorkloadIdentityPool(
   },
   {
     dependsOn: [IAMService, IAMCredentialsService],
+    provider,
   }
 )
