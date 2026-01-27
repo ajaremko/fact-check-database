@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/shared-infra",
+  "name": "@news-research/infra",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -55,7 +55,8 @@
           }
         }
       }
-    }
+    },
+    "name": "infra"
   },
   "dependencies": {}
 }

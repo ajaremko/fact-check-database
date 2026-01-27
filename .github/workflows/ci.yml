@@ -30,7 +30,7 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
         run: |
-          cd systems/shared/infra
+          cd apps/infra
 
           # Pull outputs as JSON, then extract the values we need
           OUT="$(pulumi stack output --json --stack=dev)"

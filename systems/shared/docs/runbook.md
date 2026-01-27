@@ -213,7 +213,7 @@ gcloud logging read 'protoPayload.methodName="SetIamPolicy"' \
 View deployment history:
 
 ```bash
-cd systems/shared/infra
+cd apps/infra
 pulumi stack history
 ```
 

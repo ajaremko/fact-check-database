@@ -15,7 +15,7 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/systems/shared/infra/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/infra/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

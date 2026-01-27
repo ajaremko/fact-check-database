@@ -107,7 +107,7 @@ gcloud services enable sts.googleapis.com --project=$PROJECT_ID
 Navigate to the shared infrastructure directory and select the appropriate stack:
 
 ```bash
-cd systems/shared/infra
+cd apps/infra
 
 # Select or create the stack
 pulumi stack select dev  # or 'prod' for production
