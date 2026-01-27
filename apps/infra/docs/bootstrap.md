@@ -144,13 +144,13 @@ pulumi config set platform:githubRepo news-research
 Preview the changes to verify configuration:
 
 ```bash
-nx preview shared-infra
+nx preview infra
 ```
 
 If the preview looks correct, apply the changes:
 
 ```bash
-nx deploy shared-infra
+nx deploy infra
 ```
 
 This deployment creates all shared infrastructure resources. See the [README](../README.md) for a complete list of what gets provisioned.

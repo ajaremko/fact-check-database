@@ -11,13 +11,13 @@ Operational procedures for deploying and troubleshooting shared infrastructure.
 To run a deployment manually, first review changes before applying:
 
 ```bash
-nx preview shared-infra
+nx preview infra
 ```
 
 Apply changes:
 
 ```bash
-nx deploy shared-infra
+nx deploy infra
 ```
 
 When to deploy manually:

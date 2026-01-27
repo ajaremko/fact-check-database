@@ -25,8 +25,8 @@ This structure simplifies deployment ordering and state management compared to p
 Infrastructure is deployed via Pulumi through Nx:
 
 ```bash
-nx preview shared-infra   # Preview changes
-nx deploy shared-infra    # Apply changes
+nx preview infra   # Preview changes
+nx deploy infra    # Apply changes
 ```
 
 The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
