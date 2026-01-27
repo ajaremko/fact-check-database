@@ -50,19 +50,6 @@ Accordingly, the platform incorporates:
 - least-privilege access patterns
 - clear separation of data access and decryption authority
 
-### 3) Capability-oriented architecture
-
-The system is organized around capabilities rather than technical layers.
-
-Each capability owns its own:
-
-- applications and services
-- infrastructure
-- documentation
-- deployment lifecycle
-
-This makes the platform easier to understand for non-engineering stakeholders and aligns with how research programs are funded, reviewed, and carried out.
-
 ## Repository Structure
 
 This repository is organized as an Nx monorepo with a pulumi infrastructure in apps/infra alongside other services.
