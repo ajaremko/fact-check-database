@@ -1,4 +1,4 @@
-name: news-research-shared
+name: news-research
 runtime: nodejs
-description: Shared infrastructure for News Research projects
+description: Infrastructure for News Research project
 main: src/index.ts
