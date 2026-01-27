@@ -2,6 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { githubOrg, githubRepo } from '../config'
 import { identityPool } from '../identity-pool'
+import { provider } from '../provider'
 
 export const githubActionIdentityPoolProvider =
   new gcp.iam.WorkloadIdentityPoolProvider(
@@ -20,5 +21,6 @@ export const githubActionIdentityPoolProvider =
         'attribute.repository': 'assertion.repository',
       },
       attributeCondition: `assertion.repository == '${githubOrg}/${githubRepo}'`,
-    }
+    },
+    { provider }
   )

@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, githubOrg, githubRepo } from '../config'
 import { identityPool } from '../identity-pool'
+import { provider } from '../provider'
 
 /**
  * The service account to be impersonated by GitHub Actions runner to access GCP resources
@@ -13,7 +14,8 @@ export const githubActionServiceAccount = new gcp.serviceaccount.Account(
     accountId: 'github-actions-sa',
     displayName: 'GitHub Actions Service Account',
     description: 'Service account for GitHub Actions to access GCP resources',
-  }
+  },
+  { provider }
 )
 
 /**
@@ -26,18 +28,23 @@ export const githubActionServiceAccountBinding =
       serviceAccountId: githubActionServiceAccount.name,
       role: 'roles/iam.workloadIdentityUser',
       member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
-    }
+    },
+    { provider }
   )
 
 /**
  * The binding that allows the GitHub Actions runner to create tokens for the service account
  */
 export const githubActionTokenCreatorServiceAccountBinding =
-  new gcp.serviceaccount.IAMMember('github-actions-token-creator', {
-    serviceAccountId: githubActionServiceAccount.name,
-    role: 'roles/iam.serviceAccountTokenCreator',
-    member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
-  })
+  new gcp.serviceaccount.IAMMember(
+    'github-actions-token-creator',
+    {
+      serviceAccountId: githubActionServiceAccount.name,
+      role: 'roles/iam.serviceAccountTokenCreator',
+      member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
+    },
+    { provider }
+  )
 
 /**
  * Broadly allow GitHub Actions service account to act as editor on the project.
@@ -51,7 +58,7 @@ export const githubActionServiceAccountEditorIamMember =
       role: 'roles/editor',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount] }
+    { dependsOn: [githubActionServiceAccount], provider }
   )
 
 /**
@@ -65,7 +72,7 @@ export const githubActionServiceAccountServiceAdminIamMember =
       role: 'roles/serviceusage.serviceUsageAdmin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount] }
+    { dependsOn: [githubActionServiceAccount], provider }
   )
 
 export const githubActionServiceAccountIamAdminIamMember =
@@ -76,7 +83,7 @@ export const githubActionServiceAccountIamAdminIamMember =
       role: 'roles/iam.serviceAccountAdmin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount] }
+    { dependsOn: [githubActionServiceAccount], provider }
   )
 
 export const githubActionServiceAccountComputeIamMember =
@@ -87,7 +94,7 @@ export const githubActionServiceAccountComputeIamMember =
       role: 'roles/compute.admin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount] }
+    { dependsOn: [githubActionServiceAccount], provider }
   )
 
 /**
@@ -102,5 +109,5 @@ export const githubActionServiceAccountKmsAdminIamMember =
       role: 'roles/cloudkms.admin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount] }
+    { dependsOn: [githubActionServiceAccount], provider }
   )
