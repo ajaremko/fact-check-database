@@ -7,3 +7,6 @@ config:
   shared:archiveTTL: 30
   shared:githubOrg: ajaremko
   shared:githubRepo: news-research
+  ingestion:project: news-research-dev
+  ingestion:region: us-central1
+  ingestion:tag: ingestion
