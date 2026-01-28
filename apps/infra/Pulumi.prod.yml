@@ -1,10 +1,12 @@
 config:
-  gcp:project: news-research
-  gcp:region: us-central1
-  github:owner: ajaremko
-  platform:name: news-research
-  platform:kmsLocation: us
-  platform:archiveLocation: US
-  platform:archiveTTL: 30
-  platform:githubOrg: ajaremko
-  platform:githubRepo: news-research
+  core:project: news-research-core
+  core:region: us-central1
+  core:tag: shared
+  core:kmsLocation: us
+  core:archiveLocation: US
+  core:archiveTTL: 30
+  core:githubOrg: ajaremko
+  core:githubRepo: news-research
+  ingestion:project: news-research-ingestion
+  ingestion:region: us-central1
+  ingestion:tag: ingestion

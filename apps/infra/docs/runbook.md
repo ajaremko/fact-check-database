@@ -1,8 +1,8 @@
-# Shared Infrastructure Runbook
+# Infrastructure Runbook
 
 Operational procedures for deploying and troubleshooting shared infrastructure.
 
-## Redeploying Shared Infrastructure
+## Redeploying Infrastructure
 
 **Outside of the [initial bootstrap procedure](./bootstrap.md), most deployments can be carried out by github action workflows.**
 
@@ -37,7 +37,7 @@ When to deploy automatically:
 
 ### Deployment Order
 
-Shared infrastructure must be deployed before any consumer system. If redeploying after changes that affect outputs (topic names, bucket names, key names), downstream systems may need redeployment to pick up new references.
+Core infrastructure must be deployed before any consumer system. If redeploying after changes that affect outputs (topic names, bucket names, key names), downstream systems may need redeployment to pick up new references.
 
 ## Troubleshooting: Bucket Creation Failures
 

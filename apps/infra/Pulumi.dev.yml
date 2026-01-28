@@ -1,12 +1,12 @@
 config:
-  shared:project: news-research-dev
-  shared:region: us-central1
-  shared:tag: shared
-  shared:kmsLocation: us
-  shared:archiveLocation: US
-  shared:archiveTTL: 30
-  shared:githubOrg: ajaremko
-  shared:githubRepo: news-research
+  core:project: news-research-dev
+  core:region: us-central1
+  core:tag: shared
+  core:kmsLocation: us
+  core:archiveLocation: US
+  core:archiveTTL: 30
+  core:githubOrg: ajaremko
+  core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
   ingestion:tag: ingestion

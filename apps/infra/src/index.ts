@@ -3,7 +3,7 @@ export {
   gcsArchiveKeyName,
   githubActionIdentityPoolProviderName,
   githubActionServiceAccountEmail,
-} from './shared'
+} from './core'
 
 export { helloServiceUrl } from './ingestion'
 

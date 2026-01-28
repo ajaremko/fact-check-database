@@ -20,4 +20,4 @@ import { rawArchiveBucket } from './storage'
 
 export const rawArchiveBucketName = rawArchiveBucket.name
 
-export { gcpProject, sharedLabels } from './config'
+export { gcpProject, coreLabels } from './config'

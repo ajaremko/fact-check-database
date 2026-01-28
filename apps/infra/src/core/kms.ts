@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { sharedLabels, kmsLocation } from './config'
+import { coreLabels, kmsLocation } from './config'
 import { kmsService } from './services'
 import { provider } from './provider'
 
@@ -24,7 +24,7 @@ export const gcsArchiveKey = new gcp.kms.CryptoKey(
     keyRing: keyRing.id,
     rotationPeriod: '7776000s', // 90 days
     purpose: 'ENCRYPT_DECRYPT',
-    labels: sharedLabels,
+    labels: coreLabels,
   },
   {
     provider,
@@ -40,7 +40,7 @@ export const bigQueryKey = new gcp.kms.CryptoKey(
     keyRing: keyRing.id,
     rotationPeriod: '7776000s',
     purpose: 'ENCRYPT_DECRYPT',
-    labels: sharedLabels,
+    labels: coreLabels,
   },
   {
     provider,

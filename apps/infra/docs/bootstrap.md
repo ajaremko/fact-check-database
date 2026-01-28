@@ -1,10 +1,10 @@
 # Bootstrap and First Deployment
 
-This document covers the one-time manual steps required to bootstrap shared infrastructure before CI/CD can run unattended.
+This document covers the one-time manual steps required to bootstrap core infrastructure before CI/CD can run unattended.
 
 ## Why Manual Bootstrap Is Required
 
-Shared infrastructure creates the CI/CD identity (GitHub Actions service account and workload identity provider) that all subsequent deployments use. This creates a chicken-and-egg problem: the identity CI needs to authenticate doesn't exist until shared infrastructure is deployed.
+Core infrastructure creates the CI/CD identity (GitHub Actions service account and workload identity provider) that all subsequent deployments use. This creates a chicken-and-egg problem: the identity CI needs to authenticate doesn't exist until core infrastructure is deployed.
 
 A human administrator must run the first deployment using a temporary bootstrap service account with elevated permissions. After this initial deployment, CI/CD can operate fully unattended using workload identity federation.
 
@@ -153,7 +153,7 @@ If the preview looks correct, apply the changes:
 nx deploy infra
 ```
 
-This deployment creates all shared infrastructure resources. See the [README](../README.md) for a complete list of what gets provisioned.
+This deployment creates all infrastructure resources. See the [README](../README.md) for a complete list of what gets provisioned.
 
 After successful deployment, note the stack outputs:
 
