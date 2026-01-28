@@ -90,10 +90,11 @@ This keeps related resources together while maintaining a single deployment unit
 
 ## Related Documentation
 
-| Document                                   | Purpose                                      |
-| ------------------------------------------ | -------------------------------------------- |
-| [docs/contracts.md](./docs/contracts.md)   | Stack output contract definitions            |
-| [docs/bootstrap.md](./docs/bootstrap.md)   | Initial GCP project setup instructions       |
-| [docs/encryption.md](./docs/encryption.md) | CMEK key management and rotation details     |
-| [docs/iam-model.md](./docs/iam-model.md)   | IAM boundaries and access patterns           |
-| [docs/runbook.md](./docs/runbook.md)       | Operational procedures and incident response |
+| Document                                         | Purpose                                      |
+| ------------------------------------------------ | -------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup instructions       |
+| [docs/configuration.md](./docs/configuration.md) | Stack output contract definitions            |
+| [docs/contracts.md](./docs/contracts.md)         | Stack output contract definitions            |
+| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rotation details     |
+| [docs/iam-model.md](./docs/iam-model.md)         | IAM boundaries and access patterns           |
+| [docs/runbook.md](./docs/runbook.md)             | Operational procedures and incident response |

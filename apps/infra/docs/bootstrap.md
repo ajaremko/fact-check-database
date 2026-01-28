@@ -39,6 +39,10 @@ gcloud config set project $PROJECT_ID
 
 ## Step 2: Create Bootstrap Service Account
 
+### Create a Service Account
+
+Run the following commands in the [Cloud Shell](https://console.cloud.google.com/cloudshell) feature of the GCP Console. Cloud Shell provides a pre-authenticated environment with `gcloud` already configured.
+
 Create a temporary service account with elevated permissions for the initial deployment:
 
 ```bash
@@ -51,33 +55,28 @@ gcloud iam service-accounts create bootstrap-deployer \
 export BOOTSTRAP_SA="bootstrap-deployer@${PROJECT_ID}.iam.gserviceaccount.com"
 ```
 
-Grant the required roles:
+Grant the Owner role:
 
 ```bash
-# Editor - general resource creation
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:${BOOTSTRAP_SA}" \
-  --role="roles/editor"
+  --role="roles/owner"
+```
 
-# Service Usage Admin - enable APIs
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:${BOOTSTRAP_SA}" \
-  --role="roles/serviceusage.serviceUsageAdmin"
+> **Note:** Using granular roles (Editor, IAM Admin, KMS Admin, etc.) is more secure. However, for this situation, the Owner role simplifies setup. The bootstrap service account and its credentials should still be deleted after the initial deployment.
 
-# IAM Service Account Admin - create service accounts
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:${BOOTSTRAP_SA}" \
-  --role="roles/iam.serviceAccountAdmin"
+### Multi-Project Deployments
 
-# IAM Security Admin - manage IAM policies
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:${BOOTSTRAP_SA}" \
-  --role="roles/iam.securityAdmin"
+Infrastructure modules can deploy resources to different GCP projects. In production configurations, this enables separation of concerns (e.g., core platform infrastructure in one project, ingestion workloads in another).
 
-# Cloud KMS Admin - create key rings and keys
-gcloud projects add-iam-policy-binding $PROJECT_ID \
+The bootstrap service account must have the required roles in **every** GCP project where infrastructure will be deployed. For each additional project:
+
+```bash
+export ADDITIONAL_PROJECT_ID="news-research-ingestion"
+
+gcloud projects add-iam-policy-binding $ADDITIONAL_PROJECT_ID \
   --member="serviceAccount:${BOOTSTRAP_SA}" \
-  --role="roles/cloudkms.admin"
+  --role="roles/owner"
 ```
 
 Generate a JSON key for Pulumi authentication:
@@ -113,31 +112,7 @@ cd apps/infra
 pulumi stack select dev  # or 'prod' for production
 ```
 
-Verify stack configuration values are set. Required configuration:
-
-| Key                        | Description                | Example             |
-| -------------------------- | -------------------------- | ------------------- |
-| `gcp:project`              | GCP project ID             | `news-research-dev` |
-| `gcp:region`               | Default GCP region         | `us-central1`       |
-| `platform:name`            | Platform name for labeling | `news-research`     |
-| `platform:kmsLocation`     | KMS key ring location      | `us`                |
-| `platform:archiveLocation` | Storage bucket location    | `US`                |
-| `platform:archiveTTL`      | Archive retention in days  | `30`                |
-| `platform:githubOrg`       | GitHub organization        | `your-org`          |
-| `platform:githubRepo`      | GitHub repository name     | `news-research`     |
-
-Set any missing values:
-
-```bash
-pulumi config set gcp:project $PROJECT_ID
-pulumi config set gcp:region us-central1
-pulumi config set platform:name news-research
-pulumi config set platform:kmsLocation us
-pulumi config set platform:archiveLocation US
-pulumi config set platform:archiveTTL 30
-pulumi config set platform:githubOrg your-org
-pulumi config set platform:githubRepo news-research
-```
+See [Stack Configuration](./configuration.md) for the full list of configuration values and their descriptions.
 
 ## Step 5: Run First Deployment
 
