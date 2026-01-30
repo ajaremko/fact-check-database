@@ -16,6 +16,10 @@ import { bigQueryKey, gcsArchiveKey } from './kms'
 export const bigQueryKeyName = bigQueryKey.name
 export const gcsArchiveKeyName = gcsArchiveKey.name
 
+import { artifactRegistry } from './artifact-registry'
+
+export const artifactRegistryUri = artifactRegistry.registryUri
+
 import { rawArchiveBucket } from './storage'
 
 export const rawArchiveBucketName = rawArchiveBucket.name
