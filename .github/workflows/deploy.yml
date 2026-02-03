@@ -1,4 +1,4 @@
-name: Deploy
+name: Pulumi Deploy
 
 on:
   workflow_dispatch:
@@ -14,6 +14,8 @@ on:
 permissions:
   contents: read
   id-token: write
+
+run-name: Pulumi Deploy (${{ github.event.inputs.environment }})
 
 jobs:
   main:
