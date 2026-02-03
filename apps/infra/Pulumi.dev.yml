@@ -1,7 +1,6 @@
 config:
   core:project: news-research-dev
   core:region: us-central1
-  core:tag: shared
   core:kmsLocation: us
   core:archiveLocation: US
   core:archiveTTL: 30
@@ -9,5 +8,4 @@ config:
   core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:tag: ingestion
   ingestion:ingestorTag: 23-02.03.26-dev-ee7c5b2

@@ -2,10 +2,11 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { labels } from '../config'
 
+export const tag = 'core'
+
 const coreConfig = new pulumi.Config('core')
 export const gcpProject = coreConfig.require('project')
 export const gcpRegion = coreConfig.require('region')
-export const tag = coreConfig.require('tag')
 export const kmsLocation = coreConfig.require('kmsLocation')
 export const archiveLocation = coreConfig.require('archiveLocation')
 export const archiveTTL = coreConfig.requireNumber('archiveTTL')
