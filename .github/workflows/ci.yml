@@ -77,7 +77,7 @@ jobs:
 
       - run: npx nx run-many -t docker:build
 
-      - run: npx nx release --dockerVersionScheme=dev
+      - run: npx nx release --dockerVersionScheme=dev --firstRelease --yes
         env:
           BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_tag_number }}
           DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
