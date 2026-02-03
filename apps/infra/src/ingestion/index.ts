@@ -1,5 +1,5 @@
 import { ingestorJob } from './cloud-run'
 
-export const helloServiceUrl = ingestorJob.uri
+export const ingestorJobName = ingestorJob.name
 
 export { gcpProject, ingestionLabels } from './config'

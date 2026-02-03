@@ -7,6 +7,6 @@ export {
   artifactRegistryBaseUri,
 } from './core'
 
-export { helloServiceUrl } from './ingestion'
+export { ingestorJobName } from './ingestion'
 
 export { stackName } from './config'
