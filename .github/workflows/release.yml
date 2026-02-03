@@ -83,4 +83,4 @@ jobs:
 
           # Build and publish production images
           npm ci
-          npx nx release --dockerVersionScheme=production --yes --firstRelease
+          npx nx release --dockerVersionScheme=production --yes
