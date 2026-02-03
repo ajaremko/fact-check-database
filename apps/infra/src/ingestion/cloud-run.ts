@@ -15,6 +15,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
   'ingestor-job',
   {
     location: gcpRegion,
+    deletionProtection: false,
     template: {
       template: {
         containers: [
