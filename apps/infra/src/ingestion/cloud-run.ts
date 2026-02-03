@@ -1,8 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpRegion, ingestorTag } from './config'
+import { gcpRegion, gcpProject, ingestorTag } from './config'
 import { provider } from './provider'
-import { cloudRunService } from './services'
+import { cloudRunService, cloudSchedulerService } from './services'
 import { artifactRegistry } from '../core'
 
 const ingestorImage = gcp.artifactregistry.getDockerImageOutput({
@@ -12,7 +12,7 @@ const ingestorImage = gcp.artifactregistry.getDockerImageOutput({
 })
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
-  'ingestor-service',
+  'ingestor-job',
   {
     location: gcpRegion,
     template: {
@@ -26,4 +26,26 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
     },
   },
   { dependsOn: [cloudRunService], provider }
+)
+
+const computeServiceAccount = gcp.compute.getDefaultServiceAccountOutput()
+
+export const ingestorJobScheduler = new gcp.cloudscheduler.Job(
+  'ingestor-job-scheduler',
+  {
+    description: 'Trigger Ingestor Cloud Run Job every 15 minutes',
+    schedule: '*/15 * * * *',
+    timeZone: 'UTC',
+    httpTarget: {
+      httpMethod: 'POST',
+      uri: ingestorJob.name.apply(
+        (name) =>
+          `https://run.googleapis.com/v2/projects/${gcpProject}/locations/${gcpRegion}/jobs/${name}:run`
+      ),
+      oidcToken: {
+        serviceAccountEmail: computeServiceAccount.email,
+      },
+    },
+  },
+  { provider, dependsOn: [cloudSchedulerService] }
 )

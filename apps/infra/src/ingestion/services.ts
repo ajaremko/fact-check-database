@@ -9,3 +9,11 @@ export const cloudRunService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const cloudSchedulerService = new gcp.projects.Service(
+  'cloud-scheduler-service',
+  {
+    service: 'cloudscheduler.googleapis.com',
+  },
+  { provider }
+)
