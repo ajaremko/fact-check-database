@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpProject, archiveLocation, archiveTTL, coreLabels } from './config'
+import { gcpProject, archiveLocation, archiveTTL, coreLabels, tag } from './config'
 import { gcsArchiveKey } from './kms'
 import { storageService } from './services'
 import { provider } from './provider'
@@ -20,7 +20,7 @@ const storageServiceAccount = gcp.storage.getProjectServiceAccountOutput(
  * Allow storage service account to use the KMS key for encryption/decryption
  */
 export const storageServiceAccountKmsBinding = new gcp.kms.CryptoKeyIAMMember(
-  'gcs-sa-kms-binding',
+  `${tag}-gcs-sa-kms-binding`,
   {
     cryptoKeyId: gcsArchiveKey.id,
     role: 'roles/cloudkms.cryptoKeyEncrypterDecrypter',
@@ -30,7 +30,7 @@ export const storageServiceAccountKmsBinding = new gcp.kms.CryptoKeyIAMMember(
 )
 
 export const rawArchiveBucket = new gcp.storage.Bucket(
-  'raw-archive-bucket',
+  `${tag}-raw-archive-bucket`,
   {
     location: archiveLocation,
     uniformBucketLevelAccess: true,

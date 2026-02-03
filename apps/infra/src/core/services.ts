@@ -1,9 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 
+import { tag } from './config'
 import { provider } from './provider'
 
 export const computeService = new gcp.projects.Service(
-  'compute-service',
+  `${tag}-compute-service`,
   {
     service: 'compute.googleapis.com',
   },
@@ -11,7 +12,7 @@ export const computeService = new gcp.projects.Service(
 )
 
 export const resourceManagerService = new gcp.projects.Service(
-  'resource-manager-service',
+  `${tag}-resource-manager-service`,
   {
     service: 'cloudresourcemanager.googleapis.com',
   },
@@ -19,7 +20,7 @@ export const resourceManagerService = new gcp.projects.Service(
 )
 
 export const IAMService = new gcp.projects.Service(
-  'iam-service',
+  `${tag}-iam-service`,
   {
     service: 'iam.googleapis.com',
   },
@@ -27,7 +28,7 @@ export const IAMService = new gcp.projects.Service(
 )
 
 export const IAMCredentialsService = new gcp.projects.Service(
-  'iam-credentials-service',
+  `${tag}-iam-credentials-service`,
   {
     service: 'iamcredentials.googleapis.com',
   },
@@ -35,7 +36,7 @@ export const IAMCredentialsService = new gcp.projects.Service(
 )
 
 export const securityTokenService = new gcp.projects.Service(
-  'security-token-service',
+  `${tag}-security-token-service`,
   {
     service: 'sts.googleapis.com',
   },
@@ -43,7 +44,7 @@ export const securityTokenService = new gcp.projects.Service(
 )
 
 export const pubsubService = new gcp.projects.Service(
-  'pubsub-service',
+  `${tag}-pubsub-service`,
   {
     service: 'pubsub.googleapis.com',
   },
@@ -51,7 +52,7 @@ export const pubsubService = new gcp.projects.Service(
 )
 
 export const kmsService = new gcp.projects.Service(
-  'kms-service',
+  `${tag}-kms-service`,
   {
     service: 'cloudkms.googleapis.com',
   },
@@ -59,7 +60,7 @@ export const kmsService = new gcp.projects.Service(
 )
 
 export const storageService = new gcp.projects.Service(
-  'storage-service',
+  `${tag}-storage-service`,
   {
     service: 'storage.googleapis.com',
   },
@@ -67,7 +68,7 @@ export const storageService = new gcp.projects.Service(
 )
 
 export const artifactRegistryService = new gcp.projects.Service(
-  'artifact-registry-service',
+  `${tag}-artifact-registry-service`,
   {
     service: 'artifactregistry.googleapis.com',
   },

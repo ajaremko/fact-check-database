@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpProject, githubOrg, githubRepo } from '../config'
+import { gcpProject, githubOrg, githubRepo, tag } from '../config'
 import { identityPool } from '../identity-pool'
 import { provider } from '../provider'
 
@@ -9,7 +9,7 @@ import { provider } from '../provider'
  * The service account to be impersonated by GitHub Actions runner to access GCP resources
  */
 export const githubActionServiceAccount = new gcp.serviceaccount.Account(
-  'github-actions-service-account',
+  `${tag}-github-actions-service-account`,
   {
     accountId: 'github-actions-sa',
     displayName: 'GitHub Actions Service Account',
@@ -23,7 +23,7 @@ export const githubActionServiceAccount = new gcp.serviceaccount.Account(
  */
 export const githubActionServiceAccountBinding =
   new gcp.serviceaccount.IAMMember(
-    'github-actions-service-account-workload-id-user-binding',
+    `${tag}-github-actions-service-account-workload-id-user-binding`,
     {
       serviceAccountId: githubActionServiceAccount.name,
       role: 'roles/iam.workloadIdentityUser',
@@ -37,7 +37,7 @@ export const githubActionServiceAccountBinding =
  */
 export const githubActionTokenCreatorServiceAccountBinding =
   new gcp.serviceaccount.IAMMember(
-    'github-actions-token-creator',
+    `${tag}-github-actions-token-creator`,
     {
       serviceAccountId: githubActionServiceAccount.name,
       role: 'roles/iam.serviceAccountTokenCreator',
@@ -52,7 +52,7 @@ export const githubActionTokenCreatorServiceAccountBinding =
  */
 export const githubActionServiceAccountEditorIamMember =
   new gcp.projects.IAMMember(
-    'github-actions-service-account-editor-iam-member',
+    `${tag}-github-actions-service-account-editor-iam-member`,
     {
       project: gcpProject,
       role: 'roles/editor',
@@ -66,7 +66,7 @@ export const githubActionServiceAccountEditorIamMember =
  */
 export const githubActionServiceAccountServiceAdminIamMember =
   new gcp.projects.IAMMember(
-    'github-actions-service-account-serviceusage-admin-iam-member',
+    `${tag}-github-actions-service-account-serviceusage-admin-iam-member`,
     {
       project: gcpProject,
       role: 'roles/serviceusage.serviceUsageAdmin',
@@ -77,7 +77,7 @@ export const githubActionServiceAccountServiceAdminIamMember =
 
 export const githubActionServiceAccountIamAdminIamMember =
   new gcp.projects.IAMMember(
-    'github-actions-service-account-iam-admin-iam-member',
+    `${tag}-github-actions-service-account-iam-admin-iam-member`,
     {
       project: gcpProject,
       role: 'roles/iam.serviceAccountAdmin',
@@ -88,7 +88,7 @@ export const githubActionServiceAccountIamAdminIamMember =
 
 export const githubActionServiceAccountComputeIamMember =
   new gcp.projects.IAMMember(
-    'github-actions-service-account-compute-admin-iam-member',
+    `${tag}-github-actions-service-account-compute-admin-iam-member`,
     {
       project: gcpProject,
       role: 'roles/compute.admin',
@@ -103,7 +103,7 @@ export const githubActionServiceAccountComputeIamMember =
  */
 export const githubActionServiceAccountKmsAdminIamMember =
   new gcp.projects.IAMMember(
-    'github-actions-service-account-kms-admin-iam-member',
+    `${tag}-github-actions-service-account-kms-admin-iam-member`,
     {
       project: gcpProject,
       role: 'roles/cloudkms.admin',

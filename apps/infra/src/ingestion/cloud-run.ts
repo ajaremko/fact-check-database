@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { artifactRegistry } from '../core'
 
-import { gcpRegion, gcpProject, ingestorTag } from './config'
+import { gcpRegion, gcpProject, ingestorTag, tag } from './config'
 import { provider } from './provider'
 import { cloudRunService, cloudSchedulerService } from './services'
 
@@ -14,7 +14,7 @@ const ingestorImage = gcp.artifactregistry.getDockerImageOutput({
 })
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
-  'ingestor-job',
+  `${tag}-ingestor-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -32,7 +32,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
 )
 
 export const ingestorInvokerServiceAccount = new gcp.serviceaccount.Account(
-  'ingestor-invoker-service-account',
+  `${tag}-ingestor-invoker-service-account`,
   {
     accountId: 'ingestor-invoker-sa',
     displayName: 'Ingestor Invoker Service Account',
@@ -44,7 +44,7 @@ export const ingestorInvokerServiceAccount = new gcp.serviceaccount.Account(
 
 export const ingestorInvokerServiceAccountRunInvokerIamMember =
   new gcp.projects.IAMMember(
-    'ingestor-invoker-service-account-run-invoker-iam-member',
+    `${tag}-ingestor-invoker-service-account-run-invoker-iam-member`,
     {
       project: gcpProject,
       role: 'roles/run.invoker',
@@ -54,7 +54,7 @@ export const ingestorInvokerServiceAccountRunInvokerIamMember =
   )
 
 export const ingestorJobScheduler = new gcp.cloudscheduler.Job(
-  'ingestor-job-scheduler',
+  `${tag}-ingestor-job-scheduler`,
   {
     description: 'Trigger Ingestor Cloud Run Job every 15 minutes',
     schedule: '*/15 * * * *',

@@ -2,13 +2,13 @@ import * as gcp from '@pulumi/gcp'
 
 import { artifactRegistryService } from './services'
 import { provider } from './provider'
-import { gcpRegion } from './config'
+import { tag, gcpRegion } from './config'
 
 export const artifactRegistry = new gcp.artifactregistry.Repository(
-  'shared-artifact-registry',
+  `${tag}-artifact-registry`,
   {
     location: gcpRegion,
-    repositoryId: 'shared-artifact-registry',
+    repositoryId: `${tag}-artifact-registry`,
     description: 'Application and service artifacts',
     format: 'DOCKER',
   },

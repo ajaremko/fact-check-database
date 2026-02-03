@@ -1,12 +1,12 @@
 import * as gcp from '@pulumi/gcp'
 
-import { githubOrg, githubRepo } from '../config'
+import { githubOrg, githubRepo, tag } from '../config'
 import { identityPool } from '../identity-pool'
 import { provider } from '../provider'
 
 export const githubActionIdentityPoolProvider =
   new gcp.iam.WorkloadIdentityPoolProvider(
-    'github-actions-identity-pool-provider',
+    `${tag}-github-actions-identity-pool-provider`,
     {
       workloadIdentityPoolId: identityPool.workloadIdentityPoolId,
       workloadIdentityPoolProviderId: 'github-actions-oidc-provider',
