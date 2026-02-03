@@ -65,3 +65,11 @@ export const storageService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const artifactRegistryService = new gcp.projects.Service(
+  'artifact-registry-service',
+  {
+    service: 'artifactregistry.googleapis.com',
+  },
+  { provider, dependsOn: [computeService, resourceManagerService] }
+)
