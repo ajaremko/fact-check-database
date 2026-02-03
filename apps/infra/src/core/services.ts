@@ -10,6 +10,14 @@ export const computeService = new gcp.projects.Service(
   { provider }
 )
 
+export const resourceManagerService = new gcp.projects.Service(
+  'resource-manager-service',
+  {
+    service: 'cloudresourcemanager.googleapis.com',
+  },
+  { provider }
+)
+
 export const IAMService = new gcp.projects.Service(
   'iam-service',
   {
