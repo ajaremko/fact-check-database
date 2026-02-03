@@ -64,6 +64,7 @@
         "projects": ["ingestor"],
         "projectsRelationship": "independent",
         "docker": {
+          "registryUrl": "${DOCKER_REGISTRY}",
           "skipVersionActions": true
         },
         "changelog": {
