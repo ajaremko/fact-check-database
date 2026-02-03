@@ -2,6 +2,14 @@ import * as gcp from '@pulumi/gcp'
 
 import { provider } from './provider'
 
+export const computeService = new gcp.projects.Service(
+  'compute-service',
+  {
+    service: 'compute.googleapis.com',
+  },
+  { provider }
+)
+
 export const IAMService = new gcp.projects.Service(
   'iam-service',
   {

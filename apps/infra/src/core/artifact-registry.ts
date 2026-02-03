@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import {} from './services'
+import { computeService } from './services'
 import { provider } from './provider'
 import { gcpRegion } from './config'
 
@@ -12,5 +12,5 @@ export const artifactRegistry = new gcp.artifactregistry.Repository(
     description: 'Application and service artifacts',
     format: 'DOCKER',
   },
-  { provider }
+  { provider, dependsOn: [computeService] }
 )
