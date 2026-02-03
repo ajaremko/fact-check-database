@@ -48,5 +48,28 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     }
+  },
+  "release": {
+    "releaseTag": {
+      "pattern": "release/{projectName}/{version}"
+    },
+    "docker": {
+      "versionSchemes": {
+        "production": "{currentDate|YYMM.DD}.{env.BUILD_NUMBER}",
+        "dev": "{currentDate|YYMM.DD}.{env.BUILD_NUMBER}-staging-{shortCommitSha}"
+      }
+    },
+    "groups": {
+      "apps": {
+        "projects": ["ingestor"],
+        "projectsRelationship": "independent",
+        "docker": {
+          "skipVersionActions": true
+        },
+        "changelog": {
+          "projectChangelogs": false
+        }
+      }
+    }
   }
 }

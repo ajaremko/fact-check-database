@@ -24,6 +24,50 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Generate build number
+        id: buildnumber
+        uses: onyxmueller/build-tag-number@v1
+        with:
+          token: ${{secrets.github_token}}
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Read stack outputs
+        id: bootstrap
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          cd apps/infra
+
+          # Pull outputs as JSON, then extract the values we need
+          OUT="$(pulumi stack output --json --stack=dev)"
+
+          echo "gcp_project_id=$(echo "$OUT" | jq -r '.gcpProject')" >> "$GITHUB_OUTPUT"
+          echo "wif_provider=$(echo "$OUT" | jq -r '.githubActionIdentityPoolProviderName')" >> "$GITHUB_OUTPUT"
+          echo "service_account_email=$(echo "$OUT" | jq -r '.githubActionServiceAccountEmail')" >> "$GITHUB_OUTPUT"
+          echo "artifact_registry_uri=$(echo "$OUT" | jq -r '.artifactRegistryUri')" >> "$GITHUB_OUTPUT"
+
+      - id: auth
+        name: Setup GCP Credentials
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ steps.bootstrap.outputs.gcp_project_id }}
+          workload_identity_provider: ${{ steps.bootstrap.outputs.wif_provider }}
+          service_account: ${{ steps.bootstrap.outputs.service_account_email }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Set up Gcloud
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          version: '>= 416.0.0'
+          project_id: ${{ steps.bootstrap.outputs.gcp_project_id }}
+          credentials_file_path: ${{ steps.auth.outputs.credentials_file_path }}
+
+      - name: Use GCloud Credentials
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
       - run: npm ci
 
       - run: npx nx run-many -t lint
@@ -31,3 +75,8 @@ jobs:
       - run: npx nx run-many -t build
 
       - run: npx nx run-many -t docker:build
+
+      - run: npx nx release --dockerVersionScheme=dev
+        env:
+          BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_tag_number }}
+          DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
