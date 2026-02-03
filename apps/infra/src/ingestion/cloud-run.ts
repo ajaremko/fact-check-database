@@ -1,9 +1,11 @@
 import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
+
+import { artifactRegistry } from '../core'
 
 import { gcpRegion, gcpProject, ingestorTag } from './config'
 import { provider } from './provider'
 import { cloudRunService, cloudSchedulerService } from './services'
-import { artifactRegistry } from '../core'
 
 const ingestorImage = gcp.artifactregistry.getDockerImageOutput({
   location: artifactRegistry.location,
@@ -29,7 +31,27 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
   { dependsOn: [cloudRunService], provider }
 )
 
-const computeServiceAccount = gcp.compute.getDefaultServiceAccountOutput()
+export const ingestorInvokerServiceAccount = new gcp.serviceaccount.Account(
+  'ingestor-invoker-service-account',
+  {
+    accountId: 'ingestor-invoker-sa',
+    displayName: 'Ingestor Invoker Service Account',
+    description:
+      'Service account for cloud scheduler to use to invoke ingestor job',
+  },
+  { provider }
+)
+
+export const ingestorInvokerServiceAccountRunInvokerIamMember =
+  new gcp.projects.IAMMember(
+    'ingestor-invoker-service-account-run-invoker-iam-member',
+    {
+      project: gcpProject,
+      role: 'roles/run.invoker',
+      member: pulumi.interpolate`serviceAccount:${ingestorInvokerServiceAccount.email}`,
+    },
+    { dependsOn: [ingestorInvokerServiceAccount], provider }
+  )
 
 export const ingestorJobScheduler = new gcp.cloudscheduler.Job(
   'ingestor-job-scheduler',
@@ -44,7 +66,7 @@ export const ingestorJobScheduler = new gcp.cloudscheduler.Job(
           `https://run.googleapis.com/v2/projects/${gcpProject}/locations/${gcpRegion}/jobs/${name}:run`
       ),
       oidcToken: {
-        serviceAccountEmail: computeServiceAccount.email,
+        serviceAccountEmail: ingestorInvokerServiceAccount.email,
       },
     },
   },
