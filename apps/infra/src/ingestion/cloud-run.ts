@@ -11,29 +11,19 @@ const appImage = gcp.artifactregistry.getDockerImageOutput({
   imageName: `apps-ingestor:${ingestorTag}`,
 })
 
-export const ingestorService = new gcp.cloudrunv2.Service(
+export const ingestorJob = new gcp.cloudrunv2.Job(
   'ingestor-service',
   {
     location: gcpRegion,
     template: {
-      containers: [
-        {
-          image: appImage.selfLink,
-        },
-      ],
+      template: {
+        containers: [
+          {
+            image: appImage.selfLink,
+          },
+        ],
+      },
     },
   },
   { dependsOn: [cloudRunService], provider }
-)
-
-// Make the service publicly accessible by granting the 'roles/run.invoker' role to 'allUsers'
-export const iamIngestor = new gcp.cloudrunv2.ServiceIamMember(
-  'ingestor-everyone',
-  {
-    name: ingestorService.name,
-    location: gcpRegion,
-    role: 'roles/run.invoker',
-    member: 'allUsers',
-  },
-  { provider }
 )
