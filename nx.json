@@ -53,6 +53,9 @@
     "releaseTag": {
       "pattern": "release/{projectName}/{version}"
     },
+    "changelog": {
+      "automaticFromRef": true
+    },
     "docker": {
       "versionSchemes": {
         "production": "{env.BUILD_NUMBER}-{currentDate|YYMM.DD}",
@@ -66,9 +69,6 @@
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",
           "skipVersionActions": true
-        },
-        "changelog": {
-          "automatic": false
         }
       }
     }
