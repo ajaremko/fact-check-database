@@ -80,5 +80,5 @@ jobs:
       - name: Build and publish Docker images
         run: npx nx release --dockerVersionScheme=dev --firstRelease --yes
         env:
-          BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_tag_number }}
+          BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
           DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
