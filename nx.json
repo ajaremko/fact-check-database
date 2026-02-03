@@ -55,8 +55,8 @@
     },
     "docker": {
       "versionSchemes": {
-        "production": "{currentDate|YYMM.DD}.{env.BUILD_NUMBER}",
-        "dev": "{currentDate|YYMM.DD}.{env.BUILD_NUMBER}-staging-{shortCommitSha}"
+        "production": "{env.BUILD_NUMBER}-{currentDate|YYMM.DD}",
+        "dev": "{env.BUILD_NUMBER}-{currentDate|YYMM.DD}-dev-{shortCommitSha}"
       }
     },
     "groups": {
