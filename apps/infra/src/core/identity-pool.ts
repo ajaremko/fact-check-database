@@ -7,7 +7,7 @@ import { provider } from './provider'
 export const identityPool = new gcp.iam.WorkloadIdentityPool(
   `${tag}-shared-identity-pool`,
   {
-    workloadIdentityPoolId: 'shared-identity-pool-02',
+    workloadIdentityPoolId: 'shared-identity-pool-03',
     displayName: 'Shared Identity Pool',
     description: 'Identity pool for shared services',
   },
