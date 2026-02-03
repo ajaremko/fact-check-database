@@ -86,3 +86,4 @@ jobs:
         env:
           BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
           DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
+          NX_DOCKER_IMAGE_REF: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
