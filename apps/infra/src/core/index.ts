@@ -27,6 +27,8 @@ export const artifactRegistryBaseUri = artifactRegistryUri.apply(
   (uri) => uri.split('/')[0]
 )
 
+export { artifactRegistry } from './artifact-registry'
+
 import { rawArchiveBucket } from './storage'
 
 export const rawArchiveBucketName = rawArchiveBucket.name

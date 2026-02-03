@@ -1,5 +1,5 @@
-import { helloService } from './cloud-run'
+import { ingestorService } from './cloud-run'
 
-export const helloServiceUrl = helloService.uri
+export const helloServiceUrl = ingestorService.uri
 
 export { gcpProject, ingestionLabels } from './config'

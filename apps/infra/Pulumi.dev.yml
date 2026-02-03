@@ -10,3 +10,4 @@ config:
   ingestion:project: news-research-dev
   ingestion:region: us-central1
   ingestion:tag: ingestion
+  ingestion:ingestorTag: 23-02.03.26-dev-ee7c5b2
