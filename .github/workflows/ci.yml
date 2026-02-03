@@ -27,3 +27,7 @@ jobs:
       - run: npm ci
 
       - run: npx nx run-many -t lint
+
+      - run: npx nx run-many -t build
+
+      - run: npx nx run-many -t docker:build
