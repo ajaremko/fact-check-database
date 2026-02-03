@@ -10,7 +10,8 @@ permissions:
   id-token: write
 
 jobs:
-  main:
+  ci:
+    name: Lint and Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,11 +26,39 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - run: npm ci
+
+      - run: npx nx run-many -t lint
+
+      - run: npx nx run-many -t build
+
+      - run: npx nx run-many -t docker:build
+
+  release:
+    name: Release Dev Images
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
       - name: Generate build number
         id: buildnumber
         uses: onyxmueller/build-tag-number@v1
         with:
           token: ${{secrets.github_token}}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - name: Setup Node, cache dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
       - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -66,23 +95,19 @@ jobs:
           project_id: ${{ steps.bootstrap.outputs.gcp_project_id }}
           credentials_file_path: ${{ steps.auth.outputs.credentials_file_path }}
 
-      - name: Use GCloud Credentials
-        run: gcloud auth configure-docker us-central1-docker.pkg.dev
-
-      - run: npm ci
-
-      - run: npx nx run-many -t lint
-
-      - run: npx nx run-many -t build
-
-      - run: npx nx run-many -t docker:build
-
-      - name: Build and publish Docker images
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git fetch --tags # fetch existing tags
-          npx nx release --dockerVersionScheme=dev --yes
+      - name: Build and release Docker images
         env:
           BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
           DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
+        run: |
+          # Configure docker auth for Artifact Registry
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+
+          # Configure git identity for nx release
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git fetch --tags # fetch existing tags
+
+          # Build and publish dev images
+          npm ci
+          npx nx release --dockerVersionScheme=dev --yes
