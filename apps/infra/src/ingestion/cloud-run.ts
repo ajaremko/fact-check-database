@@ -3,9 +3,15 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { artifactRegistry } from '../core'
 
-import { gcpRegion, gcpProject, ingestorTag, tag } from './config'
-import { provider } from './provider'
+import {
+  gcpRegion,
+  gcpProject,
+  ingestorTag,
+  ingestorSchedule,
+  tag,
+} from './config'
 import { cloudRunService, cloudSchedulerService } from './services'
+import { provider } from './provider'
 
 // If an ingestor image is specified in config, use that. Otherwise, fall back to a public sample image.
 function getIngestorImageUri(tag?: string): pulumi.Output<string> {
@@ -46,44 +52,66 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
   { dependsOn: [cloudRunService], provider }
 )
 
-export const ingestorInvokerServiceAccount = new gcp.serviceaccount.Account(
-  `${tag}-ingestor-invoker-service-account`,
+const invokerServiceAccount = new gcp.serviceaccount.Account(
+  `${tag}-scheduler-invoker-sa`,
   {
-    accountId: 'ingestor-invoker-sa',
-    displayName: 'Ingestor Invoker Service Account',
-    description:
-      'Service account for cloud scheduler to use to invoke ingestor job',
+    accountId: `${tag}-scheduler-invoker`,
+    displayName: 'Cloud Scheduler OIDC Invoker',
   },
   { provider }
 )
 
-export const ingestorInvokerServiceAccountRunInvokerIamMember =
-  new gcp.projects.IAMMember(
-    `${tag}-ingestor-invoker-service-account-run-invoker-iam-member`,
-    {
-      project: gcpProject,
-      role: 'roles/run.invoker',
-      member: pulumi.interpolate`serviceAccount:${ingestorInvokerServiceAccount.email}`,
-    },
-    { dependsOn: [ingestorInvokerServiceAccount], provider }
-  )
+const invokerCanRunJob = new gcp.cloudrunv2.JobIamMember(
+  `${tag}-invoker-can-run-job`,
+  {
+    name: ingestorJob.name,
+    location: gcpRegion,
+    role: 'roles/run.invoker',
+    member: pulumi.interpolate`serviceAccount:${invokerServiceAccount.email}`,
+  },
+  { provider }
+)
+
+/**
+ * Allow Cloud Scheduler Service Agent to create OIDC tokens for the invoker service account.
+ * This is required for Cloud Scheduler to authenticate when calling the Cloud Run job.
+ */
+const projectInfo = gcp.organizations.getProjectOutput(
+  { projectId: gcpProject },
+  { provider }
+)
+
+const schedulerServiceAgentEmail = projectInfo.number.apply(
+  (n) => `service-${n}@gcp-sa-cloudscheduler.iam.gserviceaccount.com`
+)
+
+const schedulerTokenCreator = new gcp.serviceaccount.IAMMember(
+  `${tag}-scheduler-token-creator`,
+  {
+    serviceAccountId: invokerServiceAccount.name, // or invokerServiceAccount.id depending on provider versions
+    role: 'roles/iam.serviceAccountTokenCreator',
+    member: pulumi.interpolate`serviceAccount:${schedulerServiceAgentEmail}`,
+  },
+  { provider }
+)
 
 export const ingestorJobScheduler = new gcp.cloudscheduler.Job(
   `${tag}-ingestor-job-scheduler`,
   {
-    description: 'Trigger Ingestor Cloud Run Job every 15 minutes',
-    schedule: '*/15 * * * *',
+    description: 'Trigger Ingestor Cloud RunJob on configured schedule',
+    schedule: ingestorSchedule,
     timeZone: 'UTC',
     httpTarget: {
       httpMethod: 'POST',
-      uri: ingestorJob.name.apply(
-        (name) =>
-          `https://run.googleapis.com/v2/projects/${gcpProject}/locations/${gcpRegion}/jobs/${name}:run`
-      ),
-      oidcToken: {
-        serviceAccountEmail: ingestorInvokerServiceAccount.email,
+      uri: pulumi.interpolate`https://${gcpRegion}-run.googleapis.com/v2/projects/${gcpProject}/locations/${gcpRegion}/jobs/${ingestorJob.name}:run`,
+      oauthToken: {
+        serviceAccountEmail: invokerServiceAccount.email,
+        scope: 'https://www.googleapis.com/auth/cloud-platform',
       },
     },
   },
-  { provider, dependsOn: [cloudSchedulerService] }
+  {
+    provider,
+    dependsOn: [cloudSchedulerService, invokerCanRunJob, schedulerTokenCreator],
+  }
 )
