@@ -9,4 +9,4 @@ config:
   ingestion:project: news-research-dev
   ingestion:region: us-central1
   ingestion:ingestorTag: 33-02.03.26-dev-19457fd
-  ingestion:ingestorSchedule: '*/2 * * * *'
+  ingestion:ingestorSchedule: '0 */4 * * *'
