@@ -8,21 +8,25 @@ import { provider } from './provider'
 import { cloudRunService, cloudSchedulerService } from './services'
 
 // If an ingestor image is specified in config, use that. Otherwise, fall back to a public sample image.
-const containers = ingestorTag
-  ? [
-      {
-        image: gcp.artifactregistry.getDockerImageOutput({
-          location: artifactRegistry.location,
-          repositoryId: artifactRegistry.repositoryId,
-          imageName: `apps-ingestor:${ingestorTag}`,
-        }).selfLink,
-      },
-    ]
-  : [
-      {
-        image: 'gcr.io/google-samples/hello-app:1.0',
-      },
-    ]
+function getIngestorImageUri(tag?: string): pulumi.Output<string> {
+  if (!tag) {
+    console.warn(
+      'No ingestorTag specified in config, using public sample image.'
+    )
+    return pulumi.output('gcr.io/google-samples/hello-app:1.0')
+  }
+
+  const image = gcp.artifactregistry.getDockerImageOutput(
+    {
+      location: artifactRegistry.location,
+      repositoryId: artifactRegistry.repositoryId,
+      imageName: `apps-ingestor:${tag}`,
+    },
+    { provider }
+  )
+
+  return image.selfLink
+}
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
   `${tag}-ingestor-job`,
@@ -31,7 +35,11 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
     deletionProtection: false,
     template: {
       template: {
-        containers,
+        containers: [
+          {
+            image: getIngestorImageUri(ingestorTag),
+          },
+        ],
       },
     },
   },
