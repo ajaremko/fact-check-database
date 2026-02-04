@@ -31,5 +31,10 @@
   "workspaces": [
     "packages/*",
     "apps/*"
-  ]
+  ],
+  "dependencies": {
+    "@effect/platform-node": "^0.104.1",
+    "@google-cloud/pubsub": "^5.2.2",
+    "effect": "^3.19.15"
+  }
 }
