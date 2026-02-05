@@ -21,24 +21,16 @@
           "tsConfig": "apps/ingestor/tsconfig.app.json",
           "assets": [
             "apps/ingestor/src/assets"
-          ],
-          "esbuildOptions": {
-            "sourcemap": true,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
+          ]
         },
         "configurations": {
-          "development": {},
+          "development": {
+            "esbuildConfig": "apps/ingestor/esbuild.config.js"
+          },
           "production": {
-            "generateLockfile": true,
-            "esbuildOptions": {
-              "sourcemap": false,
-              "outExtension": {
-                ".js": ".js"
-              }
-            }
+            "bundle": true,
+            "esbuildConfig": "apps/ingestor/esbuild.config.prod.js",
+            "generateLockfile": true
           }
         }
       },
