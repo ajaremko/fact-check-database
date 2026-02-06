@@ -3,7 +3,7 @@ import { Context, Data, Effect } from 'effect'
 import type { FetchResult } from '../domain/FetchResult'
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
-  readonly raw: unknown
+  readonly cause: unknown
 }> {}
 
 export class Fetcher extends Context.Tag('Fetcher')<

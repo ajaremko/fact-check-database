@@ -4,7 +4,7 @@ import type { ArchivePointer } from '../domain/Observation'
 import { FetchResult } from '../domain/FetchResult'
 
 export class ArchiverError extends Data.TaggedError('ArchiverError')<{
-  readonly raw: unknown
+  readonly cause: unknown
 }> {}
 
 export type WriteRawOpts = {

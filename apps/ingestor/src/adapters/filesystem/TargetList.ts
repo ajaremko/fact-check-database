@@ -22,18 +22,11 @@ const decodeSources = pipe(
 export const make = Effect.gen(function* () {
   const path = yield* Config.string('TARGET_LIST_PATH')
   const fs = yield* FileSystem.FileSystem
-  console.log('path', path)
 
   return TargetList.of({
-    read: Effect.gen(function* () {
-      const buf = yield* fs.readFile(path)
-      const targets = yield* decodeSources(buf)
-      return targets
-    }).pipe(
-      Effect.mapError((raw) => {
-        console.log('raw', raw)
-        return new TargetListError({ raw })
-      })
+    read: fs.readFile(path).pipe(
+      Effect.andThen(decodeSources),
+      Effect.mapError((cause) => new TargetListError({ cause }))
     ),
   })
 })

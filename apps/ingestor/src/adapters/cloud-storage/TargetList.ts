@@ -31,10 +31,10 @@ export const make = Effect.gen(function* () {
     read: Effect.gen(function* () {
       const [buf] = yield* Effect.tryPromise({
         try: () => file.download(),
-        catch: (raw) => new TargetListError({ raw }),
+        catch: (cause) => new TargetListError({ cause }),
       })
       const targets = yield* decodeSources(buf).pipe(
-        Effect.mapError((raw) => new TargetListError({ raw }))
+        Effect.mapError((cause) => new TargetListError({ cause }))
       )
       return targets
     }),

@@ -24,11 +24,11 @@ export const make = Effect.gen(function* () {
       Effect.gen(function* () {
         const path = `${outputDir}/${event.runId}_${event.source.name}.json`
         const data = yield* encodeMessage(event).pipe(
-          Effect.mapError((raw) => new PublisherError({ raw }))
+          Effect.mapError((cause) => new PublisherError({ cause }))
         )
         yield* fs
           .writeFile(path, data)
-          .pipe(Effect.mapError((raw) => new PublisherError({ raw })))
+          .pipe(Effect.mapError((cause) => new PublisherError({ cause })))
       }),
   })
 })

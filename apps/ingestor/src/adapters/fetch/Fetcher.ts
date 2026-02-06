@@ -21,7 +21,7 @@ function handleError(error: HttpClientError.HttpClientError) {
           headers: error.response.headers,
           body: yield* error.response.arrayBuffer.pipe(
             Effect.map((buffer) => new Uint8Array(buffer)),
-            Effect.mapError((raw) => new FetcherError({ raw }))
+            Effect.mapError((cause) => new FetcherError({ cause }))
           ),
           error: error.message,
         })
@@ -36,7 +36,7 @@ function handleSuccess(response: HttpClientResponse.HttpClientResponse) {
       headers: response.headers,
       body: yield* response.arrayBuffer.pipe(
         Effect.map((buffer) => new Uint8Array(buffer)),
-        Effect.mapError((raw) => new FetcherError({ raw }))
+        Effect.mapError((cause) => new FetcherError({ cause }))
       ),
       error: null,
     })

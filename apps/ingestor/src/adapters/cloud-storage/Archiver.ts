@@ -23,12 +23,12 @@ export const make = Effect.gen(function* () {
       Effect.gen(function* () {
         const path = `${opts.runId}_${opts.sourceName}.json`
         const data = yield* encodeData(opts).pipe(
-          Effect.mapError((raw) => new ArchiverError({ raw }))
+          Effect.mapError((cause) => new ArchiverError({ cause }))
         )
         const file = bucket.file(path)
         yield* Effect.tryPromise({
           try: () => file.save(data),
-          catch: (raw) => new ArchiverError({ raw }),
+          catch: (cause) => new ArchiverError({ cause }),
         })
         return {
           object: file.name,

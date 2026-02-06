@@ -21,11 +21,11 @@ export const make = Effect.gen(function* () {
     publish: (event) =>
       Effect.gen(function* () {
         const data = yield* encodeMessage(event).pipe(
-          Effect.mapError((raw) => new PublisherError({ raw }))
+          Effect.mapError((cause) => new PublisherError({ cause }))
         )
         yield* Effect.tryPromise({
           try: () => topic.publishMessage({ data }),
-          catch: (raw) => new PublisherError({ raw }),
+          catch: (cause) => new PublisherError({ cause }),
         })
       }),
   })

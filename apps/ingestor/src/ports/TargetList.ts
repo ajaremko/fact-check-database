@@ -3,7 +3,7 @@ import { Context, Data, Effect } from 'effect'
 import type { SourceTarget } from '../domain/SourceTarget'
 
 export class TargetListError extends Data.TaggedError('TargetListError')<{
-  readonly raw: unknown
+  readonly cause: unknown
 }> {}
 
 export class TargetList extends Context.Tag('TargetList')<
