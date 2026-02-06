@@ -1,4 +1,7 @@
-// patches/abort-controller/index.js
+// Allows for the following import styles in Node 18+ environments with native AbortController support:
+// require("abort-controller")
+// require("abort-controller").AbortController
+// import AbortController from "abort-controller"
 
 const AbortControllerCtor = globalThis.AbortController
 const AbortSignalCtor = globalThis.AbortSignal
