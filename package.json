@@ -45,8 +45,5 @@
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
     "effect": "^3.19.15"
-  },
-  "overrides": {
-    "abort-controller": "file:patches/abort-controller/abort-controller-3.0.0.tgz"
   }
 }
