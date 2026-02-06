@@ -1,10 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
@@ -59,13 +56,8 @@
   "targetDefaults": {
     "@nx/esbuild:esbuild": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "release": {
@@ -77,15 +69,13 @@
     },
     "docker": {
       "versionSchemes": {
-        "production": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}",
-        "dev": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}-dev-{shortCommitSha}"
+        "production": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}-{shortCommitSha}",
+        "dev": "dev-{env.BUILD_NUMBER}"
       }
     },
     "groups": {
       "apps": {
-        "projects": [
-          "ingestor"
-        ],
+        "projects": ["ingestor"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",
