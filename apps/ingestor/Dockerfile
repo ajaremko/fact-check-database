@@ -4,7 +4,7 @@
 #
 # Run the container with `nx docker:run @news-research/ingestor -p 3000:3000`.
 #
-FROM docker.io/node:lts-alpine
+FROM docker.io/node:20-slim
 
 ENV HOST=0.0.0.0
 ENV PORT=3000
