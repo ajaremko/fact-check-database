@@ -46,6 +46,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
     deletionProtection: false,
     template: {
       template: {
+        maxRetries: 0,
         containers: [
           {
             image: getIngestorImageUri(ingestorTag),
@@ -69,6 +70,14 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
               {
                 name: 'MAX_CONCURRENCY',
                 value: '10',
+              },
+              {
+                name: 'SUCCESS_THRESHOLD',
+                value: '0.8',
+              },
+              {
+                name: 'LOG_LEVEL',
+                value: 'info',
               },
             ],
           },
