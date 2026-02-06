@@ -1,7 +1,17 @@
-import { Config, Effect, Layer } from 'effect'
+import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { PubSub } from '@google-cloud/pubsub'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
+import { ObservationFetchedSchema } from '../../domain/Observation'
+import { parseBuffer, parseJson } from '../../utils/schema'
+
+// ObservationFetched -> JSON -> Buffer
+const encodeMessage = pipe(
+  ObservationFetchedSchema,
+  parseJson(),
+  parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
 
 export const make = Effect.gen(function* () {
   const topicName = yield* Config.string('PUBSUB_TOPIC_NAME')
@@ -9,13 +19,14 @@ export const make = Effect.gen(function* () {
   const topic = client.topic(topicName)
   return Publisher.of({
     publish: (event) =>
-      Effect.tryPromise({
-        try: () => {
-          const data = JSON.stringify(event)
-          const dataBuffer = Buffer.from(data)
-          return topic.publish(dataBuffer)
-        },
-        catch: (error) => new PublisherError({ raw: error }),
+      Effect.gen(function* () {
+        const data = yield* encodeMessage(event).pipe(
+          Effect.mapError((raw) => new PublisherError({ raw }))
+        )
+        yield* Effect.tryPromise({
+          try: () => topic.publishMessage({ data }),
+          catch: (raw) => new PublisherError({ raw }),
+        })
       }),
   })
 })
