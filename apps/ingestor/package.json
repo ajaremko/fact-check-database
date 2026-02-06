@@ -29,7 +29,9 @@
           },
           "production": {
             "esbuildConfig": "apps/ingestor/esbuild.config.prod.js",
-            "generateLockfile": true
+            "bundle": true,
+            "thirdParty": true,
+            "generatePackageJson": false
           }
         }
       },
