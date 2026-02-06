@@ -29,7 +29,6 @@
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-containers",
         "nrwl.angular-console",
-        "dotenv.dotenv-vscode",
         "github.vscode-github-actions"
       ],
       "settings": {
