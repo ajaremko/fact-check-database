@@ -1,6 +1,5 @@
 import { Effect } from 'effect'
-import { FetchHttpClient } from '@effect/platform'
-import { NodeFileSystem } from '@effect/platform-node'
+import { NodeFileSystem, NodeHttpClient } from '@effect/platform-node'
 
 import * as FilesystemPublisher from '../adapters/filesystem/Publisher'
 import * as FilesystemArchiver from '../adapters/filesystem/Archiver'
@@ -14,5 +13,5 @@ export const main = Program.pipe(
   Effect.provide(FetchFetcher.layer),
   Effect.provide(FilesystemTargetList.layer),
   Effect.provide(NodeFileSystem.layer),
-  Effect.provide(FetchHttpClient.layer)
+  Effect.provide(NodeHttpClient.layer)
 )
