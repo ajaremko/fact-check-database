@@ -1,0 +1,4 @@
+collection,name,url
+weather,weather.gov,https://api.weather.gov/alerts?limit=500
+weather,weather.gov2,https://api.weather.gov/alerts?limit=500
+weather,weather.gov3,https://api.weather.gov/alerts?limit=500

@@ -16,7 +16,7 @@ import {
 } from './config'
 import { cloudRunService, cloudSchedulerService } from './services'
 import { provider } from './provider'
-import { assetsBucket } from './storage'
+import { assetsBucket, targetsObject } from './storage'
 
 // If an ingestor image is specified in config, use that. Otherwise, fall back to a public sample image.
 function getIngestorImageUri(tag?: string): pulumi.Output<string> {
@@ -76,7 +76,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
       },
     },
   },
-  { dependsOn: [cloudRunService], provider }
+  { dependsOn: [cloudRunService, targetsObject], provider }
 )
 
 const invokerServiceAccount = new gcp.serviceaccount.Account(
