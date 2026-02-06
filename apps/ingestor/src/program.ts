@@ -37,10 +37,11 @@ function processTargets(
 ) {
   return Effect.gen(function* () {
     const targetList = yield* TargetList
-    const targets = yield* targetList.read
     const archive = yield* Archiver
     const fetcher = yield* Fetcher
     const publisher = yield* Publisher
+
+    const targets = yield* targetList.read
 
     yield* Effect.logInfo(`Processing ${targets.length} targets`)
 
