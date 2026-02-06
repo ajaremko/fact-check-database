@@ -28,7 +28,6 @@
             "esbuildConfig": "apps/ingestor/esbuild.config.js"
           },
           "production": {
-            "bundle": true,
             "esbuildConfig": "apps/ingestor/esbuild.config.prod.js",
             "generateLockfile": true
           }
