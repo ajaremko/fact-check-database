@@ -1,7 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { artifactRegistry } from '../core'
+import {
+  artifactRegistry,
+  rawArchiveBucketName,
+  observationsTopicName,
+} from '../core'
 
 import {
   gcpRegion,
@@ -12,6 +16,7 @@ import {
 } from './config'
 import { cloudRunService, cloudSchedulerService } from './services'
 import { provider } from './provider'
+import { assetsBucket } from './storage'
 
 // If an ingestor image is specified in config, use that. Otherwise, fall back to a public sample image.
 function getIngestorImageUri(tag?: string): pulumi.Output<string> {
@@ -44,6 +49,28 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
         containers: [
           {
             image: getIngestorImageUri(ingestorTag),
+            envs: [
+              {
+                name: 'TARGET_LIST_BUCKET_NAME',
+                value: assetsBucket.name,
+              },
+              {
+                name: 'TARGET_LIST_URI',
+                value: 'target-list.csv',
+              },
+              {
+                name: 'PUBSUB_TOPIC_NAME',
+                value: observationsTopicName,
+              },
+              {
+                name: 'ARCHIVER_BUCKET_NAME',
+                value: rawArchiveBucketName,
+              },
+              {
+                name: 'MAX_CONCURRENCY',
+                value: '10',
+              },
+            ],
           },
         ],
       },

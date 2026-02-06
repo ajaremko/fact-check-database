@@ -18,3 +18,11 @@ export const cloudSchedulerService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const storageService = new gcp.projects.Service(
+  `${tag}-storage-service`,
+  {
+    service: 'storage.googleapis.com',
+  },
+  { provider }
+)
