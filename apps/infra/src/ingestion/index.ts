@@ -1,5 +1,2 @@
-import { ingestorJob } from './cloud-run'
-
-export const ingestorJobName = ingestorJob.name
-
+export { ingestorJobName, ingestorJobSchedulerName } from './ingestor'
 export { gcpProject, ingestionLabels } from './config'
