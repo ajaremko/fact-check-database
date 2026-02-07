@@ -134,3 +134,9 @@ In this platform, Docker is treated as an implementation detail, not an orchestr
 This keeps operational complexity low while ensuring that services behave consistently across environments.
 
 This repository also offers a containerized development environment defined in the `.devcontainer` directory. Using a containerized development environment ensures repoducibility of development dependency installation and configuation.
+
+## Known Issues & Mitigations
+
+This project intentionally documents known ecosystem-level issues and the mitigations applied to ensure reliable operation in production-like environments.
+
+- [Abort Controller Patch](./patches/abort-controller/README.md)
