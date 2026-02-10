@@ -5,3 +5,7 @@
 ### Publishing a release
 
 `nx release --dockerVersionScheme=production --yes --firstRelease`
+
+### Scaffold a new node lib
+
+`nx g @nx/node:lib packages/cloud-storage --bundler=none --linter=eslint --unitTestRunner=none --buildable=false --publishable=false`

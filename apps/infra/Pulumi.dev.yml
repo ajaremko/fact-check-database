@@ -8,5 +8,5 @@ config:
   core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:ingestorTag: dev-46
+  ingestion:ingestorTag: dev-49
   ingestion:ingestorSchedule: '0 */4 * * *'
