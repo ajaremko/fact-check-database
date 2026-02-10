@@ -1,5 +1,6 @@
-import { Config, Effect, Layer, pipe, Schema } from 'effect'
-import { Storage } from '@google-cloud/storage'
+import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
+
+import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 
 import { SourceTargetSchema } from '../../domain/SourceTarget'
 import { TargetList, TargetListError } from '../../ports/TargetList'
@@ -20,25 +21,22 @@ const decodeSources = pipe(
 )
 
 export const make = Effect.gen(function* () {
-  const bucketName = yield* Config.string('TARGET_LIST_BUCKET_NAME')
   const uri = yield* Config.string('TARGET_LIST_URI')
-
-  const client = new Storage()
-  const bucket = client.bucket(bucketName)
-  const file = bucket.file(uri)
+  const { bucket } = yield* StorageBucket.StorageBucket
 
   return TargetList.of({
-    read: Effect.gen(function* () {
-      const [buf] = yield* Effect.tryPromise({
-        try: () => file.download(),
-        catch: (cause) => new TargetListError({ cause }),
-      })
-      const targets = yield* decodeSources(buf).pipe(
-        Effect.mapError((cause) => new TargetListError({ cause }))
-      )
-      return targets
-    }),
+    read: StorageBucket.downloadFile(uri).pipe(
+      Effect.andThen(([buf]) => decodeSources(buf)),
+      Effect.mapError((cause) => new TargetListError({ cause })),
+      Effect.provideService(StorageBucket.StorageBucket, { bucket })
+    ),
   })
 })
 
-export const layer = Layer.effect(TargetList, make)
+export const layer: Layer.Layer<
+  TargetList,
+  ConfigError.ConfigError,
+  StorageClient.StorageClient
+> = Layer.effect(TargetList, make).pipe(
+  Layer.provide(StorageBucket.layer(Config.string('TARGET_LIST_BUCKET_NAME')))
+)
