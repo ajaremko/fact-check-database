@@ -35,7 +35,7 @@ export class PubsubTopicIOError extends Data.TaggedError('PubsubTopicIOError')<{
   readonly cause: unknown
 }> {}
 
-export function publish(message: MessageOptions) {
+export function publishMessage(message: MessageOptions) {
   return PubsubTopic.pipe(
     Effect.andThen(({ topic }) =>
       Effect.tryPromise({

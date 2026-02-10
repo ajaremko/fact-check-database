@@ -1,6 +1,7 @@
 import { Effect } from 'effect'
 import { NodeHttpClient } from '@effect/platform-node'
 
+import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
 
 import * as CloudPubsubPublisher from '../adapters/cloud-pubsub/Publisher'
@@ -13,6 +14,7 @@ export const main = Program.pipe(
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageArchiver.layer),
   Effect.provide(CloudStorageTargetList.layer),
+  Effect.provide(PubsubClient.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(HttpClientFetcher.layer),
   Effect.provide(NodeHttpClient.layer)

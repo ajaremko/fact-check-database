@@ -1,5 +1,6 @@
-import { Config, Effect, Layer, pipe, Schema } from 'effect'
-import { PubSub } from '@google-cloud/pubsub'
+import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
+
+import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
 import { ObservationFetchedSchema } from '../../domain/Observation'
@@ -13,22 +14,24 @@ const encodeMessage = pipe(
   Schema.encode
 )
 
+// const topicName = yield* Config.string('PUBSUB_TOPIC_NAME')
+
 export const make = Effect.gen(function* () {
-  const topicName = yield* Config.string('PUBSUB_TOPIC_NAME')
-  const client = new PubSub()
-  const topic = client.topic(topicName)
+  const { topic } = yield* PubsubTopic.PubsubTopic
   return Publisher.of({
     publish: (event) =>
-      Effect.gen(function* () {
-        const data = yield* encodeMessage(event).pipe(
-          Effect.mapError((cause) => new PublisherError({ cause }))
-        )
-        yield* Effect.tryPromise({
-          try: () => topic.publishMessage({ data }),
-          catch: (cause) => new PublisherError({ cause }),
-        })
-      }),
+      encodeMessage(event).pipe(
+        Effect.andThen((data) => PubsubTopic.publishMessage({ data })),
+        Effect.mapError((cause) => new PublisherError({ cause })),
+        Effect.provideService(PubsubTopic.PubsubTopic, { topic })
+      ),
   })
 })
 
-export const layer = Layer.effect(Publisher, make)
+export const layer: Layer.Layer<
+  Publisher,
+  ConfigError.ConfigError,
+  PubsubClient.PubsubClient
+> = Layer.effect(Publisher, make).pipe(
+  Layer.provide(PubsubTopic.layer(Config.string('PUBSUB_TOPIC_NAME')))
+)
