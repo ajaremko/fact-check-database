@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { Archiver, ArchiverError } from '../../ports/Archive'
+import { Archiver, ArchiverError } from '../../ports/Archiver'
 import { parseBuffer, parseJson } from '../../utils/schema'
 
 // Object -> JSON -> Buffer

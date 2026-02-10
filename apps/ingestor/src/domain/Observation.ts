@@ -3,7 +3,7 @@ import { Schema } from 'effect'
 export const ArchivePointerSchema = Schema.Struct({
   bucket: Schema.String,
   object: Schema.String,
-  generation: Schema.optional(Schema.String),
+  generation: Schema.optional(Schema.Number),
 })
 
 export type ArchivePointer = Schema.Schema.Type<typeof ArchivePointerSchema>

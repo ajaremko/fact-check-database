@@ -1,12 +1,12 @@
 import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
 
-import { Archiver } from './ports/Archive'
+import { Archiver } from './ports/Archiver'
 import { Fetcher } from './ports/Fetcher'
 import { Publisher } from './ports/Publisher'
 import { TargetList } from './ports/TargetList'
 import { SourceTarget } from './domain/SourceTarget'
 import { createObservationFetched } from './domain/createObservationFetched'
-import { isResponse } from './domain/FetchResult'
+import { normalizeFetchAttempt } from './domain/normalize'
 
 const readConfig = Effect.gen(function* () {
   const startedAt = yield* Clock.currentTimeMillis
@@ -53,30 +53,20 @@ function processTargets(
 
         const result = yield* fetcher.fetch(source.url)
 
-        const pointer = yield* archive.archive({
+        const attempt = normalizeFetchAttempt({
           runId,
           sourceName: source.name,
+          sourceCollection: source.collection,
           url: source.url,
+          finalUrl: undefined,
           fetchedAt,
           result,
         })
 
-        if (isResponse(result)) {
-          const event = createObservationFetched({
-            runId,
-            url: source.url,
-            sourceName: source.name,
-            sourceCollection: source.collection,
-            fetchedAt,
-            status: result.status,
-            headers: result.headers,
-            body: result.body,
-            archive: pointer,
-            error: result.error ?? undefined,
-          })
+        const pointer = yield* archive.archive(attempt)
+        const event = createObservationFetched({ attempt, archive: pointer })
 
-          yield* publisher.publish(event)
-        }
+        yield* publisher.publish(event)
       }).pipe(
         Effect.tapError(Effect.logError),
         Effect.annotateLogs({

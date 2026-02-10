@@ -7,7 +7,7 @@ export class NoResponse extends Schema.TaggedClass<NoResponse>('NoResponse')(
   }
 ) {}
 
-export class Response extends Schema.TaggedClass<Response>('NoResponse')(
+export class Response extends Schema.TaggedClass<Response>('Response')(
   'Response',
   {
     status: Schema.Number,
