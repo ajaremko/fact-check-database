@@ -1,22 +1,23 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
+import { NodeCsv } from '@news-research/node-csv'
+import { Node } from '@news-research/node'
 
 import { SourceTargetSchema } from '../../domain/SourceTarget'
 import { TargetList, TargetListError } from '../../ports/TargetList'
-import { parseBuffer, parseCsv } from '../../utils/schema'
 
 // SourceTarget[] -> Csv -> Buffer
 const decodeSources = pipe(
   SourceTargetSchema,
-  parseCsv({
+  NodeCsv.parseCsv({
     parse: {
       columns: true,
       skip_empty_lines: true,
     },
     stringify: {},
   }),
-  parseBuffer({ encoding: 'utf-8' }),
+  Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
 )
 

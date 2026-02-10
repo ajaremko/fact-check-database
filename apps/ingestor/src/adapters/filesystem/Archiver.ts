@@ -1,14 +1,15 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
+import { Node } from '@news-research/node'
+
 import { Archiver, ArchiverError } from '../../ports/Archiver'
-import { parseBuffer, parseJson } from '../../utils/schema'
 
 // Object -> JSON -> Buffer
 const encodeData = pipe(
   Schema.Object,
-  parseJson(),
-  parseBuffer({ encoding: 'utf-8' }),
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
 

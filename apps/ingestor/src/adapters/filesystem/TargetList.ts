@@ -1,21 +1,23 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
+import { NodeCsv } from '@news-research/node-csv'
+import { Node } from '@news-research/node'
+
 import { SourceTargetSchema } from '../../domain/SourceTarget'
 import { TargetList, TargetListError } from '../../ports/TargetList'
-import { parseUint8Array, parseCsv } from '../../utils/schema'
 
 // SourceTarget[] -> Csv -> Uint8Array
 const decodeSources = pipe(
   SourceTargetSchema,
-  parseCsv({
+  NodeCsv.parseCsv({
     parse: {
       columns: true,
       skip_empty_lines: true,
     },
     stringify: {},
   }),
-  parseUint8Array({ encoding: 'utf-8' }),
+  Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
 

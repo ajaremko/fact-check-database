@@ -7,6 +7,7 @@ import {
   FilePointer,
 } from '@news-research/contracts'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
+import { Node } from '@news-research/node'
 
 import type {
   FetchFailure,
@@ -15,12 +16,11 @@ import type {
 } from '../../domain/FetchAttempt'
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 import type { ArchivePointer } from '../../domain/Observation'
-import { parseBuffer, parseJson } from '../../utils/schema'
 
 const encodeDataFetched = pipe(
   DataFetchedSchema,
-  parseJson(),
-  parseBuffer({ encoding: 'utf-8' }),
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
 
@@ -53,8 +53,8 @@ function createDataFetched(attempt: FetchSuccess, pointer: FilePointer) {
 
 const encodeNoResponse = pipe(
   NoResponseSchema,
-  parseJson(),
-  parseBuffer({ encoding: 'utf-8' }),
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
 

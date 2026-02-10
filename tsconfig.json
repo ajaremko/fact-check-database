@@ -17,6 +17,12 @@
     },
     {
       "path": "./packages/cloud-pubsub"
+    },
+    {
+      "path": "./packages/node-csv"
+    },
+    {
+      "path": "./packages/node"
     }
   ]
 }
