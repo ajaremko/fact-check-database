@@ -17,14 +17,14 @@ import { targetsObject } from './storage'
 const ingestorServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-ingestion-sa`,
   {
-    accountId: `${tag}-ingestion`,
+    accountId: `${tag}-ingestor`,
     displayName: 'Ingestor Job Service Account',
   },
   { provider }
 )
 
 export const ingestorAssetBucketViewer = new gcp.storage.BucketIAMMember(
-  `${tag}-invoker-can-run-job`,
+  `${tag}-ingestor-asset-bucket-viewer`,
   {
     bucket: assetsBucket.name,
     role: 'roles/storage.objectViewer',
@@ -34,7 +34,7 @@ export const ingestorAssetBucketViewer = new gcp.storage.BucketIAMMember(
 )
 
 export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
-  `${tag}-invoker-can-run-job`,
+  `${tag}-ingestor-raw-archive-bucket-creator`,
   {
     bucket: rawArchiveBucketName,
     role: 'roles/storage.objectCreator',
@@ -44,7 +44,7 @@ export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
 )
 
 export const ingestorObservationsTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-invoker-can-run-job`,
+  `${tag}-ingestor-observations-topic-publisher`,
   {
     topic: observationsTopicName,
     role: 'roles/pubsub.publisher',
