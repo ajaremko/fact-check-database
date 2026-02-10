@@ -11,7 +11,7 @@ const invokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-scheduler-invoker-sa`,
   {
     accountId: `${tag}-scheduler-invoker`,
-    displayName: 'Cloud Scheduler OIDC Invoker',
+    displayName: 'Cloud Scheduler Invoker',
   },
   { provider }
 )

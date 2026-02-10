@@ -14,6 +14,45 @@ import { assetsBucket } from '../storage'
 
 import { targetsObject } from './storage'
 
+const ingestorServiceAccount = new gcp.serviceaccount.Account(
+  `${tag}-ingestion-sa`,
+  {
+    accountId: `${tag}-ingestion`,
+    displayName: 'Ingestor Job Service Account',
+  },
+  { provider }
+)
+
+export const ingestorAssetBucketViewer = new gcp.storage.BucketIAMMember(
+  `${tag}-invoker-can-run-job`,
+  {
+    bucket: assetsBucket.name,
+    role: 'roles/storage.objectViewer',
+    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
+  `${tag}-invoker-can-run-job`,
+  {
+    bucket: rawArchiveBucketName,
+    role: 'roles/storage.objectCreator',
+    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const ingestorObservationsTopicPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-invoker-can-run-job`,
+  {
+    topic: observationsTopicName,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
+  },
+  { provider }
+)
+
 // If an ingestor image is specified in config, use that. Otherwise, fall back to a public sample image.
 function getIngestorImageUri(tag?: string): pulumi.Output<string> {
   if (!tag) {
@@ -43,6 +82,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
     template: {
       template: {
         maxRetries: 0,
+        serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
             image: getIngestorImageUri(ingestorTag),
@@ -81,5 +121,14 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
       },
     },
   },
-  { dependsOn: [cloudRunService, targetsObject], provider }
+  {
+    dependsOn: [
+      cloudRunService,
+      targetsObject,
+      ingestorAssetBucketViewer,
+      ingestorRawArchiveBucketCreator,
+      ingestorObservationsTopicPublisher,
+    ],
+    provider,
+  }
 )

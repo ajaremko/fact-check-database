@@ -3,7 +3,7 @@ config:
   core:region: us-central1
   core:kmsLocation: us
   core:archiveLocation: US
-  core:archiveTTL: 30
+  core:archiveTTL: 1
   core:githubOrg: ajaremko
   core:githubRepo: news-research
   ingestion:project: news-research-dev
