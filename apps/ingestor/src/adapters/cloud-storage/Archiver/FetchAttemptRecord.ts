@@ -1,37 +1,13 @@
 import { pipe, Schema } from 'effect'
 
+import {
+  DataFetchedSchema,
+  NoResponseSchema,
+  FilePointer,
+} from '@news-research/contracts'
+
 import { FetchFailure, FetchSuccess } from '../../../domain/FetchAttempt'
 import { parseBuffer, parseJson } from '../../../utils/schema'
-
-const FilePointerSchema = Schema.Struct({
-  bucket: Schema.String,
-  object: Schema.String,
-  generation: Schema.optional(Schema.Number),
-})
-
-type FilePointer = Schema.Schema.Type<typeof FilePointerSchema>
-
-const DataFetchedSchema = Schema.Struct({
-  version: Schema.Literal(1),
-  kind: Schema.Literal('fetch_attempt'),
-  outcome: Schema.Literal('data_fetched'),
-  runId: Schema.String,
-  fetchedAt: Schema.Number,
-  url: Schema.String,
-  source: Schema.Struct({ name: Schema.String, collection: Schema.String }),
-  http: Schema.Struct({
-    status: Schema.Number,
-    contentType: Schema.optional(Schema.String),
-    etag: Schema.optional(Schema.String),
-    lastModified: Schema.optional(Schema.String),
-    headers: Schema.Record({ key: Schema.String, value: Schema.String }),
-  }),
-  content: Schema.Struct({
-    sha256: Schema.optional(Schema.String),
-    bytes: Schema.optional(Schema.Number),
-  }),
-  pointer: FilePointerSchema,
-})
 
 const encodeDataFetched = pipe(
   DataFetchedSchema,
@@ -66,18 +42,6 @@ export function createDataFetched(attempt: FetchSuccess, pointer: FilePointer) {
     pointer,
   })
 }
-
-const NoResponseSchema = Schema.Struct({
-  version: Schema.Literal(1),
-  kind: Schema.Literal('fetch_attempt'),
-  outcome: Schema.Literal('no_response'),
-  runId: Schema.String,
-  fetchedAt: Schema.Number,
-  url: Schema.String,
-  finalUrl: Schema.optional(Schema.String),
-  source: Schema.Struct({ name: Schema.String, collection: Schema.String }),
-  error: Schema.String,
-})
 
 const encodeNoResponse = pipe(
   NoResponseSchema,
