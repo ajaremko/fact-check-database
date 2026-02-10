@@ -1,256 +1,214 @@
-// adapters/archive/GcsArchiver.ts
-import { Config, Effect, Layer, pipe, Schema } from 'effect'
-import { File, Storage } from '@google-cloud/storage'
+import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 import { format } from 'date-fns'
 
-import { Archiver, ArchiverError } from '../../ports/Archiver'
-import type { ArchivePointer } from '../../domain/Observation'
+import {
+  DataFetchedSchema,
+  NoResponseSchema,
+  FilePointer,
+} from '@news-research/contracts'
+import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
+
 import type {
-  FetchAttempt,
   FetchFailure,
   FetchSuccess,
+  FetchAttempt,
 } from '../../domain/FetchAttempt'
+import { Archiver, ArchiverError } from '../../ports/Archiver'
+import type { ArchivePointer } from '../../domain/Observation'
+import { parseBuffer, parseJson } from '../../utils/schema'
+
+const encodeDataFetched = pipe(
+  DataFetchedSchema,
+  parseJson(),
+  parseBuffer({ encoding: 'utf-8' }),
+  Schema.encodeSync
+)
+
+function createDataFetched(attempt: FetchSuccess, pointer: FilePointer) {
+  return encodeDataFetched({
+    version: 1,
+    kind: 'fetch_attempt',
+    outcome: 'data_fetched',
+    runId: attempt.runId,
+    fetchedAt: attempt.fetchedAt,
+    url: attempt.url,
+    source: {
+      name: attempt.sourceName,
+      collection: attempt.sourceCollection,
+    },
+    http: {
+      status: attempt.http.status,
+      contentType: attempt.http.contentType,
+      etag: attempt.http.etag,
+      lastModified: attempt.http.lastModified,
+      headers: attempt.http.headers,
+    },
+    content: {
+      sha256: attempt.content.sha256,
+      bytes: attempt.content.bytes,
+    },
+    pointer,
+  })
+}
+
+const encodeNoResponse = pipe(
+  NoResponseSchema,
+  parseJson(),
+  parseBuffer({ encoding: 'utf-8' }),
+  Schema.encodeSync
+)
+
+function createNoResponse(attempt: FetchFailure) {
+  return encodeNoResponse({
+    version: 1,
+    kind: 'fetch_attempt',
+    outcome: 'no_response',
+    runId: attempt.runId,
+    fetchedAt: attempt.fetchedAt,
+    url: attempt.url,
+    finalUrl: attempt.finalUrl,
+    source: {
+      name: attempt.sourceName,
+      collection: attempt.sourceCollection,
+    },
+    error: attempt.error,
+  })
+}
+
+const encodeMetadata = Schema.encodeSync(
+  Schema.Struct({
+    url: Schema.String,
+    sourceName: Schema.String,
+    sourceCollection: Schema.String,
+    runId: Schema.String,
+    fetchedAt: Schema.NumberFromString,
+    id: Schema.String,
+  })
+)
 
 function ymd(ms: number): string {
   const d = new Date(ms)
   return format(d, 'yyyy-MM-dd')
 }
 
-type RawPointer = {
-  bucket: string
-  object: string
-  generation?: number
-}
-
-type FetchedMeta = {
-  version: 1
-  kind: 'fetch_attempt'
-  runId: string
-  fetchedAt: number
-  url: string
-  finalUrl?: string
-  source: { name: string; collection: string }
-  outcome: 'Fetched'
-  http: {
-    status: number
-    contentType?: string
-    etag?: string
-    lastModified?: string
-    headers: Record<string, string>
-  }
-  content: { sha256?: string; bytes?: number }
-  raw: RawPointer
-}
-
-type UnfetchedMeta = {
-  version: 1
-  kind: 'fetch_attempt'
-  runId: string
-  fetchedAt: number
-  url: string
-  finalUrl?: string
-  source: { name: string; collection: string }
-  outcome: 'NoResponse'
-  error: string
-}
-
-type MetaEnvelope = FetchedMeta | UnfetchedMeta
-
 const decodeGeneration = pipe(
-  Schema.Struct({
-    generation: Schema.optional(
-      Schema.Union(Schema.NumberFromString, Schema.Number)
-    ),
-  }),
+  Schema.Tuple(
+    Schema.Struct({
+      generation: Schema.optional(
+        Schema.Union(Schema.NumberFromString, Schema.Number)
+      ),
+    }),
+    Schema.Unknown
+  ),
   Schema.decodeSync
 )
 
-function writeFile(file: File, attempt: FetchSuccess) {
-  return Effect.gen(function* () {
-    const contentType = attempt.http.contentType
-      ? attempt.http.contentType
-      : 'application/octet-stream'
-
-    const data = Buffer.from(attempt.body)
-
-    yield* Effect.tryPromise({
-      try: () =>
-        file.save(data, {
-          resumable: false,
-          contentType,
-          metadata: {
-            metadata: {
-              url: attempt.url,
-              sourceName: attempt.sourceName,
-              sourceCollection: attempt.sourceCollection,
-              runId: attempt.runId,
-              fetchedAt: String(attempt.fetchedAt),
-              status: String(attempt.http.status),
-              sha256: attempt.content.sha256 ?? '',
-            },
-          },
-        }),
-      catch: (cause) => new ArchiverError({ cause }),
-    })
-
-    const [md] = yield* Effect.tryPromise({
-      try: () => file.getMetadata(),
-      catch: (cause) => new ArchiverError({ cause }),
-    })
-
-    return decodeGeneration(md)
-  })
-}
-
-function writeSuccessMeta(
-  file: File,
-  id: string,
-  attempt: FetchSuccess,
-  pointer: RawPointer
-) {
-  return Effect.gen(function* () {
-    const meta: MetaEnvelope = {
-      version: 1,
-      kind: 'fetch_attempt',
-      runId: attempt.runId,
-      fetchedAt: attempt.fetchedAt,
-      url: attempt.url,
-      finalUrl: attempt.finalUrl,
-      source: {
-        name: attempt.sourceName,
-        collection: attempt.sourceCollection,
-      },
-      outcome: 'Fetched',
-      http: {
-        status: attempt.http.status,
-        contentType: attempt.http.contentType,
-        etag: attempt.http.etag,
-        lastModified: attempt.http.lastModified,
-        headers: attempt.http.headers,
-      },
-      content: attempt.content,
-      raw: pointer, // present because _tag === "Fetched"
-    }
-    const data = Buffer.from(JSON.stringify(meta), 'utf8')
-    yield* Effect.tryPromise({
-      try: () =>
-        file.save(data, {
-          resumable: false,
-          contentType: 'application/json',
-          metadata: {
-            metadata: {
-              url: attempt.url,
-              sourceName: attempt.sourceName,
-              sourceCollection: attempt.sourceCollection,
-              runId: attempt.runId,
-              fetchedAt: String(attempt.fetchedAt),
-              id,
-            },
-          },
-        }),
-      catch: (cause) => new ArchiverError({ cause }),
-    })
-    const [md] = yield* Effect.tryPromise({
-      try: () => file.getMetadata(),
-      catch: (cause) => new ArchiverError({ cause }),
-    })
-    return decodeGeneration(md)
-  })
-}
-
-function writeFailureMeta(file: File, id: string, attempt: FetchFailure) {
-  return Effect.gen(function* () {
-    const meta: MetaEnvelope = {
-      version: 1,
-      kind: 'fetch_attempt',
-      runId: attempt.runId,
-      fetchedAt: attempt.fetchedAt,
-      url: attempt.url,
-      finalUrl: attempt.finalUrl,
-      source: {
-        name: attempt.sourceName,
-        collection: attempt.sourceCollection,
-      },
-      outcome: 'NoResponse',
-      error: attempt.error,
-    }
-    const data = Buffer.from(JSON.stringify(meta), 'utf8')
-    yield* Effect.tryPromise({
-      try: () =>
-        file.save(data, {
-          resumable: false,
-          contentType: 'application/json',
-          metadata: {
-            metadata: {
-              url: attempt.url,
-              sourceName: attempt.sourceName,
-              sourceCollection: attempt.sourceCollection,
-              runId: attempt.runId,
-              fetchedAt: String(attempt.fetchedAt),
-              id,
-            },
-          },
-        }),
-      catch: (cause) => new ArchiverError({ cause }),
-    })
-    const [md] = yield* Effect.tryPromise({
-      try: () => file.getMetadata(),
-      catch: (cause) => new ArchiverError({ cause }),
-    })
-    return decodeGeneration(md)
-  })
-}
+const readFileGeneration = flow(
+  StorageBucket.readFileMetadata,
+  Effect.map(decodeGeneration),
+  Effect.map(([{ generation }]) => generation)
+)
 
 export const make = Effect.gen(function* () {
-  const bucketName = yield* Config.string('ARCHIVER_BUCKET_NAME')
+  const { bucket } = yield* StorageBucket.StorageBucket
 
-  const client = new Storage()
-  const bucket = client.bucket(bucketName)
-
-  const archive = (
-    attempt: FetchAttempt
-  ): Effect.Effect<ArchivePointer, ArchiverError> =>
-    Effect.gen(function* () {
+  function archive(attempt: FetchAttempt) {
+    return Effect.gen(function* () {
       const date = ymd(attempt.fetchedAt)
+      const baseDir = `source=${attempt.sourceName}/date=${date}/run=${attempt.runId}`
 
-      // Use content sha256 as stable ID when present; otherwise fall back to time-based key.
-      // (Normalization step should ideally always compute sha256 for Fetched.)
-      const id =
-        attempt._tag === 'Fetched' && attempt.content.sha256
+      if (attempt._tag === 'Fetched') {
+        // Write raw data and meta for successful fetches
+        const id = attempt.content.sha256
           ? attempt.content.sha256
           : `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`
 
-      const baseDir = `source=${attempt.sourceName}/date=${date}/run=${attempt.runId}`
-      const rawObject = `raw/${baseDir}/${id}.bin`
-      const metaObject = `meta/${baseDir}/${id}.json`
-
-      const rawFile = bucket.file(rawObject)
-      const metaFile = bucket.file(metaObject)
-
-      // 1) Write raw bytes only if we have them
-      if (attempt._tag === 'Fetched') {
-        const md = yield* writeFile(rawFile, attempt)
-        const md2 = yield* writeSuccessMeta(metaFile, id, attempt, {
-          bucket: bucketName,
-          object: rawObject,
-          generation: md.generation,
+        // Write raw object
+        const rawObject = `raw/${baseDir}/${id}.bin`
+        yield* StorageBucket.writeFile(rawObject, Buffer.from(attempt.body), {
+          resumable: false,
+          contentType: attempt.http.contentType ?? 'application/octet-stream',
         })
-        return {
-          bucket: bucketName,
+
+        // Access raw object pointer
+        const respGeneration = yield* readFileGeneration(rawObject)
+        const respPointer: ArchivePointer = {
+          bucket: bucket.name,
           object: rawObject,
-          generation: md2.generation,
+          generation: respGeneration,
         }
-      }
 
-      const md2 = yield* writeFailureMeta(metaFile, id, attempt)
-      return {
-        bucket: bucketName,
-        object: rawObject,
-        generation: md2.generation,
-      }
-    })
+        // Write meta object
+        const metaObject = `meta/${baseDir}/${id}.json`
+        const data = createDataFetched(attempt, respPointer)
+        const metadata = encodeMetadata({
+          url: attempt.url,
+          sourceName: attempt.sourceName,
+          sourceCollection: attempt.sourceCollection,
+          runId: attempt.runId,
+          fetchedAt: attempt.fetchedAt,
+          id,
+        })
+        yield* StorageBucket.writeFile(metaObject, data, {
+          resumable: false,
+          contentType: 'application/json',
+          metadata: { metadata },
+        })
 
+        // Access meta object pointer
+        const metaGeneration = yield* readFileGeneration(metaObject)
+        const metaPointer: ArchivePointer = {
+          bucket: bucket.name,
+          object: metaObject,
+          generation: metaGeneration,
+        }
+
+        return metaPointer
+      } else {
+        // Write only meta for unsuccessful fetches
+        const id = `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`
+
+        // Write meta object
+        const metaObject = `meta/${baseDir}/${id}.json`
+        const data = createNoResponse(attempt)
+        const metadata = encodeMetadata({
+          url: attempt.url,
+          sourceName: attempt.sourceName,
+          sourceCollection: attempt.sourceCollection,
+          runId: attempt.runId,
+          fetchedAt: attempt.fetchedAt,
+          id,
+        })
+        yield* StorageBucket.writeFile(metaObject, data, {
+          resumable: false,
+          contentType: 'application/json',
+          metadata: { metadata },
+        })
+
+        // Access meta object pointer
+        const metaGeneration = yield* readFileGeneration(metaObject)
+        const metaPointer: ArchivePointer = {
+          bucket: bucket.name,
+          object: metaObject,
+          generation: metaGeneration,
+        }
+
+        return metaPointer
+      }
+    }).pipe(
+      Effect.catchTag('StorageBucketIOError', (e) =>
+        Effect.fail(new ArchiverError({ cause: e }))
+      ),
+      Effect.provideService(StorageBucket.StorageBucket, { bucket })
+    )
+  }
   return Archiver.of({ archive })
 })
 
-export const layer = Layer.effect(Archiver, make)
+export const layer: Layer.Layer<
+  Archiver,
+  ConfigError.ConfigError,
+  StorageClient.StorageClient
+> = Layer.effect(Archiver, make).pipe(
+  Layer.provide(StorageBucket.layer(Config.string('ARCHIVE_BUCKET_NAME')))
+)
