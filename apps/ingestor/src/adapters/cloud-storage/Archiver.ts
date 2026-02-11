@@ -126,8 +126,8 @@ export const make = Effect.gen(function* () {
         return metaPointer
       }
     }).pipe(
-      Effect.catchTag('StorageBucketIOError', (e) =>
-        Effect.fail(new ArchiverError({ cause: e }))
+      Effect.catchTag('StorageBucketIOError', (cause) =>
+        Effect.fail(new ArchiverError({ cause }))
       ),
       Effect.provideService(StorageBucket.StorageBucket, { bucket })
     )
