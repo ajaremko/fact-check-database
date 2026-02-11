@@ -1,5 +1,7 @@
 import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
 
+import { Node } from '@news-research/node'
+
 import { Archiver } from './ports/Archiver'
 import { Fetcher } from './ports/Fetcher'
 import { Publisher } from './ports/Publisher'
@@ -8,21 +10,24 @@ import { SourceTarget } from './domain/SourceTarget'
 import { createObservationFetched } from './domain/createObservationFetched'
 import { normalizeFetchAttempt } from './domain/normalize'
 
+const MaxConcurrencySchema = Schema.NumberFromString.pipe(
+  Schema.nonNegative(),
+  Schema.int()
+)
+const SuccessThresholdSchema = Schema.NumberFromString.pipe(Schema.clamp(0, 1))
+
 const readConfig = Effect.gen(function* () {
   const startedAt = yield* Clock.currentTimeMillis
-
-  const runId = yield* Config.string('RUN_ID').pipe(
-    Config.withDefault(String(startedAt))
-  )
+  const runId = yield* Node.generateUUID()
 
   const concurrency = yield* Schema.Config(
     'MAX_CONCURRENCY',
-    Schema.NumberFromString.pipe(Schema.nonNegative(), Schema.int())
+    MaxConcurrencySchema
   ).pipe(Config.withDefault(10))
 
   const successThreshold = yield* Schema.Config(
     'SUCCESS_THRESHOLD',
-    Schema.NumberFromString.pipe(Schema.clamp(0, 1))
+    SuccessThresholdSchema
   ).pipe(Config.withDefault(0.8))
 
   const logLevel = yield* Config.logLevel('LOG_LEVEL')

@@ -1,5 +1,10 @@
 import { Effect, Schema } from 'effect'
-import { createHash, Encoding } from 'node:crypto'
+import {
+  Encoding,
+  RandomUUIDOptions,
+  createHash,
+  randomUUID,
+} from 'node:crypto'
 
 /**
  * Wrapper around Schema.parseJson with more egonomic paramater passing
@@ -68,4 +73,8 @@ export function sha256Hex(input: Uint8Array | string, encoding?: Encoding) {
     )
   }
   return Effect.sync(() => createHash('sha256').update(input).digest('hex'))
+}
+
+export function generateUUID(options?: RandomUUIDOptions) {
+  return Effect.sync(() => randomUUID(options))
 }
