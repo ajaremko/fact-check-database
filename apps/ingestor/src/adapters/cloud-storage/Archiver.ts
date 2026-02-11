@@ -7,6 +7,7 @@ import {
 } from '@news-research/contracts'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node } from '@news-research/node'
+import { Yaml } from '@news-research/yaml'
 
 import {
   createDataFetched,
@@ -19,7 +20,7 @@ import type { FetchAttempt } from '../../domain/FetchAttempt'
 
 const encodeFetchAttemptRecord = pipe(
   FetchAttemptRecordSchema,
-  Node.parseJson(),
+  Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
@@ -79,7 +80,7 @@ export const make = Effect.gen(function* () {
         }
 
         // Write meta object
-        const metaObject = `meta/${baseDir}/${id}.json`
+        const metaObject = `meta/${baseDir}/${id}.yml`
         const record = createDataFetched(attempt, respPointer)
         const data = encodeFetchAttemptRecord(record)
         const recordMetadata = createMetadata(id, attempt)
@@ -104,14 +105,14 @@ export const make = Effect.gen(function* () {
         const id = `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`
 
         // Write meta object
-        const metaObject = `meta/${baseDir}/${id}.json`
+        const metaObject = `meta/${baseDir}/${id}.yml`
         const record = createNoResponse(attempt)
         const data = encodeFetchAttemptRecord(record)
         const recordMetadata = createMetadata(id, attempt)
         const metadata = encodeMetadata(recordMetadata)
         yield* StorageBucket.writeFile(metaObject, data, {
           resumable: false,
-          contentType: 'application/json',
+          contentType: 'application/yaml',
           metadata: { metadata },
         })
 
