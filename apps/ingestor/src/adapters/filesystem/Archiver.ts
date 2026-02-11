@@ -6,6 +6,7 @@ import {
   MetadataSchema,
 } from '@news-research/contracts'
 import { Node } from '@news-research/node'
+import { Yaml } from '@news-research/yaml'
 
 import {
   createDataFetched,
@@ -19,7 +20,7 @@ import { FetchAttempt } from '../../domain/FetchAttempt'
 // Object -> JSON -> Buffer
 const encodeFetchAttemptRecord = pipe(
   FetchAttemptRecordSchema,
-  Node.parseJson(),
+  Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
@@ -56,7 +57,7 @@ export const make = Effect.gen(function* () {
         }
 
         // Write meta object
-        const recordObject = `${outputDir}/${id}.json`
+        const recordObject = `${outputDir}/${id}.yml`
         const record = createDataFetched(attempt, respPointer)
         const data = encodeFetchAttemptRecord(record)
         const metaObject = `${outputDir}/${id}.metadata.json`
@@ -77,7 +78,7 @@ export const make = Effect.gen(function* () {
         const id = `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`
 
         // Write meta object
-        const recordObject = `${outputDir}/${id}.json`
+        const recordObject = `${outputDir}/${id}.yml`
         const record = createNoResponse(attempt)
         const data = encodeFetchAttemptRecord(record)
         const metaObject = `${outputDir}/${id}.metadata.json`
