@@ -1,10 +1,10 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
+import { ObservationFetchedSchema } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
-import { ObservationFetchedSchema } from '../../domain/Observation'
 
 // ObservationFetched -> JSON -> Buffer
 const encodeMessage = pipe(

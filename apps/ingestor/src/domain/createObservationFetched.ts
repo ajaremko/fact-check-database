@@ -1,13 +1,13 @@
-// domain/createObservationFetched.ts
-import type { ArchivePointer, ObservationFetched } from './Observation'
+import { ObservationFetched, FilePointer } from '@news-research/contracts'
+
 import type { FetchAttempt } from './FetchAttempt'
 import { observationIdFrom } from './normalize'
 
 export function createObservationFetched(args: {
   attempt: FetchAttempt
-  archive: ArchivePointer // pointer to META json
+  pointer: FilePointer // pointer to META json
 }): ObservationFetched {
-  const { attempt, archive } = args
+  const { attempt, pointer } = args
 
   const observationId =
     attempt._tag === 'Fetched'
@@ -29,9 +29,10 @@ export function createObservationFetched(args: {
     fetchedAt: attempt.fetchedAt,
     url: attempt.url,
     finalUrl: attempt.finalUrl,
-
-    source: { name: attempt.sourceName, collection: attempt.sourceCollection },
-
+    source: {
+      name: attempt.sourceName,
+      collection: attempt.sourceCollection,
+    },
     http:
       attempt._tag === 'Fetched'
         ? {
@@ -43,13 +44,11 @@ export function createObservationFetched(args: {
         : {
             status: 0,
           },
-
     content:
       attempt._tag === 'Fetched'
         ? { sha256: attempt.content.sha256, bytes: attempt.content.bytes }
         : { sha256: undefined, bytes: undefined },
-
     error: attempt._tag === 'NoResponse' ? attempt.error : undefined,
-    archive,
+    archive: pointer,
   }
 }

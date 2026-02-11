@@ -56,7 +56,7 @@ function processTarget(runId: string, source: SourceTarget, index: number) {
     })
 
     const pointer = yield* archive.archive(attempt)
-    const event = createObservationFetched({ attempt, archive: pointer })
+    const event = createObservationFetched({ attempt, pointer: pointer })
     yield* publisher.publish(event)
   }).pipe(
     Effect.tapError(Effect.logError),

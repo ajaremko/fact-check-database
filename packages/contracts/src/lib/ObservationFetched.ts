@@ -1,12 +1,6 @@
 import { Schema } from 'effect'
 
-export const ArchivePointerSchema = Schema.Struct({
-  bucket: Schema.String,
-  object: Schema.String,
-  generation: Schema.optional(Schema.Number),
-})
-
-export type ArchivePointer = Schema.Schema.Type<typeof ArchivePointerSchema>
+import { FilePointerSchema } from './FilePointer.js'
 
 export const ObservationFetchedSchema = Schema.Struct({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
@@ -29,7 +23,7 @@ export const ObservationFetchedSchema = Schema.Struct({
     bytes: Schema.optional(Schema.Number),
   }),
   error: Schema.optional(Schema.String),
-  archive: ArchivePointerSchema,
+  archive: FilePointerSchema,
 })
 
 export type ObservationFetched = Schema.Schema.Type<

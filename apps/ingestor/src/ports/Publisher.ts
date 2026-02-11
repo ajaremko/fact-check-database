@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { ObservationFetched } from '../domain/Observation'
+import type { ObservationFetched } from '@news-research/contracts'
 
 export class PublisherError extends Data.TaggedError('PublisherError')<{
   readonly cause: unknown
