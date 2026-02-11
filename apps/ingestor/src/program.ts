@@ -35,54 +35,55 @@ const readConfig = Effect.gen(function* () {
   return { runId, concurrency, startedAt, successThreshold, logLevel }
 })
 
-function processTargets(
-  runId: string,
-  concurrency: number,
-  successThreshold: number
-) {
+function processTarget(runId: string, source: SourceTarget, index: number) {
   return Effect.gen(function* () {
-    const targetList = yield* TargetList
+    yield* Effect.logInfo(`Processing target ${index + 1}`)
+
     const archive = yield* Archiver
     const fetcher = yield* Fetcher
     const publisher = yield* Publisher
+    const fetchedAt = yield* Clock.currentTimeMillis
+
+    const result = yield* fetcher.fetch(source.url)
+    const attempt = normalizeFetchAttempt({
+      runId,
+      sourceName: source.name,
+      sourceCollection: source.collection,
+      url: source.url,
+      finalUrl: undefined,
+      fetchedAt,
+      result,
+    })
+
+    const pointer = yield* archive.archive(attempt)
+    const event = createObservationFetched({ attempt, archive: pointer })
+    yield* publisher.publish(event)
+  }).pipe(
+    Effect.tapError(Effect.logError),
+    Effect.annotateLogs({
+      source: source.name,
+      url: source.url,
+      collection: source.collection,
+    })
+  )
+}
+
+function processTargets(
+  runId: string,
+  concurrency: number,
+  successThreshold: number,
+  startedAt: number
+) {
+  return Effect.gen(function* () {
+    const targetList = yield* TargetList
 
     const targets = yield* targetList.read
 
     yield* Effect.logInfo(`Processing ${targets.length} targets`)
 
-    function processTarget(source: SourceTarget, index: number) {
-      return Effect.gen(function* () {
-        yield* Effect.logInfo(`Processing target ${index + 1}`)
-
-        const fetchedAt = yield* Clock.currentTimeMillis
-
-        const result = yield* fetcher.fetch(source.url)
-
-        const attempt = normalizeFetchAttempt({
-          runId,
-          sourceName: source.name,
-          sourceCollection: source.collection,
-          url: source.url,
-          finalUrl: undefined,
-          fetchedAt,
-          result,
-        })
-
-        const pointer = yield* archive.archive(attempt)
-        const event = createObservationFetched({ attempt, archive: pointer })
-
-        yield* publisher.publish(event)
-      }).pipe(
-        Effect.tapError(Effect.logError),
-        Effect.annotateLogs({
-          source: source.name,
-          url: source.url,
-          collection: source.collection,
-        })
-      )
-    }
-
-    const tasks = targets.map(processTarget)
+    const tasks = targets.map((target, index) =>
+      processTarget(runId, target, index)
+    )
 
     // 'either' mode ensures that all tasks are attempted,
     // even if some fail
@@ -97,19 +98,22 @@ function processTargets(
     const successRate = successes.length / targets.length
 
     if (successRate < successThreshold) {
-      yield* Effect.logError(
+      const cause = new Error(
         `Success rate ${successRate} is below threshold ${successThreshold}`
       )
-      yield* Effect.fail(new Error('Success rate below threshold'))
+      yield* Effect.fail(cause)
     }
-  })
+  }).pipe(
+    Effect.tapError(Effect.logError),
+    Effect.annotateLogs({ runId, startedAt, concurrency })
+  )
 }
 
 export const Program = Effect.gen(function* () {
   const { runId, concurrency, startedAt, successThreshold, logLevel } =
     yield* readConfig
-  yield* processTargets(runId, concurrency, successThreshold).pipe(
-    Effect.annotateLogs({ runId, startedAt, concurrency }),
+
+  yield* processTargets(runId, concurrency, successThreshold, startedAt).pipe(
     Effect.provide(Logger.minimumLogLevel(logLevel))
   )
 })

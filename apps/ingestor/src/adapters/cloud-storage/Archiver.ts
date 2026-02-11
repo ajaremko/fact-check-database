@@ -1,4 +1,4 @@
-import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
+import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { format } from 'date-fns'
 
 import {
@@ -32,24 +32,6 @@ function ymd(ms: number): string {
   return format(d, 'yyyy-MM-dd')
 }
 
-const decodeGeneration = pipe(
-  Schema.Tuple(
-    Schema.Struct({
-      generation: Schema.optional(
-        Schema.Union(Schema.NumberFromString, Schema.Number)
-      ),
-    }),
-    Schema.Unknown
-  ),
-  Schema.decodeSync
-)
-
-const readFileGeneration = flow(
-  StorageBucket.readFileMetadata,
-  Effect.map(decodeGeneration),
-  Effect.map(([{ generation }]) => generation)
-)
-
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
 
@@ -72,11 +54,9 @@ export const make = Effect.gen(function* () {
         })
 
         // Access raw object pointer
-        const respGeneration = yield* readFileGeneration(rawObject)
         const respPointer: ArchivePointer = {
           bucket: bucket.name,
           object: rawObject,
-          generation: respGeneration,
         }
 
         // Write meta object
@@ -92,11 +72,9 @@ export const make = Effect.gen(function* () {
         })
 
         // Access meta object pointer
-        const metaGeneration = yield* readFileGeneration(metaObject)
         const metaPointer: ArchivePointer = {
           bucket: bucket.name,
           object: metaObject,
-          generation: metaGeneration,
         }
 
         return metaPointer
@@ -117,11 +95,9 @@ export const make = Effect.gen(function* () {
         })
 
         // Access meta object pointer
-        const metaGeneration = yield* readFileGeneration(metaObject)
         const metaPointer: ArchivePointer = {
           bucket: bucket.name,
           object: metaObject,
-          generation: metaGeneration,
         }
 
         return metaPointer
@@ -133,6 +109,7 @@ export const make = Effect.gen(function* () {
       Effect.provideService(StorageBucket.StorageBucket, { bucket })
     )
   }
+
   return Archiver.of({ archive })
 })
 
