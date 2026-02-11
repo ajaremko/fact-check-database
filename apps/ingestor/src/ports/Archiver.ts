@@ -1,7 +1,12 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { ArchivePointer } from '../domain/Observation'
-import type { FetchAttempt } from '../domain/FetchAttempt'
+import {
+  FilePointer,
+  FetchAttemptRecord,
+  Metadata,
+} from '@news-research/contracts'
+
+import type { FetchAttempt } from '../data/FetchAttempt'
 
 export class ArchiverError extends Data.TaggedError('ArchiverError')<{
   readonly cause: unknown
@@ -10,8 +15,15 @@ export class ArchiverError extends Data.TaggedError('ArchiverError')<{
 export class Archiver extends Context.Tag('Archiver')<
   Archiver,
   {
-    readonly archive: (
-      attempt: FetchAttempt
-    ) => Effect.Effect<ArchivePointer, ArchiverError>
+    readonly archiveBody: (
+      attempt: FetchAttempt,
+      body: Uint8Array,
+      contentType?: string
+    ) => Effect.Effect<FilePointer, ArchiverError>
+    readonly archiveRecord: (
+      attempt: FetchAttempt,
+      record: FetchAttemptRecord,
+      metadata: Metadata
+    ) => Effect.Effect<FilePointer, ArchiverError>
   }
 >() {}

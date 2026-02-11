@@ -1,22 +1,26 @@
-import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
+import {
+  Config,
+  ConfigError,
+  Effect,
+  Either,
+  Layer,
+  pipe,
+  Schema,
+} from 'effect'
 import { format } from 'date-fns'
 
 import {
+  FetchAttemptRecord,
   FetchAttemptRecordSchema,
+  Metadata,
   MetadataSchema,
 } from '@news-research/contracts'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
-import {
-  createDataFetched,
-  createMetadata,
-  createNoResponse,
-} from '../../domain/createAttemptRecord'
 import { Archiver, ArchiverError } from '../../ports/Archiver'
-import type { ArchivePointer } from '../../domain/Observation'
-import type { FetchAttempt } from '../../domain/FetchAttempt'
+import type { FetchAttempt } from '../../data/FetchAttempt'
 
 const encodeFetchAttemptRecord = pipe(
   FetchAttemptRecordSchema,
@@ -32,85 +36,70 @@ function ymd(ms: number): string {
   return format(d, 'yyyy-MM-dd')
 }
 
+const makeId = (attempt: FetchAttempt) =>
+  Either.match(attempt.result, {
+    onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
+    onRight: (result) => result.sha256,
+  })
+
+const makeBaseDir = (attempt: FetchAttempt) => {
+  const date = ymd(attempt.fetchedAt)
+  return `source=${attempt.source.name}/date=${date}/run=${attempt.runId}`
+}
+
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
 
-  function archive(attempt: FetchAttempt) {
+  function archiveBody(
+    attempt: FetchAttempt,
+    response: Uint8Array,
+    contentType?: string
+  ) {
     return Effect.gen(function* () {
-      const date = ymd(attempt.fetchedAt)
-      const baseDir = `source=${attempt.sourceName}/date=${date}/run=${attempt.runId}`
-
-      if (attempt._tag === 'Fetched') {
-        // Write raw data and meta for successful fetches
-        const id = attempt.content.sha256
-          ? attempt.content.sha256
-          : `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`
-
-        // Write raw object
-        const rawObject = `raw/${baseDir}/${id}.bin`
-        yield* StorageBucket.writeFile(rawObject, Buffer.from(attempt.body), {
-          resumable: false,
-          contentType: attempt.http.contentType ?? 'application/octet-stream',
-        })
-
-        // Access raw object pointer
-        const respPointer: ArchivePointer = {
-          bucket: bucket.name,
-          object: rawObject,
-        }
-
-        // Write meta object
-        const metaObject = `meta/${baseDir}/${id}.yml`
-        const record = createDataFetched(attempt, respPointer)
-        const data = encodeFetchAttemptRecord(record)
-        const recordMetadata = createMetadata(id, attempt)
-        const metadata = encodeMetadata(recordMetadata)
-        yield* StorageBucket.writeFile(metaObject, data, {
-          resumable: false,
-          contentType: 'application/json',
-          metadata: { metadata },
-        })
-
-        // Access meta object pointer
-        const metaPointer: ArchivePointer = {
-          bucket: bucket.name,
-          object: metaObject,
-        }
-
-        return metaPointer
-      } else {
-        // Write only meta for unsuccessful fetches
-        const id = `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`
-
-        // Write meta object
-        const metaObject = `meta/${baseDir}/${id}.yml`
-        const record = createNoResponse(attempt)
-        const data = encodeFetchAttemptRecord(record)
-        const recordMetadata = createMetadata(id, attempt)
-        const metadata = encodeMetadata(recordMetadata)
-        yield* StorageBucket.writeFile(metaObject, data, {
-          resumable: false,
-          contentType: 'application/yaml',
-          metadata: { metadata },
-        })
-
-        // Access meta object pointer
-        const metaPointer: ArchivePointer = {
-          bucket: bucket.name,
-          object: metaObject,
-        }
-
-        return metaPointer
+      const id = makeId(attempt)
+      const baseDir = makeBaseDir(attempt)
+      const rawObject = `raw/${baseDir}/${id}.bin`
+      yield* StorageBucket.writeFile(rawObject, Buffer.from(response), {
+        resumable: false,
+        contentType: contentType ?? 'application/octet-stream',
+      })
+      return {
+        bucket: bucket.name,
+        object: rawObject,
       }
     }).pipe(
-      Effect.catchTag('StorageBucketIOError', (cause) =>
-        Effect.fail(new ArchiverError({ cause }))
-      ),
+      Effect.mapError((cause) => new ArchiverError({ cause })),
       Effect.provideService(StorageBucket.StorageBucket, { bucket })
     )
   }
 
-  return Archiver.of({ archive })
+  function archiveRecord(
+    attempt: FetchAttempt,
+    record: FetchAttemptRecord,
+    recordMetadata: Metadata
+  ) {
+    return Effect.gen(function* () {
+      const id = makeId(attempt)
+      const baseDir = makeBaseDir(attempt)
+      const recordObject = `records/${baseDir}/${id}.yml`
+      const data = encodeFetchAttemptRecord(record)
+      const metadata = encodeMetadata(recordMetadata)
+      yield* StorageBucket.writeFile(recordObject, data, {
+        resumable: false,
+        contentType: 'application/yaml',
+        metadata: { metadata },
+      })
+      return {
+        bucket: bucket.name,
+        object: recordObject,
+      }
+    }).pipe(
+      Effect.mapError((cause) => new ArchiverError({ cause })),
+      Effect.provideService(StorageBucket.StorageBucket, { bucket })
+    )
+  }
+
+  return Archiver.of({ archiveBody, archiveRecord })
 })
 
 export const layer: Layer.Layer<

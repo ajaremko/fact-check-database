@@ -4,7 +4,7 @@ import { FileSystem } from '@effect/platform'
 import { NodeCsv } from '@news-research/node-csv'
 import { Node } from '@news-research/node'
 
-import { SourceTargetSchema } from '../../domain/SourceTarget'
+import { SourceTargetSchema } from '../../data/SourceTarget'
 import { TargetList, TargetListError } from '../../ports/TargetList'
 
 // SourceTarget[] -> Csv -> Uint8Array

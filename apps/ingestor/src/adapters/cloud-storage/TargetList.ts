@@ -4,7 +4,7 @@ import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { NodeCsv } from '@news-research/node-csv'
 import { Node } from '@news-research/node'
 
-import { SourceTargetSchema } from '../../domain/SourceTarget'
+import { SourceTargetSchema } from '../../data/SourceTarget'
 import { TargetList, TargetListError } from '../../ports/TargetList'
 
 // SourceTarget[] -> Csv -> Buffer

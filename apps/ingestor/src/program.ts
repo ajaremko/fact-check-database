@@ -2,13 +2,18 @@ import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
 
 import { Node } from '@news-research/node'
 
+import {
+  createDataFetchedRecord,
+  createNoResponseRecord,
+  createMetadata,
+} from './integration/createAttemptRecord'
 import { Archiver } from './ports/Archiver'
 import { Fetcher } from './ports/Fetcher'
 import { Publisher } from './ports/Publisher'
 import { TargetList } from './ports/TargetList'
-import { SourceTarget } from './domain/SourceTarget'
-import { createObservationFetched } from './domain/createObservationFetched'
-import { normalizeFetchAttempt } from './domain/normalize'
+import { SourceTarget } from './data/SourceTarget'
+import { FetchAttempt } from './data/FetchAttempt'
+import { createObservationFetched } from './integration/createObservationFetched'
 
 const MaxConcurrencySchema = Schema.NumberFromString.pipe(
   Schema.nonNegative(),
@@ -45,19 +50,46 @@ function processTarget(runId: string, source: SourceTarget, index: number) {
     const fetchedAt = yield* Clock.currentTimeMillis
 
     const result = yield* fetcher.fetch(source.url)
-    const attempt = normalizeFetchAttempt({
+    const attempt: FetchAttempt = {
       runId,
-      sourceName: source.name,
-      sourceCollection: source.collection,
-      url: source.url,
-      finalUrl: undefined,
       fetchedAt,
+      source,
       result,
-    })
+    }
 
-    const pointer = yield* archive.archive(attempt)
-    const event = createObservationFetched({ attempt, pointer: pointer })
-    yield* publisher.publish(event)
+    if (Either.isLeft(result)) {
+      // In case of fetch failure, archive the attempt
+      // record without archiving response body
+      const record = createNoResponseRecord({
+        runId,
+        fetchedAt,
+        source,
+        result: result.left,
+      })
+      const meta = createMetadata(attempt.runId, attempt)
+      const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
+      const event = yield* createObservationFetched(attempt, recordPointer)
+      yield* publisher.publish(event)
+    } else {
+      // If fetch is successful, archive both the response
+      // body and the attempt record
+      const bodyPointer = yield* archive.archiveBody(
+        attempt,
+        result.right.body,
+        result.right.contentType
+      )
+      const record = createDataFetchedRecord({
+        runId,
+        fetchedAt,
+        source,
+        result: result.right,
+        pointer: bodyPointer,
+      })
+      const meta = createMetadata(attempt.runId, attempt)
+      const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
+      const event = yield* createObservationFetched(attempt, recordPointer)
+      yield* publisher.publish(event)
+    }
   }).pipe(
     Effect.tapError(Effect.logError),
     Effect.annotateLogs({

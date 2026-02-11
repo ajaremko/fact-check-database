@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 
 import { FilePointerSchema } from './FilePointer.js'
 
-export const DataFetchedSchema = Schema.Struct({
+export const DataFetchedRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('data_fetched'),
@@ -24,9 +24,22 @@ export const DataFetchedSchema = Schema.Struct({
   pointer: FilePointerSchema,
 })
 
-export type DataFetched = Schema.Schema.Type<typeof DataFetchedSchema>
+export type DataFetchedRecord = Schema.Schema.Type<
+  typeof DataFetchedRecordSchema
+>
 
-export const NoResponseSchema = Schema.Struct({
+export function DataFetchedRecord(
+  input: Omit<DataFetchedRecord, 'version' | 'kind' | 'outcome'>
+): DataFetchedRecord {
+  return {
+    version: 1,
+    kind: 'fetch_attempt',
+    outcome: 'data_fetched',
+    ...input,
+  }
+}
+
+export const NoResponseRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('no_response'),
@@ -38,11 +51,22 @@ export const NoResponseSchema = Schema.Struct({
   error: Schema.String,
 })
 
-export type NoResponse = Schema.Schema.Type<typeof NoResponseSchema>
+export type NoResponseRecord = Schema.Schema.Type<typeof NoResponseRecordSchema>
+
+export function NoResponseRecord(
+  input: Omit<NoResponseRecord, 'version' | 'kind' | 'outcome'>
+): NoResponseRecord {
+  return {
+    version: 1,
+    kind: 'fetch_attempt',
+    outcome: 'no_response',
+    ...input,
+  }
+}
 
 export const FetchAttemptRecordSchema = Schema.Union(
-  DataFetchedSchema,
-  NoResponseSchema
+  DataFetchedRecordSchema,
+  NoResponseRecordSchema
 )
 
 export type FetchAttemptRecord = Schema.Schema.Type<

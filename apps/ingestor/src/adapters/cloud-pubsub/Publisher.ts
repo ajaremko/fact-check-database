@@ -1,4 +1,4 @@
-import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
+import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
 import { ObservationFetchedSchema } from '@news-research/contracts'
@@ -7,24 +7,22 @@ import { Node } from '@news-research/node'
 import { Publisher, PublisherError } from '../../ports/Publisher'
 
 // ObservationFetched -> JSON -> Buffer
-const encodeMessage = pipe(
+const encodeEvent = pipe(
   ObservationFetchedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
 
-// const topicName = yield* Config.string('PUBSUB_TOPIC_NAME')
-
 export const make = Effect.gen(function* () {
   const { topic } = yield* PubsubTopic.PubsubTopic
   return Publisher.of({
-    publish: (event) =>
-      encodeMessage(event).pipe(
-        Effect.andThen((data) => PubsubTopic.publishMessage({ data })),
-        Effect.mapError((cause) => new PublisherError({ cause })),
-        Effect.provideService(PubsubTopic.PubsubTopic, { topic })
-      ),
+    publish: flow(
+      encodeEvent,
+      Effect.andThen((data) => PubsubTopic.publishMessage({ data })),
+      Effect.mapError((cause) => new PublisherError({ cause })),
+      Effect.provideService(PubsubTopic.PubsubTopic, { topic })
+    ),
   })
 })
 
