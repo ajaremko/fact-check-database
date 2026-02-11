@@ -24,6 +24,8 @@ export const DataFetchedSchema = Schema.Struct({
   pointer: FilePointerSchema,
 })
 
+export type DataFetched = Schema.Schema.Type<typeof DataFetchedSchema>
+
 export const NoResponseSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
@@ -36,6 +38,17 @@ export const NoResponseSchema = Schema.Struct({
   error: Schema.String,
 })
 
+export type NoResponse = Schema.Schema.Type<typeof NoResponseSchema>
+
+export const FetchAttemptRecordSchema = Schema.Union(
+  DataFetchedSchema,
+  NoResponseSchema
+)
+
+export type FetchAttemptRecord = Schema.Schema.Type<
+  typeof FetchAttemptRecordSchema
+>
+
 export const MetadataSchema = Schema.Struct({
   url: Schema.String,
   sourceName: Schema.String,
@@ -44,3 +57,5 @@ export const MetadataSchema = Schema.Struct({
   fetchedAt: Schema.NumberFromString,
   id: Schema.String,
 })
+
+export type Metadata = Schema.Schema.Type<typeof MetadataSchema>

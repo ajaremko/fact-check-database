@@ -2,89 +2,29 @@ import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 import { format } from 'date-fns'
 
 import {
-  DataFetchedSchema,
-  NoResponseSchema,
-  FilePointer,
+  FetchAttemptRecordSchema,
+  MetadataSchema,
 } from '@news-research/contracts'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node } from '@news-research/node'
 
-import type {
-  FetchFailure,
-  FetchSuccess,
-  FetchAttempt,
-} from '../../domain/FetchAttempt'
+import {
+  createDataFetched,
+  createMetadata,
+  createNoResponse,
+} from '../../domain/createAttemptRecord'
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 import type { ArchivePointer } from '../../domain/Observation'
+import type { FetchAttempt } from '../../domain/FetchAttempt'
 
-const encodeDataFetched = pipe(
-  DataFetchedSchema,
+const encodeFetchAttemptRecord = pipe(
+  FetchAttemptRecordSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
 
-function createDataFetched(attempt: FetchSuccess, pointer: FilePointer) {
-  return encodeDataFetched({
-    version: 1,
-    kind: 'fetch_attempt',
-    outcome: 'data_fetched',
-    runId: attempt.runId,
-    fetchedAt: attempt.fetchedAt,
-    url: attempt.url,
-    source: {
-      name: attempt.sourceName,
-      collection: attempt.sourceCollection,
-    },
-    http: {
-      status: attempt.http.status,
-      contentType: attempt.http.contentType,
-      etag: attempt.http.etag,
-      lastModified: attempt.http.lastModified,
-      headers: attempt.http.headers,
-    },
-    content: {
-      sha256: attempt.content.sha256,
-      bytes: attempt.content.bytes,
-    },
-    pointer,
-  })
-}
-
-const encodeNoResponse = pipe(
-  NoResponseSchema,
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.encodeSync
-)
-
-function createNoResponse(attempt: FetchFailure) {
-  return encodeNoResponse({
-    version: 1,
-    kind: 'fetch_attempt',
-    outcome: 'no_response',
-    runId: attempt.runId,
-    fetchedAt: attempt.fetchedAt,
-    url: attempt.url,
-    finalUrl: attempt.finalUrl,
-    source: {
-      name: attempt.sourceName,
-      collection: attempt.sourceCollection,
-    },
-    error: attempt.error,
-  })
-}
-
-const encodeMetadata = Schema.encodeSync(
-  Schema.Struct({
-    url: Schema.String,
-    sourceName: Schema.String,
-    sourceCollection: Schema.String,
-    runId: Schema.String,
-    fetchedAt: Schema.NumberFromString,
-    id: Schema.String,
-  })
-)
+const encodeMetadata = Schema.encodeSync(MetadataSchema)
 
 function ymd(ms: number): string {
   const d = new Date(ms)
@@ -140,15 +80,10 @@ export const make = Effect.gen(function* () {
 
         // Write meta object
         const metaObject = `meta/${baseDir}/${id}.json`
-        const data = createDataFetched(attempt, respPointer)
-        const metadata = encodeMetadata({
-          url: attempt.url,
-          sourceName: attempt.sourceName,
-          sourceCollection: attempt.sourceCollection,
-          runId: attempt.runId,
-          fetchedAt: attempt.fetchedAt,
-          id,
-        })
+        const record = createDataFetched(attempt, respPointer)
+        const data = encodeFetchAttemptRecord(record)
+        const recordMetadata = createMetadata(id, attempt)
+        const metadata = encodeMetadata(recordMetadata)
         yield* StorageBucket.writeFile(metaObject, data, {
           resumable: false,
           contentType: 'application/json',
@@ -170,15 +105,10 @@ export const make = Effect.gen(function* () {
 
         // Write meta object
         const metaObject = `meta/${baseDir}/${id}.json`
-        const data = createNoResponse(attempt)
-        const metadata = encodeMetadata({
-          url: attempt.url,
-          sourceName: attempt.sourceName,
-          sourceCollection: attempt.sourceCollection,
-          runId: attempt.runId,
-          fetchedAt: attempt.fetchedAt,
-          id,
-        })
+        const record = createNoResponse(attempt)
+        const data = encodeFetchAttemptRecord(record)
+        const recordMetadata = createMetadata(id, attempt)
+        const metadata = encodeMetadata(recordMetadata)
         yield* StorageBucket.writeFile(metaObject, data, {
           resumable: false,
           contentType: 'application/json',
