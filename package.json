@@ -6,8 +6,8 @@
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "@nx/docker": "^22.3.3",
-    "@nx/esbuild": "22.3.3",
+    "@nx/docker": "22.4.5",
+    "@nx/esbuild": "22.4.5",
     "@nx/eslint": "22.3.3",
     "@nx/eslint-plugin": "22.3.3",
     "@nx/js": "22.4.5",
