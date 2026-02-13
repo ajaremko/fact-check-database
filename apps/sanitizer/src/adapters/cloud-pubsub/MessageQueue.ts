@@ -7,12 +7,12 @@ import { Node } from '@news-research/node'
 
 import {
   MessageQueue,
-  Message,
   MessageQueueError,
+  Message,
 } from '../../ports/MessageQueue'
 
 // Record -> JSON -> Buffer
-const decodeObservationFetched = pipe(
+const decodeIngestionAttempted = pipe(
   IngestionAttemptedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
@@ -20,26 +20,22 @@ const decodeObservationFetched = pipe(
 )
 
 const acquire = Effect.gen(function* () {
-  console.log('Acquiring message queue')
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
-  const queue = yield* Queue.unbounded<Message>()
+  const messages = yield* Queue.unbounded<Message>()
+  const errors = yield* Queue.unbounded<MessageQueueError>()
 
   function messageListener(message: GcpsMessage) {
-    console.log('Received message:', message.id)
     Effect.runFork(
-      Queue.offer(queue, {
+      Queue.offer(messages, {
         ack: Effect.sync(() => message.ack()),
         nack: Effect.sync(() => message.nack()),
-        read: decodeObservationFetched(message.data).pipe(
-          Effect.mapError((cause) => new MessageQueueError({ cause }))
-        ),
+        read: decodeIngestionAttempted(message.data),
       })
     )
   }
 
   function errorListener(error: Error) {
-    console.log('Received error:', error.message)
-    console.log('Received error:', error)
+    Effect.runFork(Queue.offer(errors, new MessageQueueError({ cause: error })))
   }
 
   yield* Effect.sync(() => {
@@ -47,26 +43,26 @@ const acquire = Effect.gen(function* () {
     subscription.on('error', errorListener)
   })
 
-  return { queue, subscription, messageListener, errorListener }
+  return { messages, errors, subscription, messageListener, errorListener }
 })
 
 function release(resource: Effect.Effect.Success<typeof acquire>) {
   return Effect.gen(function* () {
-    console.log('Releasing message queue')
     yield* Effect.sync(() => {
       resource.subscription.removeListener('message', resource.messageListener)
       resource.subscription.removeListener('error', resource.errorListener)
     })
-    yield* Queue.shutdown(resource.queue)
+    yield* Queue.shutdown(resource.messages)
+    yield* Queue.shutdown(resource.errors)
   })
 }
 
-const subscription = PubsubSubscription.layer(
-  Config.string('PUBSUB_SUBSCRIPTION_NAME')
+const make = Effect.acquireRelease(acquire, release).pipe(
+  Effect.map(({ messages, errors }) => MessageQueue.of({ messages, errors }))
 )
 
-const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ queue }) => MessageQueue.of({ queue }))
+const subscription = PubsubSubscription.layer(
+  Config.string('PUBSUB_SUBSCRIPTION_NAME')
 )
 
 export const layer: Layer.Layer<

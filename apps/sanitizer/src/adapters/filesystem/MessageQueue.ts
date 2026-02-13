@@ -24,30 +24,31 @@ const acquire = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
   const contents = yield* fs.readDirectory(inputDir)
 
-  const queue = yield* Queue.unbounded<Message>()
+  const messages = yield* Queue.unbounded<Message>()
+  const errors = yield* Queue.unbounded<MessageQueueError>()
 
   for (const file of contents) {
-    yield* queue.offer({
+    const path = `${inputDir}/${file}`
+    const data = yield* fs.readFile(path)
+    yield* messages.offer({
       ack: Effect.void,
       nack: Effect.void,
-      read: Effect.gen(function* () {
-        const path = `${inputDir}/${file}`
-        const data = yield* fs.readFile(path)
-        return yield* decodeObservationFetched(data)
-      }).pipe(Effect.mapError((cause) => new MessageQueueError({ cause }))),
+      read: decodeObservationFetched(data),
     })
   }
 
-  return { queue }
+  return { messages, errors }
 })
 
 function release(resource: Effect.Effect.Success<typeof acquire>) {
-  console.log(`releasing message queue `)
-  return Queue.shutdown(resource.queue)
+  return Effect.gen(function* () {
+    yield* Queue.shutdown(resource.messages)
+    yield* Queue.shutdown(resource.errors)
+  })
 }
 
 export const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ queue }) => MessageQueue.of({ queue }))
+  Effect.map(({ messages, errors }) => MessageQueue.of({ messages, errors }))
 )
 
 export const layer = Layer.scoped(MessageQueue, make)

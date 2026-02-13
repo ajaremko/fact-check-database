@@ -1,4 +1,4 @@
-import { Context, Data, Effect, Queue } from 'effect'
+import { Context, Data, Effect, Queue, ParseResult } from 'effect'
 
 import { IngestionAttempted } from '@news-research/contracts'
 
@@ -7,7 +7,7 @@ export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
 }> {}
 
 export interface Message {
-  readonly read: Effect.Effect<IngestionAttempted, MessageQueueError>
+  readonly read: Effect.Effect<IngestionAttempted, ParseResult.ParseError>
   readonly ack: Effect.Effect<void>
   readonly nack: Effect.Effect<void>
 }
@@ -15,6 +15,7 @@ export interface Message {
 export class MessageQueue extends Context.Tag('MessageQueue')<
   MessageQueue,
   {
-    readonly queue: Queue.Queue<Message>
+    readonly messages: Queue.Queue<Message>
+    readonly errors: Queue.Queue<MessageQueueError>
   }
 >() {}

@@ -11,13 +11,19 @@ function handleMessage(message: Message) {
     yield* message.ack
   }).pipe(
     Effect.tapError(Effect.logError),
-    Effect.catchAll(() => message.nack)
+    Effect.catchTag('ParseError', () => message.ack)
   )
 }
 
 export const Program = Effect.gen(function* () {
   yield* Effect.logInfo('Starting sanitizer...')
-  const { queue } = yield* MessageQueue
+  const { messages, errors } = yield* MessageQueue
 
-  yield* Queue.take(queue).pipe(Effect.andThen(handleMessage), Effect.forever)
+  yield* Effect.all(
+    [
+      Queue.take(messages).pipe(Effect.andThen(handleMessage), Effect.forever),
+      Queue.take(errors).pipe(Effect.andThen(Effect.fail)),
+    ],
+    { concurrency: 'unbounded' }
+  )
 })
