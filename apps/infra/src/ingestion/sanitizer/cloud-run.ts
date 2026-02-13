@@ -13,6 +13,7 @@ import { provider } from '../provider'
 import { assetsBucket } from '../storage'
 
 import { policiesObject } from './storage'
+import { sanitizerObservationsSubscription } from './pubsub'
 
 const sanitizerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-sanitizer-sa`,
@@ -55,7 +56,7 @@ export const sanitizerObservationsTopicSubscriber =
   )
 
 // If an sanitizer image is specified in config, use that. Otherwise, fall back to a public sample image.
-function getsanitizerImageUri(tag?: string): pulumi.Output<string> {
+function getSanitizerImageUri(tag?: string): pulumi.Output<string> {
   if (!tag) {
     console.warn(
       'No sanitizerTag specified in config, using public sample image.'
@@ -85,7 +86,7 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
       serviceAccount: sanitizerServiceAccount.email,
       containers: [
         {
-          image: getsanitizerImageUri(sanitizerTag),
+          image: getSanitizerImageUri(sanitizerTag),
           envs: [
             {
               name: 'TARGET_LIST_BUCKET_NAME',
@@ -96,20 +97,12 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
               value: 'target-list.csv',
             },
             {
-              name: 'PUBSUB_TOPIC_NAME',
-              value: observationsTopicName,
+              name: 'PUBSUB_SUBSCRIPTION_NAME',
+              value: sanitizerObservationsSubscription.name,
             },
             {
               name: 'ARCHIVE_BUCKET_NAME',
               value: rawArchiveBucketName,
-            },
-            {
-              name: 'MAX_CONCURRENCY',
-              value: '10',
-            },
-            {
-              name: 'SUCCESS_THRESHOLD',
-              value: '0.8',
             },
             {
               name: 'LOG_LEVEL',
