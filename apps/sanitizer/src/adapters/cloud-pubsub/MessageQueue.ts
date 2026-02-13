@@ -24,6 +24,7 @@ const acquire = Effect.gen(function* () {
   const queue = yield* Queue.unbounded<Message>()
 
   function listener(message: GcpsMessage) {
+    console.log('Received message:', message.id)
     Effect.runFork(
       Queue.offer(queue, {
         ack: Effect.sync(() => message.ack()),
