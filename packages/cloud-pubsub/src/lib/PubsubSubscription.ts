@@ -39,7 +39,7 @@ function make(
   return Effect.acquireRelease(acquire, release)
 }
 
-export const layer = flow(make, Layer.effect(PubsubSubscription))
+export const layer = flow(make, Layer.scoped(PubsubSubscription))
 
 export class PubsubSubscriptionIOError extends Data.TaggedError(
   'PubsubSubscriptionIOError'

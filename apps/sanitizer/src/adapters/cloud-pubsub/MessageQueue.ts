@@ -54,12 +54,11 @@ const subscription = PubsubSubscription.layer(
 
 const make = Effect.acquireRelease(acquire, release).pipe(
   Effect.map(({ queue }) => MessageQueue.of({ queue })),
-  Effect.provide(subscription),
-  Effect.scoped
+  Effect.provide(subscription)
 )
 
 export const layer: Layer.Layer<
   MessageQueue,
   ConfigError.ConfigError,
   PubsubClient.PubsubClient
-> = Layer.effect(MessageQueue, make)
+> = Layer.scoped(MessageQueue, make)

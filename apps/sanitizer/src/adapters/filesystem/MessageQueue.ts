@@ -42,12 +42,12 @@ const acquire = Effect.gen(function* () {
 })
 
 function release(resource: Effect.Effect.Success<typeof acquire>) {
+  console.log(`releasing message queue `)
   return Queue.shutdown(resource.queue)
 }
 
 export const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ queue }) => MessageQueue.of({ queue })),
-  Effect.scoped
+  Effect.map(({ queue }) => MessageQueue.of({ queue }))
 )
 
-export const layer = Layer.effect(MessageQueue, make)
+export const layer = Layer.scoped(MessageQueue, make)
