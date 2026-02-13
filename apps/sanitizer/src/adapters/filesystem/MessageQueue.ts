@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { ObservationFetchedSchema } from '@news-research/contracts'
+import { IngestionAttemptedSchema } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
 import {
@@ -12,7 +12,7 @@ import {
 
 // Record -> JSON -> Buffer
 const decodeObservationFetched = pipe(
-  ObservationFetchedSchema,
+  IngestionAttemptedSchema,
   Node.parseJson(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode

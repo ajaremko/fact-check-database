@@ -1,12 +1,7 @@
 import { Config, Effect, Either, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import {
-  FetchAttemptRecord,
-  FetchAttemptRecordSchema,
-  Metadata,
-  MetadataSchema,
-} from '@news-research/contracts'
+import { IngestionRecord } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
@@ -15,7 +10,7 @@ import { FetchAttempt } from '../../data/FetchAttempt'
 
 // Record -> YAML -> Buffer
 const encodeFetchAttemptRecord = pipe(
-  FetchAttemptRecordSchema,
+  IngestionRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
@@ -23,7 +18,7 @@ const encodeFetchAttemptRecord = pipe(
 
 // Metadata -> JSON -> Buffer
 const encodeMetadata = pipe(
-  MetadataSchema,
+  IngestionRecord.IngestionRecordMetadataSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
@@ -56,8 +51,8 @@ export const make = Effect.gen(function* () {
 
   function archiveRecord(
     attempt: FetchAttempt,
-    record: FetchAttemptRecord,
-    recordMetadata: Metadata
+    record: IngestionRecord.IngestionRecord,
+    recordMetadata: IngestionRecord.IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)

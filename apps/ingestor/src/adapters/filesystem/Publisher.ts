@@ -2,13 +2,13 @@ import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { Node } from '@news-research/node'
-import { ObservationFetchedSchema } from '@news-research/contracts'
+import { IngestionAttemptedSchema } from '@news-research/contracts'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
 
 // ObservationFetched -> JSON -> Buffer
 const encodeMessage = pipe(
-  ObservationFetchedSchema,
+  IngestionAttemptedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

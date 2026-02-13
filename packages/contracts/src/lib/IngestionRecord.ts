@@ -64,16 +64,14 @@ export function NoResponseRecord(
   }
 }
 
-export const FetchAttemptRecordSchema = Schema.Union(
+export const IngestionRecordSchema = Schema.Union(
   DataFetchedRecordSchema,
   NoResponseRecordSchema
 )
 
-export type FetchAttemptRecord = Schema.Schema.Type<
-  typeof FetchAttemptRecordSchema
->
+export type IngestionRecord = Schema.Schema.Type<typeof IngestionRecordSchema>
 
-export const MetadataSchema = Schema.Struct({
+export const IngestionRecordMetadataSchema = Schema.Struct({
   url: Schema.String,
   sourceName: Schema.String,
   sourceCollection: Schema.String,
@@ -82,4 +80,6 @@ export const MetadataSchema = Schema.Struct({
   id: Schema.String,
 })
 
-export type Metadata = Schema.Schema.Type<typeof MetadataSchema>
+export type IngestionRecordMetadata = Schema.Schema.Type<
+  typeof IngestionRecordMetadataSchema
+>

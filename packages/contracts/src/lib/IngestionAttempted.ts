@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 
 import { FilePointerSchema } from './FilePointer.js'
 
-export const ObservationFetchedSchema = Schema.Struct({
+export const IngestionAttemptedSchema = Schema.Struct({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
   runId: Schema.String,
   fetchedAt: Schema.Number,
@@ -23,9 +23,9 @@ export const ObservationFetchedSchema = Schema.Struct({
     bytes: Schema.optional(Schema.Number),
   }),
   error: Schema.optional(Schema.String),
-  archive: FilePointerSchema,
+  pointer: FilePointerSchema,
 })
 
-export type ObservationFetched = Schema.Schema.Type<
-  typeof ObservationFetchedSchema
+export type IngestionAttempted = Schema.Schema.Type<
+  typeof IngestionAttemptedSchema
 >

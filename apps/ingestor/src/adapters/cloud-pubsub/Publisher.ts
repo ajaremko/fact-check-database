@@ -1,14 +1,14 @@
 import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
-import { ObservationFetchedSchema } from '@news-research/contracts'
+import { IngestionAttemptedSchema } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
 
 // ObservationFetched -> JSON -> Buffer
 const encodeEvent = pipe(
-  ObservationFetchedSchema,
+  IngestionAttemptedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

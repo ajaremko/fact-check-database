@@ -1,14 +1,14 @@
 import { Effect, Either } from 'effect'
 
-import { ObservationFetched, FilePointer } from '@news-research/contracts'
+import { IngestionAttempted, FilePointer } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
 import type { FetchAttempt } from '../data/FetchAttempt'
 
-export function createObservationFetched(
+export function createIngestionAttempted(
   attempt: FetchAttempt,
   pointer: FilePointer // pointer to META json
-): Effect.Effect<ObservationFetched> {
+): Effect.Effect<IngestionAttempted> {
   return Effect.gen(function* () {
     const components = Either.match(attempt.result, {
       onLeft: (result) => [
@@ -42,7 +42,7 @@ export function createObservationFetched(
           bytes: undefined,
         },
         error: result.error,
-        archive: pointer,
+        pointer,
       }),
       onRight: (result) => ({
         observationId,
@@ -65,7 +65,7 @@ export function createObservationFetched(
           bytes: result.bytes,
         },
         error: undefined,
-        archive: pointer,
+        pointer,
       }),
     })
   })

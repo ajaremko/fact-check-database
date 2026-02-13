@@ -1,13 +1,13 @@
 import { Context, Data, Effect, Queue } from 'effect'
 
-import { ObservationFetched } from '@news-research/contracts'
+import { IngestionAttempted } from '@news-research/contracts'
 
 export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
   readonly cause: unknown
 }> {}
 
 export interface Message {
-  readonly read: Effect.Effect<ObservationFetched, MessageQueueError>
+  readonly read: Effect.Effect<IngestionAttempted, MessageQueueError>
   readonly ack: Effect.Effect<void>
   readonly nack: Effect.Effect<void>
 }

@@ -2,7 +2,7 @@ import { Config, ConfigError, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
 import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
-import { ObservationFetchedSchema } from '@news-research/contracts'
+import { IngestionAttemptedSchema } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
 import {
@@ -13,13 +13,14 @@ import {
 
 // Record -> JSON -> Buffer
 const decodeObservationFetched = pipe(
-  ObservationFetchedSchema,
+  IngestionAttemptedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
 )
 
 const acquire = Effect.gen(function* () {
+  console.log('Acquiring message queue')
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
   const queue = yield* Queue.unbounded<Message>()
 
@@ -42,6 +43,7 @@ const acquire = Effect.gen(function* () {
 
 function release(resource: Effect.Effect.Success<typeof acquire>) {
   return Effect.gen(function* () {
+    console.log('Releasing message queue')
     yield* Effect.sync(() =>
       resource.subscription.removeListener('message', resource.listener)
     )

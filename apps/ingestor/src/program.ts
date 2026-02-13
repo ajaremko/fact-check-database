@@ -13,7 +13,7 @@ import { Publisher } from './ports/Publisher'
 import { TargetList } from './ports/TargetList'
 import { SourceTarget } from './data/SourceTarget'
 import { FetchAttempt } from './data/FetchAttempt'
-import { createObservationFetched } from './integration/createObservationFetched'
+import { createIngestionAttempted } from './integration/createIngestionAttempted'
 
 const MaxConcurrencySchema = Schema.NumberFromString.pipe(
   Schema.nonNegative(),
@@ -68,7 +68,7 @@ function processTarget(runId: string, source: SourceTarget, index: number) {
       })
       const meta = createMetadata(attempt.runId, attempt)
       const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
-      const event = yield* createObservationFetched(attempt, recordPointer)
+      const event = yield* createIngestionAttempted(attempt, recordPointer)
       yield* publisher.publish(event)
     } else {
       // If fetch is successful, archive both the response
@@ -87,7 +87,7 @@ function processTarget(runId: string, source: SourceTarget, index: number) {
       })
       const meta = createMetadata(attempt.runId, attempt)
       const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
-      const event = yield* createObservationFetched(attempt, recordPointer)
+      const event = yield* createIngestionAttempted(attempt, recordPointer)
       yield* publisher.publish(event)
     }
   }).pipe(
