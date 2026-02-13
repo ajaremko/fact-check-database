@@ -24,7 +24,7 @@ const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
   const queue = yield* Queue.unbounded<Message>()
 
-  function listener(message: GcpsMessage) {
+  function messageListener(message: GcpsMessage) {
     console.log('Received message:', message.id)
     Effect.runFork(
       Queue.offer(queue, {
@@ -37,15 +37,25 @@ const acquire = Effect.gen(function* () {
     )
   }
 
-  yield* Effect.sync(() => subscription.on('message', listener))
-  return { queue, subscription, listener }
+  function errorListener(error: Error) {
+    console.log('Received error:', error.message)
+    console.log('Received error:', error)
+  }
+
+  yield* Effect.sync(() => {
+    subscription.on('message', messageListener)
+    subscription.on('error', errorListener)
+  })
+
+  return { queue, subscription, messageListener, errorListener }
 })
 
 function release(resource: Effect.Effect.Success<typeof acquire>) {
   return Effect.gen(function* () {
     console.log('Releasing message queue')
     yield* Effect.sync(() => {
-      resource.subscription.removeListener('message', resource.listener)
+      resource.subscription.removeListener('message', resource.messageListener)
+      resource.subscription.removeListener('error', resource.errorListener)
     })
     yield* Queue.shutdown(resource.queue)
   })
