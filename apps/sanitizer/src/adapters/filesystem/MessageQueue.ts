@@ -18,7 +18,7 @@ const decodeObservationFetched = pipe(
   Schema.decode
 )
 
-export const make = Effect.gen(function* () {
+const acquire = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
@@ -38,7 +38,16 @@ export const make = Effect.gen(function* () {
     })
   }
 
-  return MessageQueue.of({ queue })
+  return { queue }
 })
+
+function release(resource: Effect.Effect.Success<typeof acquire>) {
+  return Queue.shutdown(resource.queue)
+}
+
+export const make = Effect.acquireRelease(acquire, release).pipe(
+  Effect.map(({ queue }) => MessageQueue.of({ queue })),
+  Effect.scoped
+)
 
 export const layer = Layer.effect(MessageQueue, make)
