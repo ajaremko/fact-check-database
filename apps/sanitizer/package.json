@@ -21,24 +21,17 @@
           "tsConfig": "apps/sanitizer/tsconfig.app.json",
           "assets": [
             "apps/sanitizer/src/assets"
-          ],
-          "esbuildOptions": {
-            "sourcemap": true,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
+          ]
         },
         "configurations": {
-          "development": {},
+          "development": {
+            "esbuildConfig": "apps/sanitizer/esbuild.config.js"
+          },
           "production": {
-            "generateLockfile": true,
-            "esbuildOptions": {
-              "sourcemap": false,
-              "outExtension": {
-                ".js": ".js"
-              }
-            }
+            "esbuildConfig": "apps/sanitizer/esbuild.config.prod.js",
+            "bundle": true,
+            "thirdParty": true,
+            "generatePackageJson": false
           }
         }
       },
