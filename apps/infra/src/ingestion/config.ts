@@ -9,6 +9,7 @@ export const gcpProject = ingestionConfig.require('project')
 export const gcpRegion = ingestionConfig.require('region')
 export const ingestorTag = ingestionConfig.get('ingestorTag')
 export const ingestorSchedule = ingestionConfig.require('ingestorSchedule')
+export const sanitizerTag = ingestionConfig.get('sanitizerTag')
 
 export const ingestionLabels: Record<string, string> = {
   ...labels,
