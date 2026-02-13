@@ -44,9 +44,9 @@ const acquire = Effect.gen(function* () {
 function release(resource: Effect.Effect.Success<typeof acquire>) {
   return Effect.gen(function* () {
     console.log('Releasing message queue')
-    yield* Effect.sync(() =>
+    yield* Effect.sync(() => {
       resource.subscription.removeListener('message', resource.listener)
-    )
+    })
     yield* Queue.shutdown(resource.queue)
   })
 }
@@ -56,12 +56,11 @@ const subscription = PubsubSubscription.layer(
 )
 
 const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ queue }) => MessageQueue.of({ queue })),
-  Effect.provide(subscription)
+  Effect.map(({ queue }) => MessageQueue.of({ queue }))
 )
 
 export const layer: Layer.Layer<
   MessageQueue,
   ConfigError.ConfigError,
   PubsubClient.PubsubClient
-> = Layer.scoped(MessageQueue, make)
+> = Layer.scoped(MessageQueue, make).pipe(Layer.provide(subscription))
