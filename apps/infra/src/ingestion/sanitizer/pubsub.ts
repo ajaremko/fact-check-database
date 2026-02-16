@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { observationsTopicName } from '../../core'
+import { observationsTopicId } from '../../core'
 
 import { ingestionLabels, tag } from '../config'
 import { provider } from '../provider'
@@ -11,7 +11,7 @@ export const sanitizerObservationsSubscription = new gcp.pubsub.Subscription(
   {
     name: 'sanitizer-observations-subscription',
     labels: ingestionLabels,
-    topic: observationsTopicName,
+    topic: observationsTopicId,
     ackDeadlineSeconds: 60,
   },
   {

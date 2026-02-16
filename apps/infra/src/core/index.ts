@@ -10,6 +10,7 @@ export const githubActionServiceAccountEmail = githubActionServiceAccount.email
 import { observationsTopic } from './pubsub'
 
 export const observationsTopicName = observationsTopic.name
+export const observationsTopicId = observationsTopic.id
 
 import { bigQueryKey, gcsArchiveKey } from './kms'
 

@@ -1,11 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import {
-  artifactRegistry,
-  rawArchiveBucketName,
-  observationsTopicName,
-} from '../../core'
+import { artifactRegistry, rawArchiveBucketName } from '../../core'
 
 import { gcpRegion, sanitizerTag, tag } from '../config'
 import { cloudRunService } from '../services'
@@ -45,10 +41,10 @@ export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
 )
 
 export const sanitizerObservationsTopicSubscriber =
-  new gcp.pubsub.TopicIAMMember(
+  new gcp.pubsub.SubscriptionIAMMember(
     `${tag}-sanitizer-observations-topic-subscriber`,
     {
-      topic: observationsTopicName,
+      subscription: sanitizerObservationsSubscription.name,
       role: 'roles/pubsub.subscriber',
       member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
     },

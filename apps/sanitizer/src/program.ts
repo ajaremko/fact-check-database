@@ -11,7 +11,8 @@ function handleMessage(message: Message) {
     yield* message.ack
   }).pipe(
     Effect.tapError(Effect.logError),
-    Effect.catchTag('ParseError', () => message.ack)
+    Effect.catchTag('ParseError', () => message.ack),
+    Effect.catchAll(() => message.nack)
   )
 }
 
