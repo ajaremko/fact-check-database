@@ -8,7 +8,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
 
-import { policiesObject } from './storage'
+import { policyObject } from './storage'
 import { sanitizerObservationsSubscription } from './pubsub'
 
 const sanitizerServiceAccount = new gcp.serviceaccount.Account(
@@ -85,12 +85,12 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
           image: getSanitizerImageUri(sanitizerTag),
           envs: [
             {
-              name: 'TARGET_LIST_BUCKET_NAME',
+              name: 'ASSETS_BUCKET_NAME',
               value: assetsBucket.name,
             },
             {
-              name: 'TARGET_LIST_URI',
-              value: 'target-list.csv',
+              name: 'SANITIZER_POLICY_URI',
+              value: policyObject.name,
             },
             {
               name: 'PUBSUB_SUBSCRIPTION_NAME',
@@ -112,7 +112,7 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
   {
     dependsOn: [
       cloudRunService,
-      policiesObject,
+      policyObject,
       sanitizerAssetBucketViewer,
       sanitizerRawArchiveBucketAdmin,
       sanitizerObservationsTopicSubscriber,

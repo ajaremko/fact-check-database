@@ -5,12 +5,12 @@ import { tag } from '../config'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
 
-export const policiesObject = new gcp.storage.BucketObject(
-  `${tag}-policies-yml`,
+export const policyObject = new gcp.storage.BucketObject(
+  `${tag}-policy-yml`,
   {
     bucket: assetsBucket.name,
-    name: 'policies.yml',
-    source: new pulumi.asset.FileAsset('ingestion/sanitizer/policies.yml'),
+    name: 'policy.yml',
+    source: new pulumi.asset.FileAsset('ingestion/sanitizer/policy.yml'),
     contentType: 'application/yaml',
   },
   { provider }
