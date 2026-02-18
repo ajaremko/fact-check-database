@@ -80,7 +80,7 @@ export const SanitizerPolicySchema = Schema.Struct({
   stripQueryParams: Schema.Array(Schema.String),
   dropHeaders: Schema.Array(Schema.String),
   collections: Schema.Array(CollectionRuleSchema),
-  overrides: Schema.Array(SourceOverrideSchema),
+  overrides: Schema.optional(Schema.Array(SourceOverrideSchema)),
 })
 
 export type SanitizerPolicy = Schema.Schema.Type<typeof SanitizerPolicySchema>
