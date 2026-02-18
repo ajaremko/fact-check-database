@@ -21,7 +21,6 @@ function make(
   config?: SubscriptionOptionsConfig
 ) {
   const acquire = Effect.gen(function* () {
-    console.log('Acquiring subscription')
     const { client } = yield* PubsubClient
     const name = yield* subscriptionName
     if (config) {
@@ -35,7 +34,6 @@ function make(
 
   function release(resource: Effect.Effect.Success<typeof acquire>) {
     return Effect.sync(() => {
-      console.log('Releasing subscription')
       resource.subscription.close()
     })
   }
