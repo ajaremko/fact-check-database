@@ -16,10 +16,12 @@ export class Archiver extends Context.Tag('Archiver')<
       pointer: FilePointer
     ) => Effect.Effect<IngestionRecord.IngestionRecord, ArchiverError>
     readonly writeSanitizedBody: (
+      id: string,
       body: Uint8Array,
       contentType?: string
     ) => Effect.Effect<FilePointer, ArchiverError>
     readonly writeSanitizerRecord: (
+      id: string,
       record: IngestionRecord.IngestionRecord,
       metadata: IngestionRecord.IngestionRecordMetadata
     ) => Effect.Effect<FilePointer, ArchiverError>

@@ -1,22 +1,21 @@
-import {
-  Config,
-  ConfigError,
-  Effect,
-  Either,
-  Layer,
-  pipe,
-  Schema,
-} from 'effect'
-import { format } from 'date-fns'
+import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 
+import { FilePointer, IngestionRecord } from '@news-research/contracts'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import { IngestionRecord } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
 import { Archiver, ArchiverError } from '../../ports/Archiver'
-import type { FetchAttempt } from '../../data/FetchAttempt'
 
+// Record -> YAML -> Buffer
+const decodeFetchAttemptRecord = pipe(
+  IngestionRecord.IngestionRecordSchema,
+  Yaml.parseYaml(),
+  Node.parseUint8Array({ encoding: 'utf-8' }),
+  Schema.decode
+)
+
+// Record -> YAML -> Buffer
 const encodeFetchAttemptRecord = pipe(
   IngestionRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
@@ -24,39 +23,41 @@ const encodeFetchAttemptRecord = pipe(
   Schema.encodeSync
 )
 
-const encodeMetadata = Schema.encodeSync(
-  IngestionRecord.IngestionRecordMetadataSchema
+// Metadata -> JSON -> Buffer
+const encodeMetadata = pipe(
+  IngestionRecord.IngestionRecordMetadataSchema,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encodeSync
 )
-
-function ymd(ms: number): string {
-  const d = new Date(ms)
-  return format(d, 'yyyy-MM-dd')
-}
-
-const makeId = (attempt: FetchAttempt) =>
-  Either.match(attempt.result, {
-    onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
-    onRight: (result) => result.sha256,
-  })
-
-const makeBaseDir = (attempt: FetchAttempt) => {
-  const date = ymd(attempt.fetchedAt)
-  return `source=${attempt.source.name}/date=${date}/run=${attempt.runId}`
-}
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
 
-  function archiveBody(
-    attempt: FetchAttempt,
-    response: Uint8Array,
+  function readRawBody(pointer: FilePointer) {
+    return StorageBucket.downloadFile(pointer.object).pipe(
+      Effect.andThen(([data]) => data),
+      Effect.mapError((cause) => new ArchiverError({ cause })),
+      Effect.provideService(StorageBucket.StorageBucket, { bucket })
+    )
+  }
+
+  function readFetchAttemptRecord(pointer: FilePointer) {
+    return StorageBucket.downloadFile(pointer.object).pipe(
+      Effect.andThen(([data]) => decodeFetchAttemptRecord(data)),
+      Effect.mapError((cause) => new ArchiverError({ cause })),
+      Effect.provideService(StorageBucket.StorageBucket, { bucket })
+    )
+  }
+
+  function writeSanitizedBody(
+    id: string,
+    body: Uint8Array,
     contentType?: string
   ) {
     return Effect.gen(function* () {
-      const id = makeId(attempt)
-      const baseDir = makeBaseDir(attempt)
-      const rawObject = `raw/${baseDir}/${id}.bin`
-      yield* StorageBucket.writeFile(rawObject, Buffer.from(response), {
+      const rawObject = `sanitized/${id}.bin`
+      yield* StorageBucket.writeFile(rawObject, Buffer.from(body), {
         resumable: false,
         contentType: contentType ?? 'application/octet-stream',
       })
@@ -70,15 +71,13 @@ export const make = Effect.gen(function* () {
     )
   }
 
-  function archiveRecord(
-    attempt: FetchAttempt,
+  function writeSanitizerRecord(
+    id: string,
     record: IngestionRecord.IngestionRecord,
     recordMetadata: IngestionRecord.IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
-      const id = makeId(attempt)
-      const baseDir = makeBaseDir(attempt)
-      const recordObject = `records/${baseDir}/${id}.ingestor.yml`
+      const recordObject = `records/${id}.sanitizer.yml`
       const data = encodeFetchAttemptRecord(record)
       const metadata = encodeMetadata(recordMetadata)
       yield* StorageBucket.writeFile(recordObject, data, {
@@ -91,12 +90,17 @@ export const make = Effect.gen(function* () {
         object: recordObject,
       }
     }).pipe(
-      Effect.mapError((cause) => new ArchiverError({ cause })),
+      Effect.catchAll((cause) => Effect.fail(new ArchiverError({ cause }))),
       Effect.provideService(StorageBucket.StorageBucket, { bucket })
     )
   }
 
-  return Archiver.of({ archiveBody, archiveRecord })
+  return Archiver.of({
+    readFetchAttemptRecord,
+    readRawBody,
+    writeSanitizedBody,
+    writeSanitizerRecord,
+  })
 })
 
 export const layer: Layer.Layer<

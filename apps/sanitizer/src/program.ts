@@ -1,30 +1,59 @@
 import { Effect, Queue } from 'effect'
 
-import { MessageQueue, Message } from './ports/MessageQueue'
+import { Archiver } from './ports/Archiver'
+import { MessageQueue } from './ports/MessageQueue'
+import { SanitizerPolicyDocument } from './ports/SanitizerPolicyDocument'
 
-function handleMessage(message: Message) {
-  return Effect.gen(function* () {
-    const event = yield* message.read
-    yield* Effect.logInfo(
-      `Processing event ${event.observationId} from source ${event.source.name}...`
-    )
-    yield* message.ack
-  }).pipe(
-    Effect.tapError(Effect.logError),
-    Effect.catchTag('ParseError', () => message.ack),
-    Effect.catchAll(() => message.nack)
-  )
-}
+import { evaluatePolicy } from './integration'
 
 export const Program = Effect.gen(function* () {
-  yield* Effect.logInfo('Starting sanitizer...')
+  const policyDocument = yield* SanitizerPolicyDocument
+  const archiver = yield* Archiver
   const { messages, errors } = yield* MessageQueue
 
-  yield* Effect.all(
-    [
-      Queue.take(messages).pipe(Effect.andThen(handleMessage), Effect.forever),
-      Queue.take(errors).pipe(Effect.andThen(Effect.fail)),
-    ],
-    { concurrency: 'unbounded' }
+  const policy = yield* policyDocument.read
+
+  const handleMessages = Queue.take(messages).pipe(
+    Effect.andThen((message) =>
+      Effect.gen(function* () {
+        const event = yield* message.read
+        const record = yield* archiver.readFetchAttemptRecord(event.pointer)
+        if (record.outcome === 'data_fetched') {
+          yield* Effect.logInfo(
+            `Fetched data for ${record.url} with content-type ${record.http.contentType}`
+          )
+          const decision = yield* evaluatePolicy(policy, record)
+          yield* Effect.logInfo(
+            `Policy decision for ${record.url}: label=${
+              decision.label
+            }, actions=${decision.actions.join(',')}, rewriteBody=${
+              decision.rewriteBody
+            }`
+          )
+        } else {
+          yield* Effect.logInfo(
+            `Fetch attempt for ${record.url} failed with error: ${record.error}`
+          )
+        }
+      }).pipe(
+        Effect.tapError(Effect.logError),
+        Effect.catchTag('ParseError', () => message.ack),
+        Effect.catchAll(() => message.nack)
+      )
+    ),
+    Effect.forever
   )
+
+  const handleErrors = Queue.take(errors).pipe(
+    Effect.tap((error) =>
+      Effect.logError(`Message queue error: ${error.cause}`)
+    ),
+    Effect.andThen(Effect.fail)
+  )
+
+  yield* Effect.logInfo('Starting sanitizer...')
+
+  yield* Effect.all([handleMessages, handleErrors], {
+    concurrency: 'unbounded',
+  })
 })
