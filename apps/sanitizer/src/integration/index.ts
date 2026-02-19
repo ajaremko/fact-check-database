@@ -1,24 +1,19 @@
 import { Effect } from 'effect'
 
-import { IngestionRecord } from '@news-research/contracts'
+import { IngestorRecord, SantizerRecord } from '@news-research/contracts'
 
-import {
-  SanitizerPolicy,
-  PolicyLabel,
-  SanitizationAction,
-  CollectionRule,
-} from '../data/SanitizerPolicy'
+import { SanitizerPolicy, CollectionRule } from '../data/SanitizerPolicy'
 
 export type UrlNormalizationResult = {
   url: string
-  actions: SanitizationAction[]
+  actions: SantizerRecord.SanitizationAction[]
 }
 
 export function normalizeUrl(
   rawUrl: string,
   stripQueryParams: string[]
 ): UrlNormalizationResult {
-  const actions: SanitizationAction[] = []
+  const actions: SantizerRecord.SanitizationAction[] = []
   const u = new URL(rawUrl)
 
   // remove fragment
@@ -106,7 +101,7 @@ export function pickRule(
 export function contentTypeAllowed(
   contentType: string | undefined,
   rule: CollectionRule
-): { allowed: boolean; quarantineReason?: SanitizationAction } {
+): { allowed: boolean; quarantineReason?: SantizerRecord.SanitizationAction } {
   const allowList = rule.allowedContentTypeSubstrings ?? []
   if (!contentType) {
     const behavior = rule.onMissingContentType ?? 'RESTRICT'
@@ -131,15 +126,15 @@ export function contentTypeAllowed(
 }
 
 export type PolicyDecision = {
-  label: PolicyLabel
-  actions: SanitizationAction[]
+  label: SantizerRecord.PolicyLabel
+  actions: SantizerRecord.SanitizationAction[]
   error?: string // quarantine reason text
   rewriteBody: boolean
 }
 
 export function evaluatePolicy(
   policy: SanitizerPolicy,
-  record: IngestionRecord.IngestionRecord
+  record: IngestorRecord.IngestionRecord
 ): Effect.Effect<PolicyDecision> {
   return Effect.gen(function* () {
     yield* Effect.logInfo(

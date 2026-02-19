@@ -1,6 +1,10 @@
 import { Context, Data, Effect } from 'effect'
 
-import { FilePointer, IngestionRecord } from '@news-research/contracts'
+import {
+  FilePointer,
+  IngestorRecord,
+  SantizerRecord,
+} from '@news-research/contracts'
 
 export class ArchiverError extends Data.TaggedError('ArchiverError')<{
   readonly cause: unknown
@@ -14,7 +18,7 @@ export class Archiver extends Context.Tag('Archiver')<
     ) => Effect.Effect<Uint8Array, ArchiverError>
     readonly readFetchAttemptRecord: (
       pointer: FilePointer
-    ) => Effect.Effect<IngestionRecord.IngestionRecord, ArchiverError>
+    ) => Effect.Effect<IngestorRecord.IngestionRecord, ArchiverError>
     readonly writeSanitizedBody: (
       id: string,
       body: Uint8Array,
@@ -22,8 +26,8 @@ export class Archiver extends Context.Tag('Archiver')<
     ) => Effect.Effect<FilePointer, ArchiverError>
     readonly writeSanitizerRecord: (
       id: string,
-      record: IngestionRecord.IngestionRecord,
-      metadata: IngestionRecord.IngestionRecordMetadata
+      record: SantizerRecord.SanitizerRecord,
+      metadata: SantizerRecord.SantizerRecordMetadata
     ) => Effect.Effect<FilePointer, ArchiverError>
   }
 >() {}

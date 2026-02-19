@@ -1,10 +1,11 @@
-import { Effect, Queue } from 'effect'
+import { Clock, Effect, Queue } from 'effect'
 
 import { Archiver } from './ports/Archiver'
 import { MessageQueue } from './ports/MessageQueue'
 import { SanitizerPolicyDocument } from './ports/SanitizerPolicyDocument'
 
 import { evaluatePolicy } from './integration'
+import { Node } from '@news-research/node'
 
 export const Program = Effect.gen(function* () {
   const policyDocument = yield* SanitizerPolicyDocument
@@ -29,6 +30,41 @@ export const Program = Effect.gen(function* () {
             }, actions=${decision.actions.join(',')}, rewriteBody=${
               decision.rewriteBody
             }`
+          )
+          const sanitizationId = yield* Node.generateUUID()
+          const sanitizedAt = yield* Clock.currentTimeMillis
+          const pointer = yield* archiver.writeSanitizerRecord(
+            sanitizationId,
+            {
+              version: 1,
+              kind: 'sanitized_record',
+              url: record.url,
+              http: record.http,
+              runId: record.runId,
+              source: record.source,
+              content: record.content,
+              sanitizationId,
+              sanitizedAt,
+              policy: {
+                label: decision.label,
+                actions: decision.actions,
+              },
+              input: {
+                record: event.pointer,
+                raw:
+                  record.outcome === 'data_fetched' ? event.pointer : undefined,
+              },
+            },
+            {
+              sourceCollection: record.source.collection,
+              sourceName: record.source.name,
+              sanitizedAt,
+              url: record.url,
+              id: sanitizationId,
+            }
+          )
+          yield* Effect.logInfo(
+            `Wrote sanitizer record for ${record.url} to pointer ${pointer}`
           )
         } else {
           yield* Effect.logInfo(

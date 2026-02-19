@@ -10,7 +10,7 @@ import {
 import { format } from 'date-fns'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import { IngestionRecord } from '@news-research/contracts'
+import { IngestorRecord } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
@@ -18,14 +18,14 @@ import { Archiver, ArchiverError } from '../../ports/Archiver'
 import type { FetchAttempt } from '../../data/FetchAttempt'
 
 const encodeFetchAttemptRecord = pipe(
-  IngestionRecord.IngestionRecordSchema,
+  IngestorRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
 
 const encodeMetadata = Schema.encodeSync(
-  IngestionRecord.IngestionRecordMetadataSchema
+  IngestorRecord.IngestionRecordMetadataSchema
 )
 
 function ymd(ms: number): string {
@@ -72,8 +72,8 @@ export const make = Effect.gen(function* () {
 
   function archiveRecord(
     attempt: FetchAttempt,
-    record: IngestionRecord.IngestionRecord,
-    recordMetadata: IngestionRecord.IngestionRecordMetadata
+    record: IngestorRecord.IngestionRecord,
+    recordMetadata: IngestorRecord.IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)

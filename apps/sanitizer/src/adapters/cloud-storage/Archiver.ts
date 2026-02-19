@@ -1,6 +1,10 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 
-import { FilePointer, IngestionRecord } from '@news-research/contracts'
+import {
+  FilePointer,
+  IngestorRecord,
+  SantizerRecord,
+} from '@news-research/contracts'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
@@ -8,27 +12,27 @@ import { Yaml } from '@news-research/yaml'
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 
 // Record -> YAML -> Buffer
-const decodeFetchAttemptRecord = pipe(
-  IngestionRecord.IngestionRecordSchema,
+const decodeIngestorRecord = pipe(
+  IngestorRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
 
 // Record -> YAML -> Buffer
-const encodeFetchAttemptRecord = pipe(
-  IngestionRecord.IngestionRecordSchema,
+const encodeSantizerRecord = pipe(
+  SantizerRecord.SanitizerRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.encodeSync
+  Schema.encode
 )
 
 // Metadata -> JSON -> Buffer
 const encodeMetadata = pipe(
-  IngestionRecord.IngestionRecordMetadataSchema,
+  SantizerRecord.SantizerRecordMetadataSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.encodeSync
+  Schema.encode
 )
 
 export const make = Effect.gen(function* () {
@@ -44,7 +48,7 @@ export const make = Effect.gen(function* () {
 
   function readFetchAttemptRecord(pointer: FilePointer) {
     return StorageBucket.downloadFile(pointer.object).pipe(
-      Effect.andThen(([data]) => decodeFetchAttemptRecord(data)),
+      Effect.andThen(([data]) => decodeIngestorRecord(data)),
       Effect.mapError((cause) => new ArchiverError({ cause })),
       Effect.provideService(StorageBucket.StorageBucket, { bucket })
     )
@@ -73,13 +77,13 @@ export const make = Effect.gen(function* () {
 
   function writeSanitizerRecord(
     id: string,
-    record: IngestionRecord.IngestionRecord,
-    recordMetadata: IngestionRecord.IngestionRecordMetadata
+    record: SantizerRecord.SanitizerRecord,
+    recordMetadata: SantizerRecord.SantizerRecordMetadata
   ) {
     return Effect.gen(function* () {
       const recordObject = `records/${id}.sanitizer.yml`
-      const data = encodeFetchAttemptRecord(record)
-      const metadata = encodeMetadata(recordMetadata)
+      const data = yield* encodeSantizerRecord(record)
+      const metadata = yield* encodeMetadata(recordMetadata)
       yield* StorageBucket.writeFile(recordObject, data, {
         resumable: false,
         contentType: 'application/yaml',
@@ -90,7 +94,7 @@ export const make = Effect.gen(function* () {
         object: recordObject,
       }
     }).pipe(
-      Effect.catchAll((cause) => Effect.fail(new ArchiverError({ cause }))),
+      Effect.mapError((cause) => new ArchiverError({ cause })),
       Effect.provideService(StorageBucket.StorageBucket, { bucket })
     )
   }

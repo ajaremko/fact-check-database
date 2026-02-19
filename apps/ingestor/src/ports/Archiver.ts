@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import { FilePointer, IngestionRecord } from '@news-research/contracts'
+import { FilePointer, IngestorRecord } from '@news-research/contracts'
 
 import type { FetchAttempt } from '../data/FetchAttempt'
 
@@ -18,8 +18,8 @@ export class Archiver extends Context.Tag('Archiver')<
     ) => Effect.Effect<FilePointer, ArchiverError>
     readonly archiveRecord: (
       attempt: FetchAttempt,
-      record: IngestionRecord.IngestionRecord,
-      metadata: IngestionRecord.IngestionRecordMetadata
+      record: IngestorRecord.IngestionRecord,
+      metadata: IngestorRecord.IngestionRecordMetadata
     ) => Effect.Effect<FilePointer, ArchiverError>
   }
 >() {}

@@ -1,4 +1,4 @@
-import { IngestionRecord, FilePointer } from '@news-research/contracts'
+import { IngestorRecord, FilePointer } from '@news-research/contracts'
 
 import type { FetchAttempt } from '../data/FetchAttempt'
 import type { Response, NoResponse } from '../data/FetchResult'
@@ -12,7 +12,7 @@ export type CreateNoResponseInput = {
 }
 
 export function createNoResponseRecord(input: CreateNoResponseInput) {
-  return IngestionRecord.NoResponseRecord({
+  return IngestorRecord.NoResponseRecord({
     runId: input.runId,
     fetchedAt: input.fetchedAt,
     url: input.source.url,
@@ -33,7 +33,7 @@ export type CreateDataFetchedInput = {
 }
 
 export function createDataFetchedRecord(input: CreateDataFetchedInput) {
-  return IngestionRecord.DataFetchedRecord({
+  return IngestorRecord.DataFetchedRecord({
     runId: input.runId,
     fetchedAt: input.fetchedAt,
     url: input.source.url,
@@ -59,7 +59,7 @@ export function createDataFetchedRecord(input: CreateDataFetchedInput) {
 export function createMetadata(
   id: string,
   attempt: FetchAttempt
-): IngestionRecord.IngestionRecordMetadata {
+): IngestorRecord.IngestionRecordMetadata {
   return {
     id,
     url: attempt.source.url,
