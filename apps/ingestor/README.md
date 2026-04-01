@@ -45,7 +45,6 @@ apps/ingestor/
 | Document | Purpose |
 | --- | --- |
 | [docs/how-it-works.md](./docs/how-it-works.md) | End-to-end data flow and processing behavior |
-| [docs/configuration.md](./docs/configuration.md) | Environment variables and target list format |
+| [docs/configuration.md](./docs/configuration.md) | Environment variables, adapter behavior, and target list format |
 | [docs/contracts.md](./docs/contracts.md) | Output record schemas and archive layout |
-| [docs/environments.md](./docs/environments.md) | Running locally and production deployment |
 | [docs/runbook.md](./docs/runbook.md) | Interpreting logs and diagnosing failures |
