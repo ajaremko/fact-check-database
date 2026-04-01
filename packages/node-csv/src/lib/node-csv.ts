@@ -7,8 +7,33 @@ type OptionsWithColumns<T> = Omit<CsvParse.Options<T>, 'columns'> & {
 }
 
 /**
- * The parseCsv combinator provides a method to create a schema that can parse CSV strings into arrays of
- * objects, and encode arrays of objects into CSV strings.
+ * A schema combinator that adds CSV parsing and serialization to an existing schema.
+ *
+ * Accepts a required options object and a schema, and produces a new schema that
+ * transforms between a CSV `string` and an array of the schema's type `A[]`,
+ * using `csv-parse` and `csv-stringify`. Set `opts.parse.columns` to `true` to
+ * treat the first row as column names.
+ *
+ * @example
+ * // Decode a CSV string into an array of typed objects
+ * const MySchema = Schema.Struct({ name: Schema.String, count: Schema.NumberFromString })
+ * const decode = pipe(
+ *   MySchema,
+ *   NodeCsv.parseCsv({ parse: { columns: true, skip_empty_lines: true }, stringify: {} }),
+ *   Schema.decode
+ * )
+ * const result = decode('name,count\nexample,42\n')
+ * // → [{ name: 'example', count: 42 }]
+ *
+ * @example
+ * // Encode an array of typed objects into a CSV string
+ * const encode = pipe(
+ *   MySchema,
+ *   NodeCsv.parseCsv({ parse: { columns: true }, stringify: { header: true } }),
+ *   Schema.encode
+ * )
+ * const result = encode([{ name: 'example', count: 42 }])
+ * // → "name,count\nexample,42\n"
  */
 export function parseCsv<I>(opts: {
   parse: OptionsWithColumns<I>
