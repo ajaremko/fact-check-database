@@ -93,6 +93,20 @@ When generating documentation:
 - prefer describing intent and guarantees over low-level mechanics
 - clearly state what protections exist and what is out of scope
 
+# Coding Delegation
+
+Claude is trusted to implement coding tasks autonomously. Prefer doing over asking, except when:
+
+- a task requires a design or architecture decision not derivable from existing patterns
+- the change affects shared interfaces, schemas, or IAM configurations
+
+When implementing:
+
+- read existing code in the relevant area before writing new code
+- follow patterns already established in the project
+- run `nx affected` tests after changes
+- flag if existing documentation is stale relative to new functionality
+
 # Coding Style Guidelines
 
 ## General
