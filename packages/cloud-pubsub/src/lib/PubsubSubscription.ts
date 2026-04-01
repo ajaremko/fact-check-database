@@ -3,6 +3,15 @@ import { Subscription, SubscriberOptions } from '@google-cloud/pubsub'
 
 import { PubsubClient } from './PubsubClient'
 
+/**
+ * Provides a Google Cloud Pub/Sub `Subscription` for receiving messages.
+ *
+ * Requires `PubsubClient` in the layer stack.
+ *
+ * This layer is **scoped**: the subscription is automatically closed via
+ * `subscription.close()` when the enclosing Effect scope is released. Use
+ * `Layer.scoped` or `Effect.scoped` to control the lifetime.
+ */
 export class PubsubSubscription extends Context.Tag('PubsubSubscription')<
   PubsubSubscription,
   {
@@ -41,8 +50,22 @@ function make(
   return Effect.acquireRelease(acquire, release)
 }
 
+/**
+ * Creates a scoped layer providing a `PubsubSubscription`.
+ *
+ * `subscriptionName` is required and must be a `Config.Config<string>`, typically
+ * an environment variable. The subscription is closed automatically when the
+ * layer scope is released.
+ *
+ * @example
+ * Effect.provide(PubsubSubscription.layer(Config.string('PUBSUB_SUBSCRIPTION_NAME')))
+ */
 export const layer = flow(make, Layer.scoped(PubsubSubscription))
 
+/**
+ * Error type for subscription IO failures. Reserved for future use —
+ * not currently thrown by the layer itself.
+ */
 export class PubsubSubscriptionIOError extends Data.TaggedError(
   'PubsubSubscriptionIOError'
 )<{
