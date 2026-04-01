@@ -81,6 +81,14 @@ Dockerized applications (API services, workers, scheduled jobs) live in `apps/` 
 - Has its own Dockerfile and deployment configuration
 - Is deployed to managed compute (e.g. Cloud Run)
 
+See further documentation for individual services:
+
+| Service   | Documentation                           |
+| --------- | --------------------------------------- |
+| ingestor  | [README.md](./apps/ingestor/README.md)  |
+| sanitizer | [README.md](./apps/sanitizer/README.md) |
+| extractor | [README.md](./apps/extractor/README.md) |
+
 ## Key Technologies
 
 ### Nx
@@ -97,6 +105,8 @@ This supports the platform’s emphasis on modularity while still enabling share
 - reason about changes and their impact across systems
 - automate multi-step workflows (e.g. build → package → deploy)
 - scale the repository as additional systems and capabilities are added over time
+
+See [docs/nx.md](./docs/nx.md) for examples of common nx commands to run in the workspace.
 
 ### Pulumi
 
@@ -134,6 +144,8 @@ In this platform, Docker is treated as an implementation detail, not an orchestr
 This keeps operational complexity low while ensuring that services behave consistently across environments.
 
 This repository also offers a containerized development environment defined in the `.devcontainer` directory. Using a containerized development environment ensures repoducibility of development dependency installation and configuation.
+
+See [docs/devcontainer.md](./docs/devcontainer.md) for complete documentation of the devcontainer and what it provides.
 
 ## Known Issues & Mitigations
 
