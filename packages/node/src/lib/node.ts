@@ -24,9 +24,6 @@ export function parseJson(options?: Schema.ParseJsonOptions) {
 /**
  * A schema combinator that transforms between a Node.js `Buffer` and a string.
  *
- * Typically composed with other combinators (e.g. `parseJson`, `parseYaml`) to
- * build pipelines that decode binary data directly into typed objects.
- *
  * @example
  * const decode = pipe(
  *   Schema.String,
