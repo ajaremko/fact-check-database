@@ -1,6 +1,8 @@
 # Ingestor
 
-The ingestor is a scheduled batch service that fetches content from a configured list of public URLs, archives the raw responses, and publishes ingestion events for downstream processing.
+The ingestor is creates an append-only, auditable collection of observations.
+
+It is a scheduled batch service that fetches content from a configured list of public URLs, archives the raw responses, and publishes ingestion events for downstream processing.
 
 It is the first stage in the platform's data pipeline. Its outputs are consumed by the [sanitizer](../sanitizer/README.md), which applies content policy before data is made available for research use.
 
@@ -42,9 +44,9 @@ apps/ingestor/
 
 ## Related Documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/how-it-works.md](./docs/how-it-works.md) | End-to-end data flow and processing behavior |
+| Document                                         | Purpose                                                         |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| [docs/how-it-works.md](./docs/how-it-works.md)   | End-to-end data flow and processing behavior                    |
 | [docs/configuration.md](./docs/configuration.md) | Environment variables, adapter behavior, and target list format |
-| [docs/contracts.md](./docs/contracts.md) | Output record schemas and archive layout |
-| [docs/runbook.md](./docs/runbook.md) | Interpreting logs and diagnosing failures |
+| [docs/contracts.md](./docs/contracts.md)         | Output record schemas and archive layout                        |
+| [docs/runbook.md](./docs/runbook.md)             | Interpreting logs and diagnosing failures                       |
