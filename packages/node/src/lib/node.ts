@@ -7,7 +7,13 @@ import {
 } from 'node:crypto'
 
 /**
- * Wrapper around Schema.parseJson with more egonomic paramater passing
+ * A tiny wrapper around `Schema.parseJson` with more ergonomic parameter passing.
+ *
+ * @example
+ * const MySchema = Schema.Struct({ name: Schema.String })
+ * const decode = pipe(MySchema, Node.parseJson(), Schema.decode)
+ * const result = decode('{"name":"example"}')
+ * // → { name: 'example' }
  */
 export function parseJson(options?: Schema.ParseJsonOptions) {
   return function <A, I, R>(schema: Schema.Schema<A, I, R>) {
@@ -16,7 +22,19 @@ export function parseJson(options?: Schema.ParseJsonOptions) {
 }
 
 /**
- * The parseBuffer combinator provides a method to convert buffers into the string type using the node buffer implementation.
+ * A schema combinator that transforms between a Node.js `Buffer` and a string.
+ *
+ * Typically composed with other combinators (e.g. `parseJson`, `parseYaml`) to
+ * build pipelines that decode binary data directly into typed objects.
+ *
+ * @example
+ * const decode = pipe(
+ *   Schema.String,
+ *   Node.parseBuffer({ encoding: 'utf-8' }),
+ *   Schema.decode
+ * )
+ * const result = decode(Buffer.from('example'))
+ * // → "example"
  */
 export function parseBuffer(opts: { encoding: BufferEncoding }) {
   return function <A, R>(schema: Schema.Schema<A, string, R>) {
@@ -35,8 +53,19 @@ export function parseBuffer(opts: { encoding: BufferEncoding }) {
 }
 
 /**
- * The parseUint8Array combinator provides a method to convert Uint8Array<ArrayBufferLike> (like those used in
- * `FileSystem` methods in `@effect/platform`) into the string type using the node buffer implementation.
+ * A schema combinator that transforms between a `Uint8Array` and a string.
+ *
+ * Equivalent to `parseBuffer` but for `Uint8Array`, which is the type returned
+ * by `FileSystem` methods in `@effect/platform`.
+ *
+ * @example
+ * const decode = pipe(
+ *   Schema.String,
+ *   Node.parseUint8Array({ encoding: 'utf-8' }),
+ *   Schema.decode
+ * )
+ * const result = decode(new TextEncoder().encode('example'))
+ * // → "example"
  */
 export function parseUint8Array(opts: { encoding: BufferEncoding }) {
   return function <A, R>(
@@ -61,6 +90,18 @@ export function parseUint8Array(opts: { encoding: BufferEncoding }) {
   }
 }
 
+/**
+ * Returns an Effect that computes the SHA-256 hex digest of a string or `Uint8Array`.
+ *
+ * @example
+ * // From a string
+ * const hash = yield* Node.sha256Hex('hello', 'utf8')
+ * // → "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+ *
+ * @example
+ * // From a Uint8Array
+ * const hash = yield* Node.sha256Hex(responseBody)
+ */
 export function sha256Hex(bytes: Uint8Array): Effect.Effect<string>
 export function sha256Hex(
   str: string,
@@ -75,6 +116,13 @@ export function sha256Hex(input: Uint8Array | string, encoding?: Encoding) {
   return Effect.sync(() => createHash('sha256').update(input).digest('hex'))
 }
 
+/**
+ * Returns an Effect that generates a random UUID (v4).
+ *
+ * @example
+ * const id = yield* Node.generateUUID()
+ * // → "a3bb189e-8bf9-3888-9912-ace4e6543002"
+ */
 export function generateUUID(options?: RandomUUIDOptions) {
   return Effect.sync(() => randomUUID(options))
 }
