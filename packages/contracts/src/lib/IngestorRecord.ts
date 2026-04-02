@@ -2,6 +2,12 @@ import { Schema } from 'effect'
 
 import { FilePointerSchema } from './FilePointer.js'
 
+/**
+ * Schema for a record produced when an HTTP fetch returns a response body.
+ *
+ * Discriminators: `version: 1`, `kind: 'fetch_attempt'`, `outcome: 'data_fetched'`.
+ * Includes full response headers in `http.headers` alongside the archived body pointer.
+ */
 export const DataFetchedRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
@@ -28,6 +34,13 @@ export type DataFetchedRecord = Schema.Schema.Type<
   typeof DataFetchedRecordSchema
 >
 
+/**
+ * Constructor for `DataFetchedRecord`. Supplies the `version`, `kind`, and
+ * `outcome` discriminators; callers provide all remaining fields.
+ *
+ * @example
+ * const record = DataFetchedRecord({ runId, fetchedAt, url, source, http, content, pointer })
+ */
 export function DataFetchedRecord(
   input: Omit<DataFetchedRecord, 'version' | 'kind' | 'outcome'>
 ): DataFetchedRecord {
@@ -39,6 +52,13 @@ export function DataFetchedRecord(
   }
 }
 
+/**
+ * Schema for a record produced when an HTTP fetch fails entirely (network
+ * error, timeout, DNS failure, etc.).
+ *
+ * Discriminators: `version: 1`, `kind: 'fetch_attempt'`, `outcome: 'no_response'`.
+ * No `pointer` or content fields are present — there is no body to archive.
+ */
 export const NoResponseRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
@@ -53,6 +73,13 @@ export const NoResponseRecordSchema = Schema.Struct({
 
 export type NoResponseRecord = Schema.Schema.Type<typeof NoResponseRecordSchema>
 
+/**
+ * Constructor for `NoResponseRecord`. Supplies the `version`, `kind`, and
+ * `outcome` discriminators; callers provide all remaining fields.
+ *
+ * @example
+ * const record = NoResponseRecord({ runId, fetchedAt, url, source, error })
+ */
 export function NoResponseRecord(
   input: Omit<NoResponseRecord, 'version' | 'kind' | 'outcome'>
 ): NoResponseRecord {
@@ -64,13 +91,23 @@ export function NoResponseRecord(
   }
 }
 
+/**
+ * Union schema accepting either a `DataFetchedRecord` or a `NoResponseRecord`.
+ * Discriminates on the `outcome` field.
+ */
 export const IngestionRecordSchema = Schema.Union(
   DataFetchedRecordSchema,
   NoResponseRecordSchema
 )
 
+/** Union type representing either a `DataFetchedRecord` or a `NoResponseRecord`. */
 export type IngestionRecord = Schema.Schema.Type<typeof IngestionRecordSchema>
 
+/**
+ * Schema for the flat metadata stored as GCS object metadata fields alongside
+ * each archived ingestor record. `fetchedAt` is stored as a string in GCS and
+ * decoded to a number on read.
+ */
 export const IngestionRecordMetadataSchema = Schema.Struct({
   url: Schema.String,
   sourceName: Schema.String,
@@ -80,6 +117,7 @@ export const IngestionRecordMetadataSchema = Schema.Struct({
   id: Schema.String,
 })
 
+/** Metadata for an ingestor record. */
 export type IngestionRecordMetadata = Schema.Schema.Type<
   typeof IngestionRecordMetadataSchema
 >

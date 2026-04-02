@@ -2,7 +2,11 @@ import { Schema } from 'effect'
 import { FilePointerSchema } from './FilePointer.js'
 
 /**
- * High-level outcomes. Label is about who can access downstream.
+ * High-level access classification assigned to each sanitized record.
+ * Determines who may access the record downstream:
+ * - `SAFE_PUBLIC` — suitable for unrestricted downstream access
+ * - `RESTRICTED` — requires access controls before use
+ * - `QUARANTINED` — withheld from downstream use pending review
  */
 export const PolicyLabelSchema = Schema.Literal(
   'SAFE_PUBLIC',
@@ -10,10 +14,12 @@ export const PolicyLabelSchema = Schema.Literal(
   'QUARANTINED'
 )
 
+/** High-level access classification assigned to each sanitized record. */
 export type PolicyLabel = Schema.Schema.Type<typeof PolicyLabelSchema>
 
 /**
- * Traceable actions taken by the sanitizer.
+ * Traceable actions applied by the sanitizer. Multiple actions may be recorded
+ * per record; the full list forms an append-only audit trail of modifications.
  */
 export const SanitizationActionSchema = Schema.Literal(
   'NONE',
@@ -28,15 +34,21 @@ export const SanitizationActionSchema = Schema.Literal(
   'QUARANTINED_FETCH_FAILED'
 )
 
+/** Actions applied by the sanitizer to a record. */
 export type SanitizationAction = Schema.Schema.Type<
   typeof SanitizationActionSchema
 >
 
+/** Source name and collection label shared across record types. */
 export const SourceSchema = Schema.Struct({
   name: Schema.String,
   collection: Schema.String, // "rss" | "api" | "html" | ...
 })
 
+/**
+ * HTTP response metadata included in sanitized records.
+ * `headers` is optional — many pipelines omit it entirely in sanitized outputs.
+ */
 export const HttpSummarySchema = Schema.Struct({
   status: Schema.Number,
   contentType: Schema.optional(Schema.String),
@@ -49,17 +61,29 @@ export const HttpSummarySchema = Schema.Struct({
   ),
 })
 
+/** Content metrics included in sanitized records. */
 export const ContentSummarySchema = Schema.Struct({
   sha256: Schema.optional(Schema.String),
   bytes: Schema.optional(Schema.Number),
 })
 
-// Reference the *input ingest record* (and optionally its raw bytes pointer)
+/**
+ * Reference to the input ingestor record that was sanitized.
+ * `raw` optionally points to the original raw bytes if they were retained.
+ */
 export const InputRecordRefSchema = Schema.Struct({
   record: FilePointerSchema,
   raw: Schema.optional(FilePointerSchema),
 })
 
+/**
+ * Schema for a record produced by the sanitizer after processing an ingestor record.
+ *
+ * Discriminators: `kind: 'sanitized_record'`, `version: 1`.
+ * The `policy` field documents the access classification and the full ordered
+ * list of actions applied. If the body was rewritten, `sanitizedRaw` points to
+ * the modified bytes; for quarantined records, `error` describes the reason.
+ */
 export const SanitizerRecordSchema = Schema.Struct({
   kind: Schema.Literal('sanitized_record'),
   version: Schema.Literal(1),
@@ -96,6 +120,11 @@ export const SanitizerRecordSchema = Schema.Struct({
 
 export type SanitizerRecord = Schema.Schema.Type<typeof SanitizerRecordSchema>
 
+/**
+ * Schema for the flat metadata stored as GCS object metadata fields alongside
+ * each archived sanitizer record. `sanitizedAt` is stored as a string in GCS
+ * and decoded to a number on read.
+ */
 export const SantizerRecordMetadataSchema = Schema.Struct({
   url: Schema.String,
   sourceName: Schema.String,
@@ -104,6 +133,7 @@ export const SantizerRecordMetadataSchema = Schema.Struct({
   id: Schema.String,
 })
 
+/** Metadata for a sanitized record. */
 export type SantizerRecordMetadata = Schema.Schema.Type<
   typeof SantizerRecordMetadataSchema
 >

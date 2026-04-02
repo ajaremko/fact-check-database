@@ -4,86 +4,19 @@ This document describes the stable outputs of the ingestor: the events it publis
 
 Downstream systems (primarily the sanitizer) depend on these contracts. Changes to schemas or archive paths should be treated as breaking changes.
 
+Schema definitions for events and records are maintained in the [`@news-research/contracts`](../../../packages/contracts/README.md) package. The sections below document how the ingestor produces and stores those contracts.
+
 ## IngestionAttempted Event
 
 One event is published per fetch attempt, regardless of whether the fetch succeeded or failed. Events are published to the configured Pub/Sub topic.
 
-The canonical schema is defined in `packages/contracts/src/lib/IngestionAttempted.ts`.
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `observationId` | `string` | Deterministic hash of the fetch outcome. See [Observation Identity](./how-it-works.md#observation-identity). |
-| `runId` | `string` | UUID assigned to the run that produced this event |
-| `fetchedAt` | `number` | Unix timestamp (ms) at the moment of fetch |
-| `url` | `string` | The original URL that was fetched |
-| `finalUrl` | `string?` | The final URL after redirects, if different from `url` |
-| `source.name` | `string` | Source identifier from the target list |
-| `source.collection` | `string` | Collection label from the target list |
-| `http.status` | `number` | HTTP response status code (0 on fetch failure) |
-| `http.contentType` | `string?` | Response content-type header |
-| `http.etag` | `string?` | Response etag header |
-| `http.lastModified` | `string?` | Response last-modified header |
-| `content.sha256` | `string?` | SHA-256 hex digest of the response body (success only) |
-| `content.bytes` | `number?` | Response body size in bytes (success only) |
-| `error` | `string?` | Error message (failure only) |
-| `pointer` | `FilePointer` | Reference to the archived record object |
-
-### FilePointer
-
-A `FilePointer` references a specific object in cloud storage:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `bucket` | `string` | Storage bucket name |
-| `object` | `string` | Object path within the bucket |
+See [`IngestionAttempted`](../../../packages/contracts/README.md#ingestionattempted) in the contracts package for the full field reference.
 
 ## Ingestor Records
 
 Records are the durable, structured representation of each fetch attempt. They are archived to cloud storage and referenced by the `pointer` field in the published event.
 
-The canonical schemas are defined in `packages/contracts/src/lib/IngestorRecord.ts`.
-
-All records share these discriminator fields:
-
-| Field | Value | Description |
-| --- | --- | --- |
-| `version` | `1` | Schema version |
-| `kind` | `fetch_attempt` | Record type |
-| `outcome` | `data_fetched` or `no_response` | Fetch result |
-
-### DataFetchedRecord
-
-Produced when the HTTP fetch returns a response body.
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `runId` | `string` | Run identifier |
-| `fetchedAt` | `number` | Unix timestamp (ms) of the fetch |
-| `url` | `string` | Fetched URL |
-| `source.name` | `string` | Source name |
-| `source.collection` | `string` | Collection label |
-| `http.status` | `number` | HTTP status code |
-| `http.contentType` | `string?` | Content-type header |
-| `http.etag` | `string?` | Etag header |
-| `http.lastModified` | `string?` | Last-modified header |
-| `http.headers` | `Record<string, string>` | Full response headers |
-| `content.sha256` | `string?` | SHA-256 hex digest of body |
-| `content.bytes` | `number?` | Body size in bytes |
-| `pointer` | `FilePointer` | Reference to the archived body object |
-
-### NoResponseRecord
-
-Produced when the HTTP fetch fails (network error, timeout, DNS failure, etc.).
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `runId` | `string` | Run identifier |
-| `fetchedAt` | `number` | Unix timestamp (ms) of the attempt |
-| `url` | `string` | Attempted URL |
-| `finalUrl` | `string?` | Final URL if a redirect was followed before failure |
-| `source.name` | `string` | Source name |
-| `source.collection` | `string` | Collection label |
-| `error` | `string` | Error message describing the failure |
+See [`IngestorRecord`](../../../packages/contracts/README.md#ingestorrecord) in the contracts package for the full field reference, including `DataFetchedRecord`, `NoResponseRecord`, and `IngestionRecordMetadata`.
 
 ## Cloud Storage Archive Layout
 

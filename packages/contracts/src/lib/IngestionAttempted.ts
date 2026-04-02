@@ -2,6 +2,14 @@ import { Schema } from 'effect'
 
 import { FilePointerSchema } from './FilePointer.js'
 
+/**
+ * Schema for the event published by the ingestor per fetch attempt.
+ *
+ * One event is emitted regardless of whether the fetch succeeded or failed.
+ * The `observationId` is a deterministic hash of the fetch outcome, enabling
+ * deduplication across runs. The `pointer` field references the archived
+ * ingestor record in cloud storage.
+ */
 export const IngestionAttemptedSchema = Schema.Struct({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
   runId: Schema.String,
@@ -26,6 +34,7 @@ export const IngestionAttemptedSchema = Schema.Struct({
   pointer: FilePointerSchema,
 })
 
+/** An event published by the ingestor per fetch attempt */
 export type IngestionAttempted = Schema.Schema.Type<
   typeof IngestionAttemptedSchema
 >
