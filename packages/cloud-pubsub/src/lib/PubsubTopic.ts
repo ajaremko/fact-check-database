@@ -6,8 +6,6 @@ import { PubsubClient } from './PubsubClient'
 
 /**
  * Provides a Google Cloud Pub/Sub `Topic` for publishing messages.
- *
- * Requires `PubsubClient` in the layer stack.
  */
 export class PubsubTopic extends Context.Tag('PubsubTopic')<
   PubsubTopic,

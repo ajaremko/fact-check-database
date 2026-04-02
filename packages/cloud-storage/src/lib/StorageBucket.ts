@@ -9,6 +9,9 @@ import { Response } from 'teeny-request'
 
 import { StorageClient } from './StorageClient'
 
+/**
+ * Provides a Google Cloud Storage `Bucket` for reading and writing objects.
+ */
 export class StorageBucket extends Context.Tag('StorageBucket')<
   StorageBucket,
   {
@@ -37,14 +40,41 @@ function make(
   })
 }
 
+/**
+ * Creates an Effect layer providing a `StorageBucket`.
+ *
+ * `bucketName` is required and must be a `Config.Config<string>`, typically
+ * an environment variable. Requires `StorageClient` to be provided in the
+ * layer stack.
+ *
+ * @example
+ * Effect.provide(StorageBucket.layer(Config.string('STORAGE_BUCKET_NAME')))
+ */
 export const layer = flow(make, Layer.effect(StorageBucket))
 
+/**
+ * Thrown when a GCS object I/O operation rejects.
+ *
+ * @example
+ * yield* StorageBucket.writeFile('output.json', data).pipe(
+ *   Effect.catchTag('StorageBucketIOError', (err) => Effect.logError('Write failed', err.cause))
+ * )
+ */
 export class StorageBucketIOError extends Data.TaggedError(
   'StorageBucketIOError'
 )<{
   readonly cause: unknown
 }> {}
 
+/**
+ * Writes `data` to the object at `name` to the `StorageBucket` in context.
+ *
+ * Any rejection from the underlying `file.save()` call is caught and wrapped
+ * as a `StorageBucketIOError`.
+ *
+ * @example
+ * yield* StorageBucket.writeFile('path/to/file.json', Buffer.from(JSON.stringify(payload)))
+ */
 export function writeFile(name: string, data: SaveData, options?: SaveOptions) {
   return StorageBucket.pipe(
     Effect.andThen(({ bucket }) =>
@@ -56,6 +86,17 @@ export function writeFile(name: string, data: SaveData, options?: SaveOptions) {
   )
 }
 
+/**
+ * Reads metadata for the object at `name` from the `StorageBucket` in context.
+ *
+ * Returns a tuple of `[metadata, response]`. The metadata object contains
+ * GCS object attributes such as `contentType`, `size`, and `updated`.
+ *
+ * Any rejection from the underlying `file.getMetadata()` call is caught and wrapped as a `StorageBucketIOError`.
+ *
+ * @example
+ * const [metadata] = yield* StorageBucket.readFileMetadata('path/to/file.json')
+ */
 export function readFileMetadata(
   name: string
 ): Effect.Effect<
@@ -73,6 +114,17 @@ export function readFileMetadata(
   )
 }
 
+/**
+ * Downloads the contents of the object at `name` from the `StorageBucket` in context.
+ *
+ * Returns a `Buffer[]`; concatenate the chunks to reconstruct the full payload.
+ *
+ * Any rejection from the underlying `file.download()` call is caught and wrapped as a `StorageBucketIOError`.
+ *
+ * @example
+ * const chunks = yield* StorageBucket.downloadFile('path/to/file.json')
+ * const contents = Buffer.concat(chunks).toString('utf-8')
+ */
 export function downloadFile(name: string) {
   return StorageBucket.pipe(
     Effect.andThen(({ bucket }) =>

@@ -6,8 +6,6 @@ import { PubsubClient } from './PubsubClient'
 /**
  * Provides a Google Cloud Pub/Sub `Subscription` for receiving messages.
  *
- * Requires `PubsubClient` in the layer stack.
- *
  * This layer is **scoped**: the subscription is automatically closed via
  * `subscription.close()` when the enclosing Effect scope is released. Use
  * `Layer.scoped` or `Effect.scoped` to control the lifetime.
