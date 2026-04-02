@@ -8,7 +8,6 @@ import { Yaml } from '@news-research/yaml'
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 import { FetchAttempt } from '../../data/FetchAttempt'
 
-// Record -> YAML -> Buffer
 const encodeFetchAttemptRecord = pipe(
   IngestorRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
@@ -16,7 +15,6 @@ const encodeFetchAttemptRecord = pipe(
   Schema.encodeSync
 )
 
-// Metadata -> JSON -> Buffer
 const encodeMetadata = pipe(
   IngestorRecord.IngestionRecordMetadataSchema,
   Node.parseJson(),

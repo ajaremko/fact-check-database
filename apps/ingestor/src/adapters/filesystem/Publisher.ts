@@ -6,7 +6,6 @@ import { IngestionAttemptedSchema } from '@news-research/contracts'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
 
-// ObservationFetched -> JSON -> Buffer
 const encodeMessage = pipe(
   IngestionAttemptedSchema,
   Node.parseJson(),

@@ -7,7 +7,6 @@ import { Node } from '@news-research/node'
 import { SourceTargetSchema } from '../../data/SourceTarget'
 import { TargetList, TargetListError } from '../../ports/TargetList'
 
-// SourceTarget[] -> Csv -> Buffer
 const decodeSources = pipe(
   SourceTargetSchema,
   NodeCsv.parseCsv({

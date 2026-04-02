@@ -6,7 +6,6 @@ import { Node } from '@news-research/node'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
 
-// ObservationFetched -> JSON -> Buffer
 const encodeEvent = pipe(
   IngestionAttemptedSchema,
   Node.parseJson(),
