@@ -1,5 +1,3 @@
-import { Effect } from 'effect'
-
 import { IngestorRecord, SantizerRecord } from '@news-research/contracts'
 
 import { SanitizerPolicy, CollectionRule } from '../data/SanitizerPolicy'
@@ -135,58 +133,53 @@ export type PolicyDecision = {
 export function evaluatePolicy(
   policy: SanitizerPolicy,
   record: IngestorRecord.IngestionRecord
-): Effect.Effect<PolicyDecision> {
-  return Effect.gen(function* () {
-    yield* Effect.logInfo(
-      `Processing event from source ${record.source.name}...`
-    )
-    const actions: PolicyDecision['actions'] = []
+): PolicyDecision {
+  const actions: PolicyDecision['actions'] = []
 
-    // Fetch failed: quarantine
-    if (record.outcome !== 'data_fetched') {
-      actions.push('QUARANTINED_FETCH_FAILED')
-      return {
-        label: 'QUARANTINED',
-        actions,
-        error: record.error ?? 'NoResponse',
-        rewriteBody: false,
-      }
-    }
-
-    const rule = pickRule(policy, record.source.collection, record.source.name)
-
-    // Size gate
-    const bytes = record.content?.bytes
-    if (typeof bytes === 'number' && bytes > rule.maxBytes) {
-      actions.push('QUARANTINED_TOO_LARGE')
-      return {
-        label: 'QUARANTINED',
-        actions,
-        error: `Body too large: ${bytes} > ${rule.maxBytes}`,
-        rewriteBody: false,
-      }
-    }
-
-    // Content-type gate
-    const ct = record.http?.contentType
-    const ctCheck = contentTypeAllowed(ct, rule)
-    if (!ctCheck.allowed) {
-      actions.push(
-        ctCheck.quarantineReason ?? 'QUARANTINED_UNEXPECTED_CONTENT_TYPE'
-      )
-      return {
-        label: 'QUARANTINED',
-        actions,
-        error: `Unexpected content-type: ${ct ?? 'missing'}`,
-        rewriteBody: false,
-      }
-    }
-
-    // Pass
+  // Fetch failed: quarantine
+  if (record.outcome !== 'data_fetched') {
+    actions.push('QUARANTINED_FETCH_FAILED')
     return {
-      label: rule.defaultLabel,
+      label: 'QUARANTINED',
       actions,
-      rewriteBody: rule.rewriteBody ?? false,
+      error: record.error ?? 'NoResponse',
+      rewriteBody: false,
     }
-  })
+  }
+
+  const rule = pickRule(policy, record.source.collection, record.source.name)
+
+  // Size gate
+  const bytes = record.content?.bytes
+  if (typeof bytes === 'number' && bytes > rule.maxBytes) {
+    actions.push('QUARANTINED_TOO_LARGE')
+    return {
+      label: 'QUARANTINED',
+      actions,
+      error: `Body too large: ${bytes} > ${rule.maxBytes}`,
+      rewriteBody: false,
+    }
+  }
+
+  // Content-type gate
+  const ct = record.http?.contentType
+  const ctCheck = contentTypeAllowed(ct, rule)
+  if (!ctCheck.allowed) {
+    actions.push(
+      ctCheck.quarantineReason ?? 'QUARANTINED_UNEXPECTED_CONTENT_TYPE'
+    )
+    return {
+      label: 'QUARANTINED',
+      actions,
+      error: `Unexpected content-type: ${ct ?? 'missing'}`,
+      rewriteBody: false,
+    }
+  }
+
+  // Pass
+  return {
+    label: rule.defaultLabel,
+    actions,
+    rewriteBody: rule.rewriteBody ?? false,
+  }
 }
