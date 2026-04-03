@@ -11,7 +11,6 @@ import { Yaml } from '@news-research/yaml'
 
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 
-// Record -> YAML -> Buffer
 const decodeIngestorRecord = pipe(
   IngestorRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
@@ -19,7 +18,6 @@ const decodeIngestorRecord = pipe(
   Schema.decode
 )
 
-// Record -> YAML -> Buffer
 const encodeSanitizerRecord = pipe(
   SantizerRecord.SanitizerRecordSchema,
   Yaml.parseYaml(),
@@ -27,7 +25,6 @@ const encodeSanitizerRecord = pipe(
   Schema.encode
 )
 
-// Metadata -> JSON -> Buffer
 const encodeMetadata = pipe(
   SantizerRecord.SantizerRecordMetadataSchema,
   Node.parseJson(),
@@ -38,7 +35,7 @@ const encodeMetadata = pipe(
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
-  const outputDir = yield* Config.string('SANITIZER_OUTPUT_DIR')
+  const outputDir = yield* Config.string('ARCHIVER_OUTPUT_DIR')
   yield* fs.makeDirectory(outputDir, { recursive: true })
 
   function readRawBody(pointer: FilePointer) {
