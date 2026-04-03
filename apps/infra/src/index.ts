@@ -7,6 +7,10 @@ export {
   artifactRegistryBaseUri,
 } from './core'
 
-export { ingestorJobName, ingestorJobSchedulerName } from './ingestion'
+export {
+  ingestorJobName,
+  ingestorJobSchedulerName,
+  sanitizerWorkerName,
+} from './ingestion'
 
 export { stackName } from './config'
