@@ -26,13 +26,14 @@ records/{id}.sanitizer.yml
 
 Records are stored as YAML. Each record object also carries structured metadata as GCS object metadata fields:
 
-| Metadata key        | Description                             |
-| ------------------- | --------------------------------------- |
-| `url`               | Normalized URL                          |
-| `sourceName`        | Source name                             |
-| `sourceCollection`  | Collection label                        |
-| `sanitizedAt`       | Sanitization timestamp (ms, as string)  |
-| `id`                | Sanitization ID                         |
+| Metadata key       | Description                              |
+| ------------------ | ---------------------------------------- |
+| `url`              | Normalized URL                           |
+| `sourceName`       | Source name                              |
+| `sourceCollection` | Collection label                         |
+| `fetchedAt`        | Original fetch timestamp (ms, as string) |
+| `sanitizedAt`      | Sanitization timestamp (ms, as string)   |
+| `id`               | Sanitization ID                          |
 
 ### Sanitized body objects (not yet implemented)
 

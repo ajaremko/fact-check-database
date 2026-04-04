@@ -28,7 +28,6 @@ export function processTarget(
     const sanitizedAt = yield* Clock.currentTimeMillis
 
     yield* archiver.writeSanitizerRecord(
-      sanitizationId,
       {
         version: 1,
         kind: 'sanitized_record',
@@ -38,6 +37,7 @@ export function processTarget(
         source: record.source,
         content: record.content,
         sanitizationId,
+        fetchedAt: record.fetchedAt,
         sanitizedAt,
         policy: {
           label: decision.label,
@@ -52,6 +52,7 @@ export function processTarget(
         sourceCollection: record.source.collection,
         sourceName: record.source.name,
         sanitizedAt,
+        fetchedAt: record.fetchedAt,
         url: record.url,
         id: sanitizationId,
       }

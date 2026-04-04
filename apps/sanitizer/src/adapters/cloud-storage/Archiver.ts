@@ -1,4 +1,5 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
+import { format } from 'date-fns'
 
 import {
   FilePointer,
@@ -11,7 +12,6 @@ import { Yaml } from '@news-research/yaml'
 
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 
-// Record -> YAML -> Buffer
 const decodeIngestorRecord = pipe(
   IngestorRecord.IngestionRecordSchema,
   Yaml.parseYaml(),
@@ -19,7 +19,6 @@ const decodeIngestorRecord = pipe(
   Schema.decode
 )
 
-// Record -> YAML -> Buffer
 const encodeSantizerRecord = pipe(
   SantizerRecord.SanitizerRecordSchema,
   Yaml.parseYaml(),
@@ -27,13 +26,22 @@ const encodeSantizerRecord = pipe(
   Schema.encode
 )
 
-// Metadata -> JSON -> Buffer
 const encodeMetadata = pipe(
   SantizerRecord.SantizerRecordMetadataSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
+
+function ymd(ms: number): string {
+  const d = new Date(ms)
+  return format(d, 'yyyy-MM-dd')
+}
+
+const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) => {
+  const date = ymd(fetchedAt)
+  return `source=${sourceName}/date=${date}/run=${runId}`
+}
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
@@ -76,12 +84,17 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizerRecord(
-    id: string,
     record: SantizerRecord.SanitizerRecord,
     recordMetadata: SantizerRecord.SantizerRecordMetadata
   ) {
     return Effect.gen(function* () {
-      const recordObject = `records/${id}.sanitizer.yml`
+      const id = record.content.sha256
+      const baseDir = makeBaseDir(
+        record.source.name,
+        record.fetchedAt,
+        record.runId
+      )
+      const recordObject = `records/${baseDir}/${id}.sanitizer.yml`
       const data = yield* encodeSantizerRecord(record)
       const metadata = yield* encodeMetadata(recordMetadata)
       yield* StorageBucket.writeFile(recordObject, data, {

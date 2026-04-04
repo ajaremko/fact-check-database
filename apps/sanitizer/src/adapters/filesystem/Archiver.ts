@@ -64,11 +64,11 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizerRecord(
-    id: string,
     record: SantizerRecord.SanitizerRecord,
     metadata: SantizerRecord.SantizerRecordMetadata
   ) {
     return Effect.gen(function* () {
+      const id = record.content.sha256
       const recordObject = `${outputDir}/${id}.yml`
       const data = yield* encodeSanitizerRecord(record)
       yield* fs.writeFile(recordObject, data)

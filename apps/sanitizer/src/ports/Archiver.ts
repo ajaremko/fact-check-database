@@ -25,7 +25,6 @@ export class Archiver extends Context.Tag('Archiver')<
       contentType?: string
     ) => Effect.Effect<FilePointer, ArchiverError>
     readonly writeSanitizerRecord: (
-      id: string,
       record: SantizerRecord.SanitizerRecord,
       metadata: SantizerRecord.SantizerRecordMetadata
     ) => Effect.Effect<FilePointer, ArchiverError>

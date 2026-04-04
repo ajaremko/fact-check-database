@@ -91,6 +91,7 @@ export const SanitizerRecordSchema = Schema.Struct({
   // Identity
   sanitizationId: Schema.String, // uuid or deterministic hash
   runId: Schema.String,
+  fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,
 
   // Provenance
@@ -129,6 +130,7 @@ export const SantizerRecordMetadataSchema = Schema.Struct({
   url: Schema.String,
   sourceName: Schema.String,
   sourceCollection: Schema.String,
+  fetchedAt: Schema.NumberFromString,
   sanitizedAt: Schema.NumberFromString,
   id: Schema.String,
 })

@@ -143,6 +143,7 @@ Traceable actions applied by the sanitizer. Multiple actions may be recorded per
 | `version`           | `1`                       | Schema version discriminator                         |
 | `sanitizationId`    | `string`                  | UUID or deterministic hash for this sanitization run |
 | `runId`             | `string`                  | Run identifier                                       |
+| `fetchedAt`         | `number`                  | Unix timestamp (ms) of the original fetch, carried forward from the ingestor record |
 | `sanitizedAt`       | `number`                  | Unix timestamp (ms) at the time of sanitization      |
 | `input.record`      | `FilePointer`             | Pointer to the input ingestor record                 |
 | `input.raw`         | `FilePointer?`            | Pointer to the raw bytes of the input, if retained   |
@@ -172,5 +173,6 @@ Flat metadata stored as GCS object metadata fields alongside each archived sanit
 | `url`              | `string` | Normalized URL                                                   |
 | `sourceName`       | `string` | Source name                                                      |
 | `sourceCollection` | `string` | Collection label                                                 |
+| `fetchedAt`        | `number` | Original fetch timestamp (ms)                                    |
 | `sanitizedAt`      | `number` | Sanitization timestamp (ms); stored as string, decoded as number |
 | `id`               | `string` | Object identifier                                                |
