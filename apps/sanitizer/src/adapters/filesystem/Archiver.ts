@@ -1,5 +1,6 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
+import { format } from 'date-fns'
 
 import {
   FilePointer,
@@ -32,11 +33,23 @@ const encodeMetadata = pipe(
   Schema.encode
 )
 
+function ymd(ms: number): string {
+  return format(new Date(ms), 'yyyy-MM-dd')
+}
+
+const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) => {
+  const date = ymd(fetchedAt)
+  return `source=${sourceName}/date=${date}/run=${runId}`
+}
+
+function parentDir(filePath: string): string {
+  return filePath.split('/').slice(0, -1).join('/')
+}
+
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
-  const outputDir = yield* Config.string('ARCHIVER_OUTPUT_DIR')
-  yield* fs.makeDirectory(outputDir, { recursive: true })
+  const outputDir = yield* Config.string('SANITIZER_OUTPUT_DIR')
 
   function readRawBody(pointer: FilePointer) {
     return fs
@@ -53,7 +66,8 @@ export const make = Effect.gen(function* () {
 
   function writeSanitizedBody(id: string, body: Uint8Array) {
     return Effect.gen(function* () {
-      const rawObject = `${outputDir}/${id}.bin`
+      const rawObject = `${outputDir}/sanitized/${id}.bin`
+      yield* fs.makeDirectory(parentDir(rawObject), { recursive: true })
       yield* fs.writeFile(rawObject, Buffer.from(body))
 
       return {
@@ -68,12 +82,15 @@ export const make = Effect.gen(function* () {
     metadata: SantizerRecord.SantizerRecordMetadata
   ) {
     return Effect.gen(function* () {
-      const id = record.content.sha256
-      const recordObject = `${outputDir}/${id}.yml`
+      const id = record.sanitizationId
+      const baseDir = makeBaseDir(record.source.name, record.fetchedAt, record.runId)
+      const recordObject = `${outputDir}/records/${baseDir}/${id}.sanitizer.yml`
+      yield* fs.makeDirectory(parentDir(recordObject), { recursive: true })
+
       const data = yield* encodeSanitizerRecord(record)
       yield* fs.writeFile(recordObject, data)
 
-      const metaObject = `${outputDir}/${id}.metadata.json`
+      const metaObject = `${outputDir}/records/${baseDir}/${id}.sanitizer.metadata.json`
       const metaDataEncoded = yield* encodeMetadata(metadata)
       yield* fs.writeFile(metaObject, metaDataEncoded)
 

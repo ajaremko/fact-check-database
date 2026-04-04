@@ -88,7 +88,7 @@ export const make = Effect.gen(function* () {
     recordMetadata: SantizerRecord.SantizerRecordMetadata
   ) {
     return Effect.gen(function* () {
-      const id = record.content.sha256
+      const id = record.sanitizationId
       const baseDir = makeBaseDir(
         record.source.name,
         record.fetchedAt,

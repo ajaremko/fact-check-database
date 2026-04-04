@@ -1,5 +1,6 @@
 import { Config, Effect, Either, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
+import { format } from 'date-fns'
 
 import { IngestorRecord } from '@news-research/contracts'
 import { Node } from '@news-research/node'
@@ -22,22 +23,36 @@ const encodeMetadata = pipe(
   Schema.encodeSync
 )
 
+function ymd(ms: number): string {
+  return format(new Date(ms), 'yyyy-MM-dd')
+}
+
 const makeId = (attempt: FetchAttempt) =>
   Either.match(attempt.result, {
     onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
     onRight: (result) => result.sha256,
   })
 
+const makeBaseDir = (attempt: FetchAttempt) => {
+  const date = ymd(attempt.fetchedAt)
+  return `source=${attempt.source.name}/date=${date}/run=${attempt.runId}`
+}
+
+function parentDir(filePath: string): string {
+  return filePath.split('/').slice(0, -1).join('/')
+}
+
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
   const outputDir = yield* Config.string('ARCHIVER_OUTPUT_DIR')
-  yield* fs.makeDirectory(outputDir, { recursive: true })
 
   function archiveBody(attempt: FetchAttempt, response: Uint8Array) {
     return Effect.gen(function* () {
       const id = makeId(attempt)
-      const rawObject = `${outputDir}/${id}.bin`
+      const baseDir = makeBaseDir(attempt)
+      const rawObject = `${outputDir}/raw/${baseDir}/${id}.bin`
+      yield* fs.makeDirectory(parentDir(rawObject), { recursive: true })
       yield* fs.writeFile(rawObject, Buffer.from(response))
 
       return {
@@ -54,11 +69,14 @@ export const make = Effect.gen(function* () {
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)
-      const recordObject = `${outputDir}/${id}.yml`
+      const baseDir = makeBaseDir(attempt)
+      const recordObject = `${outputDir}/records/${baseDir}/${id}.ingestor.yml`
+      yield* fs.makeDirectory(parentDir(recordObject), { recursive: true })
+
       const data = encodeFetchAttemptRecord(record)
       yield* fs.writeFile(recordObject, data)
 
-      const metaObject = `${outputDir}/${id}.metadata.json`
+      const metaObject = `${outputDir}/records/${baseDir}/${id}.ingestor.metadata.json`
       const metaDataEncoded = encodeMetadata(recordMetadata)
       yield* fs.writeFile(metaObject, metaDataEncoded)
 
