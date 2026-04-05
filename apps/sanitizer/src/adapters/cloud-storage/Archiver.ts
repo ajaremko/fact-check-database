@@ -1,5 +1,4 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
-import { format } from 'date-fns'
 
 import {
   FilePointer,
@@ -9,6 +8,8 @@ import {
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
+
+import { archiveBaseDir } from '@news-research/ingestion-core'
 
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 
@@ -33,15 +34,8 @@ const encodeMetadata = pipe(
   Schema.encode
 )
 
-function ymd(ms: number): string {
-  const d = new Date(ms)
-  return format(d, 'yyyy-MM-dd')
-}
-
-const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) => {
-  const date = ymd(fetchedAt)
-  return `source=${sourceName}/date=${date}/run=${runId}`
-}
+const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) =>
+  archiveBaseDir(sourceName, fetchedAt, runId)
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket

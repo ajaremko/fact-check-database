@@ -1,7 +1,5 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
-import { format } from 'date-fns'
-
 import {
   FilePointer,
   IngestorRecord,
@@ -9,6 +7,8 @@ import {
 } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
+
+import { archiveBaseDir } from '@news-research/ingestion-core'
 
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 
@@ -33,14 +33,8 @@ const encodeMetadata = pipe(
   Schema.encode
 )
 
-function ymd(ms: number): string {
-  return format(new Date(ms), 'yyyy-MM-dd')
-}
-
-const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) => {
-  const date = ymd(fetchedAt)
-  return `source=${sourceName}/date=${date}/run=${runId}`
-}
+const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) =>
+  archiveBaseDir(sourceName, fetchedAt, runId)
 
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')

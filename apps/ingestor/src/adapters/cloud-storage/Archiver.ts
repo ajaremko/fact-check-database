@@ -7,10 +7,9 @@ import {
   pipe,
   Schema,
 } from 'effect'
-import { format } from 'date-fns'
-
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { IngestorRecord } from '@news-research/contracts'
+import { archiveBaseDir } from '@news-research/ingestion-core'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
@@ -28,21 +27,14 @@ const encodeMetadata = Schema.encodeSync(
   IngestorRecord.IngestionRecordMetadataSchema
 )
 
-function ymd(ms: number): string {
-  const d = new Date(ms)
-  return format(d, 'yyyy-MM-dd')
-}
-
 const makeId = (attempt: FetchAttempt) =>
   Either.match(attempt.result, {
     onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
     onRight: (result) => result.sha256,
   })
 
-const makeBaseDir = (attempt: FetchAttempt) => {
-  const date = ymd(attempt.fetchedAt)
-  return `source=${attempt.source.name}/date=${date}/run=${attempt.runId}`
-}
+const makeBaseDir = (attempt: FetchAttempt) =>
+  archiveBaseDir(attempt.source.name, attempt.fetchedAt, attempt.runId)
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket

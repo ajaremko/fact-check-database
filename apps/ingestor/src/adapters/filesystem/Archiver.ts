@@ -1,8 +1,7 @@
 import { Config, Effect, Either, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
-import { format } from 'date-fns'
-
 import { IngestorRecord } from '@news-research/contracts'
+import { archiveBaseDir } from '@news-research/ingestion-core'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
@@ -23,20 +22,14 @@ const encodeMetadata = pipe(
   Schema.encodeSync
 )
 
-function ymd(ms: number): string {
-  return format(new Date(ms), 'yyyy-MM-dd')
-}
-
 const makeId = (attempt: FetchAttempt) =>
   Either.match(attempt.result, {
     onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
     onRight: (result) => result.sha256,
   })
 
-const makeBaseDir = (attempt: FetchAttempt) => {
-  const date = ymd(attempt.fetchedAt)
-  return `source=${attempt.source.name}/date=${date}/run=${attempt.runId}`
-}
+const makeBaseDir = (attempt: FetchAttempt) =>
+  archiveBaseDir(attempt.source.name, attempt.fetchedAt, attempt.runId)
 
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
