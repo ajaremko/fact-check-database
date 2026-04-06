@@ -1,5 +1,7 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
+
+import { Archiver, ArchiverError } from '@news-research/ingestion-sanitize'
 import {
   FilePointer,
   IngestorRecord,
@@ -7,10 +9,7 @@ import {
 } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
-
 import { archiveBaseDir } from '@news-research/ingestion-shared'
-
-import { Archiver, ArchiverError } from '../../ports/Archiver'
 
 const decodeIngestorRecord = pipe(
   IngestorRecord.IngestionRecordSchema,

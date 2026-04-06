@@ -4,7 +4,7 @@ import { FileSystem } from '@effect/platform'
 import { Node } from '@news-research/node'
 import { IngestionAttemptedSchema } from '@news-research/contracts'
 
-import { Publisher, PublisherError } from '@news-research/ingestion-ingest'
+import { Publisher, PublisherError } from '../../ports/Publisher'
 
 const encodeMessage = pipe(
   IngestionAttemptedSchema,

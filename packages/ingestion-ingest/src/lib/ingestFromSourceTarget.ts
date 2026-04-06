@@ -7,11 +7,11 @@ import {
 } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
-import { Archiver } from './ports/Archiver'
-import { Fetcher } from './ports/Fetcher'
-import { SourceTarget } from './data/SourceTarget'
-import { FetchAttempt } from './data/FetchAttempt'
-import type { Response, NoResponse } from './data/FetchResult'
+import { Archiver } from './Archiver'
+import { Fetcher } from './Fetcher'
+import { SourceTarget } from './SourceTarget'
+import { FetchAttempt } from './FetchAttempt'
+import type { Response, NoResponse } from './FetchResult'
 
 type CreateNoResponseInput = {
   runId: string
@@ -145,7 +145,7 @@ function createIngestionAttempted(
   })
 }
 
-export function ingestFromSourceTarget(
+export function sanitizeRawIngestedBody(
   runId: string,
   source: SourceTarget,
   index: number

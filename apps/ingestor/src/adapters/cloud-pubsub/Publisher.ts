@@ -4,7 +4,7 @@ import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
 import { IngestionAttemptedSchema } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 
-import { Publisher, PublisherError } from '@news-research/ingestion-ingest'
+import { Publisher, PublisherError } from '../../ports/Publisher'
 
 const encodeEvent = pipe(
   IngestionAttemptedSchema,

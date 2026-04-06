@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { FetchResult } from '../data/FetchResult'
+import type { FetchResult } from './FetchResult'
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown
