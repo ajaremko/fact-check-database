@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-core",
+  "name": "@news-research/ingestion-ingest",
   "version": "0.0.1",
   "private": true,
   "main": "./src/index.ts",

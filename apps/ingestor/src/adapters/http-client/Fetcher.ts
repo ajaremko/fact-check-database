@@ -6,9 +6,11 @@ import {
 } from '@effect/platform'
 
 import { Node } from '@news-research/node'
-
-import { Fetcher, FetcherError } from '../../ports/Fetcher'
-import type { FetchResult } from '../../data/FetchResult'
+import {
+  Fetcher,
+  FetcherError,
+  FetchResult,
+} from '@news-research/ingestion-ingest'
 
 function handleRequestError(
   error: HttpClientError.RequestError

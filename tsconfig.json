@@ -31,7 +31,13 @@
       "path": "./apps/sanitizer"
     },
     {
-      "path": "./packages/ingestion-core"
+      "path": "./packages/ingestion-shared"
+    },
+    {
+      "path": "./packages/ingestion-ingest"
+    },
+    {
+      "path": "./packages/ingestion-sanitize"
     }
   ]
 }

@@ -1,12 +1,15 @@
 import { Config, Effect, Either, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 import { IngestorRecord } from '@news-research/contracts'
-import { archiveBaseDir } from '@news-research/ingestion-core'
+import { archiveBaseDir } from '@news-research/ingestion-shared'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
-import { Archiver, ArchiverError } from '../../ports/Archiver'
-import { FetchAttempt } from '../../data/FetchAttempt'
+import {
+  Archiver,
+  ArchiverError,
+  FetchAttempt,
+} from '@news-research/ingestion-ingest'
 
 const encodeFetchAttemptRecord = pipe(
   IngestorRecord.IngestionRecordSchema,

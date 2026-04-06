@@ -1,19 +1,10 @@
 import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
 
 import { Node } from '@news-research/node'
+import { ingestFromSourceTarget } from '@news-research/ingestion-ingest'
 
-import {
-  createDataFetchedRecord,
-  createNoResponseRecord,
-  createMetadata,
-} from './integration/createAttemptRecord'
-import { Archiver } from './ports/Archiver'
-import { Fetcher } from './ports/Fetcher'
 import { Publisher } from './ports/Publisher'
 import { TargetList } from './ports/TargetList'
-import { SourceTarget } from './data/SourceTarget'
-import { FetchAttempt } from './data/FetchAttempt'
-import { createIngestionAttempted } from './integration/createIngestionAttempted'
 
 const MaxConcurrencySchema = Schema.NumberFromString.pipe(
   Schema.nonNegative(),
@@ -40,66 +31,6 @@ const readConfig = Effect.gen(function* () {
   return { runId, concurrency, startedAt, successThreshold, logLevel }
 })
 
-function processTarget(runId: string, source: SourceTarget, index: number) {
-  return Effect.gen(function* () {
-    yield* Effect.logInfo(`Processing target ${index + 1}`)
-
-    const archive = yield* Archiver
-    const fetcher = yield* Fetcher
-    const publisher = yield* Publisher
-    const fetchedAt = yield* Clock.currentTimeMillis
-
-    const result = yield* fetcher.fetch(source.url)
-    const attempt: FetchAttempt = {
-      runId,
-      fetchedAt,
-      source,
-      result,
-    }
-
-    if (Either.isLeft(result)) {
-      // In case of fetch failure, archive the attempt
-      // record without archiving response body
-      const record = createNoResponseRecord({
-        runId,
-        fetchedAt,
-        source,
-        result: result.left,
-      })
-      const meta = createMetadata(attempt.runId, attempt)
-      const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
-      const event = yield* createIngestionAttempted(attempt, recordPointer)
-      yield* publisher.publish(event)
-    } else {
-      // If fetch is successful, archive both the response
-      // body and the attempt record
-      const bodyPointer = yield* archive.archiveBody(
-        attempt,
-        result.right.body,
-        result.right.contentType
-      )
-      const record = createDataFetchedRecord({
-        runId,
-        fetchedAt,
-        source,
-        result: result.right,
-        pointer: bodyPointer,
-      })
-      const meta = createMetadata(attempt.runId, attempt)
-      const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
-      const event = yield* createIngestionAttempted(attempt, recordPointer)
-      yield* publisher.publish(event)
-    }
-  }).pipe(
-    Effect.tapError(Effect.logError),
-    Effect.annotateLogs({
-      source: source.name,
-      url: source.url,
-      collection: source.collection,
-    })
-  )
-}
-
 function processTargets(
   runId: string,
   concurrency: number,
@@ -114,7 +45,19 @@ function processTargets(
     yield* Effect.logInfo(`Processing ${targets.length} targets`)
 
     const tasks = targets.map((target, index) =>
-      processTarget(runId, target, index)
+      Effect.gen(function* () {
+        yield* Effect.logInfo(`Processing target ${index + 1}`)
+        const publisher = yield* Publisher
+        const event = yield* ingestFromSourceTarget(runId, target, index)
+        yield* publisher.publish(event)
+      }).pipe(
+        Effect.tapError(Effect.logError),
+        Effect.annotateLogs({
+          source: target.name,
+          url: target.url,
+          collection: target.collection,
+        })
+      )
     )
 
     // 'either' mode ensures that all tasks are attempted,

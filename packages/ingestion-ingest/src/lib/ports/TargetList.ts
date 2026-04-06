@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { SourceTarget } from '@news-research/ingestion-ingest'
+import type { SourceTarget } from '../data/SourceTarget'
 
 export class TargetListError extends Data.TaggedError('TargetListError')<{
   readonly cause: unknown

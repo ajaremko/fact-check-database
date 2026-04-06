@@ -8,7 +8,7 @@ import {
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 
-import { archiveBaseDir } from '@news-research/ingestion-core'
+import { archiveBaseDir } from '@news-research/ingestion-shared'
 
 import { Archiver, ArchiverError } from '../../ports/Archiver'
 
@@ -77,7 +77,11 @@ export const make = Effect.gen(function* () {
   ) {
     return Effect.gen(function* () {
       const id = record.sanitizationId
-      const baseDir = makeBaseDir(record.source.name, record.fetchedAt, record.runId)
+      const baseDir = makeBaseDir(
+        record.source.name,
+        record.fetchedAt,
+        record.runId
+      )
       const recordObject = `${outputDir}/records/${baseDir}/${id}.sanitizer.yml`
       yield* fs.makeDirectory(parentDir(recordObject), { recursive: true })
 

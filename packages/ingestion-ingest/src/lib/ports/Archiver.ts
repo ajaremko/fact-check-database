@@ -2,7 +2,7 @@ import { Context, Data, Effect } from 'effect'
 
 import { FilePointer, IngestorRecord } from '@news-research/contracts'
 
-import type { FetchAttempt } from '../data/FetchAttempt'
+import { FetchAttempt } from '../data/FetchAttempt'
 
 export class ArchiverError extends Data.TaggedError('ArchiverError')<{
   readonly cause: unknown

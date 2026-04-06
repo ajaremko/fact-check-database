@@ -9,12 +9,14 @@ import {
 } from 'effect'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { IngestorRecord } from '@news-research/contracts'
-import { archiveBaseDir } from '@news-research/ingestion-core'
+import { archiveBaseDir } from '@news-research/ingestion-shared'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
-
-import { Archiver, ArchiverError } from '../../ports/Archiver'
-import type { FetchAttempt } from '../../data/FetchAttempt'
+import {
+  Archiver,
+  ArchiverError,
+  FetchAttempt,
+} from '@news-research/ingestion-ingest'
 
 const encodeFetchAttemptRecord = pipe(
   IngestorRecord.IngestionRecordSchema,
