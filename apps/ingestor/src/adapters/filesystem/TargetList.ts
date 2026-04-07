@@ -5,7 +5,7 @@ import { NodeCsv } from '@news-research/node-csv'
 import { Node } from '@news-research/node'
 import { SourceTargetSchema } from '@news-research/ingestion/ingest'
 
-import { TargetList, TargetListError } from '../../ports/TargetList'
+import { TargetList } from '../../TargetList'
 
 const decodeSources = pipe(
   SourceTargetSchema,
@@ -23,13 +23,9 @@ const decodeSources = pipe(
 export const make = Effect.gen(function* () {
   const path = yield* Config.string('TARGET_LIST_PATH')
   const fs = yield* FileSystem.FileSystem
-
-  return TargetList.of({
-    read: fs.readFile(path).pipe(
-      Effect.andThen(decodeSources),
-      Effect.mapError((cause) => new TargetListError({ cause }))
-    ),
-  })
+  const buff = yield* fs.readFile(path)
+  const targets = yield* decodeSources(buff)
+  return TargetList.of(targets)
 })
 
 export const layer = Layer.effect(TargetList, make)

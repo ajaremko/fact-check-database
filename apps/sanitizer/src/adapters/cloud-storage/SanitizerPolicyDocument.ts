@@ -1,16 +1,13 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
+import { ParseError } from 'effect/ParseResult'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Yaml } from '@news-research/yaml'
 import { Node } from '@news-research/node'
 import { SanitizerPolicySchema } from '@news-research/ingestion/sanitize'
 
-import {
-  SanitizerPolicyDocument,
-  SanitizerPolicyDocumentError,
-} from '../../ports/SanitizerPolicyDocument'
+import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
 
-// SanitizerPolicy -> Yaml -> Buffer
 const decodeSources = pipe(
   SanitizerPolicySchema,
   Yaml.parseYaml(),
@@ -20,21 +17,15 @@ const decodeSources = pipe(
 
 export const make = Effect.gen(function* () {
   const uri = yield* Config.string('SANITIZER_POLICY_URI')
-  const { bucket } = yield* StorageBucket.StorageBucket
-
-  return SanitizerPolicyDocument.of({
-    read: StorageBucket.downloadFile(uri).pipe(
-      Effect.andThen(([buf]) => decodeSources(buf)),
-      Effect.mapError((cause) => new SanitizerPolicyDocumentError({ cause })),
-      Effect.provideService(StorageBucket.StorageBucket, { bucket })
-    ),
-  })
+  const [buf] = yield* StorageBucket.downloadFile(uri)
+  const policy = yield* decodeSources(buf)
+  return SanitizerPolicyConfig.of(policy)
 })
 
 export const layer: Layer.Layer<
-  SanitizerPolicyDocument,
-  ConfigError.ConfigError,
+  SanitizerPolicyConfig,
+  ConfigError.ConfigError | ParseError | StorageBucket.StorageBucketIOError,
   StorageClient.StorageClient
-> = Layer.effect(SanitizerPolicyDocument, make).pipe(
+> = Layer.effect(SanitizerPolicyConfig, make).pipe(
   Layer.provide(StorageBucket.layer(Config.string('ASSETS_BUCKET_NAME')))
 )

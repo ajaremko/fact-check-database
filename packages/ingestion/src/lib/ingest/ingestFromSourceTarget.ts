@@ -5,6 +5,7 @@ import {
   IngestionRecordMetadata,
   NoResponseRecord,
   FilePointer,
+  archiveBaseDir,
 } from '../data'
 import { IngestionAttempted } from './IngestionAttempted'
 import { Node } from '@news-research/node'
@@ -160,6 +161,8 @@ export function ingestFromSourceTarget(
     const fetchedAt = yield* Clock.currentTimeMillis
 
     const result = yield* fetcher.fetch(source.url)
+
+    const path = archiveBaseDir(source.name, fetchedAt, runId)
     const attempt: FetchAttempt = {
       runId,
       fetchedAt,
@@ -177,13 +180,19 @@ export function ingestFromSourceTarget(
         result: result.left,
       })
       const meta = createMetadata(attempt.runId, attempt)
-      const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
+      const recordPointer = yield* archive.archiveRecord(
+        path,
+        attempt,
+        record,
+        meta
+      )
       const event = yield* createIngestionAttempted(attempt, recordPointer)
       return event
     } else {
       // If fetch is successful, archive both the response
       // body and the attempt record
       const bodyPointer = yield* archive.archiveBody(
+        path,
         attempt,
         result.right.body,
         result.right.contentType
@@ -196,7 +205,12 @@ export function ingestFromSourceTarget(
         pointer: bodyPointer,
       })
       const meta = createMetadata(attempt.runId, attempt)
-      const recordPointer = yield* archive.archiveRecord(attempt, record, meta)
+      const recordPointer = yield* archive.archiveRecord(
+        path,
+        attempt,
+        record,
+        meta
+      )
       const event = yield* createIngestionAttempted(attempt, recordPointer)
       return event
     }

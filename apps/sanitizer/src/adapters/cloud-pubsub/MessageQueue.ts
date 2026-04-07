@@ -5,11 +5,7 @@ import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
 import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/node'
 
-import {
-  MessageQueue,
-  MessageQueueError,
-  Message,
-} from '../../ports/MessageQueue'
+import { MessageQueue, MessageQueueError, Message } from '../../MessageQueue'
 
 // Record -> JSON -> Buffer
 const decodeIngestionAttempted = pipe(

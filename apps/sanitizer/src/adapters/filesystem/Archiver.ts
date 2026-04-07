@@ -3,7 +3,6 @@ import { FileSystem } from '@effect/platform'
 
 import { Archiver, ArchiverError } from '@news-research/ingestion/sanitize'
 import {
-  archiveBaseDir,
   FilePointer,
   IngestionRecordSchema,
   SanitizerRecordSchema,
@@ -35,9 +34,6 @@ const encodeMetadata = pipe(
   Schema.encode
 )
 
-const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) =>
-  archiveBaseDir(sourceName, fetchedAt, runId)
-
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
 }
@@ -60,9 +56,9 @@ export const make = Effect.gen(function* () {
     )
   }
 
-  function writeSanitizedBody(id: string, body: Uint8Array) {
+  function writeSanitizedBody(baseDir: string, id: string, body: Uint8Array) {
     return Effect.gen(function* () {
-      const rawObject = `${outputDir}/sanitized/${id}.bin`
+      const rawObject = `${outputDir}/sanitized/${baseDir}/${id}.bin`
       yield* fs.makeDirectory(parentDir(rawObject), { recursive: true })
       yield* fs.writeFile(rawObject, Buffer.from(body))
 
@@ -74,16 +70,12 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizerRecord(
+    baseDir: string,
     record: SanitizerRecord,
     metadata: SanitizerRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = record.sanitizationId
-      const baseDir = makeBaseDir(
-        record.source.name,
-        record.fetchedAt,
-        record.runId
-      )
       const recordObject = `${outputDir}/records/${baseDir}/${id}.sanitizer.yml`
       yield* fs.makeDirectory(parentDir(recordObject), { recursive: true })
 

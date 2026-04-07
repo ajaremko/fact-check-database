@@ -4,11 +4,7 @@ import { FileSystem } from '@effect/platform'
 import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/node'
 
-import {
-  MessageQueue,
-  Message,
-  MessageQueueError,
-} from '../../ports/MessageQueue'
+import { MessageQueue, Message, MessageQueueError } from '../../MessageQueue'
 
 const decodeObservationFetched = pipe(
   IngestionAttemptedSchema,

@@ -7,6 +7,7 @@ import {
   IngestionRecord,
   PolicyLabel,
   SanitizationAction,
+  archiveBaseDir,
 } from '../data'
 
 import { Archiver } from './Archiver'
@@ -212,8 +213,14 @@ export function sanitizeRawObservation(
     const decision = evaluatePolicy(policy, record)
     const sanitizationId = yield* Node.generateUUID()
     const sanitizedAt = yield* Clock.currentTimeMillis
+    const baseDir = archiveBaseDir(
+      record.source.name,
+      record.fetchedAt,
+      record.runId
+    )
 
     yield* archiver.writeSanitizerRecord(
+      baseDir,
       {
         version: 1,
         kind: 'sanitized_record',

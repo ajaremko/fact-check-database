@@ -5,12 +5,12 @@ import {
   HttpClientResponse,
 } from '@effect/platform'
 
-import { Node } from '@news-research/node'
 import {
   Fetcher,
   FetcherError,
   FetchResult,
 } from '@news-research/ingestion/ingest'
+import { Node } from '@news-research/node'
 
 function handleRequestError(
   error: HttpClientError.RequestError

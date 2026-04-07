@@ -3,8 +3,8 @@ import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
 import { Node } from '@news-research/node'
 import { ingestFromSourceTarget } from '@news-research/ingestion/ingest'
 
-import { Publisher } from './ports/Publisher'
-import { TargetList } from './ports/TargetList'
+import { Publisher } from './Publisher'
+import { TargetList } from './TargetList'
 
 const MaxConcurrencySchema = Schema.NumberFromString.pipe(
   Schema.nonNegative(),
@@ -38,9 +38,7 @@ function processTargets(
   startedAt: number
 ) {
   return Effect.gen(function* () {
-    const targetList = yield* TargetList
-
-    const targets = yield* targetList.read
+    const targets = yield* TargetList
 
     yield* Effect.logInfo(`Processing ${targets.length} targets`)
 

@@ -7,21 +7,21 @@ import {
   pipe,
   Schema,
 } from 'effect'
-import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import {
-  IngestionRecordSchema,
-  IngestionRecord,
-  IngestionRecordMetadataSchema,
-  IngestionRecordMetadata,
-  archiveBaseDir,
-} from '@news-research/ingestion'
-import { Node } from '@news-research/node'
-import { Yaml } from '@news-research/yaml'
+
 import {
   Archiver,
   ArchiverError,
   FetchAttempt,
 } from '@news-research/ingestion/ingest'
+import {
+  IngestionRecordSchema,
+  IngestionRecord,
+  IngestionRecordMetadataSchema,
+  IngestionRecordMetadata,
+} from '@news-research/ingestion'
+import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
+import { Node } from '@news-research/node'
+import { Yaml } from '@news-research/yaml'
 
 const encodeFetchAttemptRecord = pipe(
   IngestionRecordSchema,
@@ -38,20 +38,17 @@ const makeId = (attempt: FetchAttempt) =>
     onRight: (result) => result.sha256,
   })
 
-const makeBaseDir = (attempt: FetchAttempt) =>
-  archiveBaseDir(attempt.source.name, attempt.fetchedAt, attempt.runId)
-
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
 
   function archiveBody(
+    baseDir: string,
     attempt: FetchAttempt,
     response: Uint8Array,
     contentType?: string
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)
-      const baseDir = makeBaseDir(attempt)
       const rawObject = `raw/${baseDir}/${id}.bin`
       yield* StorageBucket.writeFile(rawObject, Buffer.from(response), {
         resumable: false,
@@ -68,13 +65,13 @@ export const make = Effect.gen(function* () {
   }
 
   function archiveRecord(
+    baseDir: string,
     attempt: FetchAttempt,
     record: IngestionRecord,
     recordMetadata: IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)
-      const baseDir = makeBaseDir(attempt)
       const recordObject = `records/${baseDir}/${id}.ingestor.yml`
       const data = encodeFetchAttemptRecord(record)
       const metadata = encodeMetadata(recordMetadata)

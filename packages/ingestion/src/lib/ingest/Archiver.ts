@@ -12,11 +12,13 @@ export class Archiver extends Context.Tag('Archiver')<
   Archiver,
   {
     readonly archiveBody: (
+      path: string,
       attempt: FetchAttempt,
       body: Uint8Array,
       contentType?: string
     ) => Effect.Effect<FilePointer, ArchiverError>
     readonly archiveRecord: (
+      path: string,
       attempt: FetchAttempt,
       record: IngestionRecord,
       metadata: IngestionRecordMetadata

@@ -2,8 +2,8 @@ import { Config, Effect, Logger, Queue } from 'effect'
 
 import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
 
-import { MessageQueue } from './ports/MessageQueue'
-import { SanitizerPolicyDocument } from './ports/SanitizerPolicyDocument'
+import { MessageQueue } from './MessageQueue'
+import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 
 const readConfig = Effect.gen(function* () {
   const logLevel = yield* Config.logLevel('LOG_LEVEL')
@@ -12,9 +12,8 @@ const readConfig = Effect.gen(function* () {
 
 export const Program = Effect.gen(function* () {
   const { logLevel } = yield* readConfig
-  const policyDocument = yield* SanitizerPolicyDocument
+  const policy = yield* SanitizerPolicyConfig
   const { messages, errors } = yield* MessageQueue
-  const policy = yield* policyDocument.read
 
   const handleMessages = Queue.take(messages).pipe(
     Effect.andThen((message) =>

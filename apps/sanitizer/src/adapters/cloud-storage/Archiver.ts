@@ -3,7 +3,6 @@ import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { Archiver, ArchiverError } from '@news-research/ingestion/sanitize'
 import {
   FilePointer,
-  archiveBaseDir,
   IngestionRecordSchema,
   SanitizerRecordSchema,
   SanitizerRecord,
@@ -36,9 +35,6 @@ const encodeMetadata = pipe(
   Schema.encode
 )
 
-const makeBaseDir = (sourceName: string, fetchedAt: number, runId: string) =>
-  archiveBaseDir(sourceName, fetchedAt, runId)
-
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
 
@@ -59,12 +55,13 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizedBody(
+    baseDir: string,
     id: string,
     body: Uint8Array,
     contentType?: string
   ) {
     return Effect.gen(function* () {
-      const rawObject = `sanitized/${id}.bin`
+      const rawObject = `sanitized/${baseDir}/${id}.bin`
       yield* StorageBucket.writeFile(rawObject, Buffer.from(body), {
         resumable: false,
         contentType: contentType ?? 'application/octet-stream',
@@ -80,16 +77,12 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizerRecord(
+    baseDir: string,
     record: SanitizerRecord,
     recordMetadata: SanitizerRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = record.sanitizationId
-      const baseDir = makeBaseDir(
-        record.source.name,
-        record.fetchedAt,
-        record.runId
-      )
       const recordObject = `records/${baseDir}/${id}.sanitizer.yml`
       const data = yield* encodeSanitizerRecord(record)
       const metadata = yield* encodeMetadata(recordMetadata)
