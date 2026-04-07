@@ -4,6 +4,7 @@ import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
 
 import { MessageQueue } from './MessageQueue'
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
+import { Publisher } from './Publisher'
 
 const readConfig = Effect.gen(function* () {
   const logLevel = yield* Config.logLevel('LOG_LEVEL')
@@ -11,19 +12,23 @@ const readConfig = Effect.gen(function* () {
 })
 
 export const Program = Effect.gen(function* () {
-  const { logLevel } = yield* readConfig
+  const publisher = yield* Publisher
   const policy = yield* SanitizerPolicyConfig
   const { messages, errors } = yield* MessageQueue
+  const { logLevel } = yield* readConfig
 
   const handleMessages = Queue.take(messages).pipe(
     Effect.andThen((message) =>
       Effect.gen(function* () {
         const incoming = yield* message.read
-        yield* sanitizeRawObservation(
+        const outgoing = yield* sanitizeRawObservation(
           policy,
           incoming.observationId,
           incoming.pointer
         )
+        for (const event of outgoing) {
+          yield* publisher.publish(event)
+        }
       }).pipe(
         Effect.andThen(() => message.ack),
         Effect.catchTag('ParseError', () => message.ack),
