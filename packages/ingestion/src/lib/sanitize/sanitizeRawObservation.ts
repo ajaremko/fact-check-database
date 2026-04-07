@@ -1,11 +1,13 @@
 import { Clock, Effect } from 'effect'
 
+import { Node } from '@news-research/node'
+
 import {
   FilePointer,
-  IngestorRecord,
-  SantizerRecord,
-} from '@news-research/contracts'
-import { Node } from '@news-research/node'
+  IngestionRecord,
+  PolicyLabel,
+  SanitizationAction,
+} from '../data'
 
 import { Archiver } from './Archiver'
 import type { SanitizerPolicy, CollectionRule } from './SanitizerPolicy'
@@ -107,7 +109,7 @@ function pickRule(
 function contentTypeAllowed(
   contentType: string | undefined,
   rule: CollectionRule
-): { allowed: boolean; quarantineReason?: SantizerRecord.SanitizationAction } {
+): { allowed: boolean; quarantineReason?: SanitizationAction } {
   const allowList = rule.allowedContentTypeSubstrings ?? []
   if (!contentType) {
     const behavior = rule.onMissingContentType ?? 'RESTRICT'
@@ -132,15 +134,15 @@ function contentTypeAllowed(
 }
 
 type PolicyDecision = {
-  label: SantizerRecord.PolicyLabel
-  actions: SantizerRecord.SanitizationAction[]
+  label: PolicyLabel
+  actions: SanitizationAction[]
   error?: string // quarantine reason text
   rewriteBody: boolean
 }
 
 function evaluatePolicy(
   policy: SanitizerPolicy,
-  record: IngestorRecord.IngestionRecord
+  record: IngestionRecord
 ): PolicyDecision {
   const actions: PolicyDecision['actions'] = []
 

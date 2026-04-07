@@ -3,7 +3,7 @@ import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Yaml } from '@news-research/yaml'
 import { Node } from '@news-research/node'
-import { SanitizerPolicySchema } from '@news-research/ingestion-sanitize'
+import { SanitizerPolicySchema } from '@news-research/ingestion/sanitize'
 
 import {
   SanitizerPolicyDocument,

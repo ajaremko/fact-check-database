@@ -1,6 +1,6 @@
 import { Config, Effect, Logger, Queue } from 'effect'
 
-import { sanitizeRawObservation } from '@news-research/ingestion-sanitize'
+import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
 
 import { MessageQueue } from './ports/MessageQueue'
 import { SanitizerPolicyDocument } from './ports/SanitizerPolicyDocument'

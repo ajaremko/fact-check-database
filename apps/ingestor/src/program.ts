@@ -1,7 +1,7 @@
 import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
 
 import { Node } from '@news-research/node'
-import { ingestFromSourceTarget } from '@news-research/ingestion-ingest'
+import { ingestFromSourceTarget } from '@news-research/ingestion/ingest'
 
 import { Publisher } from './ports/Publisher'
 import { TargetList } from './ports/TargetList'

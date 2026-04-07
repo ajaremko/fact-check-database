@@ -1,6 +1,6 @@
 import { Context, Data, Effect, Queue, ParseResult } from 'effect'
 
-import { IngestionAttempted } from '@news-research/contracts'
+import { IngestionAttempted } from '@news-research/ingestion/ingest'
 
 export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
   readonly cause: unknown

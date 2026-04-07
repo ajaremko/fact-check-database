@@ -126,7 +126,7 @@ export type SanitizerRecord = Schema.Schema.Type<typeof SanitizerRecordSchema>
  * each archived sanitizer record. `sanitizedAt` is stored as a string in GCS
  * and decoded to a number on read.
  */
-export const SantizerRecordMetadataSchema = Schema.Struct({
+export const SanitizerRecordMetadataSchema = Schema.Struct({
   url: Schema.String,
   sourceName: Schema.String,
   sourceCollection: Schema.String,
@@ -136,6 +136,6 @@ export const SantizerRecordMetadataSchema = Schema.Struct({
 })
 
 /** Metadata for a sanitized record. */
-export type SantizerRecordMetadata = Schema.Schema.Type<
-  typeof SantizerRecordMetadataSchema
+export type SanitizerRecordMetadata = Schema.Schema.Type<
+  typeof SanitizerRecordMetadataSchema
 >

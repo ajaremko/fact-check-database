@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { SantizerRecord } from '@news-research/contracts'
+import { PolicyLabelSchema } from '../data'
 
 /**
  * A simple allowlist-based policy per source collection.
@@ -21,7 +21,7 @@ export const CollectionRuleSchema = Schema.Struct({
   maxBytes: Schema.Number,
 
   // Default label if it passes gates (SAFE_PUBLIC for rss/api, RESTRICTED for html, etc.)
-  defaultLabel: SantizerRecord.PolicyLabelSchema,
+  defaultLabel: PolicyLabelSchema,
 
   // Should we rewrite body bytes for this collection? (v1: usually false)
   rewriteBody: Schema.optional(Schema.Boolean),
@@ -40,7 +40,7 @@ export const SourceOverrideSchema = Schema.Struct({
   sourceName: Schema.String,
   // override maxBytes / label / content-type allowlist etc.
   maxBytes: Schema.optional(Schema.Number),
-  defaultLabel: Schema.optional(SantizerRecord.PolicyLabelSchema),
+  defaultLabel: Schema.optional(PolicyLabelSchema),
   allowedContentTypeSubstrings: Schema.optional(Schema.Array(Schema.String)),
   rewriteBody: Schema.optional(Schema.Boolean),
 })

@@ -19,7 +19,7 @@
       "path": "../../packages/node/tsconfig.lib.json"
     },
     {
-      "path": "../../packages/contracts/tsconfig.lib.json"
+      "path": "../../packages/ingestion/tsconfig.lib.json"
     },
     {
       "path": "../../packages/cloud-pubsub/tsconfig.lib.json"

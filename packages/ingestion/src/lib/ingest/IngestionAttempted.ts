@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema } from './FilePointer.js'
+import { FilePointerSchema } from '../data/FilePointer.js'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

@@ -1,10 +1,12 @@
 import { Clock, Effect, Either } from 'effect'
 
 import {
-  IngestionAttempted,
-  IngestorRecord,
+  DataFetchedRecord,
+  IngestionRecordMetadata,
+  NoResponseRecord,
   FilePointer,
-} from '@news-research/contracts'
+} from '../data'
+import { IngestionAttempted } from './IngestionAttempted'
 import { Node } from '@news-research/node'
 
 import { Archiver } from './Archiver'
@@ -21,7 +23,7 @@ type CreateNoResponseInput = {
 }
 
 function createNoResponseRecord(input: CreateNoResponseInput) {
-  return IngestorRecord.NoResponseRecord({
+  return NoResponseRecord({
     runId: input.runId,
     fetchedAt: input.fetchedAt,
     url: input.source.url,
@@ -42,7 +44,7 @@ type CreateDataFetchedInput = {
 }
 
 function createDataFetchedRecord(input: CreateDataFetchedInput) {
-  return IngestorRecord.DataFetchedRecord({
+  return DataFetchedRecord({
     runId: input.runId,
     fetchedAt: input.fetchedAt,
     url: input.source.url,
@@ -68,7 +70,7 @@ function createDataFetchedRecord(input: CreateDataFetchedInput) {
 function createMetadata(
   id: string,
   attempt: FetchAttempt
-): IngestorRecord.IngestionRecordMetadata {
+): IngestionRecordMetadata {
   return {
     id,
     url: attempt.source.url,
@@ -145,7 +147,7 @@ function createIngestionAttempted(
   })
 }
 
-export function sanitizeRawIngestedBody(
+export function ingestFromSourceTarget(
   runId: string,
   source: SourceTarget,
   index: number

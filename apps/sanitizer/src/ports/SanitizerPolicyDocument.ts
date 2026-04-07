@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { SanitizerPolicy } from '@news-research/ingestion-sanitize'
+import type { SanitizerPolicy } from '@news-research/ingestion/sanitize'
 
 export class SanitizerPolicyDocumentError extends Data.TaggedError(
   'SanitizerPolicyDocumentError'

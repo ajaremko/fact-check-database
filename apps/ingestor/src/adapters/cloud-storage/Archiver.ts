@@ -8,26 +8,29 @@ import {
   Schema,
 } from 'effect'
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import { IngestorRecord } from '@news-research/contracts'
-import { archiveBaseDir } from '@news-research/ingestion-shared'
+import {
+  IngestionRecordSchema,
+  IngestionRecord,
+  IngestionRecordMetadataSchema,
+  IngestionRecordMetadata,
+  archiveBaseDir,
+} from '@news-research/ingestion'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
 import {
   Archiver,
   ArchiverError,
   FetchAttempt,
-} from '@news-research/ingestion-ingest'
+} from '@news-research/ingestion/ingest'
 
 const encodeFetchAttemptRecord = pipe(
-  IngestorRecord.IngestionRecordSchema,
+  IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
 
-const encodeMetadata = Schema.encodeSync(
-  IngestorRecord.IngestionRecordMetadataSchema
-)
+const encodeMetadata = Schema.encodeSync(IngestionRecordMetadataSchema)
 
 const makeId = (attempt: FetchAttempt) =>
   Either.match(attempt.result, {
@@ -66,8 +69,8 @@ export const make = Effect.gen(function* () {
 
   function archiveRecord(
     attempt: FetchAttempt,
-    record: IngestorRecord.IngestionRecord,
-    recordMetadata: IngestorRecord.IngestionRecordMetadata
+    record: IngestionRecord,
+    recordMetadata: IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)

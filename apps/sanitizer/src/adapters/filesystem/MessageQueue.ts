@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { IngestionAttemptedSchema } from '@news-research/contracts'
+import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/node'
 
 import {
@@ -10,7 +10,6 @@ import {
   MessageQueueError,
 } from '../../ports/MessageQueue'
 
-// Record -> JSON -> Buffer
 const decodeObservationFetched = pipe(
   IngestionAttemptedSchema,
   Node.parseJson(),

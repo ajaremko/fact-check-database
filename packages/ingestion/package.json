@@ -1,0 +1,29 @@
+{
+  "name": "@news-research/ingestion",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./ingest": {
+      "types": "./dist/lib/ingest/index.d.ts",
+      "import": "./dist/lib/ingest/index.js",
+      "default": "./dist/lib/ingest/index.js"
+    },
+    "./sanitize": {
+      "types": "./dist/lib/sanitize/index.d.ts",
+      "import": "./dist/lib/sanitize/index.js",
+      "default": "./dist/lib/sanitize/index.js"
+    }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}

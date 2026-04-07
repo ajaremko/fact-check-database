@@ -2,7 +2,7 @@ import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { Node } from '@news-research/node'
-import { IngestionAttemptedSchema } from '@news-research/contracts'
+import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
 
 import { Publisher, PublisherError } from '../../ports/Publisher'
 

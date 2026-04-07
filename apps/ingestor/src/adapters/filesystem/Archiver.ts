@@ -4,22 +4,27 @@ import {
   Archiver,
   ArchiverError,
   FetchAttempt,
-} from '@news-research/ingestion-ingest'
+} from '@news-research/ingestion/ingest'
 import { FileSystem } from '@effect/platform'
-import { IngestorRecord } from '@news-research/contracts'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
-import { archiveBaseDir } from '@news-research/ingestion-shared'
+import {
+  IngestionRecordSchema,
+  IngestionRecord,
+  IngestionRecordMetadataSchema,
+  IngestionRecordMetadata,
+  archiveBaseDir,
+} from '@news-research/ingestion'
 
 const encodeFetchAttemptRecord = pipe(
-  IngestorRecord.IngestionRecordSchema,
+  IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
 )
 
 const encodeMetadata = pipe(
-  IngestorRecord.IngestionRecordMetadataSchema,
+  IngestionRecordMetadataSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encodeSync
@@ -60,8 +65,8 @@ export const make = Effect.gen(function* () {
 
   function archiveRecord(
     attempt: FetchAttempt,
-    record: IngestorRecord.IngestionRecord,
-    recordMetadata: IngestorRecord.IngestionRecordMetadata
+    record: IngestionRecord,
+    recordMetadata: IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = makeId(attempt)

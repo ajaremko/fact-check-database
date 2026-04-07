@@ -1,32 +1,35 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { Archiver, ArchiverError } from '@news-research/ingestion-sanitize'
+import { Archiver, ArchiverError } from '@news-research/ingestion/sanitize'
 import {
+  archiveBaseDir,
   FilePointer,
-  IngestorRecord,
-  SantizerRecord,
-} from '@news-research/contracts'
+  IngestionRecordSchema,
+  SanitizerRecordSchema,
+  SanitizerRecordMetadataSchema,
+  SanitizerRecord,
+  SanitizerRecordMetadata,
+} from '@news-research/ingestion'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
-import { archiveBaseDir } from '@news-research/ingestion-shared'
 
 const decodeIngestorRecord = pipe(
-  IngestorRecord.IngestionRecordSchema,
+  IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
 
 const encodeSanitizerRecord = pipe(
-  SantizerRecord.SanitizerRecordSchema,
+  SanitizerRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
 
 const encodeMetadata = pipe(
-  SantizerRecord.SantizerRecordMetadataSchema,
+  SanitizerRecordMetadataSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
@@ -71,8 +74,8 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizerRecord(
-    record: SantizerRecord.SanitizerRecord,
-    metadata: SantizerRecord.SantizerRecordMetadata
+    record: SanitizerRecord,
+    metadata: SanitizerRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = record.sanitizationId

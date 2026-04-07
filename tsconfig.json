@@ -10,9 +10,6 @@
       "path": "./apps/ingestor"
     },
     {
-      "path": "./packages/contracts"
-    },
-    {
       "path": "./packages/cloud-storage"
     },
     {
@@ -31,13 +28,7 @@
       "path": "./apps/sanitizer"
     },
     {
-      "path": "./packages/ingestion-shared"
-    },
-    {
-      "path": "./packages/ingestion-ingest"
-    },
-    {
-      "path": "./packages/ingestion-sanitize"
+      "path": "./packages/ingestion"
     }
   ]
 }

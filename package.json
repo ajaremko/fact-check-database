@@ -40,9 +40,7 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*",
-    "packages/ingestion/*",
-    "ingestion-tmp"
+    "apps/*"
   ],
   "dependencies": {
     "@effect/platform-node": "^0.104.1",

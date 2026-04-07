@@ -1,32 +1,36 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 
-import { Archiver, ArchiverError } from '@news-research/ingestion-sanitize'
+import { Archiver, ArchiverError } from '@news-research/ingestion/sanitize'
 import {
   FilePointer,
-  IngestorRecord,
-  SantizerRecord,
-} from '@news-research/contracts'
+  archiveBaseDir,
+  IngestionRecordSchema,
+  SanitizerRecordSchema,
+  SanitizerRecord,
+  SanitizerRecordMetadataSchema,
+  SanitizerRecordMetadata,
+} from '@news-research/ingestion'
+
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node } from '@news-research/node'
 import { Yaml } from '@news-research/yaml'
-import { archiveBaseDir } from '@news-research/ingestion-shared'
 
 const decodeIngestorRecord = pipe(
-  IngestorRecord.IngestionRecordSchema,
+  IngestionRecordSchema,
   Yaml.parseYaml(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
 
-const encodeSantizerRecord = pipe(
-  SantizerRecord.SanitizerRecordSchema,
+const encodeSanitizerRecord = pipe(
+  SanitizerRecordSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
 
 const encodeMetadata = pipe(
-  SantizerRecord.SantizerRecordMetadataSchema,
+  SanitizerRecordMetadataSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
@@ -76,8 +80,8 @@ export const make = Effect.gen(function* () {
   }
 
   function writeSanitizerRecord(
-    record: SantizerRecord.SanitizerRecord,
-    recordMetadata: SantizerRecord.SantizerRecordMetadata
+    record: SanitizerRecord,
+    recordMetadata: SanitizerRecordMetadata
   ) {
     return Effect.gen(function* () {
       const id = record.sanitizationId
@@ -87,7 +91,7 @@ export const make = Effect.gen(function* () {
         record.runId
       )
       const recordObject = `records/${baseDir}/${id}.sanitizer.yml`
-      const data = yield* encodeSantizerRecord(record)
+      const data = yield* encodeSanitizerRecord(record)
       const metadata = yield* encodeMetadata(recordMetadata)
       yield* StorageBucket.writeFile(recordObject, data, {
         resumable: false,

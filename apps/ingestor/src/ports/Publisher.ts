@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { IngestionAttempted } from '@news-research/contracts'
+import type { IngestionAttempted } from '@news-research/ingestion/ingest'
 
 export class PublisherError extends Data.TaggedError('PublisherError')<{
   readonly cause: unknown
