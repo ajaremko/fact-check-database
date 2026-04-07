@@ -2,7 +2,6 @@ import {
   Config,
   ConfigError,
   Effect,
-  Either,
   Layer,
   pipe,
   Schema,
@@ -11,7 +10,6 @@ import {
 import {
   Archiver,
   ArchiverError,
-  FetchAttempt,
 } from '@news-research/ingestion/ingest'
 import {
   IngestionRecordSchema,
@@ -32,23 +30,16 @@ const encodeFetchAttemptRecord = pipe(
 
 const encodeMetadata = Schema.encodeSync(IngestionRecordMetadataSchema)
 
-const makeId = (attempt: FetchAttempt) =>
-  Either.match(attempt.result, {
-    onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
-    onRight: (result) => result.sha256,
-  })
-
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
 
   function archiveBody(
     baseDir: string,
-    attempt: FetchAttempt,
+    id: string,
     response: Uint8Array,
     contentType?: string
   ) {
     return Effect.gen(function* () {
-      const id = makeId(attempt)
       const rawObject = `raw/${baseDir}/${id}.bin`
       yield* StorageBucket.writeFile(rawObject, Buffer.from(response), {
         resumable: false,
@@ -66,12 +57,11 @@ export const make = Effect.gen(function* () {
 
   function archiveRecord(
     baseDir: string,
-    attempt: FetchAttempt,
+    id: string,
     record: IngestionRecord,
     recordMetadata: IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
-      const id = makeId(attempt)
       const recordObject = `records/${baseDir}/${id}.ingestor.yml`
       const data = encodeFetchAttemptRecord(record)
       const metadata = encodeMetadata(recordMetadata)

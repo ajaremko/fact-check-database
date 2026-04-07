@@ -1,9 +1,8 @@
-import { Config, Effect, Either, Layer, pipe, Schema } from 'effect'
+import { Config, Effect, Layer, pipe, Schema } from 'effect'
 
 import {
   Archiver,
   ArchiverError,
-  FetchAttempt,
 } from '@news-research/ingestion/ingest'
 import {
   IngestionRecordSchema,
@@ -29,12 +28,6 @@ const encodeMetadata = pipe(
   Schema.encodeSync
 )
 
-const makeId = (attempt: FetchAttempt) =>
-  Either.match(attempt.result, {
-    onLeft: () => `${attempt.fetchedAt}_${Math.random().toString(16).slice(2)}`,
-    onRight: (result) => result.sha256,
-  })
-
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
 }
@@ -46,11 +39,10 @@ export const make = Effect.gen(function* () {
 
   function archiveBody(
     baseDir: string,
-    attempt: FetchAttempt,
+    id: string,
     response: Uint8Array
   ) {
     return Effect.gen(function* () {
-      const id = makeId(attempt)
       const rawObject = `${outputDir}/raw/${baseDir}/${id}.bin`
       yield* fs.makeDirectory(parentDir(rawObject), { recursive: true })
       yield* fs.writeFile(rawObject, Buffer.from(response))
@@ -64,12 +56,11 @@ export const make = Effect.gen(function* () {
 
   function archiveRecord(
     baseDir: string,
-    attempt: FetchAttempt,
+    id: string,
     record: IngestionRecord,
     recordMetadata: IngestionRecordMetadata
   ) {
     return Effect.gen(function* () {
-      const id = makeId(attempt)
       const recordObject = `${outputDir}/records/${baseDir}/${id}.ingestor.yml`
       yield* fs.makeDirectory(parentDir(recordObject), { recursive: true })
 

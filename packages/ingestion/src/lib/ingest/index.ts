@@ -1,7 +1,5 @@
 export * from './Archiver.js'
 export * from './Fetcher.js'
-export * from './FetchAttempt.js'
-export * from './FetchResult.js'
 export * from './ingestFromSourceTarget.js'
 export * from './IngestionAttempted.js'
 export * from './SourceTarget.js'

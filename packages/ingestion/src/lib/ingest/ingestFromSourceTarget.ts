@@ -1,5 +1,7 @@
 import { Clock, Effect, Either } from 'effect'
 
+import { Node } from '@news-research/node'
+
 import {
   DataFetchedRecord,
   IngestionRecordMetadata,
@@ -7,109 +9,103 @@ import {
   FilePointer,
   archiveBaseDir,
 } from '../data'
+
+import { Fetcher, FetchResult, FetchSuccess } from './Fetcher'
 import { IngestionAttempted } from './IngestionAttempted'
-import { Node } from '@news-research/node'
-
 import { Archiver } from './Archiver'
-import { Fetcher } from './Fetcher'
 import { SourceTarget } from './SourceTarget'
-import { FetchAttempt } from './FetchAttempt'
-import type { Response, NoResponse } from './FetchResult'
 
-type CreateNoResponseInput = {
-  runId: string
-  fetchedAt: number
-  result: NoResponse
-  source: SourceTarget
-}
-
-function createNoResponseRecord(input: CreateNoResponseInput) {
+function createNoResponseRecord(
+  runId: string,
+  fetchedAt: number,
+  source: SourceTarget,
+  error: string
+) {
   return NoResponseRecord({
-    runId: input.runId,
-    fetchedAt: input.fetchedAt,
-    url: input.source.url,
+    runId,
+    fetchedAt,
+    url: source.url,
     source: {
-      name: input.source.name,
-      collection: input.source.collection,
+      name: source.name,
+      collection: source.collection,
     },
-    error: input.result.error,
+    error,
   })
 }
 
-type CreateDataFetchedInput = {
-  runId: string
-  fetchedAt: number
-  result: Response
-  source: SourceTarget
+function createDataFetchedRecord(
+  runId: string,
+  fetchedAt: number,
+  source: SourceTarget,
+  response: FetchSuccess,
   pointer: FilePointer
-}
-
-function createDataFetchedRecord(input: CreateDataFetchedInput) {
+) {
   return DataFetchedRecord({
-    runId: input.runId,
-    fetchedAt: input.fetchedAt,
-    url: input.source.url,
+    runId,
+    fetchedAt,
+    url: source.url,
     source: {
-      name: input.source.name,
-      collection: input.source.collection,
+      name: source.name,
+      collection: source.collection,
     },
     http: {
-      status: input.result.status,
-      contentType: input.result.contentType,
-      etag: input.result.etag,
-      lastModified: input.result.lastModified,
-      headers: input.result.headers,
+      status: response.status,
+      contentType: response.contentType,
+      etag: response.etag,
+      lastModified: response.lastModified,
+      headers: response.headers,
     },
     content: {
-      sha256: input.result.sha256,
-      bytes: input.result.bytes,
+      sha256: response.sha256,
+      bytes: response.bytes,
     },
-    pointer: input.pointer,
+    pointer,
   })
 }
 
 function createMetadata(
-  id: string,
-  attempt: FetchAttempt
+  runId: string,
+  fetchedAt: number,
+  source: SourceTarget
 ): IngestionRecordMetadata {
   return {
-    id,
-    url: attempt.source.url,
-    sourceName: attempt.source.name,
-    sourceCollection: attempt.source.collection,
-    runId: attempt.runId,
-    fetchedAt: attempt.fetchedAt,
+    id: runId,
+    url: source.url,
+    sourceName: source.name,
+    sourceCollection: source.collection,
+    runId,
+    fetchedAt,
   }
 }
 
 function createIngestionAttempted(
-  attempt: FetchAttempt,
+  runId: string,
+  fetchedAt: number,
+  source: SourceTarget,
+  result: FetchResult,
   pointer: FilePointer // pointer to META json
 ): Effect.Effect<IngestionAttempted> {
   return Effect.gen(function* () {
-    const components = Either.match(attempt.result, {
-      onLeft: (result) => [
-        `url=${attempt.source.url}`,
-        `t=${attempt.fetchedAt}`,
-        `error=${result.error}`,
+    const components = Either.match(result, {
+      onLeft: (r) => [
+        `url=${source.url}`,
+        `t=${fetchedAt}`,
+        `error=${r.error}`,
       ],
-      onRight: (result) => [
-        `url=${attempt.source.url}`,
-        `sha256=${result.sha256}`,
-      ],
+      onRight: (r) => [`url=${source.url}`, `sha256=${r.sha256}`],
     })
     const base = [`v1`, ...components].join('|')
     const observationId = yield* Node.sha256Hex(base, 'utf8')
 
-    return Either.match(attempt.result, {
-      onLeft: (result) => ({
+    return Either.match(result, {
+      onLeft: (r) => ({
         observationId,
-        runId: attempt.runId,
-        fetchedAt: attempt.fetchedAt,
-        url: attempt.source.url,
+        runId,
+        fetchedAt,
+        url: source.url,
         source: {
-          name: attempt.source.name,
-          collection: attempt.source.collection,
+          name: source.name,
+          collection: source.collection,
         },
         http: {
           status: 0,
@@ -118,28 +114,28 @@ function createIngestionAttempted(
           sha256: undefined,
           bytes: undefined,
         },
-        error: result.error,
+        error: r.error,
         pointer,
       }),
-      onRight: (result) => ({
+      onRight: (r) => ({
         observationId,
-        runId: attempt.runId,
-        fetchedAt: attempt.fetchedAt,
-        url: attempt.source.url,
-        finalUrl: result.finalUrl,
+        runId,
+        fetchedAt,
+        url: source.url,
+        finalUrl: r.finalUrl,
         source: {
-          name: attempt.source.name,
-          collection: attempt.source.collection,
+          name: source.name,
+          collection: source.collection,
         },
         http: {
-          status: result.status,
-          contentType: result.contentType,
-          etag: result.etag,
-          lastModified: result.lastModified,
+          status: r.status,
+          contentType: r.contentType,
+          etag: r.etag,
+          lastModified: r.lastModified,
         },
         content: {
-          sha256: result.sha256,
-          bytes: result.bytes,
+          sha256: r.sha256,
+          bytes: r.bytes,
         },
         error: undefined,
         pointer,
@@ -163,56 +159,54 @@ export function ingestFromSourceTarget(
     const result = yield* fetcher.fetch(source.url)
 
     const path = archiveBaseDir(source.name, fetchedAt, runId)
-    const attempt: FetchAttempt = {
-      runId,
-      fetchedAt,
-      source,
-      result,
-    }
 
     if (Either.isLeft(result)) {
       // In case of fetch failure, archive the attempt
       // record without archiving response body
-      const record = createNoResponseRecord({
+      const id = yield* Effect.sync(
+        () => `${fetchedAt}_${Math.random().toString(16).slice(2)}`
+      )
+      const record = createNoResponseRecord(
         runId,
         fetchedAt,
         source,
-        result: result.left,
-      })
-      const meta = createMetadata(attempt.runId, attempt)
-      const recordPointer = yield* archive.archiveRecord(
-        path,
-        attempt,
-        record,
-        meta
+        result.left.error
       )
-      const event = yield* createIngestionAttempted(attempt, recordPointer)
-      return event
+      const meta = createMetadata(runId, fetchedAt, source)
+      const recordPointer = yield* archive.archiveRecord(path, id, record, meta)
+      return yield* createIngestionAttempted(
+        runId,
+        fetchedAt,
+        source,
+        result,
+        recordPointer
+      )
     } else {
       // If fetch is successful, archive both the response
       // body and the attempt record
+      const id = result.right.sha256
       const bodyPointer = yield* archive.archiveBody(
         path,
-        attempt,
+        id,
         result.right.body,
         result.right.contentType
       )
-      const record = createDataFetchedRecord({
+      const record = createDataFetchedRecord(
         runId,
         fetchedAt,
         source,
-        result: result.right,
-        pointer: bodyPointer,
-      })
-      const meta = createMetadata(attempt.runId, attempt)
-      const recordPointer = yield* archive.archiveRecord(
-        path,
-        attempt,
-        record,
-        meta
+        result.right,
+        bodyPointer
       )
-      const event = yield* createIngestionAttempted(attempt, recordPointer)
-      return event
+      const meta = createMetadata(runId, fetchedAt, source)
+      const recordPointer = yield* archive.archiveRecord(path, id, record, meta)
+      return yield* createIngestionAttempted(
+        runId,
+        fetchedAt,
+        source,
+        result,
+        recordPointer
+      )
     }
   }).pipe(
     Effect.tapError(Effect.logError),
