@@ -12,6 +12,7 @@ import {
 
 import { Archiver } from './Archiver'
 import type { SanitizerPolicy, CollectionRule } from './SanitizerPolicy'
+import type { SanitizationAttempted } from './SanitizationAttempted'
 
 // type UrlNormalizationResult = {
 //   url: string
@@ -209,7 +210,9 @@ export function sanitizeRawObservation(
       yield* Effect.logInfo(`Skipping observation ${observationId}`)
       return []
     }
+
     yield* Effect.logInfo(`Processing observation ${observationId}`)
+
     const decision = evaluatePolicy(policy, record)
     const sanitizationId = yield* Node.generateUUID()
     const sanitizedAt = yield* Clock.currentTimeMillis
@@ -250,6 +253,19 @@ export function sanitizeRawObservation(
         id: sanitizationId,
       }
     )
-    return []
+
+    const event: SanitizationAttempted = {
+      observationId,
+      runId: record.runId,
+      fetchedAt: record.fetchedAt,
+      url: record.url,
+      finalUrl: record.url,
+      source: record.source,
+      http: record.http,
+      content: record.content,
+      error: decision.error,
+      pointer,
+    }
+    return [event]
   }).pipe(Effect.tapError(Effect.logError))
 }
