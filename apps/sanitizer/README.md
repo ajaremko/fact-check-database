@@ -43,9 +43,11 @@ apps/sanitizer/
 
 ## Related Documentation
 
-| Document                                         | Purpose                                                             |
-| ------------------------------------------------ | ------------------------------------------------------------------- |
-| [docs/how-it-works.md](./docs/how-it-works.md)   | End-to-end data flow and processing behavior                        |
-| [docs/configuration.md](./docs/configuration.md) | Environment variables, adapter behavior, and policy document format |
-| [docs/contracts.md](./docs/contracts.md)         | Output record schemas and archive layout                            |
-| [docs/runbook.md](./docs/runbook.md)             | Interpreting logs and diagnosing failures                           |
+| Document                                                                                              | Purpose                                                             |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [docs/how-it-works.md](./docs/how-it-works.md)                                                       | End-to-end data flow and processing behavior                        |
+| [docs/configuration.md](./docs/configuration.md)                                                     | Environment variables, adapter behavior, and policy document format |
+| [docs/contracts.md](./docs/contracts.md)                                                             | Output record schemas and archive layout                            |
+| [docs/runbook.md](./docs/runbook.md)                                                                 | Interpreting logs and diagnosing failures                           |
+| [@news-research/ingestion: sanitize](../../packages/ingestion/docs/sanitize.md)                      | Policy evaluation logic and policy document format defined in the shared package |
+| [@news-research/ingestion: contracts](../../packages/ingestion/docs/contracts.md)                    | Canonical record schemas and archive path structure                  |

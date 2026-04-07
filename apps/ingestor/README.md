@@ -44,9 +44,11 @@ apps/ingestor/
 
 ## Related Documentation
 
-| Document                                         | Purpose                                                         |
-| ------------------------------------------------ | --------------------------------------------------------------- |
-| [docs/how-it-works.md](./docs/how-it-works.md)   | End-to-end data flow and processing behavior                    |
-| [docs/configuration.md](./docs/configuration.md) | Environment variables, adapter behavior, and target list format |
-| [docs/contracts.md](./docs/contracts.md)         | Output record schemas and archive layout                        |
-| [docs/runbook.md](./docs/runbook.md)             | Interpreting logs and diagnosing failures                       |
+| Document                                                                                              | Purpose                                                         |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [docs/how-it-works.md](./docs/how-it-works.md)                                                       | End-to-end data flow and processing behavior                    |
+| [docs/configuration.md](./docs/configuration.md)                                                     | Environment variables, adapter behavior, and target list format |
+| [docs/contracts.md](./docs/contracts.md)                                                             | Output record schemas and archive layout                        |
+| [docs/runbook.md](./docs/runbook.md)                                                                 | Interpreting logs and diagnosing failures                       |
+| [@news-research/ingestion: ingest](../../packages/ingestion/docs/ingest.md)                          | Per-target fetch and archive logic defined in the shared package |
+| [@news-research/ingestion: contracts](../../packages/ingestion/docs/contracts.md)                    | Canonical record schemas and archive path structure              |
