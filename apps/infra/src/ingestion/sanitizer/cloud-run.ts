@@ -7,9 +7,10 @@ import { gcpRegion, sanitizerTag, tag } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
+import { sanitizerTopic } from '../pubsub'
 
 import { policyObject } from './storage'
-import { sanitizerObservationsSubscription } from './pubsub'
+import { sanitizerIngestorTopicSubscription } from './pubsub'
 
 const sanitizerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-sanitizer-sa`,
@@ -40,16 +41,26 @@ export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-export const sanitizerObservationsTopicSubscriber =
+export const sanitizerIngestorTopicSubscriber =
   new gcp.pubsub.SubscriptionIAMMember(
-    `${tag}-sanitizer-observations-topic-subscriber`,
+    `${tag}-sanitizer-ingestor-topic-subscriber`,
     {
-      subscription: sanitizerObservationsSubscription.name,
+      subscription: sanitizerIngestorTopicSubscription.name,
       role: 'roles/pubsub.subscriber',
       member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
     },
     { provider }
   )
+
+export const sanitizerTopicPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-sanitizer-topic-publisher`,
+  {
+    topic: sanitizerTopic.name,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
+  },
+  { provider }
+)
 
 // If an sanitizer image is specified in config, use that. Otherwise, fall back to a public sample image.
 function getSanitizerImageUri(tag?: string): pulumi.Output<string> {
@@ -94,7 +105,11 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
             },
             {
               name: 'PUBSUB_SUBSCRIPTION_NAME',
-              value: sanitizerObservationsSubscription.name,
+              value: sanitizerIngestorTopicSubscription.name,
+            },
+            {
+              name: 'PUBSUB_TOPIC_NAME',
+              value: sanitizerTopic.name,
             },
             {
               name: 'ARCHIVE_BUCKET_NAME',
@@ -115,7 +130,8 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
       policyObject,
       sanitizerAssetBucketViewer,
       sanitizerRawArchiveBucketAdmin,
-      sanitizerObservationsTopicSubscriber,
+      sanitizerIngestorTopicSubscriber,
+      sanitizerTopicPublisher,
     ],
     provider,
   }

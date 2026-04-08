@@ -1,17 +1,17 @@
 import * as gcp from '@pulumi/gcp'
 
-import { observationsTopicId } from '../../core'
-
 import { ingestionLabels, tag } from '../config'
 import { provider } from '../provider'
 import { pubsubService } from '../services'
+import { ingestorTopic } from '../pubsub'
 
-export const sanitizerObservationsSubscription = new gcp.pubsub.Subscription(
-  `${tag}-sanitizer-observations-subscription`,
+export const sanitizerIngestorTopicSubscription = new gcp.pubsub.Subscription(
+  `${tag}-sanitizer-ingestor-topic-subscription`,
   {
-    name: 'sanitizer-observations-subscription',
+    name: 'sanitizer-ingestor-topic-subscription',
     labels: ingestionLabels,
-    topic: observationsTopicId,
+    // Use id instead of name to support separate parent projects
+    topic: ingestorTopic.id,
     ackDeadlineSeconds: 60,
   },
   {

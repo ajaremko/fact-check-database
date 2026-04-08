@@ -1,16 +1,13 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import {
-  artifactRegistry,
-  rawArchiveBucketName,
-  observationsTopicName,
-} from '../../core'
+import { artifactRegistry, rawArchiveBucketName } from '../../core'
 
 import { gcpRegion, ingestorTag, tag } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
+import { ingestorTopic } from '../pubsub'
 
 import { targetsObject } from './storage'
 
@@ -43,10 +40,10 @@ export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-export const ingestorObservationsTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-ingestor-observations-topic-publisher`,
+export const ingestorTopicPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-ingestor-topic-publisher`,
   {
-    topic: observationsTopicName,
+    topic: ingestorTopic.name,
     role: 'roles/pubsub.publisher',
     member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
   },
@@ -97,7 +94,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: observationsTopicName,
+                value: ingestorTopic.name,
               },
               {
                 name: 'ARCHIVE_BUCKET_NAME',
@@ -127,7 +124,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
       targetsObject,
       ingestorAssetBucketViewer,
       ingestorRawArchiveBucketCreator,
-      ingestorObservationsTopicPublisher,
+      ingestorTopicPublisher,
     ],
     provider,
   }
