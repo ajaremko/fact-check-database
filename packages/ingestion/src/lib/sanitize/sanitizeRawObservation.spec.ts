@@ -82,143 +82,10 @@ describe('sanitizeRawObservation', () => {
   )
 
   it.effect(
-    'quarantines record when body exceeds maxBytes',
+    'writes sanitizer record and returns SanitizationAttempted event for data_fetched records',
     () =>
       Effect.gen(function* () {
-        const written: { record?: SanitizerRecord } = {}
-        const record = DataFetchedRecord({
-          runId: 'run-1',
-          fetchedAt: 0,
-          url: 'https://example.com/feed',
-          source: { name: 'source-1', collection: 'rss' },
-          http: { status: 200, contentType: 'text/xml', headers: {} },
-          content: { bytes: 2_000, sha256: 'abc123' }, // exceeds maxBytes: 1_000
-          pointer: testPointer,
-        })
-
-        const result = yield* sanitizeRawObservation(
-          basePolicy,
-          'obs-1',
-          testPointer
-        ).pipe(Effect.provide(TestArchiver(record, written)))
-
-        expect(result).toHaveLength(1)
-        expect(result[0].error).toMatch(/too large/i)
-        expect(written.record?.policy).toStrictEqual({
-          label: 'QUARANTINED',
-          actions: ['QUARANTINED_TOO_LARGE'],
-        })
-      })
-  )
-
-  it.effect(
-    'quarantines record when content-type is not in allowlist',
-    () =>
-      Effect.gen(function* () {
-        const written: { record?: SanitizerRecord } = {}
-        const record = DataFetchedRecord({
-          runId: 'run-1',
-          fetchedAt: 0,
-          url: 'https://example.com/feed',
-          source: { name: 'source-1', collection: 'rss' },
-          http: { status: 200, contentType: 'text/html', headers: {} }, // not in allowlist
-          content: { bytes: 100, sha256: 'abc123' },
-          pointer: testPointer,
-        })
-
-        const result = yield* sanitizeRawObservation(
-          basePolicy,
-          'obs-1',
-          testPointer
-        ).pipe(Effect.provide(TestArchiver(record, written)))
-
-        expect(result).toHaveLength(1)
-        expect(result[0].error).toMatch(/content-type/i)
-        expect(written.record?.policy).toStrictEqual({
-          label: 'QUARANTINED',
-          actions: ['QUARANTINED_UNEXPECTED_CONTENT_TYPE'],
-        })
-      })
-  )
-
-  it.effect(
-    'passes record and assigns collection defaultLabel when all gates pass',
-    () =>
-      Effect.gen(function* () {
-        const written: { record?: SanitizerRecord } = {}
-        const record = DataFetchedRecord({
-          runId: 'run-1',
-          fetchedAt: 0,
-          url: 'https://example.com/feed',
-          source: { name: 'source-1', collection: 'rss' },
-          http: {
-            status: 200,
-            contentType: 'text/xml; charset=utf-8',
-            headers: {},
-          },
-          content: { bytes: 500, sha256: 'abc123' },
-          pointer: testPointer,
-        })
-
-        const result = yield* sanitizeRawObservation(
-          basePolicy,
-          'obs-1',
-          testPointer
-        ).pipe(Effect.provide(TestArchiver(record, written)))
-
-        expect(result).toHaveLength(1)
-        expect(result[0].error).toBeUndefined()
-        expect(written.record?.policy).toStrictEqual({
-          label: 'SAFE_PUBLIC',
-          actions: [],
-        })
-      })
-  )
-
-  it.effect('applies source override label over collection rule', () =>
-    Effect.gen(function* () {
-      const written: { record?: SanitizerRecord } = {}
-      const policyWithOverride: SanitizerPolicy = {
-        ...basePolicy,
-        overrides: [
-          {
-            sourceName: 'source-1',
-            defaultLabel: 'RESTRICTED', // overrides SAFE_PUBLIC from collection
-          },
-        ],
-      }
-      const record = DataFetchedRecord({
-        runId: 'run-1',
-        fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
-        http: { status: 200, contentType: 'text/xml', headers: {} },
-        content: { bytes: 100, sha256: 'abc123' },
-        pointer: testPointer,
-      })
-
-      const result = yield* sanitizeRawObservation(
-        policyWithOverride,
-        'obs-1',
-        testPointer
-      ).pipe(Effect.provide(TestArchiver(record, written)))
-
-      expect(result).toHaveLength(1)
-      expect(written.record?.policy.label).toBe('RESTRICTED')
-    })
-  )
-
-  it.effect(
-    'falls back to last-resort RESTRICTED rule when no collection matches',
-    () =>
-      Effect.gen(function* () {
-        const written: { record?: SanitizerRecord } = {}
-        const policyNoMatch: SanitizerPolicy = {
-          version: 1,
-          stripQueryParams: [],
-          dropHeaders: [],
-          collections: [], // no matching collection and no 'default' collection
-        }
+        const written: { record?: SanitizerRecord; metadata?: SanitizerRecordMetadata } = {}
         const record = DataFetchedRecord({
           runId: 'run-1',
           fetchedAt: 0,
@@ -230,13 +97,16 @@ describe('sanitizeRawObservation', () => {
         })
 
         const result = yield* sanitizeRawObservation(
-          policyNoMatch,
+          basePolicy,
           'obs-1',
           testPointer
         ).pipe(Effect.provide(TestArchiver(record, written)))
 
         expect(result).toHaveLength(1)
-        expect(written.record?.policy.label).toBe('RESTRICTED')
+        expect(result[0].observationId).toBe('obs-1')
+        expect(result[0].runId).toBe('run-1')
+        expect(written.record).toBeDefined()
+        expect(written.metadata).toBeDefined()
       })
   )
 })

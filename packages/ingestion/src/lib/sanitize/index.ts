@@ -1,4 +1,5 @@
 export * from './Archiver.js'
+export * from './evaluatePolicy.js'
 export * from './SanitizationAttempted.js'
 export * from './sanitizeRawObservation.js'
 export * from './SanitizerPolicy.js'
