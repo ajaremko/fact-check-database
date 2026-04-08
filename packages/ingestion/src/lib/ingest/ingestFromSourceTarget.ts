@@ -13,6 +13,7 @@ import {
 import { Fetcher, FetchResult, FetchSuccess } from './Fetcher'
 import { IngestionAttempted } from './IngestionAttempted'
 import { Archiver } from './Archiver'
+import { IdGenerator } from './IdGenerator'
 import { SourceTarget } from './SourceTarget'
 
 function createNoResponseRecord(
@@ -154,6 +155,7 @@ export function ingestFromSourceTarget(
 
     const archive = yield* Archiver
     const fetcher = yield* Fetcher
+    const idGenerator = yield* IdGenerator
     const fetchedAt = yield* Clock.currentTimeMillis
 
     const result = yield* fetcher.fetch(source.url)
@@ -163,9 +165,7 @@ export function ingestFromSourceTarget(
     if (Either.isLeft(result)) {
       // In case of fetch failure, archive the attempt
       // record without archiving response body
-      const id = yield* Effect.sync(
-        () => `${fetchedAt}_${Math.random().toString(16).slice(2)}`
-      )
+      const id = yield* idGenerator.generate
       const record = createNoResponseRecord(
         runId,
         fetchedAt,

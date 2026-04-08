@@ -113,6 +113,8 @@ export function sha256Hex(input: Uint8Array | string, encoding?: Encoding) {
   return Effect.sync(() => createHash('sha256').update(input).digest('hex'))
 }
 
+export type GenerateUUIDOptions = RandomUUIDOptions
+
 /**
  * Returns an Effect that generates a random UUID (v4).
  *
@@ -120,6 +122,6 @@ export function sha256Hex(input: Uint8Array | string, encoding?: Encoding) {
  * const id = yield* Node.generateUUID()
  * // → "a3bb189e-8bf9-3888-9912-ace4e6543002"
  */
-export function generateUUID(options?: RandomUUIDOptions) {
+export function generateUUID(options?: GenerateUUIDOptions) {
   return Effect.sync(() => randomUUID(options))
 }
