@@ -1,4 +1,5 @@
 export * from './archivePath'
+export * from './ExtractedRows'
 export * from './FilePointer'
 export * from './IngestorRecord'
 export * from './SantizerRecord'

@@ -1,3 +1,6 @@
 export * as PubsubClient from './lib/PubsubClient'
+export * as PubsubSubscriberClient from './lib/PubsubSubscriberClient'
+export { PubsubSubscriberClientIOError as PubsubSubscriberIOError } from './lib/PubsubSubscriberClient'
 export * as PubsubSubscription from './lib/PubsubSubscription'
 export * as PubsubTopic from './lib/PubsubTopic'
+export { PubsubTopicIOError } from './lib/PubsubTopic'

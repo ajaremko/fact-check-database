@@ -21,6 +21,11 @@
       "types": "./dist/lib/sanitize/index.d.ts",
       "import": "./dist/lib/sanitize/index.js",
       "default": "./dist/lib/sanitize/index.js"
+    },
+    "./extract": {
+      "types": "./dist/lib/extract/index.d.ts",
+      "import": "./dist/lib/extract/index.js",
+      "default": "./dist/lib/extract/index.js"
     }
   },
   "dependencies": {
