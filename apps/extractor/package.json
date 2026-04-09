@@ -21,24 +21,17 @@
           "tsConfig": "apps/extractor/tsconfig.app.json",
           "assets": [
             "apps/extractor/src/assets"
-          ],
-          "esbuildOptions": {
-            "sourcemap": true,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
+          ]
         },
         "configurations": {
-          "development": {},
+          "development": {
+            "esbuildConfig": "apps/extractor/esbuild.config.js"
+          },
           "production": {
-            "generateLockfile": true,
-            "esbuildOptions": {
-              "sourcemap": false,
-              "outExtension": {
-                ".js": ".js"
-              }
-            }
+            "esbuildConfig": "apps/extractor/esbuild.config.prod.js",
+            "bundle": true,
+            "thirdParty": true,
+            "generatePackageJson": false
           }
         }
       },
