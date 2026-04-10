@@ -1,8 +1,5 @@
 import { Clock, Effect, pipe, Schema } from 'effect'
 
-import { Node } from '@news-research/node'
-import { Yaml } from '@news-research/yaml'
-
 import {
   ArchivePathSchema,
   FilePointer,
@@ -10,6 +7,7 @@ import {
   SanitizerRecordSchema,
   SanitizerRecordMetadataSchema,
 } from '../data'
+import { Node, Yaml } from '../util'
 import { Archive } from '../ports'
 
 import { evaluatePolicy } from './evaluatePolicy'

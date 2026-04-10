@@ -10,7 +10,7 @@ import {
   FetcherError,
   FetchResult,
 } from '@news-research/ingestion/ingest'
-import { Node } from '@news-research/node'
+import { Node } from '@news-research/ingestion/util'
 
 function handleRequestError(
   error: HttpClientError.RequestError

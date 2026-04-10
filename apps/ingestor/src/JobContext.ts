@@ -1,11 +1,12 @@
 import { Context, Clock, Config, Effect, Layer, Schema } from 'effect'
 
-import { Node } from '@news-research/node'
+import { Node } from '@news-research/ingestion/util'
 
 const MaxConcurrencySchema = Schema.NumberFromString.pipe(
   Schema.nonNegative(),
   Schema.int()
 )
+
 const SuccessThresholdSchema = Schema.NumberFromString.pipe(Schema.clamp(0, 1))
 
 const make = Effect.gen(function* () {

@@ -50,6 +50,7 @@
     "csv-stringify": "^6.6.0",
     "date-fns": "^4.1.0",
     "effect": "^3.19.15",
+    "fast-xml-parser": "^5.5.11",
     "yaml": "^2.8.2"
   },
   "overrides": {

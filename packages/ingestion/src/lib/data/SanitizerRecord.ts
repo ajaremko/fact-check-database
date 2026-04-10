@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+
 import { FilePointerSchema } from './FilePointer.js'
 
 /**

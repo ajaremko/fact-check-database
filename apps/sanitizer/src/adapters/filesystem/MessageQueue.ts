@@ -2,7 +2,7 @@ import { Config, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { IngestionAttempted } from '@news-research/ingestion/ingest'
-import { Node } from '@news-research/node'
+import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue, Message, MessageQueueError } from '../../MessageQueue'
 

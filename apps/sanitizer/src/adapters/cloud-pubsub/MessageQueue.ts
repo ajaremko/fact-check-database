@@ -3,7 +3,7 @@ import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
 import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
 import { IngestionAttempted } from '@news-research/ingestion/ingest'
-import { Node } from '@news-research/node'
+import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue, MessageQueueError, Message } from '../../MessageQueue'
 

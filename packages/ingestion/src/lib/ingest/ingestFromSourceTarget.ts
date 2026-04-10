@@ -1,13 +1,11 @@
 import { Clock, Effect, Schema, flow, pipe } from 'effect'
 
-import { Node } from '@news-research/node'
-import { Yaml } from '@news-research/yaml'
-
 import {
   ArchivePathSchema,
   IngestionRecordMetadataSchema,
   IngestionRecordSchema,
 } from '../data'
+import { Node, Yaml } from '../util'
 import { Archive } from '../ports'
 
 import { Fetcher } from './Fetcher'

@@ -1,8 +1,7 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { NodeCsv } from '@news-research/node-csv'
-import { Node } from '@news-research/node'
+import { Node, NodeCsv } from '@news-research/ingestion/util'
 import { SourceTargetSchema } from '@news-research/ingestion/ingest'
 
 import { TargetList } from '../../TargetList'

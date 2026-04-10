@@ -1,9 +1,7 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Yaml } from '@news-research/yaml'
-import { Node } from '@news-research/node'
-
 import { FilePointer, SanitizerRecordSchema } from '../data'
+import { Node, Yaml } from '../util'
 import { Archive } from '../ports'
 
 const decodeSanitizerRecord = pipe(

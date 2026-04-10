@@ -2,8 +2,7 @@ import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { ParseError } from 'effect/ParseResult'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import { Yaml } from '@news-research/yaml'
-import { Node } from '@news-research/node'
+import { Yaml, Node } from '@news-research/ingestion/util'
 import { SanitizerPolicySchema } from '@news-research/ingestion/sanitize'
 
 import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
