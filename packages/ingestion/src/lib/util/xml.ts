@@ -50,7 +50,9 @@ export function parseXml<I>(opts?: {
   const builder =
     opts && opts.builder ? new XMLBuilder(opts.builder) : new XMLBuilder()
 
-  return function <A, R>(schema: Schema.Schema<A, object, R>) {
+  return function <A, I extends Record<string, unknown>, R>(
+    schema: Schema.Schema<A, I, R>
+  ) {
     return Schema.transformOrFail(Schema.String, schema, {
       strict: true,
       decode: (input, _, ast) =>

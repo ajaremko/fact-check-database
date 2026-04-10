@@ -1,3 +1,5 @@
 export * as CloudStorageArchive from './cloud-storage/Archive'
 export * as FileSystemArchive from './filesystem/Archive'
+export * as InMemoryArchive from './inmemory/Archive'
+export * as InMemoryFetcher from './inmemory/Fetcher'
 export * from '../ports'

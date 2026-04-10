@@ -13,9 +13,6 @@
       "path": "../../packages/cloud-storage/tsconfig.lib.json"
     },
     {
-      "path": "../../packages/node/tsconfig.lib.json"
-    },
-    {
       "path": "../../packages/cloud-pubsub/tsconfig.lib.json"
     },
     {

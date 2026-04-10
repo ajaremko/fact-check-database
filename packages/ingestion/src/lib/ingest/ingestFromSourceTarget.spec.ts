@@ -1,47 +1,10 @@
 import { it, expect } from '@effect/vitest'
-import { Effect, Either, Layer } from 'effect'
+import { Effect } from 'effect'
 
-import { Fetcher, FetchResult } from './Fetcher'
-import { Archiver } from './Archiver'
-import { IdGenerator } from './IdGenerator'
+import { InMemoryArchive, InMemoryFetcher } from '../adapters'
+
+import { IngestionAttempted } from './IngestionAttempted'
 import { ingestFromSourceTarget } from './ingestFromSourceTarget'
-
-function TestFetcher(result: FetchResult) {
-  return Layer.succeed(Fetcher, {
-    fetch: () => Effect.succeed(result),
-  })
-}
-
-function TestArchiver(archive: Record<string, unknown>) {
-  return Layer.succeed(Archiver, {
-    archiveBody: (path: string, id: string, body: Uint8Array) =>
-      Effect.sync(() => {
-        const key = `raw/${path}/${id}.bin`
-        archive[key] = body
-        return {
-          object: key,
-          bucket: 'test-bucket',
-        }
-      }),
-    archiveRecord: (path, id, record, metadata) =>
-      Effect.sync(() => {
-        const key = `records/${path}/${id}.yml`
-        const metadataKey = `records/${path}/${id}.metadata.json`
-        archive[key] = record
-        archive[metadataKey] = metadata
-        return {
-          object: key,
-          bucket: 'test-bucket',
-        }
-      }),
-  })
-}
-
-function TestIdGenerator(id: string) {
-  return Layer.succeed(IdGenerator, {
-    generate: Effect.succeed(id),
-  })
-}
 
 describe('ingestFromSourceTarget', () => {
   it.effect(
@@ -60,49 +23,46 @@ describe('ingestFromSourceTarget', () => {
           0
         ).pipe(
           Effect.provide(
-            TestFetcher(
-              Either.left({
-                error: 'Network error',
-              })
-            )
+            InMemoryFetcher.layer({
+              type: 'failure',
+              error: 'Network error',
+            })
           ),
-          Effect.provide(TestArchiver(archive)),
-          Effect.provide(TestIdGenerator('087e1b8cd61c1'))
+          Effect.provide(InMemoryArchive.layer(archive))
         )
 
-        expect(result).toStrictEqual({
-          observationId:
-            '2a0eeefe79c722be601b96c20e4f06a1403fa4098a813d223ac96f3ec893bf95',
-          runId: 'run-1',
-          fetchedAt: 0,
-          url: 'https://test-rss.com/rss',
-          source: {
-            collection: 'rss',
-            name: 'source-1',
-          },
-          http: {
-            status: 0,
-          },
-          content: {
-            bytes: undefined,
-            sha256: undefined,
-          },
-          error: 'Network error',
-          pointer: {
-            bucket: 'test-bucket',
-            object:
-              'records/source=source-1/date=1970-01-01/run=run-1/087e1b8cd61c1.yml',
-          },
-        })
+        expect(result).toStrictEqual(
+          new IngestionAttempted({
+            observationId:
+              'b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4',
+            runId: 'run-1',
+            fetchedAt: 0,
+            url: 'https://test-rss.com/rss',
+            source: {
+              collection: 'rss',
+              name: 'source-1',
+            },
+            http: {
+              status: 0,
+            },
+            content: {
+              bytes: undefined,
+              sha256: undefined,
+            },
+            error: 'Network error',
+            pointer: {
+              bucket: 'inmemory',
+              object:
+                'v1/records/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml',
+            },
+          })
+        )
 
         expect(archive).not.toHaveProperty(
-          'raw/source=source-1/date=1970-01-01/run=run-1/087e1b8cd61c1.bin'
+          'v1/raw/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
         )
         expect(archive).toHaveProperty(
-          'records/source=source-1/date=1970-01-01/run=run-1/087e1b8cd61c1.yml'
-        )
-        expect(archive).toHaveProperty(
-          'records/source=source-1/date=1970-01-01/run=run-1/087e1b8cd61c1.metadata.json'
+          'v1/records/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
         )
       })
   )
@@ -122,59 +82,56 @@ describe('ingestFromSourceTarget', () => {
           0
         ).pipe(
           Effect.provide(
-            TestFetcher(
-              Either.right({
-                finalUrl: 'https://test-rss.com/rss',
-                status: 200,
-                headers: {},
-                bytes: 100,
-                sha256: 'dummy-sha256',
-                body: new Uint8Array(),
-                error: null,
-              })
-            )
+            InMemoryFetcher.layer({
+              type: 'success',
+              finalUrl: 'https://test-rss.com/rss',
+              status: 200,
+              headers: {},
+              bytes: 100,
+              sha256: 'dummy-sha256',
+              body: new Uint8Array(),
+              error: null,
+            })
           ),
-          Effect.provide(TestArchiver(archive)),
-          Effect.provide(TestIdGenerator('087e1b8cd61c1'))
+          Effect.provide(InMemoryArchive.layer(archive))
         )
 
-        expect(result).toStrictEqual({
-          observationId:
-            '3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9',
-          runId: 'run-1',
-          fetchedAt: 0,
-          url: 'https://test-rss.com/rss',
-          finalUrl: 'https://test-rss.com/rss',
-          source: {
-            collection: 'rss',
-            name: 'source-1',
-          },
-          http: {
-            status: 200,
-            etag: undefined,
-            contentType: undefined,
-            lastModified: undefined,
-          },
-          content: {
-            bytes: 100,
-            sha256: 'dummy-sha256',
-          },
-          error: undefined,
-          pointer: {
-            bucket: 'test-bucket',
-            object:
-              'records/source=source-1/date=1970-01-01/run=run-1/dummy-sha256.yml',
-          },
-        })
+        expect(result).toStrictEqual(
+          new IngestionAttempted({
+            observationId:
+              '3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9',
+            runId: 'run-1',
+            fetchedAt: 0,
+            url: 'https://test-rss.com/rss',
+            finalUrl: 'https://test-rss.com/rss',
+            source: {
+              collection: 'rss',
+              name: 'source-1',
+            },
+            http: {
+              status: 200,
+              etag: undefined,
+              contentType: undefined,
+              lastModified: undefined,
+            },
+            content: {
+              bytes: 100,
+              sha256: 'dummy-sha256',
+            },
+            error: undefined,
+            pointer: {
+              bucket: 'inmemory',
+              object:
+                'v1/records/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml',
+            },
+          })
+        )
 
         expect(archive).toHaveProperty(
-          'raw/source=source-1/date=1970-01-01/run=run-1/dummy-sha256.bin'
+          'v1/raw/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
         )
         expect(archive).toHaveProperty(
-          'records/source=source-1/date=1970-01-01/run=run-1/dummy-sha256.yml'
-        )
-        expect(archive).toHaveProperty(
-          'records/source=source-1/date=1970-01-01/run=run-1/dummy-sha256.metadata.json'
+          'v1/records/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
         )
       })
   )

@@ -53,7 +53,10 @@ export function sanitizeRawObservation(input: {
 
     yield* Effect.logInfo(`Processing observation ${input.id}`)
 
-    const decision = evaluatePolicy(input.policy, inputRecord)
+    const decision = evaluatePolicy({
+      policy: input.policy,
+      record: inputRecord,
+    })
 
     // Write the record of the sanitization with a pointer
     // to the raw response and sanitized record if applicable.
