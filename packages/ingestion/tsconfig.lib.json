@@ -12,6 +12,12 @@
   "references": [
     {
       "path": "../node/tsconfig.lib.json"
+    },
+    {
+      "path": "../yaml/tsconfig.lib.json"
+    },
+    {
+      "path": "../cloud-storage/tsconfig.lib.json"
     }
   ],
   "exclude": [

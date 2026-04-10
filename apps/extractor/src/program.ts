@@ -1,4 +1,4 @@
-import { Config, Effect, Logger, Queue } from 'effect'
+import { Config, Effect, Logger } from 'effect'
 
 import { extractRowsFromSanitized } from '@news-research/ingestion/extract'
 

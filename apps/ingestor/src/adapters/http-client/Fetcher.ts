@@ -15,11 +15,10 @@ import { Node } from '@news-research/node'
 function handleRequestError(
   error: HttpClientError.RequestError
 ): Effect.Effect<FetchResult, FetcherError> {
-  return Effect.succeed(
-    Either.left({
-      error: error.message,
-    })
-  )
+  return Effect.succeed({
+    type: 'failure',
+    error: error.message,
+  })
 }
 
 function pickHeader(headers: Record<string, string>, name: string) {
@@ -42,7 +41,8 @@ function handleResponseError(
     const etag = pickHeader(error.response.headers, 'etag')
     const lastModified = pickHeader(error.response.headers, 'last-modified')
 
-    return Either.right({
+    return {
+      type: 'failure',
       status: error.response.status,
       headers: error.response.headers,
       finalUrl: error.response.request.url,
@@ -53,7 +53,7 @@ function handleResponseError(
       sha256,
       body,
       error: error.message,
-    })
+    }
   })
 }
 
@@ -82,7 +82,8 @@ function handleSuccess(
     const etag = pickHeader(response.headers, 'etag')
     const lastModified = pickHeader(response.headers, 'last-modified')
 
-    return Either.right({
+    return {
+      type: 'success',
       status: response.status,
       headers: response.headers,
       finalUrl: response.request.url,
@@ -93,7 +94,7 @@ function handleSuccess(
       sha256,
       body,
       error: null,
-    })
+    }
   })
 }
 

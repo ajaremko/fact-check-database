@@ -1,13 +1,13 @@
 import { Config, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
+import { IngestionAttempted } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/node'
 
 import { MessageQueue, Message, MessageQueueError } from '../../MessageQueue'
 
 const decodeObservationFetched = pipe(
-  IngestionAttemptedSchema,
+  IngestionAttempted,
   Node.parseJson(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode

@@ -1,84 +1,118 @@
-import { Clock, Effect } from 'effect'
+import { Clock, Effect, pipe, Schema } from 'effect'
 
 import { Node } from '@news-research/node'
+import { Yaml } from '@news-research/yaml'
 
-import { FilePointer, archiveBaseDir } from '../data'
+import {
+  ArchivePathSchema,
+  FilePointer,
+  IngestionRecordSchema,
+  SanitizerRecordSchema,
+  SanitizerRecordMetadataSchema,
+} from '../data'
+import { Archive } from '../ports'
 
-import { Archiver } from './Archiver'
 import { evaluatePolicy } from './evaluatePolicy'
 import type { SanitizerPolicy } from './SanitizerPolicy'
-import type { SanitizationAttempted } from './SanitizationAttempted'
+import { SanitizationAttempted } from './SanitizationAttempted'
 
-export function sanitizeRawObservation(
-  policy: SanitizerPolicy,
-  observationId: string,
+const decodeIngestionRecord = pipe(
+  IngestionRecordSchema,
+  Yaml.parseYaml(),
+  Node.parseUint8Array({ encoding: 'utf-8' }),
+  Schema.decode
+)
+
+const encodeSanitizerRecord = pipe(
+  SanitizerRecordSchema,
+  Yaml.parseYaml(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
+
+const encodeSanitizerRecordMetadata = Schema.encode(
+  SanitizerRecordMetadataSchema
+)
+
+const encodeArchivePath = Schema.encode(ArchivePathSchema)
+
+export function sanitizeRawObservation(input: {
+  id: string
   pointer: FilePointer
-) {
+  policy: SanitizerPolicy
+}) {
   return Effect.gen(function* () {
-    const archiver = yield* Archiver
+    const archive = yield* Archive
+    const sanitizedAt = yield* Clock.currentTimeMillis
 
-    const record = yield* archiver.readFetchAttemptRecord(pointer)
+    const inputRecordData = yield* archive.read(input.pointer)
+    const inputRecord = yield* decodeIngestionRecord(inputRecordData)
 
-    if (record.outcome !== 'data_fetched') {
-      yield* Effect.logInfo(`Skipping observation ${observationId}`)
+    if (inputRecord.outcome !== 'data_fetched') {
+      yield* Effect.logInfo(`Skipping observation ${input.id}`)
       return []
     }
 
-    yield* Effect.logInfo(`Processing observation ${observationId}`)
+    yield* Effect.logInfo(`Processing observation ${input.id}`)
 
-    const decision = evaluatePolicy(policy, record)
-    const sanitizationId = yield* Node.generateUUID()
-    const sanitizedAt = yield* Clock.currentTimeMillis
-    const baseDir = archiveBaseDir(
-      record.source.name,
-      record.fetchedAt,
-      record.runId
-    )
+    const decision = evaluatePolicy(input.policy, inputRecord)
 
-    yield* archiver.writeSanitizerRecord(
-      baseDir,
-      {
-        version: 1,
-        kind: 'sanitized_record',
-        url: record.url,
-        http: record.http,
-        runId: record.runId,
-        source: record.source,
-        content: record.content,
-        sanitizationId,
-        fetchedAt: record.fetchedAt,
-        sanitizedAt,
-        policy: {
-          label: decision.label,
-          actions: decision.actions,
-        },
-        input: {
-          record: pointer,
-          raw: record.outcome === 'data_fetched' ? pointer : undefined,
-        },
+    // Write the record of the sanitization with a pointer
+    // to the raw response and sanitized record if applicable.
+    const outputRecordPath = yield* encodeArchivePath({
+      version: 1,
+      sourceName: inputRecord.source.name,
+      collectionName: 'records',
+      ext: 'sanitizer.yml',
+      date: inputRecord.fetchedAt,
+      runId: inputRecord.runId,
+      id: input.id,
+    })
+    const outputRecordData = yield* encodeSanitizerRecord({
+      version: 1,
+      kind: 'sanitized_record',
+      url: inputRecord.url,
+      http: inputRecord.http,
+      runId: inputRecord.runId,
+      source: inputRecord.source,
+      content: inputRecord.content,
+      fetchedAt: inputRecord.fetchedAt,
+      sanitizedAt,
+      policy: {
+        label: decision.label,
+        actions: decision.actions,
       },
-      {
-        sourceCollection: record.source.collection,
-        sourceName: record.source.name,
-        sanitizedAt,
-        fetchedAt: record.fetchedAt,
-        url: record.url,
-        id: sanitizationId,
-      }
-    )
+      input: {
+        record: input.pointer,
+        raw: inputRecord.outcome === 'data_fetched' ? input.pointer : undefined,
+      },
+    })
+    const outputRecordMetadata = yield* encodeSanitizerRecordMetadata({
+      id: input.id,
+      sourceName: inputRecord.source.name,
+      fetchedAt: inputRecord.fetchedAt,
+      sanitizedAt,
+      url: inputRecord.url,
+      sourceCollection: inputRecord.source.collection,
+    })
+    const outputRecordPointer = yield* archive.write({
+      path: outputRecordPath,
+      data: outputRecordData,
+      meta: outputRecordMetadata,
+    })
 
-    const event: SanitizationAttempted = {
-      observationId,
-      runId: record.runId,
-      fetchedAt: record.fetchedAt,
-      url: record.url,
-      finalUrl: record.url,
-      source: record.source,
-      http: record.http,
-      content: record.content,
+    const event = new SanitizationAttempted({
+      observationId: input.id,
+      runId: inputRecord.runId,
+      fetchedAt: inputRecord.fetchedAt,
+      url: inputRecord.url,
+      finalUrl: inputRecord.url,
+      source: inputRecord.source,
+      http: inputRecord.http,
+      content: inputRecord.content,
       error: decision.error,
-      pointer,
-    }
+      pointer: outputRecordPointer,
+    })
     return [event]
-  }).pipe(Effect.tapError(Effect.logError))
+  })
 }

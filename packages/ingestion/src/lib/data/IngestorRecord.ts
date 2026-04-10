@@ -35,24 +35,6 @@ export type DataFetchedRecord = Schema.Schema.Type<
 >
 
 /**
- * Constructor for `DataFetchedRecord`. Supplies the `version`, `kind`, and
- * `outcome` discriminators; callers provide all remaining fields.
- *
- * @example
- * const record = DataFetchedRecord({ runId, fetchedAt, url, source, http, content, pointer })
- */
-export function DataFetchedRecord(
-  input: Omit<DataFetchedRecord, 'version' | 'kind' | 'outcome'>
-): DataFetchedRecord {
-  return {
-    version: 1,
-    kind: 'fetch_attempt',
-    outcome: 'data_fetched',
-    ...input,
-  }
-}
-
-/**
  * Schema for a record produced when an HTTP fetch fails entirely (network
  * error, timeout, DNS failure, etc.).
  *
@@ -72,24 +54,6 @@ export const NoResponseRecordSchema = Schema.Struct({
 })
 
 export type NoResponseRecord = Schema.Schema.Type<typeof NoResponseRecordSchema>
-
-/**
- * Constructor for `NoResponseRecord`. Supplies the `version`, `kind`, and
- * `outcome` discriminators; callers provide all remaining fields.
- *
- * @example
- * const record = NoResponseRecord({ runId, fetchedAt, url, source, error })
- */
-export function NoResponseRecord(
-  input: Omit<NoResponseRecord, 'version' | 'kind' | 'outcome'>
-): NoResponseRecord {
-  return {
-    version: 1,
-    kind: 'fetch_attempt',
-    outcome: 'no_response',
-    ...input,
-  }
-}
 
 /**
  * Union schema accepting either a `DataFetchedRecord` or a `NoResponseRecord`.

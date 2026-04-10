@@ -2,14 +2,14 @@ import { Config, ConfigError, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
 import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
-import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
+import { IngestionAttempted } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/node'
 
 import { MessageQueue, MessageQueueError, Message } from '../../MessageQueue'
 
 // Record -> JSON -> Buffer
 const decodeIngestionAttempted = pipe(
-  IngestionAttemptedSchema,
+  IngestionAttempted,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode

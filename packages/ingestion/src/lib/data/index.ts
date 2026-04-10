@@ -1,5 +1,4 @@
-export * from './archivePath'
-export * from './ExtractedRows'
+export * from './ArchivePath'
 export * from './FilePointer'
 export * from './IngestorRecord'
-export * from './SantizerRecord'
+export * from './SanitizerRecord'

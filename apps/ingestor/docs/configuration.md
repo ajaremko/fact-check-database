@@ -65,24 +65,24 @@ The development environment uses filesystem adapters for all I/O. No GCP credent
    nx serve ingestor
    ```
 
-Output files are written to the directories configured by `ARCHIVER_OUTPUT_DIR` and `PUBLISHER_OUTPUT_DIR`.
+Output files are written to the directories configured by `ARCHIVE_OUTPUT_DIR` and `PUBLISHER_OUTPUT_DIR`.
 
 ### Environment Variables
 
 | Variable               | Required | Default | Description                                                |
 | ---------------------- | -------- | ------- | ---------------------------------------------------------- |
 | `TARGET_LIST_PATH`     | Yes      | —       | Path to the target list CSV file                           |
-| `ARCHIVER_OUTPUT_DIR`  | Yes      | —       | Directory where archived bodies and records are written    |
+| `ARCHIVE_OUTPUT_DIR`   | Yes      | —       | Directory where archived bodies and records are written    |
 | `PUBLISHER_OUTPUT_DIR` | Yes      | —       | Directory where published events are written as JSON files |
 
 ### Adapter Behavior
 
-| Adapter        | Behavior                                                                                                     |
-| -------------- | ------------------------------------------------------------------------------------------------------------ |
-| **TargetList** | Reads CSV from `TARGET_LIST_PATH`                                                                            |
-| **Archiver**   | Writes `.bin` (body), `.yml` (record), and `.metadata.json` (metadata) files flat into `ARCHIVER_OUTPUT_DIR` |
-| **Publisher**  | Writes one JSON file per event to `PUBLISHER_OUTPUT_DIR`                                                     |
-| **Fetcher**    | Makes real HTTP requests                                                                                     |
+| Adapter        | Behavior                                                                                                    |
+| -------------- | ----------------------------------------------------------------------------------------------------------- |
+| **TargetList** | Reads CSV from `TARGET_LIST_PATH`                                                                           |
+| **Archiver**   | Writes `.bin` (body), `.yml` (record), and `.metadata.json` (metadata) files flat into `ARCHIVE_OUTPUT_DIR` |
+| **Publisher**  | Writes one JSON file per event to `PUBLISHER_OUTPUT_DIR`                                                    |
+| **Fetcher**    | Makes real HTTP requests                                                                                    |
 
 ## Production
 

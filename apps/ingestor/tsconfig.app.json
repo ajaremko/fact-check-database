@@ -13,12 +13,6 @@
       "path": "../../packages/node-csv/tsconfig.lib.json"
     },
     {
-      "path": "../../packages/ingestion/tsconfig.lib.json"
-    },
-    {
-      "path": "../../packages/yaml/tsconfig.lib.json"
-    },
-    {
       "path": "../../packages/cloud-storage/tsconfig.lib.json"
     },
     {
@@ -26,6 +20,9 @@
     },
     {
       "path": "../../packages/cloud-pubsub/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/ingestion/tsconfig.lib.json"
     }
   ]
 }

@@ -89,7 +89,6 @@ export const SanitizerRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
 
   // Identity
-  sanitizationId: Schema.String, // uuid or deterministic hash
   runId: Schema.String,
   fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,

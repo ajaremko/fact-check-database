@@ -9,7 +9,7 @@ import {
   type SanitizerRecord,
   type SanitizerRecordMetadata,
 } from '../data'
-import { Archiver } from './Archiver'
+import { Archive } from '../ports'
 import type { SanitizerPolicy } from './SanitizerPolicy'
 import { sanitizeRawObservation } from './sanitizeRawObservation'
 
@@ -85,7 +85,10 @@ describe('sanitizeRawObservation', () => {
     'writes sanitizer record and returns SanitizationAttempted event for data_fetched records',
     () =>
       Effect.gen(function* () {
-        const written: { record?: SanitizerRecord; metadata?: SanitizerRecordMetadata } = {}
+        const written: {
+          record?: SanitizerRecord
+          metadata?: SanitizerRecordMetadata
+        } = {}
         const record = DataFetchedRecord({
           runId: 'run-1',
           fetchedAt: 0,

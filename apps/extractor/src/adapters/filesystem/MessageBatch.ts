@@ -1,13 +1,13 @@
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { SanitizationAttemptedSchema } from '@news-research/ingestion/sanitize'
+import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
 import { Node } from '@news-research/node'
 
 import { MessageBatch, Message } from '../../MessageBatch'
 
-const decodeObservationFetched = pipe(
-  SanitizationAttemptedSchema,
+const decodeSanitizationAttempted = pipe(
+  SanitizationAttempted,
   Node.parseJson(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
@@ -25,7 +25,7 @@ const make = Effect.gen(function* () {
     const data = yield* fs.readFile(path)
     messages.push({
       ack: Effect.void,
-      read: decodeObservationFetched(data),
+      read: decodeSanitizationAttempted(data),
     })
   }
 

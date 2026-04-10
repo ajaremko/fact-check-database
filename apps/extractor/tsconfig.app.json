@@ -10,9 +10,6 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
-      "path": "../../packages/yaml/tsconfig.lib.json"
-    },
-    {
       "path": "../../packages/cloud-storage/tsconfig.lib.json"
     },
     {

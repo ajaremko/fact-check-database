@@ -1,92 +1,66 @@
-import { Array, Clock, Config, Effect, Either, Logger, Schema } from 'effect'
+import { Array, Effect, Either, Logger } from 'effect'
 
-import { Node } from '@news-research/node'
-import { ingestFromSourceTarget } from '@news-research/ingestion/ingest'
+import {
+  ingestFromSourceTarget,
+  SourceTarget,
+} from '@news-research/ingestion/ingest'
 
+import { JobContext } from './JobContext'
 import { Publisher } from './Publisher'
 import { TargetList } from './TargetList'
 
-const MaxConcurrencySchema = Schema.NumberFromString.pipe(
-  Schema.nonNegative(),
-  Schema.int()
-)
-const SuccessThresholdSchema = Schema.NumberFromString.pipe(Schema.clamp(0, 1))
-
-const readConfig = Effect.gen(function* () {
-  const startedAt = yield* Clock.currentTimeMillis
-  const runId = yield* Node.generateUUID()
-
-  const concurrency = yield* Schema.Config(
-    'MAX_CONCURRENCY',
-    MaxConcurrencySchema
-  ).pipe(Config.withDefault(10))
-
-  const successThreshold = yield* Schema.Config(
-    'SUCCESS_THRESHOLD',
-    SuccessThresholdSchema
-  ).pipe(Config.withDefault(0.8))
-
-  const logLevel = yield* Config.logLevel('LOG_LEVEL')
-
-  return { runId, concurrency, startedAt, successThreshold, logLevel }
-})
-
-function processTargets(
-  runId: string,
-  concurrency: number,
-  successThreshold: number,
-  startedAt: number
-) {
+function processTarget(target: SourceTarget, index: number) {
   return Effect.gen(function* () {
-    const targets = yield* TargetList
+    const { runId } = yield* JobContext
+    const publisher = yield* Publisher
 
-    yield* Effect.logInfo(`Processing ${targets.length} targets`)
-
-    const tasks = targets.map((target, index) =>
-      Effect.gen(function* () {
-        yield* Effect.logInfo(`Processing target ${index + 1}`)
-        const publisher = yield* Publisher
-        const event = yield* ingestFromSourceTarget(runId, target, index)
-        yield* publisher.publish(event)
-      }).pipe(
-        Effect.tapError(Effect.logError),
-        Effect.annotateLogs({
-          source: target.name,
-          url: target.url,
-          collection: target.collection,
-        })
-      )
-    )
-
-    // 'either' mode ensures that all tasks are attempted,
-    // even if some fail
-    const results = yield* Effect.all(tasks, { concurrency, mode: 'either' })
-
-    const [successes] = Array.partition(results, Either.isLeft)
-
-    yield* Effect.logInfo(
-      `Processed ${successes.length} of ${targets.length} targets`
-    )
-
-    const successRate = successes.length / targets.length
-
-    if (successRate < successThreshold) {
-      const cause = new Error(
-        `Success rate ${successRate} is below threshold ${successThreshold}`
-      )
-      yield* Effect.fail(cause)
-    }
+    // ingest from target and publish event
+    yield* Effect.logInfo(`Processing target ${index + 1}`)
+    const event = yield* ingestFromSourceTarget(runId, target, index)
+    yield* publisher.publish(event)
   }).pipe(
     Effect.tapError(Effect.logError),
-    Effect.annotateLogs({ runId, startedAt, concurrency })
+    Effect.annotateLogs({
+      source: target.name,
+      url: target.url,
+      collection: target.collection,
+    })
   )
 }
 
-export const Program = Effect.gen(function* () {
-  const { runId, concurrency, startedAt, successThreshold, logLevel } =
-    yield* readConfig
+const processTargetList = Effect.gen(function* () {
+  const job = yield* JobContext
+  const targets = yield* TargetList
 
-  yield* processTargets(runId, concurrency, successThreshold, startedAt).pipe(
+  // process all targets with configured concurrency
+  yield* Effect.logInfo(`Processing ${targets.length} targets`)
+  const tasks = Array.map(targets, processTarget)
+  const results = yield* Effect.all(tasks, {
+    concurrency: job.concurrency,
+    mode: 'either', // 'either' ensures all tasks are attempted
+  })
+
+  // check success rate and fail if below threshold
+  const [successes] = Array.partition(results, Either.isLeft)
+  const successRate = successes.length / targets.length
+  yield* Effect.logInfo(
+    `Processed ${successes.length} of ${targets.length} targets`
+  )
+  if (successRate < job.successThreshold) {
+    yield* Effect.fail(
+      new Error(
+        `Success rate ${successRate} is below threshold ${job.successThreshold}`
+      )
+    )
+  }
+})
+
+export const Program = Effect.gen(function* () {
+  const { runId, concurrency, startedAt, logLevel } = yield* JobContext
+
+  yield* processTargetList.pipe(
+    Effect.tapError(Effect.logError),
+    Effect.annotateLogs({ runId, startedAt, concurrency }),
     Effect.provide(Logger.minimumLogLevel(logLevel))
   )
 })

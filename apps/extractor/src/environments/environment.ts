@@ -1,12 +1,13 @@
 import { Effect } from 'effect'
 import { NodeFileSystem } from '@effect/platform-node'
 
-import * as FilesystemMessageBatch from '../adapters/filesystem/MessageBatch'
-import * as FilesystemArchiver from '../adapters/filesystem/Archiver'
+import { FileSystemArchive } from '@news-research/ingestion/adapters'
+
+import * as FileSystemMessageBatch from '../adapters/filesystem/MessageBatch'
 import { Program } from '../program'
 
 export const main = Program.pipe(
-  Effect.provide(FilesystemArchiver.layer),
-  Effect.provide(FilesystemMessageBatch.layer),
+  Effect.provide(FileSystemArchive.layer),
+  Effect.provide(FileSystemMessageBatch.layer),
   Effect.provide(NodeFileSystem.layer)
 )

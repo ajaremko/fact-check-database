@@ -10,7 +10,9 @@ import { FilePointerSchema } from '../data/FilePointer.js'
  * deduplication across runs. The `pointer` field references the archived
  * ingestor record in cloud storage.
  */
-export const SanitizationAttemptedSchema = Schema.Struct({
+export class SanitizationAttempted extends Schema.Class<SanitizationAttempted>(
+  'SanitizationAttempted'
+)({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
   runId: Schema.String,
   fetchedAt: Schema.Number,
@@ -32,9 +34,4 @@ export const SanitizationAttemptedSchema = Schema.Struct({
   }),
   error: Schema.optional(Schema.String),
   pointer: FilePointerSchema,
-})
-
-/** An event published by the sanitizer per sanitization attempt */
-export type SanitizationAttempted = Schema.Schema.Type<
-  typeof SanitizationAttemptedSchema
->
+}) {}

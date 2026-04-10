@@ -1,10 +1,12 @@
-import { Context, Data, Effect, Either } from 'effect'
+import { Context, Data, Effect } from 'effect'
 
 export type FetchFailure = {
+  type: 'failure'
   error: string
 }
 
 export type FetchSuccess = {
+  type: 'success'
   finalUrl: string
   status: number
   headers: Record<string, string>
@@ -17,7 +19,7 @@ export type FetchSuccess = {
   error: string | null
 }
 
-export type FetchResult = Either.Either<FetchSuccess, FetchFailure>
+export type FetchResult = FetchSuccess | FetchFailure
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown

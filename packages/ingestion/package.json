@@ -26,6 +26,11 @@
       "types": "./dist/lib/extract/index.d.ts",
       "import": "./dist/lib/extract/index.js",
       "default": "./dist/lib/extract/index.js"
+    },
+    "./adapters": {
+      "types": "./dist/lib/adapters/index.d.ts",
+      "import": "./dist/lib/adapters/index.js",
+      "default": "./dist/lib/adapters/index.js"
     }
   },
   "dependencies": {

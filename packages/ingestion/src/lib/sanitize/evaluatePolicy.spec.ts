@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
-import { DataFetchedRecord, NoResponseRecord } from '../data'
 import type { SanitizerPolicy } from './SanitizerPolicy'
 import { evaluatePolicy, pickRule } from './evaluatePolicy'
+import { IngestionRecord } from '../data'
 
 const basePolicy: SanitizerPolicy = {
   version: 1,
@@ -25,13 +25,16 @@ const testPointer = {
 
 describe('evaluatePolicy', () => {
   it('quarantines with QUARANTINED_FETCH_FAILED when record is not data_fetched', () => {
-    const record = NoResponseRecord({
+    const record: IngestionRecord = {
+      version: 1,
+      kind: 'fetch_attempt',
+      outcome: 'no_response',
       runId: 'run-1',
       fetchedAt: 0,
       url: 'https://example.com/feed',
       source: { name: 'source-1', collection: 'rss' },
       error: 'Network error',
-    })
+    }
 
     const decision = evaluatePolicy(basePolicy, record)
 
@@ -41,7 +44,10 @@ describe('evaluatePolicy', () => {
   })
 
   it('quarantines with QUARANTINED_TOO_LARGE when body exceeds maxBytes', () => {
-    const record = DataFetchedRecord({
+    const record: IngestionRecord = {
+      version: 1,
+      kind: 'fetch_attempt',
+      outcome: 'data_fetched',
       runId: 'run-1',
       fetchedAt: 0,
       url: 'https://example.com/feed',
@@ -49,7 +55,7 @@ describe('evaluatePolicy', () => {
       http: { status: 200, contentType: 'text/xml', headers: {} },
       content: { bytes: 2_000, sha256: 'abc123' }, // exceeds maxBytes: 1_000
       pointer: testPointer,
-    })
+    }
 
     const decision = evaluatePolicy(basePolicy, record)
 
@@ -59,7 +65,10 @@ describe('evaluatePolicy', () => {
   })
 
   it('quarantines with QUARANTINED_UNEXPECTED_CONTENT_TYPE when content-type is not in allowlist', () => {
-    const record = DataFetchedRecord({
+    const record: IngestionRecord = {
+      version: 1,
+      kind: 'fetch_attempt',
+      outcome: 'data_fetched',
       runId: 'run-1',
       fetchedAt: 0,
       url: 'https://example.com/feed',
@@ -67,25 +76,34 @@ describe('evaluatePolicy', () => {
       http: { status: 200, contentType: 'text/html', headers: {} },
       content: { bytes: 100, sha256: 'abc123' },
       pointer: testPointer,
-    })
+    }
 
     const decision = evaluatePolicy(basePolicy, record)
 
     expect(decision.label).toBe('QUARANTINED')
-    expect(decision.actions).toStrictEqual(['QUARANTINED_UNEXPECTED_CONTENT_TYPE'])
+    expect(decision.actions).toStrictEqual([
+      'QUARANTINED_UNEXPECTED_CONTENT_TYPE',
+    ])
     expect(decision.error).toMatch(/content-type/i)
   })
 
   it('assigns collection defaultLabel when all gates pass', () => {
-    const record = DataFetchedRecord({
+    const record: IngestionRecord = {
+      version: 1,
+      kind: 'fetch_attempt',
+      outcome: 'data_fetched',
       runId: 'run-1',
       fetchedAt: 0,
       url: 'https://example.com/feed',
       source: { name: 'source-1', collection: 'rss' },
-      http: { status: 200, contentType: 'text/xml; charset=utf-8', headers: {} },
+      http: {
+        status: 200,
+        contentType: 'text/xml; charset=utf-8',
+        headers: {},
+      },
       content: { bytes: 500, sha256: 'abc123' },
       pointer: testPointer,
-    })
+    }
 
     const decision = evaluatePolicy(basePolicy, record)
 
@@ -99,7 +117,10 @@ describe('evaluatePolicy', () => {
       ...basePolicy,
       overrides: [{ sourceName: 'source-1', defaultLabel: 'RESTRICTED' }],
     }
-    const record = DataFetchedRecord({
+    const record: IngestionRecord = {
+      version: 1,
+      kind: 'fetch_attempt',
+      outcome: 'data_fetched',
       runId: 'run-1',
       fetchedAt: 0,
       url: 'https://example.com/feed',
@@ -107,7 +128,7 @@ describe('evaluatePolicy', () => {
       http: { status: 200, contentType: 'text/xml', headers: {} },
       content: { bytes: 100, sha256: 'abc123' },
       pointer: testPointer,
-    })
+    }
 
     const decision = evaluatePolicy(policyWithOverride, record)
 
@@ -121,7 +142,10 @@ describe('evaluatePolicy', () => {
       dropHeaders: [],
       collections: [],
     }
-    const record = DataFetchedRecord({
+    const record: IngestionRecord = {
+      version: 1,
+      kind: 'fetch_attempt',
+      outcome: 'data_fetched',
       runId: 'run-1',
       fetchedAt: 0,
       url: 'https://example.com/feed',
@@ -129,7 +153,7 @@ describe('evaluatePolicy', () => {
       http: { status: 200, contentType: 'text/xml', headers: {} },
       content: { bytes: 100, sha256: 'abc123' },
       pointer: testPointer,
-    })
+    }
 
     const decision = evaluatePolicy(policyNoMatch, record)
 
@@ -178,7 +202,10 @@ describe('pickRule', () => {
     expect(rule.maxBytes).toBe(50)
     expect(rule.defaultLabel).toBe('RESTRICTED')
     // Non-overridden fields come from the base collection rule
-    expect(rule.allowedContentTypeSubstrings).toStrictEqual(['text/xml', 'application/rss'])
+    expect(rule.allowedContentTypeSubstrings).toStrictEqual([
+      'text/xml',
+      'application/rss',
+    ])
   })
 
   it('returns base rule unchanged when source has no override', () => {

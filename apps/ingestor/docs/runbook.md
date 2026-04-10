@@ -10,29 +10,29 @@ The ingestor uses structured logging via the Effect logger. Each log line includ
 
 Present on all log lines for the `processTargets` scope:
 
-| Annotation | Description |
-| --- | --- |
-| `runId` | UUID for this run |
-| `startedAt` | Unix timestamp (ms) when the run began |
-| `concurrency` | `MAX_CONCURRENCY` value in effect |
+| Annotation    | Description                            |
+| ------------- | -------------------------------------- |
+| `runId`       | UUID for this run                      |
+| `startedAt`   | Unix timestamp (ms) when the run began |
+| `concurrency` | `MAX_CONCURRENCY` value in effect      |
 
 ### Target-level annotations
 
 Present on log lines for individual target processing:
 
-| Annotation | Description |
-| --- | --- |
-| `source` | Source name from the target list |
-| `url` | URL being fetched |
+| Annotation   | Description                           |
+| ------------ | ------------------------------------- |
+| `source`     | Source name from the target list      |
+| `url`        | URL being fetched                     |
 | `collection` | Collection label from the target list |
 
 ### Key log messages
 
-| Message | Level | Meaning |
-| --- | --- | --- |
-| `Processing {n} targets` | info | Run started with `n` targets loaded from the target list |
-| `Processing target {i}` | info | Target `i+1` has started processing |
-| `Processed {k} of {n} targets` | info | Run complete; `k` targets succeeded out of `n` total |
+| Message                                   | Level | Meaning                                                         |
+| ----------------------------------------- | ----- | --------------------------------------------------------------- |
+| `Processing {n} targets`                  | info  | Run started with `n` targets loaded from the target list        |
+| `Processing target {i}`                   | info  | Target `i+1` has started processing                             |
+| `Processed {k} of {n} targets`            | info  | Run complete; `k` targets succeeded out of `n` total            |
 | `Success rate {r} is below threshold {t}` | error | Run failed: too many targets did not produce a successful fetch |
 
 ## Diagnosing Failures
@@ -42,6 +42,7 @@ Present on log lines for individual target processing:
 **Symptom**: The run exits with an error and logs `Success rate {r} is below threshold {t}`.
 
 **Causes**:
+
 - Multiple sources are unreachable (network issues, DNS failures, upstream outages)
 - The target list contains stale or invalid URLs
 - `SUCCESS_THRESHOLD` is set higher than the current reliability of the source set
@@ -75,7 +76,7 @@ Present on log lines for individual target processing:
 **Steps**:
 
 1. In production, verify that the service account has `storage.objects.create` permission on the archive bucket.
-2. Check that `ARCHIVE_BUCKET_NAME` (prod) or `ARCHIVER_OUTPUT_DIR` (dev) is correctly configured.
+2. Check that `ARCHIVE_BUCKET_NAME` (prod) or `ARCHIVE_OUTPUT_DIR` (dev) is correctly configured.
 3. Check GCS bucket quotas and storage availability.
 4. Archive failures abort processing for the affected target. Other targets continue.
 

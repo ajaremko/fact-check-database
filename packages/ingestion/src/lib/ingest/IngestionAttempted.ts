@@ -10,7 +10,9 @@ import { FilePointerSchema } from '../data/FilePointer.js'
  * deduplication across runs. The `pointer` field references the archived
  * ingestor record in cloud storage.
  */
-export const IngestionAttemptedSchema = Schema.Struct({
+export class IngestionAttempted extends Schema.Class<IngestionAttempted>(
+  'IngestionAttempted'
+)({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
   runId: Schema.String,
   fetchedAt: Schema.Number,
@@ -32,9 +34,4 @@ export const IngestionAttemptedSchema = Schema.Struct({
   }),
   error: Schema.optional(Schema.String),
   pointer: FilePointerSchema,
-})
-
-/** An event published by the ingestor per fetch attempt */
-export type IngestionAttempted = Schema.Schema.Type<
-  typeof IngestionAttemptedSchema
->
+}) {}

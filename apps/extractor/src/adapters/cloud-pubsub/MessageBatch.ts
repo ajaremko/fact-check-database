@@ -1,13 +1,13 @@
 import { Array, Config, Effect, Layer, pipe, Ref, Schema, Option } from 'effect'
 
 import { PubsubSubscriberClient } from '@news-research/cloud-pubsub'
-import { SanitizationAttemptedSchema } from '@news-research/ingestion/sanitize'
+import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
 import { Node } from '@news-research/node'
 
 import { MessageBatch, Message } from '../../MessageBatch'
 
 const decodeSanitizationAttempted = pipe(
-  SanitizationAttemptedSchema,
+  SanitizationAttempted,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decodeUnknown

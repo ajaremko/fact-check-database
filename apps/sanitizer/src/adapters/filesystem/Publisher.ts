@@ -2,12 +2,12 @@ import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { Node } from '@news-research/node'
-import { IngestionAttemptedSchema } from '@news-research/ingestion/ingest'
+import { IngestionAttempted } from '@news-research/ingestion/ingest'
 
 import { Publisher, PublisherError } from '../../Publisher'
 
 const encodeMessage = pipe(
-  IngestionAttemptedSchema,
+  IngestionAttempted,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

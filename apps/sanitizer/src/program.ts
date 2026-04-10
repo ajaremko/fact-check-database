@@ -6,26 +6,21 @@ import { MessageQueue } from './MessageQueue'
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 import { Publisher } from './Publisher'
 
-const readConfig = Effect.gen(function* () {
-  const logLevel = yield* Config.logLevel('LOG_LEVEL')
-  return { logLevel }
-})
-
 export const Program = Effect.gen(function* () {
   const publisher = yield* Publisher
   const policy = yield* SanitizerPolicyConfig
   const { messages, errors } = yield* MessageQueue
-  const { logLevel } = yield* readConfig
+  const logLevel = yield* Config.logLevel('LOG_LEVEL')
 
   const handleMessages = Queue.take(messages).pipe(
     Effect.andThen((message) =>
       Effect.gen(function* () {
         const incoming = yield* message.read
-        const outgoing = yield* sanitizeRawObservation(
+        const outgoing = yield* sanitizeRawObservation({
+          id: incoming.observationId,
+          pointer: incoming.pointer,
           policy,
-          incoming.observationId,
-          incoming.pointer
-        )
+        })
         for (const event of outgoing) {
           yield* publisher.publish(event)
         }
