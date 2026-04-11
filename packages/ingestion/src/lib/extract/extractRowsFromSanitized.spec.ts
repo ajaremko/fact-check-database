@@ -1,7 +1,7 @@
 import { it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { InMemoryArchive } from '../adapters'
+import { InMemoryStorageReader, InMemoryStorageWriter } from '../adapters'
 
 import { extractRowsFromSanitized } from './extractRowsFromSanitized'
 
@@ -10,7 +10,7 @@ describe('extractRowsFromSanitized', () => {
     'when fetch is unsuccessful, returns IngestionAttempted event, writes records to archive',
     () =>
       Effect.gen(function* () {
-        const archive = {
+        const storage = {
           'test-sanitized-record.yml': `
           version: 1
           runId: 'run-1'
@@ -65,7 +65,10 @@ describe('extractRowsFromSanitized', () => {
             bucket: 'inmemory',
             object: 'test-sanitized-record.yml',
           },
-        }).pipe(Effect.provide(InMemoryArchive.layer(archive)))
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
 
         expect(result).toStrictEqual([])
       })

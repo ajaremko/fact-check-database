@@ -2,7 +2,7 @@ import { Effect, pipe, Schema } from 'effect'
 
 import { FilePointer, SanitizerRecordSchema } from '../data'
 import { Node, Yaml } from '../util'
-import { Archive } from '../ports'
+import { StorageReader } from '../ports'
 
 import { extractors } from './extractors'
 
@@ -18,8 +18,8 @@ export function extractRowsFromSanitized(input: {
   pointer: FilePointer
 }) {
   return Effect.gen(function* () {
-    const archive = yield* Archive
-    const recordData = yield* archive.read(input.pointer)
+    const storageReader = yield* StorageReader
+    const recordData = yield* storageReader.read(input.pointer)
     const record = yield* decodeSanitizerRecord(recordData)
 
     const extractor = extractors.find((e) =>
@@ -49,7 +49,7 @@ export function extractRowsFromSanitized(input: {
       return []
     }
 
-    const responseData = yield* archive.read(responsePointer)
+    const responseData = yield* storageReader.read(responsePointer)
     const rows = yield* extractor.extract(record, responseData).pipe(
       Effect.tapError(Effect.logWarning),
       Effect.catchAll(() => Effect.succeed([])),

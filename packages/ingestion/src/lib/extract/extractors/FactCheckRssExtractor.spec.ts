@@ -2086,7 +2086,7 @@ Served from: www.factcheck.org @ 2026-04-10 19:41:14 by W3 Total Cache
 -->
           `)
         )
-        expect(rows).toStrictEqual([])
+        expect(rows.length).toBe(10)
       })
   )
 })

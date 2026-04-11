@@ -23,7 +23,19 @@ type StorageOptionsConfig = {
   [k in keyof BucketOptions]?: Config.Config<NonNullable<BucketOptions[k]>>
 }
 
-function make(
+export function make(bucketName: string, config?: BucketOptions) {
+  return Effect.gen(function* () {
+    const { client } = yield* StorageClient
+    if (config) {
+      const bucket = client.bucket(bucketName, config)
+      return { bucket }
+    }
+    const bucket = client.bucket(bucketName)
+    return { bucket }
+  })
+}
+
+function makeConfig(
   bucketName: Config.Config<string>,
   config?: StorageOptionsConfig
 ) {
@@ -50,7 +62,7 @@ function make(
  * @example
  * Effect.provide(StorageBucket.layer(Config.string('STORAGE_BUCKET_NAME')))
  */
-export const layer = flow(make, Layer.effect(StorageBucket))
+export const layer = flow(makeConfig, Layer.effect(StorageBucket))
 
 /**
  * Thrown when a GCS object I/O operation rejects.

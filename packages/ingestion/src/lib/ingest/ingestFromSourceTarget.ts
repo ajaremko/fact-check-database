@@ -6,7 +6,7 @@ import {
   IngestionRecordSchema,
 } from '../data'
 import { Node, Yaml } from '../util'
-import { Archive } from '../ports'
+import { StorageWriter } from '../ports'
 
 import { Fetcher } from './Fetcher'
 import { IngestionAttempted } from './IngestionAttempted'
@@ -39,7 +39,7 @@ export function ingestFromSourceTarget(
   return Effect.gen(function* () {
     yield* Effect.logInfo(`Processing target ${index + 1}`)
 
-    const archive = yield* Archive
+    const storageWriter = yield* StorageWriter
     const fetcher = yield* Fetcher
     const fetchedAt = yield* Clock.currentTimeMillis
 
@@ -86,7 +86,7 @@ export function ingestFromSourceTarget(
         runId,
         fetchedAt,
       })
-      const recordPointer = yield* archive.write({
+      const recordPointer = yield* storageWriter.write({
         path: recordPath,
         data: recordData,
         meta: recordMeta,
@@ -133,7 +133,7 @@ export function ingestFromSourceTarget(
       runId,
       id,
     })
-    const bodyPointer = yield* archive.write({
+    const bodyPointer = yield* storageWriter.write({
       path: bodyPath,
       data: result.body,
       contentType: result.contentType,
@@ -182,7 +182,7 @@ export function ingestFromSourceTarget(
       runId,
       fetchedAt,
     })
-    const recordPointer = yield* archive.write({
+    const recordPointer = yield* storageWriter.write({
       path: recordPath,
       data: recordData,
       meta: recordMeta,

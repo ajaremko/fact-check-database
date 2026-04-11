@@ -8,7 +8,7 @@ import {
   SanitizerRecordMetadataSchema,
 } from '../data'
 import { Node, Yaml } from '../util'
-import { Archive } from '../ports'
+import { StorageReader, StorageWriter } from '../ports'
 
 import { evaluatePolicy } from './evaluatePolicy'
 import type { SanitizerPolicy } from './SanitizerPolicy'
@@ -40,10 +40,11 @@ export function sanitizeRawObservation(input: {
   policy: SanitizerPolicy
 }) {
   return Effect.gen(function* () {
-    const archive = yield* Archive
+    const storageReader = yield* StorageReader
+    const storageWriter = yield* StorageWriter
     const sanitizedAt = yield* Clock.currentTimeMillis
 
-    const inputRecordData = yield* archive.read(input.pointer)
+    const inputRecordData = yield* storageReader.read(input.pointer)
     const inputRecord = yield* decodeIngestionRecord(inputRecordData)
 
     if (inputRecord.outcome !== 'data_fetched') {
@@ -100,7 +101,7 @@ export function sanitizeRawObservation(input: {
       url: inputRecord.url,
       sourceCollection: inputRecord.source.collection,
     })
-    const outputRecordPointer = yield* archive.write({
+    const outputRecordPointer = yield* storageWriter.write({
       path: outputRecordPath,
       data: outputRecordData,
       meta: outputRecordMetadata,

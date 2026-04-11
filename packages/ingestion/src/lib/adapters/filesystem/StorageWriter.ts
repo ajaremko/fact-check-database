@@ -2,7 +2,7 @@ import { Config, Effect, Layer } from 'effect'
 
 import { FileSystem } from '@effect/platform'
 
-import { Archive, ArchiveError } from '../../ports'
+import { StorageWriter, StorageWriteError } from '../../ports'
 
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
@@ -21,12 +21,7 @@ export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const outputDir = yield* Config.string('ARCHIVE_OUTPUT_DIR')
 
-  return Archive.of({
-    read: (pointer) =>
-      Effect.gen(function* () {
-        const data = yield* fs.readFile(pointer.object)
-        return new Uint8Array(data)
-      }).pipe(Effect.mapError((cause) => new ArchiveError({ cause }))),
+  return StorageWriter.of({
     write: (opts) =>
       Effect.gen(function* () {
         const filePath = `${outputDir}/${opts.path}`
@@ -41,8 +36,8 @@ export const make = Effect.gen(function* () {
           bucket: 'local',
           object: filePath,
         }
-      }).pipe(Effect.mapError((cause) => new ArchiveError({ cause }))),
+      }).pipe(Effect.mapError((cause) => new StorageWriteError({ cause }))),
   })
 })
 
-export const layer = Layer.effect(Archive, make)
+export const layer = Layer.effect(StorageWriter, make)

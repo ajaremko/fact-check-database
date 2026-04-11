@@ -1,7 +1,11 @@
 import { it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { InMemoryArchive, InMemoryFetcher } from '../adapters'
+import {
+  InMemoryStorageReader,
+  InMemoryStorageWriter,
+  InMemoryFetcher,
+} from '../adapters'
 
 import { IngestionAttempted } from './IngestionAttempted'
 import { ingestFromSourceTarget } from './ingestFromSourceTarget'
@@ -11,7 +15,7 @@ describe('ingestFromSourceTarget', () => {
     'when fetch is unsuccessful, returns IngestionAttempted event, writes records to archive',
     () =>
       Effect.gen(function* () {
-        const archive = {}
+        const storage = {}
 
         const result = yield* ingestFromSourceTarget(
           'run-1',
@@ -28,7 +32,8 @@ describe('ingestFromSourceTarget', () => {
               error: 'Network error',
             })
           ),
-          Effect.provide(InMemoryArchive.layer(archive))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(InMemoryStorageReader.layer(storage))
         )
 
         expect(result).toStrictEqual(
@@ -58,10 +63,10 @@ describe('ingestFromSourceTarget', () => {
           })
         )
 
-        expect(archive).not.toHaveProperty(
+        expect(storage).not.toHaveProperty(
           'v1/raw/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
         )
-        expect(archive).toHaveProperty(
+        expect(storage).toHaveProperty(
           'v1/records/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
         )
       })
@@ -70,7 +75,7 @@ describe('ingestFromSourceTarget', () => {
     'when fetch is successful, returns IngestionAttempted event, writes records and bin to archive',
     () =>
       Effect.gen(function* () {
-        const archive = {}
+        const storage = {}
 
         const result = yield* ingestFromSourceTarget(
           'run-1',
@@ -93,7 +98,8 @@ describe('ingestFromSourceTarget', () => {
               error: null,
             })
           ),
-          Effect.provide(InMemoryArchive.layer(archive))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(InMemoryStorageReader.layer(storage))
         )
 
         expect(result).toStrictEqual(
@@ -127,10 +133,10 @@ describe('ingestFromSourceTarget', () => {
           })
         )
 
-        expect(archive).toHaveProperty(
+        expect(storage).toHaveProperty(
           'v1/raw/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
         )
-        expect(archive).toHaveProperty(
+        expect(storage).toHaveProperty(
           'v1/records/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
         )
       })

@@ -2,7 +2,7 @@ import { it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
 import { DataFetchedRecordSchema, NoResponseRecordSchema } from '../data'
-import { InMemoryArchive } from '../adapters'
+import { InMemoryStorageReader, InMemoryStorageWriter } from '../adapters'
 
 import { sanitizeRawObservation } from './sanitizeRawObservation'
 import { SanitizationAttempted } from './SanitizationAttempted'
@@ -12,7 +12,7 @@ describe('sanitizeRawObservation', () => {
     'skips non-data_fetched records and returns empty array without writing',
     () =>
       Effect.gen(function* () {
-        const archive: Record<string, string> = {
+        const storage: Record<string, string> = {
           'test-record.yml': `
           version: 1
           kind: fetch_attempt
@@ -46,7 +46,10 @@ describe('sanitizeRawObservation', () => {
             bucket: 'test-bucket',
             object: 'test-record.yml',
           },
-        }).pipe(Effect.provide(InMemoryArchive.layer(archive)))
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
 
         expect(result).toStrictEqual([])
       })
@@ -56,7 +59,7 @@ describe('sanitizeRawObservation', () => {
     'writes sanitizer record and returns SanitizationAttempted event for data_fetched records',
     () =>
       Effect.gen(function* () {
-        const archive: Record<string, string> = {
+        const storage: Record<string, string> = {
           'test-record.yml': JSON.stringify(
             DataFetchedRecordSchema.make({
               version: 1,
@@ -92,7 +95,10 @@ describe('sanitizeRawObservation', () => {
             bucket: 'test-bucket',
             object: 'test-record.yml',
           },
-        }).pipe(Effect.provide(InMemoryArchive.layer(archive)))
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
 
         expect(result).toStrictEqual([
           new SanitizationAttempted({
