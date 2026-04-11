@@ -1,7 +1,10 @@
 import { Effect } from 'effect'
 import { NodeFileSystem } from '@effect/platform-node'
 
-import { CloudStorageArchive } from '@news-research/ingestion/adapters'
+import {
+  CloudStorageStorageReader,
+  CloudStorageStorageWriter,
+} from '@news-research/ingestion/adapters'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
 
@@ -14,7 +17,8 @@ export const main = Program.pipe(
   Effect.provide(CloudPubsubMessageQueue.layer),
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageSanitizerPolicyDocument.layer),
-  Effect.provide(CloudStorageArchive.layer),
+  Effect.provide(CloudStorageStorageReader.layer),
+  Effect.provide(CloudStorageStorageWriter.layer),
   Effect.provide(StorageClient.layer()),
   Effect.provide(PubsubClient.layer()),
   Effect.provide(NodeFileSystem.layer)
