@@ -2,8 +2,8 @@ collection,name,url
 rss,politifact.com,https://www.politifact.com/rss/all/
 rss,snopes.com,https://www.snopes.com/feed/
 rss,factcheck.org,https://www.factcheck.org/feed/
-rss,leadstories.com,https://leadstories.com/atom.xml
-rss,fullfact.org,https://fullfact.org/feed/
+atom,leadstories.com,https://leadstories.com/atom.xml
+rss,fullfact.org,https://fullfact.org/feed
 rss,africacheck.org,https://africacheck.org/feed
 rss,factcheck.afp.com,https://factcheck.afp.com/rss.xml
 rss,baddata.com,https://baddata.com/rss.xml

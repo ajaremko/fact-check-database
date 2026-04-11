@@ -13,18 +13,18 @@ describe('sanitizeRawObservation', () => {
     () =>
       Effect.gen(function* () {
         const archive: Record<string, string> = {
-          'test-record.yml': JSON.stringify(
-            NoResponseRecordSchema.make({
-              version: 1,
-              kind: 'fetch_attempt',
-              outcome: 'no_response',
-              runId: '',
-              fetchedAt: 0,
-              url: '',
-              source: { name: '', collection: '' },
-              error: 'Network error',
-            })
-          ),
+          'test-record.yml': `
+          version: 1
+          kind: fetch_attempt
+          outcome: no_response
+          error: Network error
+          runId: ''
+          fetchedAt: 0
+          url: ''
+          source:
+            name: ''
+            collection: ''
+          `,
         }
 
         const result = yield* sanitizeRawObservation({

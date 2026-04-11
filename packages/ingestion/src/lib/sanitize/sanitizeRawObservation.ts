@@ -85,8 +85,12 @@ export function sanitizeRawObservation(input: {
       },
       input: {
         record: input.pointer,
-        raw: inputRecord.outcome === 'data_fetched' ? input.pointer : undefined,
+        raw:
+          inputRecord.outcome === 'data_fetched'
+            ? inputRecord.pointer
+            : undefined,
       },
+      error: decision.error,
     })
     const outputRecordMetadata = yield* encodeSanitizerRecordMetadata({
       id: input.id,

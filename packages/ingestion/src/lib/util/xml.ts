@@ -45,8 +45,17 @@ export function parseXml<I>(opts?: {
   parser?: X2jOptions
   builder?: XmlBuilderOptions
 }) {
+  const defaults = {
+    attributeNamePrefix: '@_',
+    ignoreAttributes: false,
+  }
   const parser =
-    opts && opts.parser ? new XMLParser(opts.parser) : new XMLParser()
+    opts && opts.parser
+      ? new XMLParser({
+          ...defaults,
+          ...opts.parser,
+        })
+      : new XMLParser(defaults)
   const builder =
     opts && opts.builder ? new XMLBuilder(opts.builder) : new XMLBuilder()
 

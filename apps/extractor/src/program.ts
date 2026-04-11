@@ -16,10 +16,10 @@ export const Program = Effect.gen(function* () {
   yield* Effect.forEach(messages, (message) =>
     Effect.gen(function* () {
       const incoming = yield* message.read
-      const rows = yield* extractRowsFromSanitized(
-        incoming.observationId,
-        incoming.pointer
-      )
+      const rows = yield* extractRowsFromSanitized({
+        observationId: incoming.observationId,
+        pointer: incoming.pointer,
+      })
       yield* Effect.logInfo(
         `Extracted ${rows.length} rows for observation ${incoming.observationId}`
       )
