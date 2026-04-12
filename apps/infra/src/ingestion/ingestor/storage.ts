@@ -6,7 +6,7 @@ import { provider } from '../provider'
 import { assetsBucket } from '../storage'
 
 export const targetsObject = new gcp.storage.BucketObject(
-  `${tag}-targets-csv`,
+  `${tag}-ingestor-targets-csv`,
   {
     bucket: assetsBucket.name,
     name: 'target-list.csv',

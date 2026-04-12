@@ -1,25 +1,25 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpRegion, gcpProject, ingestorSchedule, tag } from '../config'
+import { gcpRegion, gcpProject, extractorSchedule, tag } from '../config'
 import { cloudSchedulerService } from '../services'
 import { provider } from '../provider'
 
-import { ingestorJob } from './cloud-run'
+import { extractorJob } from './cloud-run'
 
 const invokerServiceAccount = new gcp.serviceaccount.Account(
-  `${tag}-ingestor-scheduler-sa`,
+  `${tag}-extractor-scheduler-sa`,
   {
-    accountId: `${tag}-ingestor-sched-sa`,
+    accountId: `${tag}-extractor-sched-sa`,
     displayName: 'Cloud Scheduler Invoker',
   },
   { provider }
 )
 
 const invokerCanRunJob = new gcp.cloudrunv2.JobIamMember(
-  `${tag}-ingestor-invoker-can-run-job`,
+  `${tag}-extractor-invoker-can-run-job`,
   {
-    name: ingestorJob.name,
+    name: extractorJob.name,
     location: gcpRegion,
     role: 'roles/run.invoker',
     member: pulumi.interpolate`serviceAccount:${invokerServiceAccount.email}`,
@@ -41,7 +41,7 @@ const schedulerServiceAgentEmail = projectInfo.number.apply(
 )
 
 const schedulerTokenCreator = new gcp.serviceaccount.IAMMember(
-  `${tag}-ingestor-scheduler-token-creator`,
+  `${tag}-extractor-scheduler-token-creator`,
   {
     serviceAccountId: invokerServiceAccount.name, // or invokerServiceAccount.id depending on provider versions
     role: 'roles/iam.serviceAccountTokenCreator',
@@ -50,15 +50,15 @@ const schedulerTokenCreator = new gcp.serviceaccount.IAMMember(
   { provider }
 )
 
-export const ingestorJobScheduler = new gcp.cloudscheduler.Job(
-  `${tag}-ingestor-job-scheduler`,
+export const extractorJobScheduler = new gcp.cloudscheduler.Job(
+  `${tag}-extractor-job-scheduler`,
   {
-    description: 'Trigger Ingestor Cloud RunJob on configured schedule',
-    schedule: ingestorSchedule,
+    description: 'Trigger Extractor Cloud RunJob on configured schedule',
+    schedule: extractorSchedule,
     timeZone: 'UTC',
     httpTarget: {
       httpMethod: 'POST',
-      uri: pulumi.interpolate`https://${gcpRegion}-run.googleapis.com/v2/projects/${gcpProject}/locations/${gcpRegion}/jobs/${ingestorJob.name}:run`,
+      uri: pulumi.interpolate`https://${gcpRegion}-run.googleapis.com/v2/projects/${gcpProject}/locations/${gcpRegion}/jobs/${extractorJob.name}:run`,
       oauthToken: {
         serviceAccountEmail: invokerServiceAccount.email,
         scope: 'https://www.googleapis.com/auth/cloud-platform',

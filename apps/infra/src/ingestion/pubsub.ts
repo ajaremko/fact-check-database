@@ -27,3 +27,15 @@ export const sanitizerTopic = new gcp.pubsub.Topic(
     provider,
   }
 )
+
+export const extractorTopic = new gcp.pubsub.Topic(
+  `${tag}-extractor-topic`,
+  {
+    name: 'extractor-topic',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [pubsubService],
+    provider,
+  }
+)
