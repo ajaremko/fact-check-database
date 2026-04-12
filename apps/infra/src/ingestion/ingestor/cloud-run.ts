@@ -97,7 +97,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
                 value: ingestorTopic.name,
               },
               {
-                name: 'ARCHIVE_BUCKET_NAME',
+                name: 'STORAGE_BUCKET_NAME',
                 value: rawArchiveBucketName,
               },
               {

@@ -28,5 +28,5 @@ export const layer: Layer.Layer<
   ConfigError.ConfigError,
   StorageClient.StorageClient
 > = Layer.effect(StorageReader, make).pipe(
-  Layer.provide(StorageBucket.layer(Config.string('StorageReader_BUCKET_NAME')))
+  Layer.provide(StorageBucket.layer(Config.string('STORAGE_BUCKET_NAME')))
 )

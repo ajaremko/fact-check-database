@@ -18,3 +18,18 @@ export const assetsBucket = new gcp.storage.Bucket(
     provider,
   }
 )
+
+export const stagingBucket = new gcp.storage.Bucket(
+  `${tag}-staging-bucket`,
+  {
+    location: gcpRegion,
+    name: `ingestor-staging`,
+    uniformBucketLevelAccess: true,
+    publicAccessPrevention: 'enforced',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [storageService],
+    provider,
+  }
+)

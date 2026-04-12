@@ -112,7 +112,7 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
               value: sanitizerTopic.name,
             },
             {
-              name: 'ARCHIVE_BUCKET_NAME',
+              name: 'STORAGE_BUCKET_NAME',
               value: rawArchiveBucketName,
             },
             {

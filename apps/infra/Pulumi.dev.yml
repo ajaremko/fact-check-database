@@ -8,6 +8,6 @@ config:
   core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:ingestorTag: dev-78
+  ingestion:ingestorTag: dev-81
   ingestion:ingestorSchedule: '0 */4 * * *'
-  ingestion:sanitizerTag: dev-78
+  ingestion:sanitizerTag: dev-81
