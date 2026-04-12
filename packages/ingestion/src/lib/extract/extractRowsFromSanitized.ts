@@ -4,7 +4,7 @@ import { FilePointer, SanitizerRecordSchema } from '../data'
 import { Node, Yaml } from '../util'
 import { StorageReader } from '../ports'
 
-import { extractors } from './extractors'
+import { extractors } from './extraction-strategy'
 
 const decodeSanitizerRecord = pipe(
   SanitizerRecordSchema,
@@ -14,8 +14,10 @@ const decodeSanitizerRecord = pipe(
 )
 
 export function extractRowsFromSanitized(input: {
+  runId: string
   observationId: string
   pointer: FilePointer
+  extractedAt: number
 }) {
   return Effect.gen(function* () {
     const storageReader = yield* StorageReader
@@ -50,17 +52,24 @@ export function extractRowsFromSanitized(input: {
     }
 
     const responseData = yield* storageReader.read(responsePointer)
-    const rows = yield* extractor.extract(record, responseData).pipe(
-      Effect.tapError(Effect.logWarning),
-      Effect.catchAll(() => Effect.succeed([])),
-      Effect.annotateLogs({
+    return yield* extractor
+      .extractor({
+        extractionId: extractor.id,
+        ingestionId: record.runId,
         observationId: input.observationId,
-        collection: record.source.collection,
-        name: record.source.name,
-        extractorId: extractor.id,
+        extractedAt: input.extractedAt,
+        record,
+        data: responseData,
       })
-    )
-
-    return rows
+      .pipe(
+        Effect.tapError(Effect.logWarning),
+        Effect.catchAll(() => Effect.succeed([])),
+        Effect.annotateLogs({
+          observationId: input.observationId,
+          collection: record.source.collection,
+          name: record.source.name,
+          extractorId: extractor.id,
+        })
+      )
   })
 }

@@ -30,11 +30,11 @@ function processTarget(target: SourceTarget, index: number) {
 
 const processTargetList = Effect.gen(function* () {
   const job = yield* JobContext
-  const targets = yield* TargetList
+  const { sources } = yield* TargetList
 
   // process all targets with configured concurrency
-  yield* Effect.logInfo(`Processing ${targets.length} targets`)
-  const tasks = Array.map(targets, processTarget)
+  yield* Effect.logInfo(`Processing ${sources.length} targets`)
+  const tasks = Array.map(sources, processTarget)
   const results = yield* Effect.all(tasks, {
     concurrency: job.concurrency,
     mode: 'either', // 'either' ensures all tasks are attempted
@@ -42,9 +42,9 @@ const processTargetList = Effect.gen(function* () {
 
   // check success rate and fail if below threshold
   const [successes] = Array.partition(results, Either.isLeft)
-  const successRate = successes.length / targets.length
+  const successRate = successes.length / sources.length
   yield* Effect.logInfo(
-    `Processed ${successes.length} of ${targets.length} targets`
+    `Processed ${successes.length} of ${sources.length} targets`
   )
   if (successRate < job.successThreshold) {
     yield* Effect.fail(

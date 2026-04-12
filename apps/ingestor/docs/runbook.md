@@ -76,7 +76,7 @@ Present on log lines for individual target processing:
 **Steps**:
 
 1. In production, verify that the service account has `storage.objects.create` permission on the archive bucket.
-2. Check that `ARCHIVE_BUCKET_NAME` (prod) or `ARCHIVE_OUTPUT_DIR` (dev) is correctly configured.
+2. Check that `ARCHIVE_BUCKET_NAME` (prod) or `STORAGE_OUTPUT_DIR` (dev) is correctly configured.
 3. Check GCS bucket quotas and storage availability.
 4. Archive failures abort processing for the affected target. Other targets continue.
 

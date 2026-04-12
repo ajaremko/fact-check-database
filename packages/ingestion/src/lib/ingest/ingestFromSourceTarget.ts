@@ -43,7 +43,7 @@ export function ingestFromSourceTarget(
     const fetcher = yield* Fetcher
     const fetchedAt = yield* Clock.currentTimeMillis
 
-    const result = yield* fetcher.fetch(source.url)
+    const result = yield* fetcher.fetch(source)
 
     if (result.type === 'failure') {
       // Derive a stable observation ID from failure

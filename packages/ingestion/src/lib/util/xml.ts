@@ -4,7 +4,6 @@ import {
   XmlBuilderOptions,
   X2jOptions,
 } from 'fast-xml-parser'
-
 import { ParseResult, Schema } from 'effect'
 
 /**
@@ -26,10 +25,7 @@ import { ParseResult, Schema } from 'effect'
  *   parseXml(),
  *   Schema.decode
  * )
- * const result = decode(`
- *   name: example
- *   count: 42
- * `)
+ * const result = decode(`<name>example</name><count>42</count>`)
  * // → { name: 'example', count: 42 }
  * @example
  * // Encode a typed object into an XML string

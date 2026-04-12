@@ -24,7 +24,7 @@ export const make = Effect.gen(function* () {
   const uri = yield* Config.string('TARGET_LIST_URI')
   const [buf] = yield* StorageBucket.downloadFile(uri)
   const sources = yield* decodeSources(buf)
-  return TargetList.of(sources)
+  return TargetList.of({ sources })
 })
 
 export const layer: Layer.Layer<

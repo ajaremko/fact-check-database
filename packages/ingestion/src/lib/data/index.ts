@@ -1,4 +1,6 @@
 export * from './ArchivePath'
+export * from './ClaimsTableRow'
 export * from './FilePointer'
 export * from './IngestorRecord'
+export * from './NumberFromFormattedDate'
 export * from './SanitizerRecord'

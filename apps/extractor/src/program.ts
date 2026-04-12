@@ -1,28 +1,46 @@
-import { Config, Effect, Logger } from 'effect'
+import { Array, Config, Effect, Logger, pipe } from 'effect'
 
-import { extractRowsFromSanitized } from '@news-research/ingestion/extract'
+import {
+  extractRowsFromSanitized,
+  writeExtractedRows,
+} from '@news-research/ingestion/extract'
 
 import { MessageBatch } from './MessageBatch'
+import { JobContext } from './JobContext'
 
-const readConfig = Effect.gen(function* () {
-  const logLevel = yield* Config.logLevel('LOG_LEVEL')
-  return { logLevel }
+const processMessageBatch = Effect.gen(function* () {
+  const { runId, concurrency, startedAt } = yield* JobContext
+  const messages = yield* MessageBatch
+
+  const rows = yield* pipe(
+    messages,
+    Effect.forEach(
+      (message) =>
+        Effect.gen(function* () {
+          const incoming = yield* message.read
+          return yield* extractRowsFromSanitized({
+            runId,
+            observationId: incoming.observationId,
+            pointer: incoming.pointer,
+            extractedAt: startedAt,
+          })
+        }),
+      { concurrency }
+    ),
+    Effect.andThen(Array.flatten)
+  )
+
+  yield* writeExtractedRows({
+    runId,
+    rows,
+    extractedAt: startedAt,
+  })
 })
 
 export const Program = Effect.gen(function* () {
-  const messages = yield* MessageBatch
-  const { logLevel } = yield* readConfig
+  const logLevel = yield* Config.logLevel('LOG_LEVEL')
 
-  yield* Effect.forEach(messages, (message) =>
-    Effect.gen(function* () {
-      const incoming = yield* message.read
-      const rows = yield* extractRowsFromSanitized({
-        observationId: incoming.observationId,
-        pointer: incoming.pointer,
-      })
-      yield* Effect.logInfo(
-        `Extracted ${rows.length} rows for observation ${incoming.observationId}`
-      )
-    })
-  ).pipe(Effect.provide(Logger.minimumLogLevel(logLevel)))
+  yield* processMessageBatch.pipe(
+    Effect.provide(Logger.minimumLogLevel(logLevel))
+  )
 })

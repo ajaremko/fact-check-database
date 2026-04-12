@@ -9,6 +9,7 @@ import {
   Fetcher,
   FetcherError,
   FetchResult,
+  SourceTarget,
 } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/ingestion/util'
 
@@ -101,16 +102,25 @@ function handleSuccess(
 export const make = Effect.gen(function* () {
   const client = yield* HttpClient.HttpClient
 
-  function fetch(url: string) {
-    return client.get(url).pipe(
-      Effect.either,
-      Effect.flatMap(
-        Either.match({
-          onLeft: handleError,
-          onRight: handleSuccess,
-        })
+  function fetch(source: SourceTarget) {
+    return client
+      .get(source.url, {
+        headers: {
+          'User-Agent': 'NewsResearchIngestor/1.0',
+          Accept: 'application/rss+xml, application/xml;q=0.9, */*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          Connection: 'keep-alive',
+        },
+      })
+      .pipe(
+        Effect.either,
+        Effect.flatMap(
+          Either.match({
+            onLeft: handleError,
+            onRight: handleSuccess,
+          })
+        )
       )
-    )
   }
 
   return Fetcher.of({ fetch })

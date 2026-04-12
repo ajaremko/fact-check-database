@@ -20,11 +20,12 @@ const decodeSources = pipe(
 )
 
 export const make = Effect.gen(function* () {
-  const path = yield* Config.string('TARGET_LIST_PATH')
   const fs = yield* FileSystem.FileSystem
-  const buff = yield* fs.readFile(path)
-  const targets = yield* decodeSources(buff)
-  return TargetList.of(targets)
+  const sourcesPath = yield* Config.string('TARGET_LIST_PATH')
+  const sourcesData = yield* fs.readFile(sourcesPath)
+  const sources = yield* decodeSources(sourcesData)
+
+  return TargetList.of({ sources })
 })
 
 export const layer = Layer.effect(TargetList, make)

@@ -4,5 +4,7 @@ import type { SourceTarget } from '@news-research/ingestion/ingest'
 
 export class TargetList extends Context.Tag('TargetList')<
   TargetList,
-  readonly SourceTarget[]
+  {
+    sources: readonly SourceTarget[]
+  }
 >() {}

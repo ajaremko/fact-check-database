@@ -1,5 +1,7 @@
 import { Context, Data, Effect } from 'effect'
 
+import { SourceTarget } from './SourceTarget'
+
 export type FetchFailure = {
   type: 'failure'
   error: string
@@ -28,6 +30,8 @@ export class FetcherError extends Data.TaggedError('FetcherError')<{
 export class Fetcher extends Context.Tag('Fetcher')<
   Fetcher,
   {
-    readonly fetch: (url: string) => Effect.Effect<FetchResult, FetcherError>
+    readonly fetch: (
+      source: SourceTarget
+    ) => Effect.Effect<FetchResult, FetcherError>
   }
 >() {}
