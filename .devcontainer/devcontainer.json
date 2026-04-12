@@ -29,7 +29,8 @@
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-containers",
         "nrwl.angular-console",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "redhat.vscode-xml"
       ],
       "settings": {
         "extensions.verifySignature": false,
