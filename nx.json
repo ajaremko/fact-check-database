@@ -107,7 +107,7 @@
     },
     "groups": {
       "apps": {
-        "projects": ["ingestor", "sanitizer"],
+        "projects": ["ingestor", "sanitizer", "extractor"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",
