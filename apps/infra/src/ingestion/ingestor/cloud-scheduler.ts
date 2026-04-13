@@ -8,10 +8,10 @@ import { provider } from '../provider'
 import { ingestorJob } from './cloud-run'
 
 const invokerServiceAccount = new gcp.serviceaccount.Account(
-  `${tag}-ingestor-scheduler-sa`,
+  `${tag}-ingestor-invoker-sa`,
   {
-    accountId: `${tag}-ingestor-sched-sa`,
-    displayName: 'Cloud Scheduler Invoker',
+    accountId: `${tag}-ingestor-invo-sa`,
+    displayName: 'Ingestion Ingestor Invoker',
   },
   { provider }
 )

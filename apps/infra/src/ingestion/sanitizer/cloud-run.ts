@@ -10,13 +10,12 @@ import { assetsBucket } from '../storage'
 import { sanitizerTopic } from '../pubsub'
 
 import { policyObject } from './storage'
-import { sanitizerIngestorTopicSubscription } from './pubsub'
 
 const sanitizerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-sanitizer-sa`,
   {
     accountId: `${tag}-sanitizer`,
-    displayName: 'Sanitizer Worker Service Account',
+    displayName: 'Sanitizer Service Account',
   },
   { provider }
 )
@@ -41,16 +40,16 @@ export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-export const sanitizerIngestorTopicSubscriber =
-  new gcp.pubsub.SubscriptionIAMMember(
-    `${tag}-sanitizer-ingestor-topic-subscriber`,
-    {
-      subscription: sanitizerIngestorTopicSubscription.name,
-      role: 'roles/pubsub.subscriber',
-      member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
-    },
-    { provider }
-  )
+// export const sanitizerIngestorTopicSubscriber =
+//   new gcp.pubsub.SubscriptionIAMMember(
+//     `${tag}-sanitizer-ingestor-topic-subscriber`,
+//     {
+//       subscription: sanitizerIngestorTopicSubscription.name,
+//       role: 'roles/pubsub.subscriber',
+//       member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
+//     },
+//     { provider }
+//   )
 
 export const sanitizerTopicPublisher = new gcp.pubsub.TopicIAMMember(
   `${tag}-sanitizer-topic-publisher`,
@@ -83,8 +82,8 @@ function getSanitizerImageUri(tag?: string): pulumi.Output<string> {
   return image.selfLink
 }
 
-export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
-  `${tag}-sanitizer-worker`,
+export const sanitizerService = new gcp.cloudrunv2.Service(
+  `${tag}-sanitizer-service`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -102,10 +101,6 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
             {
               name: 'SANITIZER_POLICY_URI',
               value: policyObject.name,
-            },
-            {
-              name: 'PUBSUB_SUBSCRIPTION_NAME',
-              value: sanitizerIngestorTopicSubscription.name,
             },
             {
               name: 'PUBSUB_TOPIC_NAME',
@@ -130,7 +125,7 @@ export const sanitizerWorker = new gcp.cloudrunv2.WorkerPool(
       policyObject,
       sanitizerAssetBucketViewer,
       sanitizerRawArchiveBucketAdmin,
-      sanitizerIngestorTopicSubscriber,
+      // sanitizerIngestorTopicSubscriber,
       sanitizerTopicPublisher,
     ],
     provider,

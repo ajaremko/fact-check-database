@@ -1,3 +1,6 @@
-import { sanitizerWorker } from './cloud-run'
+import { sanitizerService } from './cloud-run'
+import { sanitizerIngestorTopicSubscription } from './pubsub'
 
-export const sanitizerWorkerName = sanitizerWorker.name
+export const sanitizerWorkerName = sanitizerService.name
+export const sanitizerIngestorTopicSubscriptionName =
+  sanitizerIngestorTopicSubscription.name
