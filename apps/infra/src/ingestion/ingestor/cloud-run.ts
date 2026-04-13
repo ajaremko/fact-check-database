@@ -90,7 +90,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'TARGET_LIST_URI',
-                value: 'target-list.csv',
+                value: targetsObject.name,
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
