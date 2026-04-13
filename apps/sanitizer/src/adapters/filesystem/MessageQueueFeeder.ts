@@ -1,10 +1,10 @@
-import { Config, Effect, Layer, pipe, Queue, Schema } from 'effect'
+import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { IngestionAttempted } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/ingestion/util'
 
-import { MessageQueue, Message, MessageQueueError } from '../../MessageQueue'
+import { MessageQueue } from '../../MessageQueue'
 
 const decodeObservationFetched = pipe(
   IngestionAttempted,
@@ -13,14 +13,13 @@ const decodeObservationFetched = pipe(
   Schema.decode
 )
 
-const acquire = Effect.gen(function* () {
+const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
   const contents = yield* fs.readDirectory(inputDir)
 
-  const messages = yield* Queue.unbounded<Message>()
-  const errors = yield* Queue.unbounded<MessageQueueError>()
+  const { messages } = yield* MessageQueue
 
   for (const file of contents) {
     const path = `${inputDir}/${file}`
@@ -31,19 +30,6 @@ const acquire = Effect.gen(function* () {
       read: decodeObservationFetched(data),
     })
   }
-
-  return { messages, errors }
 })
 
-function release(resource: Effect.Effect.Success<typeof acquire>) {
-  return Effect.gen(function* () {
-    yield* Queue.shutdown(resource.messages)
-    yield* Queue.shutdown(resource.errors)
-  })
-}
-
-export const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ messages, errors }) => MessageQueue.of({ messages, errors }))
-)
-
-export const layer = Layer.scoped(MessageQueue, make)
+export const layer = Layer.effectDiscard(make)

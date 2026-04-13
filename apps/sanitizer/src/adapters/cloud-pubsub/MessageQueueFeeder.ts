@@ -7,7 +7,6 @@ import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue, MessageQueueError, Message } from '../../MessageQueue'
 
-// Record -> JSON -> Buffer
 const decodeIngestionAttempted = pipe(
   IngestionAttempted,
   Node.parseJson(),
@@ -22,7 +21,7 @@ const acquire = Effect.gen(function* () {
 
   function messageListener(message: GcpsMessage) {
     Effect.runFork(
-      Queue.offer(messages, {
+      messages.offer({
         ack: Effect.sync(() => message.ack()),
         nack: Effect.sync(() => message.nack()),
         read: decodeIngestionAttempted(message.data),
@@ -62,7 +61,7 @@ const subscription = PubsubSubscription.layer(
 )
 
 export const layer: Layer.Layer<
-  MessageQueue,
+  never,
   ConfigError.ConfigError,
   PubsubClient.PubsubClient
-> = Layer.scoped(MessageQueue, make).pipe(Layer.provide(subscription))
+> = Layer.effectDiscard(Effect.scoped(make)).pipe(Layer.provide(subscription))
