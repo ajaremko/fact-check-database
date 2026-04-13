@@ -5,7 +5,7 @@ import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
 import { IngestionAttempted } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/ingestion/util'
 
-import { MessageQueue, MessageQueueError, Message } from '../../MessageQueue'
+import { MessageQueue, MessageQueueError } from '../../MessageQueue'
 
 const decodeIngestionAttempted = pipe(
   IngestionAttempted,
@@ -16,8 +16,7 @@ const decodeIngestionAttempted = pipe(
 
 const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
-  const messages = yield* Queue.unbounded<Message>()
-  const errors = yield* Queue.unbounded<MessageQueueError>()
+  const { messages, errors } = yield* MessageQueue
 
   function messageListener(message: GcpsMessage) {
     Effect.runFork(
@@ -38,23 +37,17 @@ const acquire = Effect.gen(function* () {
     subscription.on('error', errorListener)
   })
 
-  return { messages, errors, subscription, messageListener, errorListener }
+  return { subscription, messageListener, errorListener }
 })
 
 function release(resource: Effect.Effect.Success<typeof acquire>) {
-  return Effect.gen(function* () {
-    yield* Effect.sync(() => {
-      resource.subscription.removeListener('message', resource.messageListener)
-      resource.subscription.removeListener('error', resource.errorListener)
-    })
-    yield* Queue.shutdown(resource.messages)
-    yield* Queue.shutdown(resource.errors)
+  return Effect.sync(() => {
+    resource.subscription.removeListener('message', resource.messageListener)
+    resource.subscription.removeListener('error', resource.errorListener)
   })
 }
 
-const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ messages, errors }) => MessageQueue.of({ messages, errors }))
-)
+const make = Effect.acquireRelease(acquire, release)
 
 const subscription = PubsubSubscription.layer(
   Config.string('PUBSUB_SUBSCRIPTION_NAME')
@@ -63,5 +56,5 @@ const subscription = PubsubSubscription.layer(
 export const layer: Layer.Layer<
   never,
   ConfigError.ConfigError,
-  PubsubClient.PubsubClient
+  PubsubClient.PubsubClient | MessageQueue
 > = Layer.effectDiscard(Effect.scoped(make)).pipe(Layer.provide(subscription))
