@@ -45,6 +45,10 @@ function release(subscriptionId: string) {
   return function (resource: Resource) {
     return Effect.gen(function* () {
       const ackIds = yield* Ref.get(resource.ackIds)
+      yield* Effect.log(
+        'Acknowledging messages with ackIds:',
+        Array.fromIterable(ackIds)
+      )
       yield* Effect.orDie(
         PubsubSubscriberClient.acknowledge(
           subscriptionId,
