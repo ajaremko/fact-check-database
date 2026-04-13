@@ -8,14 +8,14 @@ import {
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
 
-import * as CloudPubsubMessageQueue from '../adapters/cloud-pubsub/MessageQueueFeeder'
+import * as HttpServerMessageQueueFeeder from '../adapters/http-server/MessageQueueFeeder'
 import * as CloudPubsubPublisher from '../adapters/cloud-pubsub/Publisher'
 import * as CloudStorageSanitizerPolicyDocument from '../adapters/cloud-storage/SanitizerPolicyDocument'
 import * as MessageQueue from '../MessageQueue'
 import { Program } from '../program'
 
 export const main = Program.pipe(
-  Effect.provide(CloudPubsubMessageQueue.layer),
+  Effect.provide(HttpServerMessageQueueFeeder.layer),
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageSanitizerPolicyDocument.layer),
   Effect.provide(CloudStorageStorageReader.layer),
