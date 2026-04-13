@@ -1,9 +1,10 @@
 import { Effect, pipe, Schema } from 'effect'
 
 import { Node, Ndjson } from '../util'
+import { StorageWriter } from '../ports'
 
 import { ExtractedClaimSchema, ExtractedClaims } from './ExtractedClaim'
-import { StorageWriter } from '../ports'
+import { ExtractionBatchReady } from './ExtractionBatchReady'
 
 const encodeExtractedRows = pipe(
   ExtractedClaimSchema,
@@ -20,15 +21,14 @@ export function writeExtractedRows(input: {
   return Effect.gen(function* () {
     const storageWriter = yield* StorageWriter
     const data = yield* encodeExtractedRows(input.rows)
-
-    yield* Effect.logInfo(
-      `Writing ${input.rows.length} extracted rows for run ${input.runId}`
-    )
-
-    yield* storageWriter.write({
+    const pointer = yield* storageWriter.write({
       path: `claims/${input.runId}.ndjson`,
       data,
       contentType: 'application/x-ndjson',
+    })
+    return new ExtractionBatchReady({
+      batchId: input.runId,
+      pointer,
     })
   })
 }

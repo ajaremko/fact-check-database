@@ -18,12 +18,14 @@ const processMessageBatch = Effect.gen(function* () {
       (message) =>
         Effect.gen(function* () {
           const incoming = yield* message.read
-          return yield* extractRowsFromSanitized({
+          const rows = yield* extractRowsFromSanitized({
             runId,
             observationId: incoming.observationId,
             pointer: incoming.pointer,
             extractedAt: startedAt,
           })
+          yield* message.ack
+          return rows
         }),
       { concurrency }
     ),
