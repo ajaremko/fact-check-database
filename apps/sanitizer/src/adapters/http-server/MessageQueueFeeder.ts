@@ -7,7 +7,7 @@ import {
 } from '@effect/platform'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
-import { Config, Effect, Layer, pipe, Queue, Schema } from 'effect'
+import { Config, Effect, Layer, Schema, pipe } from 'effect'
 
 import { IngestionAttempted } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/ingestion/util'
@@ -28,7 +28,7 @@ const router = HttpRouter.empty.pipe(
       const { messages } = yield* MessageQueue
       const req = yield* HttpServerRequest.HttpServerRequest
       const body = yield* req.json
-      return yield* Effect.async(
+      return yield* Effect.asyncEffect(
         (
           resume: (
             cb: Effect.Effect<
@@ -38,7 +38,7 @@ const router = HttpRouter.empty.pipe(
           ) => void
         ) =>
           Effect.asVoid(
-            Queue.offer(messages, {
+            messages.offer({
               read: decodeIngestionAttempted(body),
               ack: Effect.sync(() =>
                 resume(HttpServerResponse.json({}, { status: 200 }))
