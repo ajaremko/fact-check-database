@@ -24,8 +24,7 @@
           "buildDepsName": "build-deps",
           "watchDepsName": "watch-deps"
         }
-      },
-      "exclude": ["packages/contracts/*"]
+      }
     },
     {
       "plugin": "@nx/eslint/plugin",
@@ -57,7 +56,6 @@
     },
     {
       "plugin": "@nx/js/typescript",
-      "include": ["packages/contracts/*"],
       "options": {
         "typecheck": {
           "targetName": "typecheck"
