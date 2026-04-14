@@ -7,10 +7,12 @@ import {
 
 import { MessageBatch } from './MessageBatch'
 import { JobContext } from './JobContext'
+import { Publisher } from './Publisher'
 
 const processMessageBatch = Effect.gen(function* () {
   const { runId, concurrency, startedAt } = yield* JobContext
   const messages = yield* MessageBatch
+  const publisher = yield* Publisher
 
   const rows = yield* pipe(
     messages,
@@ -32,11 +34,13 @@ const processMessageBatch = Effect.gen(function* () {
     Effect.andThen(Array.flatten)
   )
 
-  yield* writeExtractedRows({
+  const event = yield* writeExtractedRows({
     runId,
     rows,
     extractedAt: startedAt,
   })
+
+  yield* publisher.publish(event)
 })
 
 export const Program = Effect.gen(function* () {

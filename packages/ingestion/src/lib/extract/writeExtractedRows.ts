@@ -28,6 +28,7 @@ export function writeExtractedRows(input: {
     })
     return new ExtractionBatchReady({
       batchId: input.runId,
+      extractedAt: input.extractedAt,
       pointer,
       table: {
         tableId: 'claims',

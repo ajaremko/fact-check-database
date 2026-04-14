@@ -18,6 +18,7 @@ export class ExtractionBatchReady extends Schema.Class<ExtractionBatchReady>(
   'ExtractionBatchReady'
 )({
   batchId: Schema.String,
+  extractedAt: Schema.Number,
   pointer: FilePointerSchema,
   table: TablePointerSchema,
   meta: LoadJobMetadataSchema,
