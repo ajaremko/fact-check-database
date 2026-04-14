@@ -45,6 +45,11 @@ function release(subscriptionId: string) {
   return function (resource: Resource) {
     return Effect.gen(function* () {
       const ackIds = yield* Ref.get(resource.ackIds)
+      console.log(
+        `Acknowledging ${ackIds.size} messages for subscription ${subscriptionId}`
+      )
+      console.log(Array.fromIterable(ackIds))
+      console.log(ackIds)
       if (ackIds.size === 0) {
         return
       }
