@@ -1,4 +1,4 @@
-import { Config, ConfigError, Effect, Layer } from 'effect'
+import { ConfigError, Effect, Layer } from 'effect'
 
 import {
   StorageBucket,
@@ -30,6 +30,4 @@ export const layer: Layer.Layer<
   StorageReader,
   ConfigError.ConfigError,
   StorageClient.StorageClient | StorageBucketCache.StorageBucketCache
-> = Layer.effect(StorageReader, make).pipe(
-  Layer.provide(StorageBucket.layer(Config.string('STORAGE_BUCKET_NAME')))
-)
+> = Layer.effect(StorageReader, make)

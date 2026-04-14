@@ -5,8 +5,8 @@ import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
 } from '@news-research/ingestion/adapters'
+import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 import { PubsubClient } from '@news-research/cloud-pubsub'
-import { StorageClient } from '@news-research/cloud-storage'
 
 import * as HttpServerMessageQueueFeeder from '../adapters/http-server/MessageQueueFeeder'
 import * as CloudPubsubPublisher from '../adapters/cloud-pubsub/Publisher'
@@ -20,6 +20,7 @@ export const main = Program.pipe(
   Effect.provide(CloudStorageSanitizerPolicyDocument.layer),
   Effect.provide(CloudStorageStorageReader.layer),
   Effect.provide(CloudStorageStorageWriter.layer),
+  Effect.provide(StorageBucketCache.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(PubsubClient.layer()),
   Effect.provide(MessageQueue.layer),

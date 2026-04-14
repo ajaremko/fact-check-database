@@ -28,26 +28,25 @@ const router = HttpRouter.empty.pipe(
       const { messages } = yield* MessageQueue
       const req = yield* HttpServerRequest.HttpServerRequest
       const body = yield* req.json
-      return yield* Effect.asyncEffect(
-        (
-          resume: (
-            cb: Effect.Effect<
-              HttpServerResponse.HttpServerResponse,
-              HttpBody.HttpBodyError
-            >
-          ) => void
-        ) =>
-          Effect.asVoid(
-            messages.offer({
-              read: decodeIngestionAttempted(body),
-              ack: Effect.sync(() =>
-                resume(HttpServerResponse.json({}, { status: 200 }))
-              ),
-              nack: Effect.sync(() =>
-                resume(HttpServerResponse.json({}, { status: 400 }))
-              ),
-            })
-          )
+      return yield* Effect.asyncEffect<
+        HttpServerResponse.HttpServerResponse,
+        HttpBody.HttpBodyError,
+        never,
+        never,
+        never,
+        never
+      >((resume) =>
+        Effect.asVoid(
+          messages.offer({
+            read: decodeIngestionAttempted(body),
+            ack: Effect.sync(() =>
+              resume(HttpServerResponse.json({}, { status: 200 }))
+            ),
+            nack: Effect.sync(() =>
+              resume(HttpServerResponse.json({}, { status: 400 }))
+            ),
+          })
+        )
       )
     })
   )
