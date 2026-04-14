@@ -40,17 +40,6 @@ export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-// export const sanitizerIngestorTopicSubscriber =
-//   new gcp.pubsub.SubscriptionIAMMember(
-//     `${tag}-sanitizer-ingestor-topic-subscriber`,
-//     {
-//       subscription: sanitizerIngestorTopicSubscription.name,
-//       role: 'roles/pubsub.subscriber',
-//       member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
-//     },
-//     { provider }
-//   )
-
 export const sanitizerTopicPublisher = new gcp.pubsub.TopicIAMMember(
   `${tag}-sanitizer-topic-publisher`,
   {
@@ -112,7 +101,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'LOG_LEVEL',
-              value: 'info',
+              value: 'error',
             },
           ],
         },

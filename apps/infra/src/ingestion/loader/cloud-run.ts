@@ -66,7 +66,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'LOG_LEVEL',
-              value: 'info',
+              value: 'error',
             },
           ],
         },

@@ -117,7 +117,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'LOG_LEVEL',
-                value: 'info',
+                value: 'error',
               },
             ],
           },
