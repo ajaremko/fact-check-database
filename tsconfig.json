@@ -26,6 +26,9 @@
     },
     {
       "path": "./packages/bigquery"
+    },
+    {
+      "path": "./apps/loader"
     }
   ]
 }

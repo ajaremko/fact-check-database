@@ -27,6 +27,11 @@
       "import": "./dist/lib/extract/index.js",
       "default": "./dist/lib/extract/index.js"
     },
+    "./load": {
+      "types": "./dist/lib/load/index.d.ts",
+      "import": "./dist/lib/load/index.js",
+      "default": "./dist/lib/load/index.js"
+    },
     "./adapters": {
       "types": "./dist/lib/adapters/index.d.ts",
       "import": "./dist/lib/adapters/index.js",
