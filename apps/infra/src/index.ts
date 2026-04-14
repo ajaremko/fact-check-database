@@ -11,6 +11,10 @@ export {
   ingestorJobName,
   ingestorJobSchedulerName,
   sanitizerWorkerName,
+  extractorJobName,
+  extractorJobSchedulerName,
+  loaderServiceName,
+  loaderExtractorTopicSubscriptionName,
 } from './ingestion'
 
 export { stackName } from './config'
