@@ -23,6 +23,9 @@
     },
     {
       "path": "./apps/extractor"
+    },
+    {
+      "path": "./packages/bigquery"
     }
   ]
 }
