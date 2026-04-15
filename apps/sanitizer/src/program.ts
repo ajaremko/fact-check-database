@@ -2,39 +2,44 @@ import { Effect } from 'effect'
 
 import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
 
-import { MessageQueue } from './MessageQueue'
+import { Message, MessageQueue } from './MessageQueue'
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 import { Publisher } from './Publisher'
 
+function processMessage(message: Message) {
+  return Effect.gen(function* () {
+    const policy = yield* SanitizerPolicyConfig
+    const publisher = yield* Publisher
+    const incoming = yield* message.read
+
+    const events = yield* sanitizeRawObservation({
+      id: incoming.observationId,
+      pointer: incoming.pointer,
+      policy,
+    })
+
+    for (const event of events) {
+      yield* publisher.publish(event)
+    }
+
+    yield* message.ack
+  }).pipe(
+    Effect.tapError(Effect.logError),
+    Effect.catchTags({
+      ParseError: () => message.ack,
+      PublisherError: () => message.nack,
+      StorageReadError: () => message.nack,
+      StorageWriteError: () => message.nack,
+    })
+  )
+}
+
 export const Program = Effect.gen(function* () {
-  const publisher = yield* Publisher
-  const policy = yield* SanitizerPolicyConfig
   const { messages, errors } = yield* MessageQueue
 
   const handleMessages = messages.take.pipe(
-    Effect.andThen((message) =>
-      message.read.pipe(
-        Effect.andThen((incoming) =>
-          sanitizeRawObservation({
-            id: incoming.observationId,
-            pointer: incoming.pointer,
-            policy,
-          }).pipe(
-            Effect.andThen(Effect.forEach((event) => publisher.publish(event))),
-            Effect.andThen(() => message.ack),
-            Effect.catchTag('ParseError', () => message.ack),
-            Effect.catchAll(() => message.nack),
-            Effect.annotateLogs({
-              observationId: incoming.observationId,
-              source: incoming.source.name,
-              url: incoming.url,
-              collection: incoming.source.collection,
-              handler: 'message',
-            })
-          )
-        )
-      )
-    ),
+    Effect.andThen(processMessage),
+    Effect.annotateLogs({ handler: 'message' }),
     Effect.forever
   )
 

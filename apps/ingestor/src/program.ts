@@ -1,4 +1,4 @@
-import { Array, Effect, Either, Option } from 'effect'
+import { Array, Effect, Option } from 'effect'
 
 import {
   ingestFromSourceTarget,
@@ -17,6 +17,7 @@ function processTarget(target: SourceTarget, index: number) {
     // ingest from target and publish event
     yield* Effect.logDebug('Processing target')
     const event = yield* ingestFromSourceTarget(job.runId, target, index)
+
     yield* publisher.publish(event)
   }).pipe(
     Effect.annotateLogs({
