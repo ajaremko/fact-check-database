@@ -12,6 +12,7 @@ import * as HttpServerMessageQueueFeeder from '../adapters/http-server/MessageQu
 import * as CloudPubsubPublisher from '../adapters/cloud-pubsub/Publisher'
 import * as CloudStorageSanitizerPolicyDocument from '../adapters/cloud-storage/SanitizerPolicyDocument'
 import * as MessageQueue from '../MessageQueue'
+import * as Logger from '../Logger'
 import { Program } from '../program'
 
 export const main = Program.pipe(
@@ -24,5 +25,6 @@ export const main = Program.pipe(
   Effect.provide(StorageClient.layer()),
   Effect.provide(PubsubClient.layer()),
   Effect.provide(MessageQueue.layer),
-  Effect.provide(NodeFileSystem.layer)
+  Effect.provide(NodeFileSystem.layer),
+  Effect.provide(Logger.layer)
 )

@@ -10,6 +10,7 @@ import * as FilesystemMessageQueueFeeder from '../adapters/filesystem/MessageQue
 import * as FilesystemPublisher from '../adapters/filesystem/Publisher'
 import * as FilesystemSanitizerPolicyDocument from '../adapters/filesystem/SanitizerPolicyDocument'
 import * as MessageQueue from '../MessageQueue'
+import * as Logger from '../Logger'
 import { Program } from '../program'
 
 export const main = Program.pipe(
@@ -19,5 +20,6 @@ export const main = Program.pipe(
   Effect.provide(FilesystemPublisher.layer),
   Effect.provide(FilesystemSanitizerPolicyDocument.layer),
   Effect.provide(MessageQueue.layer),
-  Effect.provide(NodeFileSystem.layer)
+  Effect.provide(NodeFileSystem.layer),
+  Effect.provide(Logger.layer)
 )

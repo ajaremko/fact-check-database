@@ -1,4 +1,4 @@
-import { Config, Effect, Logger, Queue } from 'effect'
+import { Effect } from 'effect'
 
 import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
 
@@ -10,39 +10,43 @@ export const Program = Effect.gen(function* () {
   const publisher = yield* Publisher
   const policy = yield* SanitizerPolicyConfig
   const { messages, errors } = yield* MessageQueue
-  const logLevel = yield* Config.logLevel('LOG_LEVEL')
 
-  const handleMessages = Queue.take(messages).pipe(
+  const handleMessages = messages.take.pipe(
     Effect.andThen((message) =>
-      Effect.gen(function* () {
-        const incoming = yield* message.read
-        const outgoing = yield* sanitizeRawObservation({
-          id: incoming.observationId,
-          pointer: incoming.pointer,
-          policy,
-        })
-        for (const event of outgoing) {
-          yield* publisher.publish(event)
-        }
-      }).pipe(
-        Effect.andThen(() => message.ack),
-        Effect.catchTag('ParseError', () => message.ack),
-        Effect.catchAll(() => message.nack)
+      message.read.pipe(
+        Effect.andThen((incoming) =>
+          sanitizeRawObservation({
+            id: incoming.observationId,
+            pointer: incoming.pointer,
+            policy,
+          }).pipe(
+            Effect.andThen(Effect.forEach((event) => publisher.publish(event))),
+            Effect.andThen(() => message.ack),
+            Effect.catchTag('ParseError', () => message.ack),
+            Effect.catchAll(() => message.nack),
+            Effect.annotateLogs({
+              observationId: incoming.observationId,
+              source: incoming.source.name,
+              url: incoming.url,
+              collection: incoming.source.collection,
+              handler: 'message',
+            })
+          )
+        )
       )
     ),
     Effect.forever
   )
 
-  const handleErrors = Queue.take(errors).pipe(
-    Effect.tap((error) =>
-      Effect.logError(`Message queue error: ${error.cause}`)
-    ),
-    Effect.andThen(Effect.fail)
+  const handleErrors = errors.take.pipe(
+    Effect.tap(Effect.logError),
+    Effect.andThen(Effect.fail),
+    Effect.annotateLogs({ handler: 'error' })
   )
 
   yield* Effect.logInfo('Listening for messages...')
 
   yield* Effect.all([handleMessages, handleErrors], {
     concurrency: 'unbounded',
-  }).pipe(Effect.provide(Logger.minimumLogLevel(logLevel)))
+  })
 })
