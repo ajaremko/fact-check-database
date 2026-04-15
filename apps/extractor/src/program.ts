@@ -1,52 +1,56 @@
-import { Array, Config, Effect, Logger, pipe } from 'effect'
+import { Array, Effect, Option } from 'effect'
 
 import {
   extractRowsFromSanitized,
   writeExtractedRows,
 } from '@news-research/ingestion/extract'
 
-import { MessageBatch } from './MessageBatch'
-import { JobContext } from './JobContext'
+import { JobContext, withJobContextAnnotations } from './JobContext'
+import { Message, MessageBatch } from './MessageBatch'
 import { Publisher } from './Publisher'
 
-const processMessageBatch = Effect.gen(function* () {
-  const { runId, concurrency, startedAt } = yield* JobContext
-  const messages = yield* MessageBatch
-  const publisher = yield* Publisher
-
-  const rows = yield* pipe(
-    messages,
-    Effect.forEach(
-      (message) =>
-        Effect.gen(function* () {
-          const incoming = yield* message.read
-          const rows = yield* extractRowsFromSanitized({
-            runId,
-            observationId: incoming.observationId,
-            pointer: incoming.pointer,
-            extractedAt: startedAt,
-          })
-          yield* message.ack
-          return rows
-        }),
-      { concurrency }
-    ),
-    Effect.andThen(Array.flatten)
-  )
-
-  const event = yield* writeExtractedRows({
-    runId,
-    rows,
-    extractedAt: startedAt,
+function processMessage(message: Message) {
+  return Effect.gen(function* () {
+    const incoming = yield* message.read
+    const job = yield* JobContext
+    const rows = yield* extractRowsFromSanitized({
+      runId: job.runId,
+      observationId: incoming.observationId,
+      pointer: incoming.pointer,
+      extractedAt: job.startedAt,
+    })
+    yield* message.ack
+    return rows
   })
+}
 
-  yield* publisher.publish(event)
-})
+export const Program = withJobContextAnnotations(
+  Effect.gen(function* () {
+    const job = yield* JobContext
+    const messages = yield* MessageBatch
+    const publisher = yield* Publisher
 
-export const Program = Effect.gen(function* () {
-  const logLevel = yield* Config.logLevel('LOG_LEVEL')
+    // process all messages with configured concurrency
+    yield* Effect.logDebug(`Processing ${messages.length} messages`)
+    const tasks = Array.map(messages, processMessage)
+    const results = yield* Effect.all(tasks, {
+      concurrency: job.concurrency,
+      mode: 'either', // 'either' ensures all tasks are attempted
+    })
 
-  yield* processMessageBatch.pipe(
-    Effect.provide(Logger.minimumLogLevel(logLevel))
-  )
-})
+    // log success rate
+    const successes = Array.filterMap(results, Option.getRight)
+    yield* Effect.logDebug(
+      `Processed ${successes.length} of ${messages.length} messages`
+    )
+
+    // write rows to storage and publish event
+    const rows = Array.flatten(successes)
+    const event = yield* writeExtractedRows({
+      runId: job.runId,
+      rows,
+      extractedAt: job.startedAt,
+    })
+    yield* publisher.publish(event)
+  })
+)

@@ -16,9 +16,7 @@ const make = Effect.gen(function* () {
     MaxConcurrencySchema
   ).pipe(Config.withDefault(10))
 
-  const logLevel = yield* Config.logLevel('LOG_LEVEL')
-
-  return { runId, concurrency, startedAt, logLevel }
+  return { runId, concurrency, startedAt }
 })
 
 type JobContextShape = Effect.Effect.Success<typeof make>
@@ -29,3 +27,13 @@ export class JobContext extends Context.Tag('JobContext')<
 >() {}
 
 export const layer = Layer.effect(JobContext, make)
+
+export function withJobContextAnnotations<A, E, R>(
+  effect: Effect.Effect<R, E, A>
+) {
+  return JobContext.pipe(
+    Effect.andThen(({ runId, startedAt, concurrency }) =>
+      Effect.annotateLogs(effect, { runId, startedAt, concurrency })
+    )
+  )
+}

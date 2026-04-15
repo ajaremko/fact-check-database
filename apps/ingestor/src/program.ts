@@ -1,4 +1,4 @@
-import { Array, Effect, Either } from 'effect'
+import { Array, Effect, Either, Option } from 'effect'
 
 import {
   ingestFromSourceTarget,
@@ -41,8 +41,8 @@ export const Program = withJobContextAnnotations(
       mode: 'either', // 'either' ensures all tasks are attempted
     })
 
-    // check success rate
-    const [successes] = Array.partition(results, Either.isLeft)
+    // compute success rate
+    const successes = Array.filterMap(results, Option.getRight)
     const successRate = successes.length / sources.length
     yield* Effect.logDebug(
       `Processed ${successes.length} of ${sources.length} targets`
