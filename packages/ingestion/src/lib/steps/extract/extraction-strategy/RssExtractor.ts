@@ -1,27 +1,28 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, Xml } from '../../util'
+import { Node, Xml } from '../../../util'
 
 import { makeExtractionStrategy } from './ExtractionStrategy'
 
 const ItemSchema = Schema.Struct({
-  id: Schema.optional(Schema.String),
   title: Schema.optional(Schema.String),
-  link: Schema.optional(
-    Schema.Union(Schema.String, Schema.Struct({ href: Schema.String }))
-  ),
+  link: Schema.optional(Schema.String),
   description: Schema.optional(Schema.String),
-  summary: Schema.optional(Schema.String),
   pubDate: Schema.optional(Schema.String),
 })
 
 const DocumentSchema = Schema.Struct({
-  feed: Schema.Struct({
-    entry: Schema.Array(ItemSchema),
+  rss: Schema.Struct({
+    channel: Schema.Struct({
+      item: Schema.optional(Schema.Union(ItemSchema, Schema.Array(ItemSchema))),
+      entry: Schema.optional(
+        Schema.Union(ItemSchema, Schema.Array(ItemSchema))
+      ),
+    }),
   }),
 })
 
-const decodeAtom = pipe(
+const decodeRss = pipe(
   DocumentSchema,
   Xml.parseXml({
     parser: {
@@ -58,21 +59,26 @@ function extractVerdict(text?: string) {
   return null
 }
 
-export const AtomExtractor = makeExtractionStrategy({
-  id: 'atom',
-  canHandle: (source) => source.collection === 'atom',
+export const RssExtractor = makeExtractionStrategy({
+  id: 'rss',
+  canHandle: (source) => source.collection === 'rss',
   extractor: (input) =>
     Effect.gen(function* () {
-      const { feed } = yield* decodeAtom(input.data)
+      const { rss } = yield* decodeRss(input.data)
       const extractedClaims = []
 
-      const entries = feed.entry
-        ? feed.entry instanceof Array
-          ? feed.entry
-          : [feed.entry]
+      const items = rss.channel.item
+        ? rss.channel.item instanceof Array
+          ? rss.channel.item
+          : [rss.channel.item]
+        : []
+      const entries = rss.channel.entry
+        ? rss.channel.entry instanceof Array
+          ? rss.channel.entry
+          : [rss.channel.entry]
         : []
 
-      for (const item of entries) {
+      for (const item of [...items, ...entries]) {
         const values = {
           link: item.link,
           title: item.title ?? null,

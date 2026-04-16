@@ -4,7 +4,7 @@ import {
   FilePointerSchema,
   TablePointerSchema,
   LoadJobMetadataSchema,
-} from '../data'
+} from '../../data'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

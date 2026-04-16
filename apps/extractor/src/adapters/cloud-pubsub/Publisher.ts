@@ -1,7 +1,7 @@
 import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
-import { ExtractionBatchReady } from '@news-research/ingestion/extract'
+import { ExtractionBatchReady } from '../../../../../packages/ingestion/dist/lib/steps/extract'
 import { Node } from '@news-research/ingestion/util'
 
 import { Publisher, PublisherError } from '../../Publisher'

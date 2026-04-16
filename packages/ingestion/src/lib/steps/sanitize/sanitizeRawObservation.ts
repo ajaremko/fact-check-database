@@ -6,9 +6,9 @@ import {
   IngestionRecordSchema,
   SanitizerRecordSchema,
   SanitizerRecordMetadataSchema,
-} from '../data'
-import { Node, Yaml } from '../util'
-import { StorageReader, StorageWriter } from '../ports'
+} from '../../data'
+import { Node, Yaml } from '../../util'
+import { StorageReader, StorageWriter } from '../../ports'
 
 import { evaluatePolicy } from './evaluatePolicy'
 import type { SanitizerPolicy } from './SanitizerPolicy'
@@ -124,5 +124,8 @@ export function sanitizeRawObservation(input: {
       pointer: outputRecordPointer,
     })
     return [event]
-  }).pipe(Effect.annotateLogs({ observationId: input.id }))
+  }).pipe(
+    Effect.annotateLogs({ observationId: input.id }),
+    Effect.withSpan('sanitizeRawObservation')
+  )
 }

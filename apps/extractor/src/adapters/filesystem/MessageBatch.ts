@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
+import { SanitizationAttempted } from '../../../../../packages/ingestion/dist/lib/steps/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { MessageBatch, Message } from '../../MessageBatch'

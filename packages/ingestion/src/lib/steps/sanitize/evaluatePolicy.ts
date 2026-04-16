@@ -1,4 +1,8 @@
-import type { IngestionRecord, PolicyLabel, SanitizationAction } from '../data'
+import type {
+  IngestionRecord,
+  PolicyLabel,
+  SanitizationAction,
+} from '../../data'
 
 import type { CollectionRule, SanitizerPolicy } from './SanitizerPolicy'
 

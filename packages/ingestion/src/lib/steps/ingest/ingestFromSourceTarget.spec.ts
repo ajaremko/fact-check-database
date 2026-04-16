@@ -5,7 +5,7 @@ import {
   InMemoryStorageReader,
   InMemoryStorageWriter,
   InMemoryFetcher,
-} from '../adapters'
+} from '../../adapters'
 
 import { IngestionAttempted } from './IngestionAttempted'
 import { ingestFromSourceTarget } from './ingestFromSourceTarget'

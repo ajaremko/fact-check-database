@@ -4,7 +4,7 @@ import { JobLoadMetadata } from '@google-cloud/bigquery'
 import { StorageBucketCache, StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 
-import { FilePointer, TablePointer, LoadJobMetadata } from '../data'
+import { FilePointer, TablePointer, LoadJobMetadata } from '../../data'
 
 export class LoadJsonFromGcsError extends Data.TaggedError(
   'LoadJsonFromGcsError'

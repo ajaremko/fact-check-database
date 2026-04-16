@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { PolicyLabelSchema } from '../data'
+import { PolicyLabelSchema } from '../../data'
 
 /**
  * A simple allowlist-based policy per source collection.

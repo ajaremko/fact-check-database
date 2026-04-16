@@ -3,7 +3,7 @@ import { NodeFileSystem, NodeRuntime } from '@effect/platform-node'
 
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
-import { loadJsonFromGcs } from '@news-research/ingestion/load'
+import { loadJsonFromGcs } from '../../../packages/ingestion/dist/lib/steps/load'
 
 import * as HttpServerMessageQueueFeeder from './MessageQueueFeeder'
 import * as Logger from './Logger'

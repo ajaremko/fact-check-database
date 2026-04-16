@@ -4,9 +4,9 @@ import {
   ArchivePathSchema,
   IngestionRecordMetadataSchema,
   IngestionRecordSchema,
-} from '../data'
-import { Node, Yaml } from '../util'
-import { StorageWriter } from '../ports'
+} from '../../data'
+import { Node, Yaml } from '../../util'
+import { StorageWriter } from '../../ports'
 
 import { Fetcher, FetchFailure, FetchSuccess } from './Fetcher'
 import { IngestionAttempted } from './IngestionAttempted'
@@ -271,6 +271,7 @@ export function ingestFromSourceTarget(input: {
       source: input.source.name,
       url: input.source.url,
       collection: input.source.collection,
-    })
+    }),
+    Effect.withSpan('ingestFromSourceTarget')
   )
 }

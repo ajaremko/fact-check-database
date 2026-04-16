@@ -1,8 +1,8 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { FilePointer, SanitizerRecordSchema } from '../data'
-import { Node, Yaml } from '../util'
-import { StorageReader } from '../ports'
+import { FilePointer, SanitizerRecordSchema } from '../../data'
+import { Node, Yaml } from '../../util'
+import { StorageReader } from '../../ports'
 
 import { extractors } from './extraction-strategy'
 

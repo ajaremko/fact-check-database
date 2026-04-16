@@ -1,7 +1,7 @@
 import { Array, Config, Effect, Layer, pipe, Ref, Schema, Option } from 'effect'
 
 import { PubsubSubscriberClient } from '@news-research/cloud-pubsub'
-import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
+import { SanitizationAttempted } from '../../../../../packages/ingestion/dist/lib/steps/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { MessageBatch, Message } from '../../MessageBatch'

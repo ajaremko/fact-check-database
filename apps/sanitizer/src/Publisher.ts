@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { SanitizationAttempted } from '@news-research/ingestion/sanitize'
+import type { SanitizationAttempted } from '../../../packages/ingestion/dist/lib/steps/sanitize'
 
 export class PublisherError extends Data.TaggedError('PublisherError')<{
   readonly cause: unknown

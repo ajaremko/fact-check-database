@@ -4,7 +4,7 @@ import {
   ClaimsTableRowSchema,
   ClaimVerdictSchema,
   NumberFromFormattedDate,
-} from '../data'
+} from '../../data'
 
 export const ExtractedClaimSchema = Schema.transform(
   ClaimsTableRowSchema,

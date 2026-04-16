@@ -1,5 +1,5 @@
 import { ParseResult, Schema } from 'effect'
-import { NumberFromFormattedDate } from '../data/NumberFromFormattedDate'
+import { NumberFromFormattedDate } from '../../data/NumberFromFormattedDate'
 
 const FailedObservationIdSchema = Schema.transformOrFail(
   Schema.String,

@@ -3,7 +3,7 @@ import { Array, Effect, Option } from 'effect'
 import {
   extractRowsFromSanitized,
   writeExtractedRows,
-} from '@news-research/ingestion/extract'
+} from '../../../packages/ingestion/dist/lib/steps/extract'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { Message, MessageBatch } from './MessageBatch'

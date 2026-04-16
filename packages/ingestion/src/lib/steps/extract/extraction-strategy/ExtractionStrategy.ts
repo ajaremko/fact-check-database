@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { SanitizerRecord } from '../../data'
+import { SanitizerRecord } from '../../../data'
 
 import { ExtractedClaims } from '../ExtractedClaim'
 

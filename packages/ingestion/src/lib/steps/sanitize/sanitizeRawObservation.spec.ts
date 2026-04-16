@@ -1,8 +1,8 @@
 import { it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { DataFetchedRecordSchema, NoResponseRecordSchema } from '../data'
-import { InMemoryStorageReader, InMemoryStorageWriter } from '../adapters'
+import { DataFetchedRecordSchema, NoResponseRecordSchema } from '../../data'
+import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
 import { sanitizeRawObservation } from './sanitizeRawObservation'
 import { SanitizationAttempted } from './SanitizationAttempted'

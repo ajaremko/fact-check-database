@@ -9,7 +9,7 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 
-import { IngestionAttempted } from '@news-research/ingestion/ingest'
+import { IngestionAttempted } from '../../../../../packages/ingestion/dist/lib/steps/ingest'
 import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue } from '../../MessageQueue'

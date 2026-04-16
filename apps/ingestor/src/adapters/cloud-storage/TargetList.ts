@@ -3,7 +3,7 @@ import { ParseError } from 'effect/ParseResult'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node, NodeCsv } from '@news-research/ingestion/util'
-import { SourceTargetSchema } from '@news-research/ingestion/ingest'
+import { SourceTargetSchema } from '../../../../../packages/ingestion/dist/lib/steps/ingest'
 
 import { TargetList } from '../../TargetList'
 

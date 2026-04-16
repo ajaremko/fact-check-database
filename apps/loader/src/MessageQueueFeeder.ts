@@ -9,7 +9,7 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 
-import { ExtractionBatchReady } from '@news-research/ingestion/extract'
+import { ExtractionBatchReady } from '../../../packages/ingestion/dist/lib/steps/extract'
 import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue } from './MessageQueue'
