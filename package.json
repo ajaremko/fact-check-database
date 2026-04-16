@@ -43,12 +43,16 @@
     "apps/loader"
   ],
   "dependencies": {
+    "@effect/opentelemetry": "^0.63.0",
     "@effect/platform": "^0.96.0",
     "@effect/platform-node": "^0.106.0",
     "@effect/vitest": "^0.29.0",
     "@google-cloud/bigquery": "^8.1.1",
     "@google-cloud/pubsub": "^5.2.2",
     "@google-cloud/storage": "^7.19.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.214.0",
+    "@opentelemetry/sdk-trace-base": "^2.6.1",
+    "@opentelemetry/sdk-trace-node": "^2.6.1",
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
     "date-fns": "^4.1.0",
