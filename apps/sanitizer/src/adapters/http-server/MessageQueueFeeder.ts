@@ -14,14 +14,12 @@ import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue } from '../../MessageQueue'
 
-const decodeMessage = pipe(
+const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({
     message: Schema.Struct({
       data: Schema.String,
     }),
-  }),
-  Node.parseJson(),
-  Schema.decodeUnknown
+  })
 )
 
 const decodeIngestionAttempted = pipe(
