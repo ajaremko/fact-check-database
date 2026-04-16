@@ -25,7 +25,8 @@ const decodeMessage = Schema.decodeUnknown(
 const decodeIngestionAttempted = pipe(
   IngestionAttempted,
   Node.parseJson(),
-  Schema.decodeUnknown
+  Node.parseBufferEncoded({ encode: 'utf-8', decode: 'base64' }),
+  Schema.decode
 )
 
 const router = HttpRouter.empty.pipe(

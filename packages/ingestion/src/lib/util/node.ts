@@ -88,6 +88,43 @@ export function parseUint8Array(opts: { encoding: BufferEncoding }) {
 }
 
 /**
+ * A schema combinator that transforms between a buffer encoded string and a
+ * decoded string.
+ *
+ * Useful for handling cases where data is transmitted as a base64-encoded string
+ * (e.g. Pub/Sub messages) but you want to work with it as a `Buffer` in your
+ * application logic.
+ *
+ * @example
+ * const decode = pipe(
+ *   Schema.String,
+ *   Node.parseBufferEncoded({ encode: 'utf-8', decode: 'base64' }),
+ *   Schema.decode
+ * )
+ * const result = decode('ZXhhbXBsZQ==')
+ * // → "example"
+ */
+export function parseBufferEncoded(opts: {
+  encode: BufferEncoding
+  decode: BufferEncoding
+}) {
+  return function <A, R>(schema: Schema.Schema<A, string, R>) {
+    return Schema.transform(
+      // Source type: Buffer
+      Schema.String,
+      // Target type: A
+      schema,
+      {
+        strict: true,
+        decode: (input) =>
+          Buffer.from(input, opts.encode).toString(opts.decode),
+        encode: (input) => Buffer.from(input).toString(opts.encode),
+      }
+    )
+  }
+}
+
+/**
  * Returns an Effect that computes the SHA-256 hex digest of a string or `Uint8Array`.
  *
  * @example

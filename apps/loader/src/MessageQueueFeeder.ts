@@ -25,6 +25,7 @@ const decodeMessage = Schema.decodeUnknown(
 const decodeExtractionBatchReady = pipe(
   ExtractionBatchReady,
   Node.parseJson(),
+  Node.parseBufferEncoded({ encode: 'utf-8', decode: 'base64' }),
   Schema.decodeUnknown
 )
 
