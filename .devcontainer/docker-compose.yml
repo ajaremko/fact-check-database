@@ -17,3 +17,19 @@ services:
       - type: bind
         source: ${SSH_AUTH_SOCK:-/tmp/ssh-agent.sock}
         target: /ssh-agent.sock
+  grafana:
+    image: grafana/otel-lgtm:0.24.1
+    ports:
+      - '3000:3000'
+      - '4317:4317'
+      - '4318:4318'
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      OTEL_METRIC_EXPORT_INTERVAL: 500
+    volumes:
+      - otel-lgtm-data:/data
+    restart: unless-stopped
+
+volumes:
+  otel-lgtm-data:
