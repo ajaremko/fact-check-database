@@ -57,7 +57,12 @@ const router = HttpRouter.empty.pipe(
           })
         )
       )
-    })
+    }).pipe(
+      Effect.catchTags({
+        ParseError: () => HttpServerResponse.json({}, { status: 400 }),
+        RequestError: () => HttpServerResponse.json({}, { status: 400 }),
+      })
+    )
   )
 )
 
