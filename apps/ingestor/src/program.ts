@@ -16,10 +16,15 @@ function processTarget(target: SourceTarget, index: number) {
 
     // ingest from target and publish event
     yield* Effect.logDebug('Processing target')
-    const event = yield* ingestFromSourceTarget(job.runId, target, index)
+    const event = yield* ingestFromSourceTarget({
+      runId: job.runId,
+      source: target,
+      index,
+    })
 
     yield* publisher.publish(event)
   }).pipe(
+    Effect.tapError(Effect.logError),
     Effect.annotateLogs({
       source: target.name,
       url: target.url,
@@ -57,5 +62,5 @@ export const Program = withJobContextAnnotations(
         )
       )
     }
-  }).pipe(Effect.tapError(Effect.logError))
+  })
 )

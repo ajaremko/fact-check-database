@@ -14,7 +14,7 @@ export class SanitizationAttempted extends Schema.Class<SanitizationAttempted>(
   'SanitizationAttempted'
 )({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
-  runId: Schema.String,
+  ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   url: Schema.String,
   finalUrl: Schema.optional(Schema.String),

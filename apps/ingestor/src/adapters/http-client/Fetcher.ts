@@ -33,7 +33,9 @@ function handleResponseError(
   return Effect.gen(function* () {
     const body = yield* error.response.arrayBuffer.pipe(
       Effect.map((buffer) => new Uint8Array(buffer)),
-      Effect.mapError((cause) => new FetcherError({ cause }))
+      Effect.mapError(
+        (cause) => new FetcherError({ cause, url: error.response.request.url })
+      )
     )
     const sha256 = yield* Node.sha256Hex(body)
     const bytes = body.byteLength
@@ -73,7 +75,9 @@ function handleSuccess(
   return Effect.gen(function* () {
     const body = yield* response.arrayBuffer.pipe(
       Effect.map((buffer) => new Uint8Array(buffer)),
-      Effect.mapError((cause) => new FetcherError({ cause }))
+      Effect.mapError(
+        (cause) => new FetcherError({ cause, url: response.request.url })
+      )
     )
 
     const sha256 = yield* Node.sha256Hex(body)
@@ -99,28 +103,28 @@ function handleSuccess(
   })
 }
 
+const toResult = Either.match({
+  onLeft: handleError,
+  onRight: handleSuccess,
+})
+
 export const make = Effect.gen(function* () {
   const client = yield* HttpClient.HttpClient
 
   function fetch(source: SourceTarget) {
-    return client
-      .get(source.url, {
-        headers: {
-          'User-Agent': 'NewsResearchIngestor/1.0',
-          Accept: 'application/rss+xml, application/xml;q=0.9, */*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          Connection: 'keep-alive',
-        },
-      })
-      .pipe(
-        Effect.either,
-        Effect.flatMap(
-          Either.match({
-            onLeft: handleError,
-            onRight: handleSuccess,
-          })
-        )
+    return Effect.gen(function* () {
+      const either = yield* Effect.either(
+        client.get(source.url, {
+          headers: {
+            'User-Agent': 'NewsResearchIngestor/1.0',
+            Accept: 'application/rss+xml, application/xml;q=0.9, */*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            Connection: 'keep-alive',
+          },
+        })
       )
+      return yield* toResult(either)
+    })
   }
 
   return Fetcher.of({ fetch })

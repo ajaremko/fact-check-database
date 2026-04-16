@@ -17,7 +17,14 @@ export const make = Effect.gen(function* () {
           bucket: bucket.name,
           object: opts.path,
         })),
-        Effect.mapError((cause) => new StorageWriteError({ cause })),
+        Effect.mapError(
+          (cause) =>
+            new StorageWriteError({
+              cause,
+              path: opts.path,
+              bucket: bucket.name,
+            })
+        ),
         Effect.provideService(StorageBucket.StorageBucket, { bucket })
       ),
   })

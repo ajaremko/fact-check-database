@@ -11,7 +11,16 @@ export const make = Effect.gen(function* () {
       Effect.gen(function* () {
         const data = yield* fs.readFile(pointer.object)
         return new Uint8Array(data)
-      }).pipe(Effect.mapError((cause) => new StorageReadError({ cause }))),
+      }).pipe(
+        Effect.mapError(
+          (cause) =>
+            new StorageReadError({
+              cause,
+              path: pointer.object,
+              bucket: pointer.bucket,
+            })
+        )
+      ),
   })
 })
 

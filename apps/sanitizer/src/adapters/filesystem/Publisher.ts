@@ -1,13 +1,13 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { IngestionAttempted } from '@news-research/ingestion/ingest'
+import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { Publisher, PublisherError } from '../../Publisher'
 
 const encodeMessage = pipe(
-  IngestionAttempted,
+  SanitizationAttempted,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
@@ -22,7 +22,7 @@ export const make = Effect.gen(function* () {
   return Publisher.of({
     publish: (event) =>
       Effect.gen(function* () {
-        const path = `${outputDir}/${event.runId}_${event.source.name}.json`
+        const path = `${outputDir}/${event.observationId}_${event.source.name}.json`
         const data = yield* encodeMessage(event).pipe(
           Effect.mapError((cause) => new PublisherError({ cause }))
         )

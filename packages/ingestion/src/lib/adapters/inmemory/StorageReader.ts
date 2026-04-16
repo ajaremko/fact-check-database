@@ -10,6 +10,8 @@ export function layer(storage: Record<string, string>) {
         : Effect.fail(
             new StorageReadError({
               cause: new Error(`Object not found: ${pointer.object}`),
+              path: pointer.object,
+              bucket: pointer.bucket,
             })
           ),
   })

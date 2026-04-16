@@ -16,8 +16,8 @@ export const ArchivePathSchema = Schema.transformOrFail(
     ext: Schema.String,
     sourceName: Schema.String,
     date: NumberFromFormattedDate('yyyy-MM-dd'),
-    runId: Schema.String,
-    id: Schema.String,
+    ingestionId: Schema.String,
+    observationId: Schema.String,
   }),
   {
     strict: true,
@@ -27,8 +27,8 @@ export const ArchivePathSchema = Schema.transformOrFail(
         input.collectionName,
         `source=${input.sourceName}`,
         `date=${input.date}`,
-        `run=${input.runId}`,
-        `${input.id}.${input.ext}`,
+        `ingestion=${input.ingestionId}`,
+        `${input.observationId}.${input.ext}`,
       ].join('/')
       return ParseResult.succeed(output)
     },

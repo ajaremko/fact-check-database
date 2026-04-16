@@ -16,7 +16,14 @@ export const make = Effect.gen(function* () {
     read: (pointer) =>
       StorageBucket.downloadFile(pointer.object).pipe(
         Effect.map(([data]) => new Uint8Array(data)),
-        Effect.mapError((cause) => new StorageReadError({ cause })),
+        Effect.mapError(
+          (cause) =>
+            new StorageReadError({
+              cause,
+              path: pointer.object,
+              bucket: pointer.bucket,
+            })
+        ),
         Effect.provideServiceEffect(
           StorageBucket.StorageBucket,
           buckets.get(pointer.bucket)

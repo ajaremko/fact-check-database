@@ -32,11 +32,17 @@ export const make = Effect.gen(function* () {
           const metaData = Buffer.from(JSON.stringify(opts.meta))
           yield* fs.writeFile(replaceExtension(filePath, 'meta.json'), metaData)
         }
+
         return {
           bucket: 'local',
           object: filePath,
         }
-      }).pipe(Effect.mapError((cause) => new StorageWriteError({ cause }))),
+      }).pipe(
+        Effect.mapError(
+          (cause) =>
+            new StorageWriteError({ cause, path: opts.path, bucket: 'local' })
+        )
+      ),
   })
 })
 

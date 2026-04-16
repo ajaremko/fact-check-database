@@ -25,6 +25,7 @@ export type FetchResult = FetchSuccess | FetchFailure
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown
+  readonly url: string
 }> {}
 
 export class Fetcher extends Context.Tag('Fetcher')<

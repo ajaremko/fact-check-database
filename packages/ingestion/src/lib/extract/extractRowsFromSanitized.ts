@@ -55,7 +55,7 @@ export function extractRowsFromSanitized(input: {
     return yield* extractor
       .extractor({
         extractionId: extractor.id,
-        ingestionId: record.runId,
+        ingestionId: record.ingestionId,
         observationId: input.observationId,
         extractedAt: input.extractedAt,
         record,

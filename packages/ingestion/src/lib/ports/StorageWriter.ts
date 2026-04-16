@@ -4,6 +4,8 @@ import { FilePointer } from '../data'
 
 export class StorageWriteError extends Data.TaggedError('StorageWriteError')<{
   readonly cause: unknown
+  readonly path: string
+  readonly bucket: string
 }> {}
 
 export class StorageWriter extends Context.Tag('StorageWriter')<

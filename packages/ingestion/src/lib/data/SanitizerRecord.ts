@@ -90,7 +90,8 @@ export const SanitizerRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
 
   // Identity
-  runId: Schema.String,
+  observationId: Schema.String,
+  ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,
 
@@ -132,7 +133,8 @@ export const SanitizerRecordMetadataSchema = Schema.Struct({
   sourceCollection: Schema.String,
   fetchedAt: Schema.NumberFromString,
   sanitizedAt: Schema.NumberFromString,
-  id: Schema.String,
+  observationId: Schema.String,
+  ingestionId: Schema.String,
 })
 
 /** Metadata for a sanitized record. */

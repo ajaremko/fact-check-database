@@ -12,7 +12,7 @@ export const DataFetchedRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('data_fetched'),
-  runId: Schema.String,
+  ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   url: Schema.String,
   source: Schema.Struct({ name: Schema.String, collection: Schema.String }),
@@ -45,7 +45,8 @@ export const NoResponseRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('no_response'),
-  runId: Schema.String,
+  observationId: Schema.String,
+  ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   url: Schema.String,
   finalUrl: Schema.optional(Schema.String),
@@ -73,12 +74,12 @@ export type IngestionRecord = Schema.Schema.Type<typeof IngestionRecordSchema>
  * decoded to a number on read.
  */
 export const IngestionRecordMetadataSchema = Schema.Struct({
-  url: Schema.String,
+  observationId: Schema.String,
+  ingestionId: Schema.String,
   sourceName: Schema.String,
   sourceCollection: Schema.String,
-  runId: Schema.String,
   fetchedAt: Schema.NumberFromString,
-  id: Schema.String,
+  url: Schema.String,
 })
 
 /** Metadata for an ingestor record. */

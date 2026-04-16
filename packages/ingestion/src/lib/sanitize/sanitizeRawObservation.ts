@@ -67,15 +67,16 @@ export function sanitizeRawObservation(input: {
       collectionName: 'records',
       ext: 'sanitizer.yml',
       date: inputRecord.fetchedAt,
-      runId: inputRecord.runId,
-      id: input.id,
+      ingestionId: inputRecord.ingestionId,
+      observationId: input.id,
     })
     const outputRecordData = yield* encodeSanitizerRecord({
       version: 1,
       kind: 'sanitized_record',
       url: inputRecord.url,
       http: inputRecord.http,
-      runId: inputRecord.runId,
+      observationId: input.id,
+      ingestionId: inputRecord.ingestionId,
       source: inputRecord.source,
       content: inputRecord.content,
       fetchedAt: inputRecord.fetchedAt,
@@ -94,12 +95,13 @@ export function sanitizeRawObservation(input: {
       error: decision.error,
     })
     const outputRecordMetadata = yield* encodeSanitizerRecordMetadata({
-      id: input.id,
-      sourceName: inputRecord.source.name,
-      fetchedAt: inputRecord.fetchedAt,
+      observationId: input.id,
+      ingestionId: inputRecord.ingestionId,
       sanitizedAt,
-      url: inputRecord.url,
+      sourceName: inputRecord.source.name,
       sourceCollection: inputRecord.source.collection,
+      fetchedAt: inputRecord.fetchedAt,
+      url: inputRecord.url,
     })
     const outputRecordPointer = yield* storageWriter.write({
       path: outputRecordPath,
@@ -109,7 +111,7 @@ export function sanitizeRawObservation(input: {
 
     const event = new SanitizationAttempted({
       observationId: input.id,
-      runId: inputRecord.runId,
+      ingestionId: inputRecord.ingestionId,
       fetchedAt: inputRecord.fetchedAt,
       url: inputRecord.url,
       finalUrl: inputRecord.url,

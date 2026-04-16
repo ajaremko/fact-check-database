@@ -9,7 +9,7 @@ export function layer(storage: Record<string, string>) {
         storage[opts.path] = opts.data.toString()
         return {
           object: opts.path,
-          bucket: 'inmemory',
+          bucket: 'in-memory',
         }
       }),
   })

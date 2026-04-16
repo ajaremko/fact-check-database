@@ -1,13 +1,13 @@
 import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
-import { IngestionAttempted } from '@news-research/ingestion/ingest'
+import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { Publisher, PublisherError } from '../../Publisher'
 
 const encodeEvent = pipe(
-  IngestionAttempted,
+  SanitizationAttempted,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
