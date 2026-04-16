@@ -14,6 +14,16 @@ import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue } from './MessageQueue'
 
+const decodeMessage = pipe(
+  Schema.Struct({
+    message: Schema.Struct({
+      data: Schema.String,
+    }),
+  }),
+  Node.parseJson(),
+  Schema.decodeUnknown
+)
+
 const decodeExtractionBatchReady = pipe(
   ExtractionBatchReady,
   Node.parseJson(),
@@ -28,6 +38,7 @@ const router = HttpRouter.empty.pipe(
       const { messages } = yield* MessageQueue
       const req = yield* HttpServerRequest.HttpServerRequest
       const body = yield* req.json
+      const { message } = yield* decodeMessage(body)
       return yield* Effect.asyncEffect<
         HttpServerResponse.HttpServerResponse,
         HttpBody.HttpBodyError,
@@ -38,7 +49,7 @@ const router = HttpRouter.empty.pipe(
       >((resume) =>
         Effect.asVoid(
           messages.offer({
-            read: decodeExtractionBatchReady(body),
+            read: decodeExtractionBatchReady(message.data),
             ack: Effect.sync(() =>
               resume(HttpServerResponse.json({}, { status: 200 }))
             ),
