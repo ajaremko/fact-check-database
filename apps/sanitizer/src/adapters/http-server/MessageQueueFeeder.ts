@@ -25,7 +25,7 @@ const decodeMessage = Schema.decodeUnknown(
 const decodeIngestionAttempted = pipe(
   IngestionAttempted,
   Node.parseJson(),
-  Node.parseBufferEncoded({ encode: 'utf-8', decode: 'base64' }),
+  Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' }),
   Schema.decode
 )
 
