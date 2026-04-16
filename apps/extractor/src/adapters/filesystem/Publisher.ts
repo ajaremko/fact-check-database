@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { ExtractionBatchReady } from '../../../../../packages/ingestion/dist/lib/steps/extract'
+import { ExtractionBatchReady } from '@news-research/ingestion/extract'
 import { Node } from '@news-research/ingestion/util'
 
 import { Publisher, PublisherError } from '../../Publisher'

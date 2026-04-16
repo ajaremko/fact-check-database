@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { IngestionAttempted } from '../../../../../packages/ingestion/dist/lib/steps/ingest'
+import { IngestionAttempted } from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue } from '../../MessageQueue'

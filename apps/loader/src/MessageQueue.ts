@@ -1,6 +1,6 @@
 import { Context, Data, Effect, Queue, Layer, ParseResult } from 'effect'
 
-import { ExtractionBatchReady } from '../../../packages/ingestion/dist/lib/steps/extract'
+import { ExtractionBatchReady } from '@news-research/ingestion/extract'
 
 export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
   readonly cause: unknown

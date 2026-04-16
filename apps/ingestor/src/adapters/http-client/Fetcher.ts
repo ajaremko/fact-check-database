@@ -10,7 +10,7 @@ import {
   FetcherError,
   FetchResult,
   SourceTarget,
-} from '../../../../../packages/ingestion/dist/lib/steps/ingest'
+} from '@news-research/ingestion/ingest'
 import { Node } from '@news-research/ingestion/util'
 
 function handleRequestError(

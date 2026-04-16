@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import type { ExtractionBatchReady } from '../../../packages/ingestion/dist/lib/steps/extract'
+import type { ExtractionBatchReady } from '@news-research/ingestion/extract'
 
 export class PublisherError extends Data.TaggedError('PublisherError')<{
   readonly cause: unknown

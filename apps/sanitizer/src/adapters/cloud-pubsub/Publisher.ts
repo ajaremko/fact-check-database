@@ -1,7 +1,7 @@
 import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
-import { SanitizationAttempted } from '../../../../../packages/ingestion/dist/lib/steps/sanitize'
+import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { Publisher, PublisherError } from '../../Publisher'

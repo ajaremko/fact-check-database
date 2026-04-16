@@ -3,7 +3,7 @@ import { Array, Effect, Option } from 'effect'
 import {
   ingestFromSourceTarget,
   SourceTarget,
-} from '../../../packages/ingestion/dist/lib/steps/ingest'
+} from '@news-research/ingestion/ingest'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { Publisher } from './Publisher'

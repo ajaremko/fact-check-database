@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { sanitizeRawObservation } from '../../../packages/ingestion/dist/lib/steps/sanitize'
+import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
 
 import { Message, MessageQueue } from './MessageQueue'
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
