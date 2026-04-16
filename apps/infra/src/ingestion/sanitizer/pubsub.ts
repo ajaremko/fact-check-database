@@ -38,6 +38,18 @@ const invokerCanAuthenticate = new gcp.serviceaccount.IAMMember(
   { provider }
 )
 
+export const sanitizerIngestorDeadletterTopic = new gcp.pubsub.Topic(
+  `${tag}-sanitizer-ingestor-deadletter-topic`,
+  {
+    name: 'sanitizer-ingestor-deadletter-topic',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [pubsubService],
+    provider,
+  }
+)
+
 export const sanitizerIngestorTopicSubscription = new gcp.pubsub.Subscription(
   `${tag}-sanitizer-ingestor-topic-subscription`,
   {
@@ -49,6 +61,10 @@ export const sanitizerIngestorTopicSubscription = new gcp.pubsub.Subscription(
     retryPolicy: {
       minimumBackoff: '10s',
       maximumBackoff: '600s',
+    },
+    deadLetterPolicy: {
+      deadLetterTopic: sanitizerIngestorDeadletterTopic.id,
+      maxDeliveryAttempts: 5,
     },
     pushConfig: {
       pushEndpoint: sanitizerService.uri,

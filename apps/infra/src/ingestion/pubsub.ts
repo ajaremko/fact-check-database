@@ -28,10 +28,34 @@ export const sanitizerTopic = new gcp.pubsub.Topic(
   }
 )
 
+export const sanitizerDeadletterTopic = new gcp.pubsub.Topic(
+  `${tag}-sanitizer-deadletter-topic`,
+  {
+    name: 'sanitizer-deadletter-topic',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [pubsubService],
+    provider,
+  }
+)
+
 export const extractorTopic = new gcp.pubsub.Topic(
   `${tag}-extractor-topic`,
   {
     name: 'extractor-topic',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [pubsubService],
+    provider,
+  }
+)
+
+export const extractorDeadletterTopic = new gcp.pubsub.Topic(
+  `${tag}-extractor-deadletter-topic`,
+  {
+    name: 'extractor-deadletter-topic',
     labels: ingestionLabels,
   },
   {

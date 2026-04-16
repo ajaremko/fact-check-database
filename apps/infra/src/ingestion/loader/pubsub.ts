@@ -38,6 +38,18 @@ const invokerCanAuthenticate = new gcp.serviceaccount.IAMMember(
   { provider }
 )
 
+export const loaderExtractorDeadletterTopic = new gcp.pubsub.Topic(
+  `${tag}-loader-extractor-deadletter-topic`,
+  {
+    name: 'loader-extractor-deadletter-topic',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [pubsubService],
+    provider,
+  }
+)
+
 export const loaderExtractorTopicSubscription = new gcp.pubsub.Subscription(
   `${tag}-loader-extractor-topic-subscription`,
   {
@@ -49,6 +61,10 @@ export const loaderExtractorTopicSubscription = new gcp.pubsub.Subscription(
     retryPolicy: {
       minimumBackoff: '10s',
       maximumBackoff: '600s',
+    },
+    deadLetterPolicy: {
+      deadLetterTopic: loaderExtractorDeadletterTopic.id,
+      maxDeliveryAttempts: 5,
     },
     pushConfig: {
       pushEndpoint: loaderService.uri,
