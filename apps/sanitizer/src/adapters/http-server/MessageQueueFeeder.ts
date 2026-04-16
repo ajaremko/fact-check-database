@@ -35,13 +35,10 @@ const router = HttpRouter.empty.pipe(
     Effect.gen(function* () {
       const { messages } = yield* MessageQueue
       const req = yield* HttpServerRequest.HttpServerRequest
+
       const body = yield* req.json
-      console.log('Received message:', body)
       const { message } = yield* decodeMessage(body)
-      console.log(
-        'Received message data:',
-        Buffer.from(message.data, 'base64').toString('utf-8')
-      )
+
       return yield* Effect.asyncEffect<
         HttpServerResponse.HttpServerResponse,
         HttpBody.HttpBodyError,
