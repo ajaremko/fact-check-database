@@ -12,6 +12,7 @@
     "sharedGlobals": []
   },
   "plugins": [
+    "nx/plugins/package-json",
     {
       "plugin": "@nx/js/typescript",
       "options": {

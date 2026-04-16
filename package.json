@@ -37,7 +37,10 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/ingestor",
+    "apps/sanitizer",
+    "apps/extractor",
+    "apps/loader"
   ],
   "dependencies": {
     "@effect/platform": "^0.96.0",
