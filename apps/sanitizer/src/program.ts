@@ -12,6 +12,7 @@ function processMessage(message: Message) {
     const publisher = yield* Publisher
     const incoming = yield* message.read
 
+    yield* Effect.logDebug('Sanitizing observation')
     const events = yield* sanitizeRawObservation({
       id: incoming.observationId,
       pointer: incoming.pointer,
@@ -49,7 +50,7 @@ export const Program = Effect.gen(function* () {
     Effect.annotateLogs({ handler: 'error' })
   )
 
-  yield* Effect.logInfo('Listening for messages...')
+  yield* Effect.logDebug('Listening for messages...')
 
   yield* Effect.all([handleMessages, handleErrors], {
     concurrency: 'unbounded',

@@ -38,6 +38,7 @@ function writeFetchFailureRecord(input: {
 
     // Write a record of the failed attempt, without a pointer
     // or content fields since there is no body to archive
+    yield* Effect.logDebug('Writing fetch failure record')
     const recordPath = yield* encodeArchivePath({
       version: 1,
       ingestionId: input.ingestionId,
@@ -93,6 +94,7 @@ function writeDataFetchedRecord(input: {
     const storageWriter = yield* StorageWriter
 
     // Write the raw response body to the archive
+    yield* Effect.logDebug('Writing raw response body')
     const bodyPath = yield* encodeArchivePath({
       version: 1,
       sourceName: input.source.name,
@@ -110,6 +112,7 @@ function writeDataFetchedRecord(input: {
 
     // Write a record of the successful attempt, including a
     // pointer to the archived body
+    yield* Effect.logDebug('Writing fetch success record')
     const recordPath = yield* encodeArchivePath({
       version: 1,
       ingestionId: input.runId,
@@ -175,10 +178,10 @@ export function ingestFromSourceTarget(input: {
   index: number
 }) {
   return Effect.gen(function* () {
-    yield* Effect.logInfo(`Processing target ${input.index + 1}`)
-
     const fetcher = yield* Fetcher
     const fetchedAt = yield* Clock.currentTimeMillis
+
+    yield* Effect.logDebug('Fetching data from source target')
     const result = yield* fetcher.fetch(input.source)
 
     if (result.type === 'failure') {
@@ -235,6 +238,7 @@ export function ingestFromSourceTarget(input: {
       fetchedAt,
       result,
     })
+
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which
     // references the archived body
@@ -263,6 +267,7 @@ export function ingestFromSourceTarget(input: {
     })
   }).pipe(
     Effect.annotateLogs({
+      index: input.index,
       source: input.source.name,
       url: input.source.url,
       collection: input.source.collection,

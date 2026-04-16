@@ -44,15 +44,16 @@ export function sanitizeRawObservation(input: {
     const storageWriter = yield* StorageWriter
     const sanitizedAt = yield* Clock.currentTimeMillis
 
+    yield* Effect.logDebug(`Reading record for observation`)
     const inputRecordData = yield* storageReader.read(input.pointer)
     const inputRecord = yield* decodeIngestionRecord(inputRecordData)
 
     if (inputRecord.outcome !== 'data_fetched') {
-      yield* Effect.logInfo(`Skipping observation ${input.id}`)
+      yield* Effect.logDebug(`Skipping observation with no fetched data`)
       return []
     }
 
-    yield* Effect.logInfo(`Processing observation ${input.id}`)
+    yield* Effect.logDebug(`Evaluating policy for observation`)
 
     const decision = evaluatePolicy({
       policy: input.policy,
@@ -61,6 +62,7 @@ export function sanitizeRawObservation(input: {
 
     // Write the record of the sanitization with a pointer
     // to the raw response and sanitized record if applicable.
+    yield* Effect.logDebug(`Writing sanitized record for observation`)
     const outputRecordPath = yield* encodeArchivePath({
       version: 1,
       sourceName: inputRecord.source.name,
@@ -122,5 +124,5 @@ export function sanitizeRawObservation(input: {
       pointer: outputRecordPointer,
     })
     return [event]
-  })
+  }).pipe(Effect.annotateLogs({ observationId: input.id }))
 }
