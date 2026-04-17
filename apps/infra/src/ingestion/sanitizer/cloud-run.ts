@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { artifactRegistry, rawArchiveBucketName } from '../../core'
 
-import { gcpRegion, sanitizerTag, tag } from '../config'
+import { gcpRegion, dockerTag, tag } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
@@ -81,7 +81,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
       serviceAccount: sanitizerServiceAccount.email,
       containers: [
         {
-          image: getSanitizerImageUri(sanitizerTag),
+          image: getSanitizerImageUri(dockerTag),
           envs: [
             {
               name: 'ASSETS_BUCKET_NAME',

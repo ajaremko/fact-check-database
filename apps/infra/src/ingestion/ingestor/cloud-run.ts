@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { artifactRegistry, rawArchiveBucketName } from '../../core'
 
-import { gcpRegion, ingestorTag, tag } from '../config'
+import { gcpRegion, dockerTag, tag } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
@@ -82,7 +82,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
         serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
-            image: getIngestorImageUri(ingestorTag),
+            image: getIngestorImageUri(dockerTag),
             envs: [
               {
                 name: 'TARGET_LIST_BUCKET_NAME',

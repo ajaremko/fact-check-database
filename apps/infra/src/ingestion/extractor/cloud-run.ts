@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { artifactRegistry, rawArchiveBucketName } from '../../core'
 
-import { gcpRegion, extractorTag, tag } from '../config'
+import { gcpRegion, dockerTag, tag } from '../config'
 import { stagingBucket } from '../storage'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
@@ -93,7 +93,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
         serviceAccount: extractorServiceAccount.email,
         containers: [
           {
-            image: getExtractorImageUri(extractorTag),
+            image: getExtractorImageUri(dockerTag),
             envs: [
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',
