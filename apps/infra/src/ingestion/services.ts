@@ -34,3 +34,19 @@ export const pubsubService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const cloudTraceService = new gcp.projects.Service(
+  `${tag}-cloud-trace-service`,
+  {
+    service: 'cloudtrace.googleapis.com',
+  },
+  { provider }
+)
+
+export const monitoringService = new gcp.projects.Service(
+  `${tag}-monitoring-service`,
+  {
+    service: 'monitoring.googleapis.com',
+  },
+  { provider }
+)

@@ -1,8 +1,8 @@
 import { Effect } from 'effect'
 import { NodeHttpClient } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
-import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 import { CloudStorageStorageWriter } from '@news-research/ingestion/adapters'
 import { PubsubClient } from '@news-research/cloud-pubsub'
@@ -17,12 +17,8 @@ import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
   resource: { serviceName: 'ingestor' },
-  traceExporter: new TraceExporter(),
-  instrumentations: [
-    getNodeAutoInstrumentations({
-      '@opentelemetry/instrumentation-fs': { enabled: false },
-    }),
-  ],
+  traceExporter: new OTLPTraceExporter(),
+  instrumentations: [getNodeAutoInstrumentations()],
 }))
 
 export const main = Program.pipe(
