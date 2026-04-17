@@ -69,7 +69,11 @@ export function extractRowsFromSanitized(input: {
           collection: record.source.collection,
           name: record.source.name,
           extractorId: extractor.id,
-        })
+        }),
+        Effect.withSpan(`extractor.${extractor.id}`)
       )
-  })
+  }).pipe(
+    Effect.annotateLogs({ runId: input.runId }),
+    Effect.withSpan('extractRowsFromSanitized')
+  )
 }

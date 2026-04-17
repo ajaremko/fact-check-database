@@ -64,5 +64,8 @@ export function writeExtractedRows(input: {
         },
       },
     })
-  })
+  }).pipe(
+    Effect.annotateLogs({ rowCount: input.rows.length }),
+    Effect.withSpan('writeExtractedRows')
+  )
 }

@@ -10,6 +10,8 @@ export class LoadJsonFromGcsError extends Data.TaggedError(
   'LoadJsonFromGcsError'
 )<{
   readonly cause: unknown
+  readonly pointer: FilePointer
+  readonly table: TablePointer
 }> {}
 
 export function loadJsonFromGcs(input: {
@@ -41,7 +43,12 @@ export function loadJsonFromGcs(input: {
           .dataset(input.table.datasetId)
           .table(input.table.tableId)
           .load(file, metadata),
-      catch: (cause) => new LoadJsonFromGcsError({ cause }),
+      catch: (cause) =>
+        new LoadJsonFromGcsError({
+          cause,
+          pointer: input.pointer,
+          table: input.table,
+        }),
     })
-  })
+  }).pipe(Effect.withSpan('ingestFromSourceTarget'))
 }
