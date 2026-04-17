@@ -1,8 +1,8 @@
 import { Effect } from 'effect'
 import { NodeHttpClient } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 
 import { CloudStorageStorageWriter } from '@news-research/ingestion/adapters'
 import { PubsubClient } from '@news-research/cloud-pubsub'
@@ -17,7 +17,12 @@ import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
   resource: { serviceName: 'ingestor' },
-  spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
+  traceExporter: new TraceExporter(),
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      '@opentelemetry/instrumentation-fs': { enabled: false },
+    }),
+  ],
 }))
 
 export const main = Program.pipe(
