@@ -124,7 +124,7 @@ export const make = Effect.gen(function* () {
         })
       )
       return yield* toResult(either)
-    })
+    }).pipe(Effect.withSpan('fetch'))
   }
 
   return Fetcher.of({ fetch })

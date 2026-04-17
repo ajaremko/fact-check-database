@@ -28,7 +28,8 @@ export const make = Effect.gen(function* () {
           StorageBucket.StorageBucket,
           buckets.get(pointer.bucket)
         ),
-        Effect.provideService(StorageClient.StorageClient, { client })
+        Effect.provideService(StorageClient.StorageClient, { client }),
+        Effect.withSpan('read')
       ),
   })
 })

@@ -15,7 +15,7 @@ function processTarget(target: SourceTarget, index: number) {
     const publisher = yield* Publisher
 
     // ingest from target and publish event
-    yield* Effect.logDebug('Processing target')
+    yield* Effect.logInfo('Processing target')
     const event = yield* ingestFromSourceTarget({
       runId: job.runId,
       source: target,
@@ -23,15 +23,17 @@ function processTarget(target: SourceTarget, index: number) {
     })
 
     yield* publisher.publish(event)
-  }).pipe(
-    Effect.tapError(Effect.logError),
-    Effect.annotateLogs({
-      source: target.name,
-      url: target.url,
-      collection: target.collection,
-      index,
-    })
-  )
+  })
+    .pipe(
+      Effect.tapError(Effect.logError),
+      Effect.annotateLogs({
+        source: target.name,
+        url: target.url,
+        collection: target.collection,
+        index,
+      })
+    )
+    .pipe(Effect.withSpan('processTarget'))
 }
 
 export const Program = withJobContextAnnotations(
@@ -40,7 +42,7 @@ export const Program = withJobContextAnnotations(
     const { sources } = yield* TargetList
 
     // process all targets with configured concurrency
-    yield* Effect.logDebug(`Processing ${sources.length} targets`)
+    yield* Effect.logInfo(`Processing ${sources.length} targets`)
     const tasks = Array.map(sources, processTarget)
     const results = yield* Effect.all(tasks, {
       concurrency: job.concurrency,
@@ -50,7 +52,7 @@ export const Program = withJobContextAnnotations(
     // compute success rate
     const successes = Array.filterMap(results, Option.getRight)
     const successRate = successes.length / sources.length
-    yield* Effect.logDebug(
+    yield* Effect.logInfo(
       `Processed ${successes.length} of ${sources.length} targets`
     )
 

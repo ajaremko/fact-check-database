@@ -19,7 +19,8 @@ export const make = Effect.gen(function* () {
               path: pointer.object,
               bucket: pointer.bucket,
             })
-        )
+        ),
+        Effect.withSpan('read')
       ),
   })
 })

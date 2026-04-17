@@ -25,7 +25,8 @@ export const make = Effect.gen(function* () {
               bucket: bucket.name,
             })
         ),
-        Effect.provideService(StorageBucket.StorageBucket, { bucket })
+        Effect.provideService(StorageBucket.StorageBucket, { bucket }),
+        Effect.withSpan('write')
       ),
   })
 })

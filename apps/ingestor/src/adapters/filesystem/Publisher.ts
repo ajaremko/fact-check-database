@@ -29,7 +29,7 @@ export const make = Effect.gen(function* () {
         yield* fs
           .writeFile(path, data)
           .pipe(Effect.mapError((cause) => new PublisherError({ cause })))
-      }),
+      }).pipe(Effect.withSpan('publish')),
   })
 })
 

@@ -41,7 +41,8 @@ export const make = Effect.gen(function* () {
         Effect.mapError(
           (cause) =>
             new StorageWriteError({ cause, path: opts.path, bucket: 'local' })
-        )
+        ),
+        Effect.withSpan('write')
       ),
   })
 })

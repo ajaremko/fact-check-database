@@ -20,7 +20,8 @@ export const make = Effect.gen(function* () {
       encodeEvent,
       Effect.andThen((data) => PubsubTopic.publishMessage({ data })),
       Effect.mapError((cause) => new PublisherError({ cause })),
-      Effect.provideService(PubsubTopic.PubsubTopic, { topic })
+      Effect.provideService(PubsubTopic.PubsubTopic, { topic }),
+      Effect.withSpan('publish')
     ),
   })
 })

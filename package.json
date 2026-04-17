@@ -50,6 +50,7 @@
     "@google-cloud/bigquery": "^8.1.1",
     "@google-cloud/pubsub": "^5.2.2",
     "@google-cloud/storage": "^7.19.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.214.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.214.0",
     "@opentelemetry/sdk-trace-base": "^2.6.1",
     "@opentelemetry/sdk-trace-node": "^2.6.1",
