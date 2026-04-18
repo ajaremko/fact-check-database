@@ -20,8 +20,7 @@ export function extractRowsFromSanitized(input: {
   extractedAt: number
 }) {
   return Effect.gen(function* () {
-    const storageReader = yield* StorageReader
-    const recordData = yield* storageReader.read(input.pointer)
+    const recordData = yield* StorageReader.readFile(input.pointer)
     const record = yield* decodeSanitizerRecord(recordData)
 
     const extractor = extractors.find((e) =>
@@ -51,7 +50,7 @@ export function extractRowsFromSanitized(input: {
       return []
     }
 
-    const responseData = yield* storageReader.read(responsePointer)
+    const responseData = yield* StorageReader.readFile(responsePointer)
     return yield* extractor
       .extractor({
         extractionId: extractor.id,

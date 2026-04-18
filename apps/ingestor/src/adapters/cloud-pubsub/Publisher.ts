@@ -1,7 +1,7 @@
 import { Config, ConfigError, Effect, flow, Layer, pipe, Schema } from 'effect'
 
 import { PubsubClient, PubsubTopic } from '@news-research/cloud-pubsub'
-import { IngestionAttempted } from '@news-research/ingestion/ingest'
+import { IngestionAttempted } from '@news-research/ingestion/steps/ingest'
 import { Node } from '@news-research/ingestion/util'
 
 import { Publisher, PublisherError } from '../../Publisher'

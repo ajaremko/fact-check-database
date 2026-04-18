@@ -2,7 +2,7 @@ import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { Node, NodeCsv } from '@news-research/ingestion/util'
-import { SourceTargetSchema } from '@news-research/ingestion/ingest'
+import { SourceTargetSchema } from '@news-research/ingestion/steps/ingest'
 
 import { TargetList } from '../../TargetList'
 

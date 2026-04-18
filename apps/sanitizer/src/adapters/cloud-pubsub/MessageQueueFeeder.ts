@@ -2,7 +2,7 @@ import { Config, ConfigError, Effect, Layer, pipe, Queue, Schema } from 'effect'
 import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
 import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
-import { IngestionAttempted } from '@news-research/ingestion/ingest'
+import { IngestionAttempted } from '@news-research/ingestion/steps/ingest'
 import { Node } from '@news-research/ingestion/util'
 
 import { MessageQueue, MessageQueueError } from '../../MessageQueue'

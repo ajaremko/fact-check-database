@@ -1,25 +1,33 @@
 import { Effect } from 'effect'
 import { NodeFileSystem } from '@effect/platform-node'
+import { NodeSdk } from '@effect/opentelemetry'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
+  FileSystemPublisher,
+  InMemoryMessageQueue,
 } from '@news-research/ingestion/adapters'
 
-import * as FilesystemMessageQueueFeeder from '../adapters/filesystem/MessageQueueFeeder'
-import * as FilesystemPublisher from '../adapters/filesystem/Publisher'
-import * as FilesystemSanitizerPolicyDocument from '../adapters/filesystem/SanitizerPolicyDocument'
-import * as MessageQueue from '../MessageQueue'
+import * as FileSystemMessageQueueFeeder from '../adapters/filesystem/MessageQueueFeeder'
+import * as FileSystemSanitizerPolicyDocument from '../adapters/filesystem/SanitizerPolicyDocument'
 import * as Logger from '../Logger'
 import { Program } from '../program'
+
+const otel = NodeSdk.layer(() => ({
+  spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
+}))
 
 export const main = Program.pipe(
   Effect.provide(FileSystemStorageReader.layer),
   Effect.provide(FileSystemStorageWriter.layer),
-  Effect.provide(FilesystemMessageQueueFeeder.layer),
-  Effect.provide(FilesystemPublisher.layer),
-  Effect.provide(FilesystemSanitizerPolicyDocument.layer),
-  Effect.provide(MessageQueue.layer),
+  Effect.provide(FileSystemMessageQueueFeeder.layer),
+  Effect.provide(FileSystemPublisher.layer),
+  Effect.provide(FileSystemSanitizerPolicyDocument.layer),
+  Effect.provide(InMemoryMessageQueue.layer),
   Effect.provide(NodeFileSystem.layer),
-  Effect.provide(Logger.layer)
+  Effect.provide(Logger.layer),
+  Effect.provide(otel)
 )

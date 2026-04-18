@@ -2,11 +2,11 @@ import { Config, ConfigError, Effect, Layer } from 'effect'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 
-import { StorageWriteError, StorageWriter } from '../../ports'
+import { StorageWriter } from '../../ports'
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
-  return StorageWriter.of({
+  return StorageWriter.StorageWriter.of({
     write: (opts) =>
       StorageBucket.writeFile(opts.path, opts.data, {
         resumable: false,
@@ -19,22 +19,21 @@ export const make = Effect.gen(function* () {
         })),
         Effect.mapError(
           (cause) =>
-            new StorageWriteError({
+            new StorageWriter.StorageWriteError({
               cause,
               path: opts.path,
               bucket: bucket.name,
             })
         ),
-        Effect.provideService(StorageBucket.StorageBucket, { bucket }),
-        Effect.withSpan('write')
+        Effect.provideService(StorageBucket.StorageBucket, { bucket })
       ),
   })
 })
 
 export const layer: Layer.Layer<
-  StorageWriter,
+  StorageWriter.StorageWriter,
   ConfigError.ConfigError,
   StorageClient.StorageClient
-> = Layer.effect(StorageWriter, make).pipe(
+> = Layer.effect(StorageWriter.StorageWriter, make).pipe(
   Layer.provide(StorageBucket.layer(Config.string('STORAGE_BUCKET_NAME')))
 )

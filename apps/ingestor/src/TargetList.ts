@@ -1,6 +1,6 @@
 import { Context } from 'effect'
 
-import type { SourceTarget } from '@news-research/ingestion/ingest'
+import type { SourceTarget } from '@news-research/ingestion/steps/ingest'
 
 export class TargetList extends Context.Tag('TargetList')<
   TargetList,

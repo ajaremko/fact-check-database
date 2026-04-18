@@ -1,16 +1,35 @@
-import { Effect } from 'effect'
+import { Effect, pipe, Schema } from 'effect'
 
-import { sanitizeRawObservation } from '@news-research/ingestion/sanitize'
+import {
+  type StorageWriter,
+  type StorageReader,
+  SanitizationAttempted,
+  sanitizeRawObservation,
+} from '@news-research/ingestion/steps/sanitize'
+import { IngestionAttempted } from '@news-research/ingestion/steps/ingest'
+import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
 
-import { Message, MessageQueue } from './MessageQueue'
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
-import { Publisher } from './Publisher'
+import { Node } from '@news-research/ingestion/util'
 
-function processMessage(message: Message) {
+const decodeIncoming = pipe(
+  IngestionAttempted,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.decode
+)
+
+const encodeOutgoing = pipe(
+  SanitizationAttempted,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
+
+function processMessage(message: MessageQueue.Message) {
   return Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
-    const publisher = yield* Publisher
-    const incoming = yield* message.read
+    const incoming = yield* decodeIncoming(message.data)
 
     yield* Effect.logDebug('Sanitizing observation')
     const events = yield* sanitizeRawObservation({
@@ -20,23 +39,36 @@ function processMessage(message: Message) {
     })
 
     for (const event of events) {
-      yield* publisher.publish(event)
+      const data = yield* encodeOutgoing(event)
+      yield* Publisher.publish(data)
     }
 
     yield* message.ack
-  }).pipe(
-    Effect.tapError(Effect.logError),
-    Effect.catchTags({
-      ParseError: () => message.ack,
-      PublisherError: () => message.nack,
-      StorageReadError: () => message.nack,
-      StorageWriteError: () => message.nack,
-    })
-  )
+  })
+    .pipe(
+      Effect.tapError(Effect.logError),
+      Effect.catchTags({
+        ParseError: () => message.ack,
+        PublisherError: () => message.nack,
+        StorageReadError: () => message.nack,
+        StorageWriteError: () => message.nack,
+      })
+    )
+    .pipe(Effect.withSpan('processMessage'))
 }
 
-export const Program = Effect.gen(function* () {
-  const { messages, errors } = yield* MessageQueue
+export type Program = Effect.Effect<
+  void,
+  never,
+  | SanitizerPolicyConfig
+  | StorageReader.StorageReader
+  | StorageWriter.StorageWriter
+  | Publisher.Publisher
+  | MessageQueue.MessageQueue
+>
+
+export const Program: Program = Effect.gen(function* () {
+  const { messages, errors } = yield* MessageQueue.MessageQueue
 
   const handleMessages = messages.take.pipe(
     Effect.andThen(processMessage),
@@ -46,7 +78,7 @@ export const Program = Effect.gen(function* () {
 
   const handleErrors = errors.take.pipe(
     Effect.tap(Effect.logError),
-    Effect.andThen(Effect.fail),
+    Effect.andThen((err) => Effect.die(err.cause)),
     Effect.annotateLogs({ handler: 'error' })
   )
 

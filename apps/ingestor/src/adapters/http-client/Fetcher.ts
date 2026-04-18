@@ -5,17 +5,12 @@ import {
   HttpClientResponse,
 } from '@effect/platform'
 
-import {
-  Fetcher,
-  FetcherError,
-  FetchResult,
-  SourceTarget,
-} from '@news-research/ingestion/ingest'
+import { Fetcher, SourceTarget } from '@news-research/ingestion/steps/ingest'
 import { Node } from '@news-research/ingestion/util'
 
 function handleRequestError(
   error: HttpClientError.RequestError
-): Effect.Effect<FetchResult, FetcherError> {
+): Effect.Effect<Fetcher.FetchResult, Fetcher.FetcherError> {
   return Effect.succeed({
     type: 'failure',
     error: error.message,
@@ -29,12 +24,13 @@ function pickHeader(headers: Record<string, string>, name: string) {
 
 function handleResponseError(
   error: HttpClientError.ResponseError
-): Effect.Effect<FetchResult, FetcherError> {
+): Effect.Effect<Fetcher.FetchResult, Fetcher.FetcherError> {
   return Effect.gen(function* () {
     const body = yield* error.response.arrayBuffer.pipe(
       Effect.map((buffer) => new Uint8Array(buffer)),
       Effect.mapError(
-        (cause) => new FetcherError({ cause, url: error.response.request.url })
+        (cause) =>
+          new Fetcher.FetcherError({ cause, url: error.response.request.url })
       )
     )
     const sha256 = yield* Node.sha256Hex(body)
@@ -71,12 +67,13 @@ function handleError(error: HttpClientError.HttpClientError) {
 
 function handleSuccess(
   response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<FetchResult, FetcherError> {
+): Effect.Effect<Fetcher.FetchResult, Fetcher.FetcherError> {
   return Effect.gen(function* () {
     const body = yield* response.arrayBuffer.pipe(
       Effect.map((buffer) => new Uint8Array(buffer)),
       Effect.mapError(
-        (cause) => new FetcherError({ cause, url: response.request.url })
+        (cause) =>
+          new Fetcher.FetcherError({ cause, url: response.request.url })
       )
     )
 
@@ -127,7 +124,7 @@ export const make = Effect.gen(function* () {
     }).pipe(Effect.withSpan('fetch'))
   }
 
-  return Fetcher.of({ fetch })
+  return Fetcher.Fetcher.of({ fetch })
 })
 
-export const layer = Layer.effect(Fetcher, make)
+export const layer = Layer.effect(Fetcher.Fetcher, make)

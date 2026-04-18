@@ -2,7 +2,7 @@ import { Config, Effect, Layer } from 'effect'
 
 import { FileSystem } from '@effect/platform'
 
-import { StorageWriter, StorageWriteError } from '../../ports'
+import { StorageWriter } from '../../ports'
 
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
@@ -21,7 +21,7 @@ export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const outputDir = yield* Config.string('STORAGE_OUTPUT_DIR')
 
-  return StorageWriter.of({
+  return StorageWriter.StorageWriter.of({
     write: (opts) =>
       Effect.gen(function* () {
         const filePath = `${outputDir}/${opts.path}`
@@ -40,11 +40,14 @@ export const make = Effect.gen(function* () {
       }).pipe(
         Effect.mapError(
           (cause) =>
-            new StorageWriteError({ cause, path: opts.path, bucket: 'local' })
-        ),
-        Effect.withSpan('write')
+            new StorageWriter.StorageWriteError({
+              cause,
+              path: opts.path,
+              bucket: 'local',
+            })
+        )
       ),
   })
 })
 
-export const layer = Layer.effect(StorageWriter, make)
+export const layer = Layer.effect(StorageWriter.StorageWriter, make)

@@ -9,10 +9,8 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 
-import { IngestionAttempted } from '@news-research/ingestion/ingest'
+import { MessageQueue } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/util'
-
-import { MessageQueue } from '../../MessageQueue'
 
 const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({
@@ -22,22 +20,23 @@ const decodeMessage = Schema.decodeUnknown(
   })
 )
 
-const decodeIngestionAttempted = pipe(
-  IngestionAttempted,
-  Node.parseJson(),
-  Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' }),
-  Schema.decode
+const decodeData = pipe(
+  Schema.String,
+  Node.parseBufferEncoded({ decode: 'base64', encode: 'utf-8' }),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode // reverse target and source to decode from string to Buffer
 )
 
 const router = HttpRouter.empty.pipe(
   HttpRouter.post(
     '/',
     Effect.gen(function* () {
-      const { messages } = yield* MessageQueue
+      const { messages } = yield* MessageQueue.MessageQueue
       const req = yield* HttpServerRequest.HttpServerRequest
 
       const body = yield* req.json
       const { message } = yield* decodeMessage(body)
+      const data = yield* decodeData(message.data)
 
       return yield* Effect.asyncEffect<
         HttpServerResponse.HttpServerResponse,
@@ -49,7 +48,7 @@ const router = HttpRouter.empty.pipe(
       >((resume) =>
         Effect.asVoid(
           messages.offer({
-            read: decodeIngestionAttempted(message.data),
+            data,
             ack: Effect.sync(() =>
               resume(HttpServerResponse.json({}, { status: 200 }))
             ),

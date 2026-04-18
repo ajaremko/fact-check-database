@@ -40,12 +40,10 @@ export function sanitizeRawObservation(input: {
   policy: SanitizerPolicy
 }) {
   return Effect.gen(function* () {
-    const storageReader = yield* StorageReader
-    const storageWriter = yield* StorageWriter
     const sanitizedAt = yield* Clock.currentTimeMillis
 
     yield* Effect.logDebug(`Reading record for observation`)
-    const inputRecordData = yield* storageReader.read(input.pointer)
+    const inputRecordData = yield* StorageReader.readFile(input.pointer)
     const inputRecord = yield* decodeIngestionRecord(inputRecordData)
 
     if (inputRecord.outcome !== 'data_fetched') {
@@ -105,7 +103,7 @@ export function sanitizeRawObservation(input: {
       fetchedAt: inputRecord.fetchedAt,
       url: inputRecord.url,
     })
-    const outputRecordPointer = yield* storageWriter.write({
+    const outputRecordPointer = yield* StorageWriter.writeFile({
       path: outputRecordPath,
       data: outputRecordData,
       meta: outputRecordMetadata,

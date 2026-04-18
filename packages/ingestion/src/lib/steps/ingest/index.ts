@@ -1,4 +1,4 @@
-export * from './Fetcher.js'
+export * as Fetcher from './Fetcher.js'
 export * from './ingestFromSourceTarget.js'
 export * from './IngestionAttempted.js'
 export * from './SourceTarget.js'

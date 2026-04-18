@@ -1,17 +1,8 @@
-import { Array, Config, Effect, Layer, pipe, Ref, Schema, Option } from 'effect'
+import { Array, Config, Effect, Layer, Ref, Option } from 'effect'
 
 import { PubsubSubscriberClient } from '@news-research/cloud-pubsub'
-import { SanitizationAttempted } from '@news-research/ingestion/steps/sanitize'
-import { Node } from '@news-research/ingestion/util'
 
-import { MessageBatch, Message } from '../../MessageBatch'
-
-const decodeSanitizationAttempted = pipe(
-  SanitizationAttempted,
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.decodeUnknown
-)
+import { MessageBatch } from '../../messaging'
 
 function acquire(subscriptionId: string, maxMessages: number) {
   return Effect.gen(function* () {
@@ -21,20 +12,18 @@ function acquire(subscriptionId: string, maxMessages: number) {
       maxMessages
     )
     const receivedMessages = response.receivedMessages ?? []
-
     const messages = Array.filterMap(
       receivedMessages,
-      ({ message, ackId }): Option.Option<Message> => {
-        if (!message || !ackId) {
+      ({ message, ackId }): Option.Option<MessageBatch.Message> => {
+        if (!message || !ackId || !message.data) {
           return Option.none()
         }
         return Option.some({
+          data: Buffer.from(message.data),
           ack: Ref.update(ackIds, (ids) => new Set(ids).add(ackId)),
-          read: decodeSanitizationAttempted(message.data),
         })
       }
     )
-
     return { messages, ackIds }
   })
 }
@@ -68,7 +57,7 @@ const make = Effect.gen(function* () {
     acquire(subscriptionId, maxMessages),
     release(subscriptionId)
   )
-  return MessageBatch.of(messages)
+  return MessageBatch.MessageBatch.of(messages)
 })
 
-export const layer = Layer.scoped(MessageBatch, make)
+export const layer = Layer.scoped(MessageBatch.MessageBatch, make)

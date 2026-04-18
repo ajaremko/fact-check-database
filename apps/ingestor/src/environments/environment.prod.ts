@@ -4,11 +4,13 @@ import { NodeSdk } from '@effect/opentelemetry'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
-import { CloudStorageStorageWriter } from '@news-research/ingestion/adapters'
+import {
+  CloudStorageStorageWriter,
+  CloudPubsubPublisher,
+} from '@news-research/ingestion/adapters'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
 
-import * as CloudPubsubPublisher from '../adapters/cloud-pubsub/Publisher'
 import * as CloudStorageTargetList from '../adapters/cloud-storage/TargetList'
 import * as HttpClientFetcher from '../adapters/http-client/Fetcher'
 import * as JobContext from '../JobContext'

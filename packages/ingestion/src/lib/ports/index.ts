@@ -1,2 +1,2 @@
-export * from './StorageReader'
-export * from './StorageWriter'
+export * as StorageReader from './StorageReader'
+export * as StorageWriter from './StorageWriter'

@@ -1,18 +1,28 @@
-import { Array, Effect, Option } from 'effect'
+import { Array, Effect, Option, pipe, Schema } from 'effect'
 
 import {
+  StorageWriter,
   ingestFromSourceTarget,
   SourceTarget,
-} from '@news-research/ingestion/ingest'
+  IngestionAttempted,
+  Fetcher,
+} from '@news-research/ingestion/steps/ingest'
+import { Publisher } from '@news-research/ingestion/messaging'
+import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
-import { Publisher } from './Publisher'
 import { TargetList } from './TargetList'
+
+const encodeOutgoing = pipe(
+  IngestionAttempted,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
 
 function processTarget(target: SourceTarget, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
-    const publisher = yield* Publisher
 
     // ingest from target and publish event
     yield* Effect.logInfo('Processing target')
@@ -22,7 +32,9 @@ function processTarget(target: SourceTarget, index: number) {
       index,
     })
 
-    yield* publisher.publish(event)
+    const data = yield* encodeOutgoing(event)
+
+    yield* Publisher.publish(data)
   })
     .pipe(
       Effect.tapError(Effect.logError),
@@ -36,7 +48,17 @@ function processTarget(target: SourceTarget, index: number) {
     .pipe(Effect.withSpan('processTarget'))
 }
 
-export const Program = withJobContextAnnotations(
+export type Program = Effect.Effect<
+  void,
+  Error,
+  | JobContext
+  | TargetList
+  | Publisher.Publisher
+  | StorageWriter.StorageWriter
+  | Fetcher.Fetcher
+>
+
+export const Program: Program = withJobContextAnnotations(
   Effect.gen(function* () {
     const job = yield* JobContext
     const { sources } = yield* TargetList

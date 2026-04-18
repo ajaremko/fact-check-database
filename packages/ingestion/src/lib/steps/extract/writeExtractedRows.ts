@@ -19,9 +19,8 @@ export function writeExtractedRows(input: {
   extractedAt: number
 }) {
   return Effect.gen(function* () {
-    const storageWriter = yield* StorageWriter
     const data = yield* encodeExtractedRows(input.rows)
-    const pointer = yield* storageWriter.write({
+    const pointer = yield* StorageWriter.writeFile({
       path: `claims/${input.runId}.ndjson`,
       data,
       contentType: 'application/x-ndjson',

@@ -1,4 +1,4 @@
-import { Context, Data, Effect } from 'effect'
+import { Context, Data, Effect, flow } from 'effect'
 
 import { FilePointer } from '../data'
 
@@ -16,3 +16,7 @@ export class StorageReader extends Context.Tag('StorageReader')<
     ) => Effect.Effect<Uint8Array, StorageReadError>
   }
 >() {}
+
+const reader = Effect.serviceFunctions(StorageReader)
+
+export const readFile = flow(reader.read, Effect.withSpan('readFile'))

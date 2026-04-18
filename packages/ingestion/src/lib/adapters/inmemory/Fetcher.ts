@@ -1,9 +1,9 @@
 import { Effect, Layer } from 'effect'
 
-import { Fetcher, FetchResult } from '../../steps/ingest'
+import { Fetcher } from '../../steps/ingest'
 
-export function layer(result: FetchResult) {
-  return Layer.succeed(Fetcher, {
+export function layer(result: Fetcher.FetchResult) {
+  return Layer.succeed(Fetcher.Fetcher, {
     fetch: () => Effect.succeed(result),
   })
 }

@@ -1,4 +1,4 @@
-import { Context, Data, Effect } from 'effect'
+import { Context, Data, Effect, flow } from 'effect'
 
 import { FilePointer } from '../data'
 
@@ -19,3 +19,7 @@ export class StorageWriter extends Context.Tag('StorageWriter')<
     }) => Effect.Effect<FilePointer, StorageWriteError>
   }
 >() {}
+
+const writer = Effect.serviceFunctions(StorageWriter)
+
+export const writeFile = flow(writer.write, Effect.withSpan('writeFile'))

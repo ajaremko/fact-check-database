@@ -1,17 +1,35 @@
-import { Array, Effect, Option } from 'effect'
+import { Array, Effect, Option, Schema, pipe } from 'effect'
 
 import {
+  type StorageWriter,
+  type StorageReader,
   extractRowsFromSanitized,
   writeExtractedRows,
-} from '@news-research/ingestion/extract'
+  ExtractionBatchReady,
+} from '@news-research/ingestion/steps/extract'
+import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
+import { SanitizationAttempted } from '@news-research/ingestion/steps/sanitize'
+import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
-import { Message, MessageBatch } from './MessageBatch'
-import { Publisher } from './Publisher'
 
-function processMessage(message: Message) {
+const decodeIncoming = pipe(
+  SanitizationAttempted,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.decode
+)
+
+const encodeOutgoing = pipe(
+  ExtractionBatchReady,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
+
+function processMessage(message: MessageBatch.Message) {
   return Effect.gen(function* () {
-    const incoming = yield* message.read
+    const incoming = yield* decodeIncoming(message.data)
     const job = yield* JobContext
     const rows = yield* extractRowsFromSanitized({
       runId: job.runId,
@@ -21,14 +39,23 @@ function processMessage(message: Message) {
     })
     yield* message.ack
     return rows
-  })
+  }).pipe(Effect.withSpan('processMessage'))
 }
 
-export const Program = withJobContextAnnotations(
+export type Program = Effect.Effect<
+  void,
+  Error,
+  | JobContext
+  | StorageReader.StorageReader
+  | MessageBatch.MessageBatch
+  | Publisher.Publisher
+  | StorageWriter.StorageWriter
+>
+
+export const Program: Program = withJobContextAnnotations(
   Effect.gen(function* () {
     const job = yield* JobContext
-    const messages = yield* MessageBatch
-    const publisher = yield* Publisher
+    const messages = yield* MessageBatch.MessageBatch
 
     // process all messages with configured concurrency
     yield* Effect.logDebug(`Processing ${messages.length} messages`)
@@ -44,13 +71,19 @@ export const Program = withJobContextAnnotations(
       `Processed ${successes.length} of ${messages.length} messages`
     )
 
-    // write rows to storage and publish event
+    // write rows to storage
     const rows = Array.flatten(successes)
-    const event = yield* writeExtractedRows({
+    const outgoing = yield* writeExtractedRows({
       runId: job.runId,
       rows,
       extractedAt: job.startedAt,
     })
-    yield* publisher.publish(event)
-  })
+
+    // publish message
+    const data = yield* encodeOutgoing(outgoing)
+    yield* Publisher.publish(data)
+  }).pipe(
+    Effect.tapError(Effect.logError),
+    Effect.mapError(() => new Error('Program failed'))
+  )
 )

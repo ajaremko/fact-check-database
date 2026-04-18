@@ -1,6 +1,6 @@
 # Ingest Stage
 
-The ingest stage is responsible for processing a single URL target: fetching it over HTTP, archiving the response, and producing an `IngestionAttempted` event. The core function is `ingestFromSourceTarget`, exported from `@news-research/ingestion/ingest`.
+The ingest stage is responsible for processing a single URL target: fetching it over HTTP, archiving the response, and producing an `IngestionAttempted` event. The core function is `ingestFromSourceTarget`, exported from `@news-research/ingestion/steps/ingest`.
 
 This function is called once per target per run. It handles both success and failure cases uniformly — every attempt, regardless of outcome, produces an archived record and a published event.
 
@@ -8,10 +8,10 @@ This function is called once per target per run. It handles both success and fai
 
 `ingestFromSourceTarget` depends on two ports that must be provided by the consuming application:
 
-| Port      | Responsibility                                                                                            |
-| --------- | --------------------------------------------------------------------------------------------------------- |
-| `Fetcher` | Performs HTTP fetches; returns either a full `Response` or a `NoResponse` on failure                      |
-| `Archiver` | Writes raw response bodies and structured records to durable storage; returns `FilePointer` references   |
+| Port       | Responsibility                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| `Fetcher`  | Performs HTTP fetches; returns either a full `Response` or a `NoResponse` on failure                   |
+| `Archiver` | Writes raw response bodies and structured records to durable storage; returns `FilePointer` references |
 
 ## Per-Target Data Flow
 

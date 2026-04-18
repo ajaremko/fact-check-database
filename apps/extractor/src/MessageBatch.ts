@@ -1,6 +1,6 @@
 import { Context, Effect, ParseResult } from 'effect'
 
-import { SanitizationAttempted } from '@news-research/ingestion/sanitize'
+import { SanitizationAttempted } from '@news-research/ingestion/steps/sanitize'
 
 export interface Message {
   readonly read: Effect.Effect<SanitizationAttempted, ParseResult.ParseError>

@@ -11,16 +11,16 @@ The package does not include adapter implementations, environment wiring, or app
 
 ## Entry Points
 
-| Entry Point                         | Contents                                                                                       |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `@news-research/ingestion`          | Shared data types: `IngestorRecord`, `SanitizerRecord`, `FilePointer`, archive path utilities  |
-| `@news-research/ingestion/ingest`   | Ingest stage: `ingestFromSourceTarget`, `Archiver`, `Fetcher`, `IngestionAttempted`            |
-| `@news-research/ingestion/sanitize` | Sanitize stage: `sanitizeRawObservation`, `Archiver`, `SanitizerPolicy`, `SanitizationAttempted` |
+| Entry Point                               | Contents                                                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `@news-research/ingestion`                | Shared data types: `IngestorRecord`, `SanitizerRecord`, `FilePointer`, archive path utilities    |
+| `@news-research/ingestion/steps/ingest`   | Ingest stage: `ingestFromSourceTarget`, `Archiver`, `Fetcher`, `IngestionAttempted`              |
+| `@news-research/ingestion/steps/sanitize` | Sanitize stage: `sanitizeRawObservation`, `Archiver`, `SanitizerPolicy`, `SanitizationAttempted` |
 
 ## Related Documentation
 
-| Document                                       | Purpose                                                                              |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [docs/ingest.md](./docs/ingest.md)             | Per-target fetch and archive logic, observation identity, port interfaces            |
-| [docs/sanitize.md](./docs/sanitize.md)         | Policy evaluation logic, sanitizer record construction, policy document format       |
-| [docs/contracts.md](./docs/contracts.md)       | Record schemas, event schemas, and cloud storage archive layout                      |
+| Document                                 | Purpose                                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------ |
+| [docs/ingest.md](./docs/ingest.md)       | Per-target fetch and archive logic, observation identity, port interfaces      |
+| [docs/sanitize.md](./docs/sanitize.md)   | Policy evaluation logic, sanitizer record construction, policy document format |
+| [docs/contracts.md](./docs/contracts.md) | Record schemas, event schemas, and cloud storage archive layout                |

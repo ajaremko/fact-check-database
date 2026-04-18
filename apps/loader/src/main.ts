@@ -1,27 +1,36 @@
-import { Effect } from 'effect'
+import { Effect, pipe, Schema } from 'effect'
 import { NodeFileSystem, NodeRuntime } from '@effect/platform-node'
 
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
-import { loadJsonFromGcs } from '@news-research/ingestion/load'
+import { loadJsonFromGcs } from '@news-research/ingestion/steps/load'
+import { InMemoryMessageQueue } from '@news-research/ingestion/adapters'
+import { MessageQueue } from '@news-research/ingestion/messaging'
 
 import * as HttpServerMessageQueueFeeder from './MessageQueueFeeder'
 import * as Logger from './Logger'
-import * as MessageQueue from './MessageQueue'
+import { ExtractionBatchReady } from '@news-research/ingestion/steps/extract'
+import { Node } from '@news-research/ingestion/util'
+
+const decodeIncoming = pipe(
+  ExtractionBatchReady,
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.decode
+)
 
 function processMessage(message: MessageQueue.Message) {
   return Effect.gen(function* () {
-    const incoming = yield* message.read
-
+    const incoming = yield* decodeIncoming(message.data)
     yield* loadJsonFromGcs({
       pointer: incoming.pointer,
       meta: incoming.meta,
       table: incoming.table,
     })
-
     yield* message.ack
   }).pipe(
     Effect.tapError(Effect.logError),
+    Effect.withSpan('processMessage'),
     Effect.catchTags({
       ParseError: () => message.ack,
       LoadJsonFromGcsError: () => message.nack,
@@ -56,7 +65,7 @@ const main = Program.pipe(
   Effect.provide(StorageBucketCache.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(BigQueryClient.layer()),
-  Effect.provide(MessageQueue.layer),
+  Effect.provide(InMemoryMessageQueue.layer),
   Effect.provide(Logger.layer),
   Effect.provide(NodeFileSystem.layer)
 )

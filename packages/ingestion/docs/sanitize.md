@@ -1,6 +1,6 @@
 # Sanitize Stage
 
-The sanitize stage is responsible for processing a single ingestor record: reading it from the archive, evaluating it against a configurable content policy, and producing a `SanitizerRecord`. The core function is `sanitizeRawObservation`, exported from `@news-research/ingestion/sanitize`.
+The sanitize stage is responsible for processing a single ingestor record: reading it from the archive, evaluating it against a configurable content policy, and producing a `SanitizerRecord`. The core function is `sanitizeRawObservation`, exported from `@news-research/ingestion/steps/sanitize`.
 
 This function is called once per ingestor record. It currently handles only `data_fetched` records. Records with `outcome: no_response` are passed through without producing output.
 
@@ -8,9 +8,9 @@ This function is called once per ingestor record. It currently handles only `dat
 
 `sanitizeRawObservation` depends on one port that must be provided by the consuming application:
 
-| Port      | Responsibility                                                                                          |
-| --------- | ------------------------------------------------------------------------------------------------------- |
-| `Archiver` | Reads ingestor records from durable storage; writes sanitizer records and accompanying metadata        |
+| Port       | Responsibility                                                                                  |
+| ---------- | ----------------------------------------------------------------------------------------------- |
+| `Archiver` | Reads ingestor records from durable storage; writes sanitizer records and accompanying metadata |
 
 The active `SanitizerPolicy` is passed directly as a value, not resolved through a port. The consuming application is responsible for loading the policy document at startup.
 
@@ -33,38 +33,38 @@ The sanitization policy is a YAML document whose schema is defined in `Sanitizer
 
 ### Top-level fields
 
-| Field              | Type       | Description                                                                       |
-| ------------------ | ---------- | --------------------------------------------------------------------------------- |
-| `version`          | `number`   | Policy schema version                                                             |
-| `stripQueryParams` | `string[]` | Query parameter names to strip from all URLs before archiving                     |
-| `dropHeaders`      | `string[]` | Response header names to remove from sanitized records (case-insensitive match)   |
-| `collections`      | array      | Per-collection classification rules (see below)                                   |
-| `overrides`        | array      | Per-source overrides that extend or replace collection rules (optional)           |
+| Field              | Type       | Description                                                                     |
+| ------------------ | ---------- | ------------------------------------------------------------------------------- |
+| `version`          | `number`   | Policy schema version                                                           |
+| `stripQueryParams` | `string[]` | Query parameter names to strip from all URLs before archiving                   |
+| `dropHeaders`      | `string[]` | Response header names to remove from sanitized records (case-insensitive match) |
+| `collections`      | array      | Per-collection classification rules (see below)                                 |
+| `overrides`        | array      | Per-source overrides that extend or replace collection rules (optional)         |
 
 ### Collection rules
 
 Each entry in `collections` defines the policy applied to a named collection:
 
-| Field                          | Type          | Required | Description                                                                                          |
-| ------------------------------ | ------------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `collection`                   | `string`      | Yes      | Collection label to match (e.g. `rss`, `gdelt`)                                                      |
-| `maxBytes`                     | `number`      | Yes      | Maximum response body size in bytes; records exceeding this are quarantined                          |
-| `defaultLabel`                 | `PolicyLabel` | Yes      | Label assigned when no rule quarantines the record (`SAFE_PUBLIC` or `RESTRICTED`)                   |
-| `allowedContentTypeSubstrings` | `string[]`    | No       | Substrings that must appear in the content-type; non-matching types are quarantined                  |
-| `onMissingContentType`         | `string`      | No       | Behaviour when content-type is absent: `ALLOW`, `RESTRICT`, or `QUARANTINE` (default: `QUARANTINE`)  |
-| `rewriteBody`                  | `boolean`     | No       | Reserved for future body rewriting; has no effect in the current implementation                      |
+| Field                          | Type          | Required | Description                                                                                         |
+| ------------------------------ | ------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `collection`                   | `string`      | Yes      | Collection label to match (e.g. `rss`, `gdelt`)                                                     |
+| `maxBytes`                     | `number`      | Yes      | Maximum response body size in bytes; records exceeding this are quarantined                         |
+| `defaultLabel`                 | `PolicyLabel` | Yes      | Label assigned when no rule quarantines the record (`SAFE_PUBLIC` or `RESTRICTED`)                  |
+| `allowedContentTypeSubstrings` | `string[]`    | No       | Substrings that must appear in the content-type; non-matching types are quarantined                 |
+| `onMissingContentType`         | `string`      | No       | Behaviour when content-type is absent: `ALLOW`, `RESTRICT`, or `QUARANTINE` (default: `QUARANTINE`) |
+| `rewriteBody`                  | `boolean`     | No       | Reserved for future body rewriting; has no effect in the current implementation                     |
 
 ### Source overrides
 
 Each entry in `overrides` applies to a specific named source and extends the matching collection rule:
 
-| Field                          | Type           | Description                                               |
-| ------------------------------ | -------------- | --------------------------------------------------------- |
-| `sourceName`                   | `string`       | Source name to match (must match ingestor target `name`)  |
-| `maxBytes`                     | `number?`      | Overrides the collection's `maxBytes`                     |
-| `defaultLabel`                 | `PolicyLabel?` | Overrides the collection's `defaultLabel`                 |
-| `allowedContentTypeSubstrings` | `string[]?`    | Overrides the collection's content-type allowlist         |
-| `rewriteBody`                  | `boolean?`     | Overrides the collection's `rewriteBody` flag             |
+| Field                          | Type           | Description                                              |
+| ------------------------------ | -------------- | -------------------------------------------------------- |
+| `sourceName`                   | `string`       | Source name to match (must match ingestor target `name`) |
+| `maxBytes`                     | `number?`      | Overrides the collection's `maxBytes`                    |
+| `defaultLabel`                 | `PolicyLabel?` | Overrides the collection's `defaultLabel`                |
+| `allowedContentTypeSubstrings` | `string[]?`    | Overrides the collection's content-type allowlist        |
+| `rewriteBody`                  | `boolean?`     | Overrides the collection's `rewriteBody` flag            |
 
 ### Example
 

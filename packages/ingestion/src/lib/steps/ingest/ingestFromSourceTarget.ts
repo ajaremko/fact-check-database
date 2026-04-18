@@ -34,8 +34,6 @@ function writeFetchFailureRecord(input: {
   result: FetchFailure
 }) {
   return Effect.gen(function* () {
-    const storageWriter = yield* StorageWriter
-
     // Write a record of the failed attempt, without a pointer
     // or content fields since there is no body to archive
     yield* Effect.logDebug('Writing fetch failure record')
@@ -70,7 +68,7 @@ function writeFetchFailureRecord(input: {
       ingestionId: input.ingestionId,
       fetchedAt: input.fetchedAt,
     })
-    return yield* storageWriter.write({
+    return yield* StorageWriter.writeFile({
       path: recordPath,
       data: recordData,
       meta: recordMeta,
@@ -91,8 +89,6 @@ function writeDataFetchedRecord(input: {
   result: FetchSuccess
 }) {
   return Effect.gen(function* () {
-    const storageWriter = yield* StorageWriter
-
     // Write the raw response body to the archive
     yield* Effect.logDebug('Writing raw response body')
     const bodyPath = yield* encodeArchivePath({
@@ -104,7 +100,7 @@ function writeDataFetchedRecord(input: {
       ingestionId: input.runId,
       observationId: input.id,
     })
-    const bodyPointer = yield* storageWriter.write({
+    const bodyPointer = yield* StorageWriter.writeFile({
       path: bodyPath,
       data: input.result.body,
       contentType: input.result.contentType,
@@ -154,7 +150,7 @@ function writeDataFetchedRecord(input: {
       ingestionId: input.runId,
       fetchedAt: input.fetchedAt,
     })
-    return yield* storageWriter.write({
+    return yield* StorageWriter.writeFile({
       path: recordPath,
       data: recordData,
       meta: recordMeta,

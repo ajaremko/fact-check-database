@@ -2,11 +2,11 @@ import { Effect, Layer } from 'effect'
 
 import { FileSystem } from '@effect/platform'
 
-import { StorageReader, StorageReadError } from '../../ports'
+import { StorageReader } from '../../ports'
 
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
-  return StorageReader.of({
+  return StorageReader.StorageReader.of({
     read: (pointer) =>
       Effect.gen(function* () {
         const data = yield* fs.readFile(pointer.object)
@@ -14,15 +14,14 @@ export const make = Effect.gen(function* () {
       }).pipe(
         Effect.mapError(
           (cause) =>
-            new StorageReadError({
+            new StorageReader.StorageReadError({
               cause,
               path: pointer.object,
               bucket: pointer.bucket,
             })
-        ),
-        Effect.withSpan('read')
+        )
       ),
   })
 })
 
-export const layer = Layer.effect(StorageReader, make)
+export const layer = Layer.effect(StorageReader.StorageReader, make)

@@ -12,35 +12,10 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./ingest": {
-      "types": "./dist/lib/steps/ingest/index.d.ts",
-      "import": "./dist/lib/steps/ingest/index.js",
-      "default": "./dist/lib/steps/ingest/index.js"
-    },
-    "./sanitize": {
-      "types": "./dist/lib/steps/sanitize/index.d.ts",
-      "import": "./dist/lib/steps/sanitize/index.js",
-      "default": "./dist/lib/steps/sanitize/index.js"
-    },
-    "./extract": {
-      "types": "./dist/lib/steps/extract/index.d.ts",
-      "import": "./dist/lib/steps/extract/index.js",
-      "default": "./dist/lib/steps/extract/index.js"
-    },
-    "./load": {
-      "types": "./dist/lib/steps/load/index.d.ts",
-      "import": "./dist/lib/steps/load/index.js",
-      "default": "./dist/lib/steps/load/index.js"
-    },
-    "./adapters": {
-      "types": "./dist/lib/adapters/index.d.ts",
-      "import": "./dist/lib/adapters/index.js",
-      "default": "./dist/lib/adapters/index.js"
-    },
-    "./util": {
-      "types": "./dist/lib/util/index.d.ts",
-      "import": "./dist/lib/util/index.js",
-      "default": "./dist/lib/util/index.js"
+    "./*": {
+      "types": "./dist/lib/*/index.d.ts",
+      "import": "./dist/lib/*/index.js",
+      "default": "./dist/lib/*/index.js"
     }
   },
   "dependencies": {

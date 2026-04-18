@@ -3,6 +3,8 @@ import { Effect } from 'effect'
 import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
+  CloudPubsubMessageBatch,
+  CloudPubsubPublisher,
 } from '@news-research/ingestion/adapters'
 import {
   PubsubSubscriberClient,
@@ -10,8 +12,6 @@ import {
 } from '@news-research/cloud-pubsub'
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 
-import * as CloudPubsubMessageBatch from '../adapters/cloud-pubsub/MessageBatch'
-import * as CloudPubsubPublisher from '../adapters/cloud-pubsub/Publisher'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 
