@@ -90,6 +90,12 @@
         }
       },
       "docker:build": {
+        "options": {
+          "args": [
+            "--build-arg",
+            "SERVICE_NAME=ingestor"
+          ]
+        },
         "dependsOn": [
           "build",
           "prune"
