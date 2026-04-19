@@ -109,9 +109,6 @@
       "apps": {
         "projects": ["ingestor", "sanitizer", "extractor", "loader"],
         "projectsRelationship": "independent",
-        "options": {
-          "args": ["--build-arg", "SERVICE_VERSION={env.BUILD_NUMBER}"]
-        },
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",
           "skipVersionActions": true
