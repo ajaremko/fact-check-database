@@ -29,6 +29,12 @@
     },
     {
       "path": "./apps/loader"
+    },
+    {
+      "path": "./packages/pino"
+    },
+    {
+      "path": "./packages/pino-logging-gcp-config"
     }
   ]
 }

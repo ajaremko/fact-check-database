@@ -13,7 +13,6 @@ import {
 import * as FileSystemTargetList from '../adapters/filesystem/TargetList'
 import * as HttpClientFetcher from '../adapters/http-client/Fetcher'
 import * as JobContext from '../JobContext'
-import * as Logger from '../Logger'
 import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
@@ -30,6 +29,5 @@ export const main = Program.pipe(
   Effect.provide(NodeFileSystem.layer),
   Effect.provide(NodeHttpClient.layer),
   Effect.provide(JobContext.layer),
-  Effect.provide(Logger.layer),
   Effect.provide(otel)
 )
