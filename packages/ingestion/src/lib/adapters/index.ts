@@ -1,5 +1,6 @@
-export * as CloudPubsubPublisher from './cloud-pubsub/Publisher'
 export * as CloudPubsubMessageBatch from './cloud-pubsub/MessageBatch'
+export * as CloudPubsubMessageQueueFeeder from './cloud-pubsub/MessageQueueFeeder'
+export * as CloudPubsubPublisher from './cloud-pubsub/Publisher'
 export * as CloudStorageStorageReader from './cloud-storage/StorageReader'
 export * as CloudStorageStorageWriter from './cloud-storage/StorageWriter'
 export * as FileSystemMessageBatch from './filesystem/MessageBatch'

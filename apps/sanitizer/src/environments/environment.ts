@@ -13,7 +13,6 @@ import {
 
 import * as FileSystemMessageQueueFeeder from '../adapters/filesystem/MessageQueueFeeder'
 import * as FileSystemSanitizerPolicyDocument from '../adapters/filesystem/SanitizerPolicyDocument'
-import * as Logger from '../Logger'
 import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
@@ -29,6 +28,5 @@ export const main = Program.pipe(
   Effect.provide(FileSystemSanitizerPolicyDocument.layer),
   Effect.provide(InMemoryMessageQueue.layer),
   Effect.provide(NodeFileSystem.layer),
-  Effect.provide(Logger.layer),
   Effect.provide(otel)
 )

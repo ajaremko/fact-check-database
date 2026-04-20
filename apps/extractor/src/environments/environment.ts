@@ -12,7 +12,6 @@ import {
 } from '@news-research/ingestion/adapters'
 
 import * as JobContext from '../JobContext'
-import * as Logger from '../Logger'
 import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
@@ -27,6 +26,5 @@ export const main = Program.pipe(
   Effect.provide(FileSystemPublisher.layer),
   Effect.provide(JobContext.layer),
   Effect.provide(NodeFileSystem.layer),
-  Effect.provide(Logger.layer),
   Effect.provide(otel)
 )

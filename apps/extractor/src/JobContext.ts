@@ -33,7 +33,10 @@ export function withJobContextAnnotations<A, E, R>(
 ) {
   return JobContext.pipe(
     Effect.andThen(({ runId, startedAt, concurrency }) =>
-      Effect.annotateLogs(effect, { runId, startedAt, concurrency })
+      Effect.withSpan(
+        Effect.annotateLogs(effect, { runId, startedAt, concurrency }),
+        'jobRun'
+      )
     )
   )
 }
