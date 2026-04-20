@@ -2,8 +2,8 @@ import { Effect, Logger } from 'effect'
 import { NodeHttpClient } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
+import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 
 import {
   CloudStorageStorageWriter,
@@ -20,7 +20,7 @@ import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
   resource: { serviceName: 'ingestor' },
-  traceExporter: new OTLPTraceExporter(),
+  traceExporter: new TraceExporter(),
   instrumentations: [getNodeAutoInstrumentations()],
 }))
 
