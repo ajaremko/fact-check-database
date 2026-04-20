@@ -10,7 +10,13 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
+      "path": "../../packages/pino/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/cloud-storage/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/pino-logging-gcp-config/tsconfig.lib.json"
     },
     {
       "path": "../../packages/cloud-pubsub/tsconfig.lib.json"

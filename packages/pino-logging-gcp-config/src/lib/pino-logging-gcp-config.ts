@@ -1,6 +1,7 @@
 import { Config, Effect } from 'effect'
-import { createGcpLoggingPinoConfig } from '@google-cloud/pino-logging-gcp-config'
 import { type LoggerOptions, levels } from 'pino'
+
+import { createGcpLoggingPinoConfig } from '@google-cloud/pino-logging-gcp-config'
 
 const PinoLogLevel = Config.literal(...Object.values(levels.labels))
 
