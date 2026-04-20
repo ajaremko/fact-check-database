@@ -1,0 +1,25 @@
+import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
+
+import { artifactRegistry } from '../core'
+
+import { provider } from './provider'
+
+// If an image is specified in config, use that. Otherwise, fall back to a public sample image.
+export function getAppImageUri(app: string, tag?: string) {
+  if (!tag) {
+    console.warn('No image tag specified in config, using public sample image.')
+    return pulumi.output('gcr.io/google-samples/hello-app:1.0')
+  }
+
+  const image = gcp.artifactregistry.getDockerImageOutput(
+    {
+      location: artifactRegistry.location,
+      repositoryId: artifactRegistry.repositoryId,
+      imageName: `${app}:${tag}`,
+    },
+    { provider }
+  )
+
+  return image.selfLink
+}

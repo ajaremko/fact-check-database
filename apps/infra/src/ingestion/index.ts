@@ -9,3 +9,4 @@ export {
   loaderServiceName,
 } from './loader'
 export { gcpProject, ingestionLabels } from './config'
+export { loggingBucketConfigName } from './logging'

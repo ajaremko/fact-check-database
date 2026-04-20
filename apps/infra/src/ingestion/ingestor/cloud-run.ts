@@ -1,75 +1,22 @@
 import * as gcp from '@pulumi/gcp'
-import * as pulumi from '@pulumi/pulumi'
 
-import { artifactRegistry, rawArchiveBucketName } from '../../core'
+import { rawArchiveBucketName } from '../../core'
 
 import { gcpRegion, dockerTag, tag } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
 import { ingestorTopic } from '../pubsub'
+import { getAppImageUri } from '../getImageUrl'
 
+import {
+  ingestorServiceAccount,
+  ingestorAssetBucketViewer,
+  ingestorRawArchiveBucketCreator,
+  ingestorTopicPublisher,
+  cloudtraceAgent,
+} from './service-account'
 import { targetsObject } from './storage'
-
-const ingestorServiceAccount = new gcp.serviceaccount.Account(
-  `${tag}-ingestion-sa`,
-  {
-    accountId: `${tag}-ingestor`,
-    displayName: 'Ingestor Job Service Account',
-  },
-  { provider }
-)
-
-export const ingestorAssetBucketViewer = new gcp.storage.BucketIAMMember(
-  `${tag}-ingestor-asset-bucket-viewer`,
-  {
-    bucket: assetsBucket.name,
-    role: 'roles/storage.objectViewer',
-    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
-  },
-  { provider }
-)
-
-export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
-  `${tag}-ingestor-raw-archive-bucket-creator`,
-  {
-    bucket: rawArchiveBucketName,
-    role: 'roles/storage.objectCreator',
-    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
-  },
-  { provider }
-)
-
-export const ingestorTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-ingestor-topic-publisher`,
-  {
-    topic: ingestorTopic.name,
-    role: 'roles/pubsub.publisher',
-    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
-  },
-  { provider }
-)
-
-// If an ingestor image is specified in config, use that. Otherwise, fall back to a public sample image.
-function getIngestorImageUri(tag?: string): pulumi.Output<string> {
-  if (!tag) {
-    console.warn(
-      'No ingestorTag specified in config, using public sample image.'
-    )
-    return pulumi.output('gcr.io/google-samples/hello-app:1.0')
-  }
-
-  const image = gcp.artifactregistry.getDockerImageOutput(
-    {
-      location: artifactRegistry.location,
-      repositoryId: artifactRegistry.repositoryId,
-      imageName: `apps-ingestor:${tag}`,
-    },
-    { provider }
-  )
-
-  return image.selfLink
-}
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
   `${tag}-ingestor-job`,
@@ -82,7 +29,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
         serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
-            image: getIngestorImageUri(dockerTag),
+            image: getAppImageUri('apps-ingestor', dockerTag),
             envs: [
               {
                 name: 'TARGET_LIST_BUCKET_NAME',
@@ -112,6 +59,18 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
                 name: 'LOG_LEVEL',
                 value: 'debug',
               },
+              {
+                name: 'PINO_LOG_LEVEL',
+                value: 'debug',
+              },
+              {
+                name: 'SERVICE_NAME',
+                value: 'ingestor-job',
+              },
+              {
+                name: 'SERVICE_VERSION',
+                value: dockerTag,
+              },
             ],
           },
         ],
@@ -125,6 +84,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
       ingestorAssetBucketViewer,
       ingestorRawArchiveBucketCreator,
       ingestorTopicPublisher,
+      cloudtraceAgent,
     ],
     provider,
   }

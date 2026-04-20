@@ -10,6 +10,7 @@ export const gcpRegion = ingestionConfig.require('region')
 export const dockerTag = ingestionConfig.get('tag')
 export const ingestorSchedule = ingestionConfig.require('ingestorSchedule')
 export const extractorSchedule = ingestionConfig.require('extractorSchedule')
+export const logRetention = ingestionConfig.requireNumber('logRetentionDays')
 
 export const ingestionLabels: Record<string, string> = {
   ...labels,

@@ -35,10 +35,26 @@ export const pubsubService = new gcp.projects.Service(
   { provider }
 )
 
+export const observabilityService = new gcp.projects.Service(
+  `${tag}-observability-service`,
+  {
+    service: 'observability.googleapis.com',
+  },
+  { provider }
+)
+
 export const cloudTraceService = new gcp.projects.Service(
   `${tag}-cloud-trace-service`,
   {
     service: 'cloudtrace.googleapis.com',
+  },
+  { provider }
+)
+
+export const telemetryService = new gcp.projects.Service(
+  `${tag}-telemetry-service`,
+  {
+    service: 'telemetry.googleapis.com',
   },
   { provider }
 )

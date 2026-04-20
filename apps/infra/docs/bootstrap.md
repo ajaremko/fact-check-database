@@ -241,3 +241,15 @@ gcloud iam workload-identity-pools providers describe github-actions-oidc-provid
   --location=global \
   --project=$PROJECT_ID
 ```
+
+### Traces Not Appearing in Trace Explorer
+
+Pulumi cannot currently provision cloud tracing completely. The cloud observability api is still missing programatic management of many resources so this may be the reason for the missing Pulumi functionality.
+
+You will see the following banner in the trace explorer UI:
+
+`Trace storage is not initialized for this project. Enable trace storage to begin collecting trace data.`
+
+Simply click the enable button or follow this guide to enabling tracing from the trace explorer UI in the relevant GCP projects.
+
+See: https://docs.cloud.google.com/trace/docs/troubleshooting#verify-data-stored
