@@ -17,6 +17,7 @@ import * as Logger from '../Logger'
 import { Program } from '../program'
 
 const otel = NodeSdk.layer(() => ({
+  resource: { serviceName: 'sanitizer' },
   spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
 }))
 

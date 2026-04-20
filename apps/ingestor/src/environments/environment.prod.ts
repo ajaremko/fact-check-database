@@ -1,9 +1,8 @@
 import { Effect, Logger } from 'effect'
 import { NodeHttpClient } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 
 import {
   CloudStorageStorageWriter,
@@ -11,6 +10,7 @@ import {
 } from '@news-research/ingestion/adapters'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
+import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { pinoLogger } from '@news-research/pino'
 
 import * as CloudStorageTargetList from '../adapters/cloud-storage/TargetList'
