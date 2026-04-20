@@ -37,6 +37,18 @@ export const loaderService = new gcp.cloudrunv2.Service(
               name: 'LOG_LEVEL',
               value: 'error',
             },
+            {
+              name: 'PINO_LOG_LEVEL',
+              value: 'debug',
+            },
+            {
+              name: 'SERVICE_NAME',
+              value: 'loader-job',
+            },
+            {
+              name: 'SERVICE_VERSION',
+              value: dockerTag,
+            },
           ],
         },
       ],

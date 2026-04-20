@@ -59,7 +59,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'SERVICE_NAME',
-                value: 'ingestor-job',
+                value: 'extractor-job',
               },
               {
                 name: 'SERVICE_VERSION',

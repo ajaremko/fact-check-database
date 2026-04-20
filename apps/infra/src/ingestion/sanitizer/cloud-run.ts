@@ -49,6 +49,18 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
               name: 'LOG_LEVEL',
               value: 'error',
             },
+            {
+              name: 'PINO_LOG_LEVEL',
+              value: 'debug',
+            },
+            {
+              name: 'SERVICE_NAME',
+              value: 'sanitizer-job',
+            },
+            {
+              name: 'SERVICE_VERSION',
+              value: dockerTag,
+            },
           ],
         },
       ],
