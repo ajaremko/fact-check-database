@@ -1,0 +1,81 @@
+import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
+
+import { rawArchiveBucketName } from '../../core'
+
+import { gcpProject, tag } from '../config'
+import { stagingBucket } from '../storage'
+import { provider } from '../provider'
+import { extractorTopic } from '../pubsub'
+
+import { extractorSanitizerTopicSubscription } from './pubsub'
+
+export const extractorServiceAccount = new gcp.serviceaccount.Account(
+  `${tag}-extractor-sa`,
+  {
+    accountId: `${tag}-extractor`,
+    displayName: 'Extractor Job Service Account',
+  },
+  { provider }
+)
+
+export const extractorRawArchiveBucketViewer = new gcp.storage.BucketIAMMember(
+  `${tag}-extractor-raw-archive-bucket-viewer`,
+  {
+    bucket: rawArchiveBucketName,
+    role: 'roles/storage.objectViewer',
+    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const extractorStagingBucketCreator = new gcp.storage.BucketIAMMember(
+  `${tag}-extractor-staging-bucket-creator`,
+  {
+    bucket: stagingBucket.name,
+    role: 'roles/storage.objectCreator',
+    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const extractorSanitizerTopicSubscriber =
+  new gcp.pubsub.SubscriptionIAMMember(
+    `${tag}-extractor-sanitizer-topic-subscriber`,
+    {
+      subscription: extractorSanitizerTopicSubscription.name,
+      role: 'roles/pubsub.subscriber',
+      member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+    },
+    { provider }
+  )
+
+export const extractorTopicPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-extractor-topic-publisher`,
+  {
+    topic: extractorTopic.name,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const cloudtraceAgent = new gcp.projects.IAMMember(
+  `${tag}-extractor-trace-agent`,
+  {
+    project: gcpProject,
+    role: 'roles/cloudtrace.agent',
+    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const telemetryTracesWriter = new gcp.projects.IAMMember(
+  `${tag}-extractor-telemetry-traces-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/telemetry.tracesWriter',
+    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+  },
+  { provider }
+)
