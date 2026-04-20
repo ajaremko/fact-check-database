@@ -1,9 +1,7 @@
-import { Effect, Logger } from 'effect'
+import { Effect, Layer, Logger } from 'effect'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeSdk } from '@effect/opentelemetry'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
-import { pinoLogger } from '@news-research/pino'
 
 import {
   CloudStorageStorageReader,
@@ -13,16 +11,32 @@ import {
 } from '@news-research/ingestion/adapters'
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 import { PubsubClient } from '@news-research/cloud-pubsub'
+import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/cloud-run'
+import { pinoLogger } from '@news-research/pino'
 
 import * as HttpServerMessageQueueFeeder from '../adapters/http-server/MessageQueueFeeder'
 import * as CloudStorageSanitizerPolicyDocument from '../adapters/cloud-storage/SanitizerPolicyDocument'
 import { Program } from '../program'
 
-const otel = NodeSdk.layer(() => ({
-  resource: { serviceName: 'ingestor' },
-  traceExporter: new TraceExporter(),
-  instrumentations: [getNodeAutoInstrumentations()],
-}))
+const otel = cloudRunInstanceId.pipe(
+  Effect.map((instanceId) =>
+    NodeSdk.layer(() => ({
+      resource: {
+        serviceName: 'ingestor',
+        attributes: {
+          'service.instance.id': instanceId,
+        },
+      },
+      spanProcessor: new BatchSpanProcessor(
+        new TraceExporter({
+          resourceFilter: /^service\./,
+        })
+      ),
+    }))
+  ),
+  Layer.unwrapEffect
+)
 
 const logger = Logger.replaceScoped(
   Logger.defaultLogger,

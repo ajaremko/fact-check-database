@@ -1,20 +1,21 @@
-import { Effect, Logger, Schema, pipe } from 'effect'
+import { Effect, Layer, Logger, Schema, pipe } from 'effect'
 import { NodeFileSystem, NodeRuntime } from '@effect/platform-node'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeSdk } from '@effect/opentelemetry'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
-import { loadJsonFromGcs } from '@news-research/ingestion/steps/load'
+import { ExtractionBatchReady } from '@news-research/ingestion/steps/extract'
+import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { InMemoryMessageQueue } from '@news-research/ingestion/adapters'
 import { MessageQueue } from '@news-research/ingestion/messaging'
+import { Node } from '@news-research/ingestion/util'
+import { cloudRunInstanceId } from '@news-research/cloud-run'
+import { loadJsonFromGcs } from '@news-research/ingestion/steps/load'
 import { pinoLogger } from '@news-research/pino'
 
 import * as HttpServerMessageQueueFeeder from './MessageQueueFeeder'
-import { ExtractionBatchReady } from '@news-research/ingestion/steps/extract'
-import { Node } from '@news-research/ingestion/util'
-import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 
 const decodeIncoming = pipe(
   ExtractionBatchReady,
@@ -64,12 +65,24 @@ const Program = Effect.gen(function* () {
   })
 })
 
-const otel = NodeSdk.layer(() => ({
-  resource: { serviceName: 'ingestor' },
-  traceExporter: new TraceExporter(),
-  instrumentations: [getNodeAutoInstrumentations()],
-}))
-
+const otel = cloudRunInstanceId.pipe(
+  Effect.map((instanceId) =>
+    NodeSdk.layer(() => ({
+      resource: {
+        serviceName: 'ingestor',
+        attributes: {
+          'service.instance.id': instanceId,
+        },
+      },
+      spanProcessor: new BatchSpanProcessor(
+        new TraceExporter({
+          resourceFilter: /^service\./,
+        })
+      ),
+    }))
+  ),
+  Layer.unwrapEffect
+)
 const logger = Logger.replaceScoped(
   Logger.defaultLogger,
   GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))

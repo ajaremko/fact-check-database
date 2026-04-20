@@ -62,7 +62,11 @@
           "targetName": "typecheck"
         }
       },
-      "exclude": ["packages/pino/*", "packages/pino-logging-gcp-config/*"]
+      "exclude": [
+        "packages/pino/*",
+        "packages/pino-logging-gcp-config/*",
+        "packages/cloud-run/*"
+      ]
     },
     {
       "plugin": "@nx/vitest",

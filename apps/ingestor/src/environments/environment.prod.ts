@@ -11,28 +11,13 @@ import {
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/cloud-run'
 import { pinoLogger } from '@news-research/pino'
 
 import * as CloudStorageTargetList from '../adapters/cloud-storage/TargetList'
 import * as HttpClientFetcher from '../adapters/http-client/Fetcher'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
-
-const cloudRunInstanceId = Effect.tryPromise(async (signal) => {
-  const response = await fetch(
-    'http://metadata.google.internal/computeMetadata/v1/instance/id',
-    {
-      headers: { 'Metadata-Flavor': 'Google' },
-      signal,
-    }
-  )
-
-  if (response.ok) {
-    return await response.text()
-  }
-
-  throw new Error('Metadata server not available')
-})
 
 const otel = cloudRunInstanceId.pipe(
   Effect.map((instanceId) =>

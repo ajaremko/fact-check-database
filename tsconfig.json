@@ -35,6 +35,9 @@
     },
     {
       "path": "./packages/pino-logging-gcp-config"
+    },
+    {
+      "path": "./packages/cloud-run"
     }
   ]
 }
