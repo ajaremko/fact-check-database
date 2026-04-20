@@ -4,18 +4,19 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeSdk } from '@effect/opentelemetry'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 
+import {
+  HttpServerMessageQueueFeeder,
+  InMemoryMessageQueue,
+} from '@news-research/ingestion/adapters'
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 import { ExtractionBatchReady } from '@news-research/ingestion/steps/extract'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
-import { InMemoryMessageQueue } from '@news-research/ingestion/adapters'
 import { MessageQueue } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/util'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
 import { loadJsonFromGcs } from '@news-research/ingestion/steps/load'
 import { pinoLogger } from '@news-research/pino'
-
-import * as HttpServerMessageQueueFeeder from './MessageQueueFeeder'
 
 const decodeIncoming = pipe(
   ExtractionBatchReady,

@@ -7,6 +7,7 @@ import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
   CloudPubsubPublisher,
+  HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
 } from '@news-research/ingestion/adapters'
 import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
@@ -15,7 +16,6 @@ import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
 import { pinoLogger } from '@news-research/pino'
 
-import * as HttpServerMessageQueueFeeder from '../adapters/http-server/MessageQueueFeeder'
 import * as CloudStorageSanitizerPolicyDocument from '../adapters/cloud-storage/SanitizerPolicyDocument'
 import { Program } from '../program'
 
