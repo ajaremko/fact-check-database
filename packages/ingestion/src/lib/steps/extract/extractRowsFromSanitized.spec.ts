@@ -13,7 +13,8 @@ describe('extractRowsFromSanitized', () => {
         const storage = {
           'test-sanitized-record.yml': `
           version: 1
-          runId: 'run-1'
+          ingestionId: run-1
+          observationId: obs-1
           kind: sanitized_record
           fetchedAt: 0
           sanitizedAt: 0
@@ -60,7 +61,9 @@ describe('extractRowsFromSanitized', () => {
           </rss>`,
         }
         const result = yield* extractRowsFromSanitized({
-          observationId: 'run-1',
+          extractionId: 'run-1',
+          observationId: 'obs-1',
+          extractedAt: 0,
           pointer: {
             bucket: 'inmemory',
             object: 'test-sanitized-record.yml',
@@ -70,7 +73,28 @@ describe('extractRowsFromSanitized', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual([])
+        expect(result).toStrictEqual([
+          {
+            claim: 'Example Article 1',
+            extractedAt: 0,
+            extractionId: 'rss',
+            fetchedAt: 0,
+            finalUrl: '',
+            id: '8c12da2d9be3237a8dcb5b6ef9d0a97296bf61522118756ff9bbb6ebe536dd15',
+            ingestionId: 'run-1',
+            link: 'https://www.example.com/article1',
+            observationId: 'obs-1',
+            publishedAt: null,
+            source: {
+              collection: 'rss',
+              name: 'source-1',
+            },
+            summary: 'This is the first example article',
+            title: 'Example Article 1',
+            url: '',
+            verdict: null,
+          },
+        ])
       })
   )
 })

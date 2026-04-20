@@ -27,7 +27,7 @@ export const ArchivePathSchema = Schema.transformOrFail(
         input.collectionName,
         `source=${input.sourceName}`,
         `date=${input.date}`,
-        `ingestion=${input.ingestionId}`,
+        `ingestionId=${input.ingestionId}`,
         `${input.observationId}.${input.ext}`,
       ].join('/')
       return ParseResult.succeed(output)

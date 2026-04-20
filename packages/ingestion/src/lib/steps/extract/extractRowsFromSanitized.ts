@@ -14,7 +14,7 @@ const decodeSanitizerRecord = pipe(
 )
 
 export function extractRowsFromSanitized(input: {
-  runId: string
+  extractionId: string
   observationId: string
   pointer: FilePointer
   extractedAt: number
@@ -72,7 +72,7 @@ export function extractRowsFromSanitized(input: {
         Effect.withSpan(`extractor.${extractor.id}`)
       )
   }).pipe(
-    Effect.annotateLogs({ runId: input.runId }),
+    Effect.annotateLogs({ extractionId: input.extractionId }),
     Effect.withSpan('extractRowsFromSanitized')
   )
 }

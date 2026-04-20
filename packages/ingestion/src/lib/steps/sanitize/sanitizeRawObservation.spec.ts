@@ -1,7 +1,6 @@
 import { it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { DataFetchedRecordSchema, NoResponseRecordSchema } from '../../data'
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
 import { sanitizeRawObservation } from './sanitizeRawObservation'
@@ -18,17 +17,18 @@ describe('sanitizeRawObservation', () => {
           kind: fetch_attempt
           outcome: no_response
           error: Network error
-          runId: ''
+          observationId: 'obs-1'
+          ingestionId: 'run-1'
           fetchedAt: 0
-          url: ''
+          url: 'https://test-rss.com/rss'
           source:
-            name: ''
-            collection: ''
+            name: 'test'
+            collection: 'rss'
           `,
         }
 
         const result = yield* sanitizeRawObservation({
-          id: 'obs-1',
+          observationId: 'obs-1',
           policy: {
             version: 1,
             stripQueryParams: [],
@@ -60,24 +60,32 @@ describe('sanitizeRawObservation', () => {
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
-          'test-record.yml': JSON.stringify(
-            DataFetchedRecordSchema.make({
-              version: 1,
-              kind: 'fetch_attempt',
-              outcome: 'data_fetched',
-              runId: '',
-              fetchedAt: 0,
-              url: '',
-              source: { name: '', collection: '' },
-              http: { status: 200, headers: {}, contentType: 'text/xml' },
-              content: { sha256: '', bytes: 0 },
-              pointer: { bucket: '', object: '' },
-            })
-          ),
+          'test-record.yml': `
+          version: 1
+          kind: fetch_attempt
+          outcome: data_fetched
+          observationId: obs-1
+          ingestionId: run-1
+          fetchedAt: 0
+          url: https://test-rss.com/rss
+          source: 
+            name: 'test'
+            collection: 'rss'
+          http: 
+            status: 200
+            headers: {} 
+            contentType: 'text/xml'
+          content: 
+            sha256: ''
+            bytes: 0
+          pointer:
+            bucket: ''
+            object: ''
+          `,
         }
 
         const result = yield* sanitizeRawObservation({
-          id: 'obs-1',
+          observationId: 'obs-1',
           policy: {
             version: 1,
             stripQueryParams: [],
@@ -108,7 +116,7 @@ describe('sanitizeRawObservation', () => {
             },
             error: undefined,
             fetchedAt: 0,
-            finalUrl: '',
+            finalUrl: 'https://test-rss.com/rss',
             http: {
               contentType: 'text/xml',
               status: 200,
@@ -117,14 +125,14 @@ describe('sanitizeRawObservation', () => {
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=/date=1970-01-01/run=/obs-1.sanitizer.yml',
+                'v1/records/source=test/date=1970-01-01/ingestionId=run-1/obs-1.sanitizer.yml',
             },
-            runId: '',
+            ingestionId: 'run-1',
             source: {
-              collection: '',
-              name: '',
+              collection: 'rss',
+              name: 'test',
             },
-            url: '',
+            url: 'https://test-rss.com/rss',
           }),
         ])
       })

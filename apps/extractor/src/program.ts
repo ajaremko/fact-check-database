@@ -32,7 +32,7 @@ function processMessage(message: MessageBatch.Message) {
     const incoming = yield* decodeIncoming(message.data)
     const job = yield* JobContext
     const rows = yield* extractRowsFromSanitized({
-      runId: job.runId,
+      extractionId: job.runId,
       observationId: incoming.observationId,
       pointer: incoming.pointer,
       extractedAt: job.startedAt,

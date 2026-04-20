@@ -82,8 +82,8 @@ function writeFetchFailureRecord(input: {
 }
 
 function writeDataFetchedRecord(input: {
-  id: string
-  runId: string
+  observationId: string
+  ingestionId: string
   source: SourceTarget
   fetchedAt: number
   result: FetchSuccess
@@ -97,8 +97,8 @@ function writeDataFetchedRecord(input: {
       collectionName: 'raw',
       ext: 'bin',
       date: input.fetchedAt,
-      ingestionId: input.runId,
-      observationId: input.id,
+      ingestionId: input.ingestionId,
+      observationId: input.observationId,
     })
     const bodyPointer = yield* StorageWriter.writeFile({
       path: bodyPath,
@@ -111,18 +111,19 @@ function writeDataFetchedRecord(input: {
     yield* Effect.logDebug('Writing fetch success record')
     const recordPath = yield* encodeArchivePath({
       version: 1,
-      ingestionId: input.runId,
+      ingestionId: input.ingestionId,
       collectionName: 'records',
       ext: 'ingestion.yml',
       sourceName: input.source.name,
-      observationId: input.id,
+      observationId: input.observationId,
       date: input.fetchedAt,
     })
     const recordData = yield* encodeIngestionRecord({
       version: 1,
       kind: 'fetch_attempt',
       outcome: 'data_fetched',
-      ingestionId: input.runId,
+      ingestionId: input.ingestionId,
+      observationId: input.observationId,
       fetchedAt: input.fetchedAt,
       url: input.source.url,
       source: {
@@ -143,11 +144,11 @@ function writeDataFetchedRecord(input: {
       pointer: bodyPointer,
     })
     const recordMeta = yield* encodeIngestionRecordMetadata({
-      observationId: input.id,
+      observationId: input.observationId,
       url: input.source.url,
       sourceName: input.source.name,
       sourceCollection: input.source.collection,
-      ingestionId: input.runId,
+      ingestionId: input.ingestionId,
       fetchedAt: input.fetchedAt,
     })
     return yield* StorageWriter.writeFile({
@@ -228,8 +229,8 @@ export function ingestFromSourceTarget(input: {
     // Write a record of the successful attempt, including a
     // pointer to the archived body
     const recordPointer = yield* writeDataFetchedRecord({
-      id,
-      runId: input.runId,
+      observationId: id,
+      ingestionId: input.runId,
       source: input.source,
       fetchedAt,
       result,

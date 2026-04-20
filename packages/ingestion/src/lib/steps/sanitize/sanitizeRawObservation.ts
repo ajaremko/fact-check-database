@@ -35,7 +35,7 @@ const encodeSanitizerRecordMetadata = Schema.encode(
 const encodeArchivePath = Schema.encode(ArchivePathSchema)
 
 export function sanitizeRawObservation(input: {
-  id: string
+  observationId: string
   pointer: FilePointer
   policy: SanitizerPolicy
 }) {
@@ -68,14 +68,14 @@ export function sanitizeRawObservation(input: {
       ext: 'sanitizer.yml',
       date: inputRecord.fetchedAt,
       ingestionId: inputRecord.ingestionId,
-      observationId: input.id,
+      observationId: input.observationId,
     })
     const outputRecordData = yield* encodeSanitizerRecord({
       version: 1,
       kind: 'sanitized_record',
       url: inputRecord.url,
       http: inputRecord.http,
-      observationId: input.id,
+      observationId: input.observationId,
       ingestionId: inputRecord.ingestionId,
       source: inputRecord.source,
       content: inputRecord.content,
@@ -95,7 +95,7 @@ export function sanitizeRawObservation(input: {
       error: decision.error,
     })
     const outputRecordMetadata = yield* encodeSanitizerRecordMetadata({
-      observationId: input.id,
+      observationId: input.observationId,
       ingestionId: inputRecord.ingestionId,
       sanitizedAt,
       sourceName: inputRecord.source.name,
@@ -110,7 +110,7 @@ export function sanitizeRawObservation(input: {
     })
 
     const event = new SanitizationAttempted({
-      observationId: input.id,
+      observationId: input.observationId,
       ingestionId: inputRecord.ingestionId,
       fetchedAt: inputRecord.fetchedAt,
       url: inputRecord.url,
@@ -123,7 +123,7 @@ export function sanitizeRawObservation(input: {
     })
     return [event]
   }).pipe(
-    Effect.annotateLogs({ observationId: input.id }),
+    Effect.annotateLogs({ observationId: input.observationId }),
     Effect.withSpan('sanitizeRawObservation')
   )
 }

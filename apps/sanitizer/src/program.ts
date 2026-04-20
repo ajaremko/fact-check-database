@@ -33,7 +33,7 @@ function processMessage(message: MessageQueue.Message) {
 
     yield* Effect.logDebug('Sanitizing observation')
     const events = yield* sanitizeRawObservation({
-      id: incoming.observationId,
+      observationId: incoming.observationId,
       pointer: incoming.pointer,
       policy,
     })

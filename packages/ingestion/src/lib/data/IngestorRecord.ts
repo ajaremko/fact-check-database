@@ -12,6 +12,7 @@ export const DataFetchedRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('data_fetched'),
+  observationId: Schema.String,
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   url: Schema.String,

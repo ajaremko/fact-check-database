@@ -1,11 +1,7 @@
 import { it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import {
-  InMemoryStorageReader,
-  InMemoryStorageWriter,
-  InMemoryFetcher,
-} from '../../adapters'
+import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
 
 import { IngestionAttempted } from './IngestionAttempted'
 import { ingestFromSourceTarget } from './ingestFromSourceTarget'
@@ -17,23 +13,23 @@ describe('ingestFromSourceTarget', () => {
       Effect.gen(function* () {
         const storage = {}
 
-        const result = yield* ingestFromSourceTarget(
-          'run-1',
-          {
+        const result = yield* ingestFromSourceTarget({
+          runId: 'run-1',
+          source: {
+            id: 'source-1',
             name: 'source-1',
             url: 'https://test-rss.com/rss',
             collection: 'rss',
           },
-          0
-        ).pipe(
+          index: 0,
+        }).pipe(
           Effect.provide(
             InMemoryFetcher.layer({
               type: 'failure',
               error: 'Network error',
             })
           ),
-          Effect.provide(InMemoryStorageWriter.layer(storage)),
-          Effect.provide(InMemoryStorageReader.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
         expect(result).toStrictEqual(
@@ -58,16 +54,16 @@ describe('ingestFromSourceTarget', () => {
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml',
+                'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml',
             },
           })
         )
 
         expect(storage).not.toHaveProperty(
-          'v1/raw/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
+          'v1/raw/source=source-1/date=1970-01-01/ingestionId=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=source-1/date=1970-01-01/run=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
+          'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
         )
       })
   )
@@ -77,15 +73,16 @@ describe('ingestFromSourceTarget', () => {
       Effect.gen(function* () {
         const storage = {}
 
-        const result = yield* ingestFromSourceTarget(
-          'run-1',
-          {
+        const result = yield* ingestFromSourceTarget({
+          runId: 'run-1',
+          source: {
+            id: 'source-1',
             name: 'source-1',
             url: 'https://test-rss.com/rss',
             collection: 'rss',
           },
-          0
-        ).pipe(
+          index: 0,
+        }).pipe(
           Effect.provide(
             InMemoryFetcher.layer({
               type: 'success',
@@ -98,8 +95,7 @@ describe('ingestFromSourceTarget', () => {
               error: null,
             })
           ),
-          Effect.provide(InMemoryStorageWriter.layer(storage)),
-          Effect.provide(InMemoryStorageReader.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
         expect(result).toStrictEqual(
@@ -128,16 +124,16 @@ describe('ingestFromSourceTarget', () => {
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml',
+                'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml',
             },
           })
         )
 
         expect(storage).toHaveProperty(
-          'v1/raw/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
+          'v1/raw/source=source-1/date=1970-01-01/ingestionId=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=source-1/date=1970-01-01/run=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
+          'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
         )
       })
   )

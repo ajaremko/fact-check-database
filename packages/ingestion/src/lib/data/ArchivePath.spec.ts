@@ -12,11 +12,11 @@ describe('ArchivePath', () => {
         ext: 'sanitizer.yml',
         sourceName: 'https://test-rss.com/rss',
         date: 1704067200000,
-        runId: 'abc123',
-        id: 'record_id',
+        ingestionId: 'run-1',
+        observationId: 'obs-1',
       })
     ).toBe(
-      'v1/test_collection/source=https://test-rss.com/rss/date=2024-01-01/run=abc123/record_id.sanitizer.yml'
+      'v1/test_collection/source=https://test-rss.com/rss/date=2024-01-01/ingestionId=run-1/obs-1.sanitizer.yml'
     )
   })
 })
