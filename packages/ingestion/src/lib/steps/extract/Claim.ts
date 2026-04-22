@@ -4,27 +4,29 @@ import * as v1 from '../../contracts/v1'
 
 import { NumberFromFormattedDate } from '../../data'
 
+export class Claim extends Schema.Class<Claim>('Claim')({
+  id: Schema.String,
+  observationId: Schema.String,
+  ingestionId: Schema.String,
+  extractionId: Schema.String,
+  source: Schema.Struct({
+    name: Schema.String,
+    collection: Schema.String,
+  }),
+  url: Schema.String,
+  finalUrl: Schema.String,
+  fetchedAt: NumberFromFormattedDate('yyyy-MM-dd'),
+  extractedAt: NumberFromFormattedDate('yyyy-MM-dd'),
+  publishedAt: Schema.NullOr(Schema.String),
+  title: Schema.NullOr(Schema.String),
+  claim: Schema.NullOr(Schema.String),
+  verdict: Schema.NullOr(v1.ClaimVerdictSchema),
+  summary: Schema.NullOr(Schema.String),
+}) {}
+
 export const ExtractedClaimSchema = Schema.transform(
   v1.ClaimsTableRowSchema,
-  Schema.Struct({
-    id: Schema.String,
-    observationId: Schema.String,
-    ingestionId: Schema.String,
-    extractionId: Schema.String,
-    source: Schema.Struct({
-      name: Schema.String,
-      collection: Schema.String,
-    }),
-    url: Schema.String,
-    finalUrl: Schema.String,
-    fetchedAt: NumberFromFormattedDate('yyyy-MM-dd'),
-    extractedAt: NumberFromFormattedDate('yyyy-MM-dd'),
-    publishedAt: Schema.NullOr(Schema.String),
-    title: Schema.NullOr(Schema.String),
-    claim: Schema.NullOr(Schema.String),
-    verdict: Schema.NullOr(v1.ClaimVerdictSchema),
-    summary: Schema.NullOr(Schema.String),
-  }),
+  Claim,
   {
     strict: true,
     decode: (input) => ({

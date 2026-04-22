@@ -20,5 +20,8 @@ export class ExtractionBatchReady extends Schema.Class<ExtractionBatchReady>(
     object: Schema.String,
   }),
   table: TablePointerSchema,
-  meta: LoadJobMetadataSchema,
+  sourceFormat: Schema.Union(
+    Schema.Literal('NEWLINE_DELIMITED_JSON'),
+    Schema.String
+  ),
 }) {}

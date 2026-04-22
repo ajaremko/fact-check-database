@@ -3,7 +3,7 @@ import { Effect, pipe, Schema } from 'effect'
 import { Node, Ndjson } from '../../util'
 import { StorageWriter } from '../../ports'
 
-import { ExtractedClaimSchema, ExtractedClaims } from './ExtractedClaim'
+import { ExtractedClaimSchema, ExtractedClaims } from './Claim'
 import { ExtractionBatchReady } from './ExtractionBatchReady'
 
 const encodeExtractedRows = pipe(
@@ -28,40 +28,12 @@ export function writeExtractedRows(input: {
     return new ExtractionBatchReady({
       batchId: input.runId,
       extractedAt: input.extractedAt,
-      pointer,
       table: {
         tableId: 'claims',
         datasetId: 'default_dataset',
       },
-      meta: {
-        sourceFormat: 'NEWLINE_DELIMITED_JSON',
-        schema: {
-          fields: [
-            { name: 'id', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'observation_id', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
-            {
-              name: 'source',
-              type: 'STRUCT',
-              fields: [
-                { name: 'name', type: 'STRING', mode: 'REQUIRED' },
-                { name: 'collection', type: 'STRING', mode: 'REQUIRED' },
-              ],
-              mode: 'REQUIRED',
-            },
-            { name: 'url', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'final_url', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'fetched_at', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'extracted_at', type: 'STRING', mode: 'REQUIRED' },
-            { name: 'published_at', type: 'STRING' },
-            { name: 'title', type: 'STRING' },
-            { name: 'claim', type: 'STRING' },
-            { name: 'verdict', type: 'STRING' },
-            { name: 'summary', type: 'STRING' },
-          ],
-        },
-      },
+      sourceFormat: 'NEWLINE_DELIMITED_JSON',
+      pointer,
     })
   }).pipe(
     Effect.annotateLogs({ rowCount: input.rows.length }),

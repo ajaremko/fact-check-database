@@ -4,12 +4,10 @@ import { JobLoadMetadata } from '@google-cloud/bigquery'
 import { StorageBucketCache, StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 
-import { LoadJobMetadata } from '../../data'
-
 export function loadJsonFromGcs(input: {
   pointer: { object: string; bucket: string }
   table: { dataset: string; table: string }
-  meta: LoadJobMetadata
+  sourceFormat: string
 }): Effect.Effect<
   void,
   BigQueryClient.BigQueryClientIOError,
@@ -23,9 +21,9 @@ export function loadJsonFromGcs(input: {
     const { bucket } = yield* buckets.get(input.pointer.bucket)
 
     const file = bucket.file(input.pointer.object)
-
     const metadata: JobLoadMetadata = {
-      ...(input.meta as JobLoadMetadata),
+      sourceFormat: input.sourceFormat,
+      autodetect: true,
       location: 'US',
     }
 

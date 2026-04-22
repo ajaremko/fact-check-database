@@ -2,9 +2,7 @@ import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
 
-export class ExtractorInput extends Schema.Class<ExtractorInput>(
-  'ExtractorInput'
-)({
+export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
@@ -40,9 +38,9 @@ export class ExtractorInput extends Schema.Class<ExtractorInput>(
   ),
 }) {}
 
-export const ExtractorInputSchema = Schema.transformOrFail(
+export const ObservationSchema = Schema.transformOrFail(
   v1.SanitizerRecordSchema,
-  ExtractorInput,
+  Observation,
   {
     strict: true,
     decode: (input) =>

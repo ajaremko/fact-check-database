@@ -3,7 +3,7 @@ import { Array, Effect, Option, Schema, pipe } from 'effect'
 import {
   type StorageWriter,
   type StorageReader,
-  extractRowsFromSanitized,
+  extractClaims,
   writeExtractedRows,
   ExtractionBatchReady,
 } from '@news-research/ingestion/steps/extract'
@@ -31,7 +31,7 @@ function processMessage(message: MessageBatch.Message) {
   return Effect.gen(function* () {
     const incoming = yield* decodeIncoming(message.data)
     const job = yield* JobContext
-    const rows = yield* extractRowsFromSanitized({
+    const rows = yield* extractClaims({
       extractionId: job.runId,
       observationId: incoming.observationId,
       pointer: incoming.pointer,

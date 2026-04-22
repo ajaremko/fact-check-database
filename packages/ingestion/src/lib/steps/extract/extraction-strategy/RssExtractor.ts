@@ -4,26 +4,28 @@ import { Node, Xml } from '../../../util'
 
 import { makeExtractionStrategy } from './ExtractionStrategy'
 
-const ItemSchema = Schema.Struct({
+const RssItemSchema = Schema.Struct({
   title: Schema.optional(Schema.String),
   link: Schema.optional(Schema.String),
   description: Schema.optional(Schema.String),
   pubDate: Schema.optional(Schema.String),
-})
+}).annotations({ title: 'RssItem' })
 
-const DocumentSchema = Schema.Struct({
+const RssDocumentSchema = Schema.Struct({
   rss: Schema.Struct({
     channel: Schema.Struct({
-      item: Schema.optional(Schema.Union(ItemSchema, Schema.Array(ItemSchema))),
+      item: Schema.optional(
+        Schema.Union(RssItemSchema, Schema.Array(RssItemSchema))
+      ),
       entry: Schema.optional(
-        Schema.Union(ItemSchema, Schema.Array(ItemSchema))
+        Schema.Union(RssItemSchema, Schema.Array(RssItemSchema))
       ),
     }),
   }),
-})
+}).annotations({ title: 'RssDocument' })
 
 const decodeRss = pipe(
-  DocumentSchema,
+  RssDocumentSchema,
   Xml.parseXml({
     parser: {
       ignoreAttributes: false,

@@ -37,7 +37,7 @@ export const ArchivePathSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding archive paths not implemented'
+          'Decoding ArchivePath not implemented'
         )
       ),
   }

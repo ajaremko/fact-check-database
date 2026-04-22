@@ -3,17 +3,17 @@ import { Effect, pipe, Schema } from 'effect'
 import { Node, Yaml } from '../../util'
 import { StorageReader } from '../../ports'
 
-import { ExtractorInputSchema } from './ExtractorInput'
+import { ObservationSchema } from './Observation'
 import { extractors } from './extraction-strategy'
 
-const decodeExtractorInput = pipe(
-  ExtractorInputSchema,
+const decodeObservation = pipe(
+  ObservationSchema,
   Yaml.parseYaml(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
 
-export function extractRowsFromSanitized(ctx: {
+export function extractClaims(ctx: {
   extractionId: string
   observationId: string
   pointer: { object: string; bucket: string }
@@ -21,7 +21,14 @@ export function extractRowsFromSanitized(ctx: {
 }) {
   return Effect.gen(function* () {
     const recordData = yield* StorageReader.readFile(ctx.pointer)
-    const record = yield* decodeExtractorInput(recordData)
+    const record = yield* decodeObservation(recordData)
+
+    if (!record.shouldExtract) {
+      yield* Effect.logInfo(
+        `Skipping extraction for observation ${ctx.observationId}`
+      )
+      return []
+    }
 
     const extractor = extractors.find((e) =>
       e.canHandle({
@@ -38,7 +45,7 @@ export function extractRowsFromSanitized(ctx: {
     }
 
     yield* Effect.logInfo(
-      `Extracting rows for observation ${ctx.observationId} from sanitized record`
+      `Extracting claims for observation ${ctx.observationId} from sanitized record`
     )
 
     const responsePointer = record.sanitized ?? record.raw

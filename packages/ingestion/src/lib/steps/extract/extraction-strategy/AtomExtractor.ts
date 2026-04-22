@@ -4,7 +4,7 @@ import { Node, Xml } from '../../../util'
 
 import { makeExtractionStrategy } from './ExtractionStrategy'
 
-const ItemSchema = Schema.Struct({
+const AtomEntrySchema = Schema.Struct({
   id: Schema.optional(Schema.String),
   title: Schema.optional(Schema.String),
   link: Schema.optional(
@@ -15,14 +15,14 @@ const ItemSchema = Schema.Struct({
   pubDate: Schema.optional(Schema.String),
 })
 
-const DocumentSchema = Schema.Struct({
+const AtomDocumentSchema = Schema.Struct({
   feed: Schema.Struct({
-    entry: Schema.Array(ItemSchema),
+    entry: Schema.Array(AtomEntrySchema),
   }),
 })
 
 const decodeAtom = pipe(
-  DocumentSchema,
+  AtomDocumentSchema,
   Xml.parseXml({
     parser: {
       ignoreAttributes: false,
