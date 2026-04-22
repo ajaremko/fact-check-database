@@ -1,14 +1,21 @@
-import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
-import { ParseError } from 'effect/ParseResult'
+import {
+  Config,
+  ConfigError,
+  Effect,
+  ParseResult,
+  Layer,
+  pipe,
+  Schema,
+} from 'effect'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Yaml, Node } from '@news-research/ingestion/util'
-import { SanitizerPolicySchema } from '@news-research/ingestion/steps/sanitize'
+import { SanitizerPolicy } from '@news-research/ingestion/steps/sanitize'
 
 import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
 
 const decodeSources = pipe(
-  SanitizerPolicySchema,
+  SanitizerPolicy,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
@@ -23,7 +30,9 @@ export const make = Effect.gen(function* () {
 
 export const layer: Layer.Layer<
   SanitizerPolicyConfig,
-  ConfigError.ConfigError | ParseError | StorageBucket.StorageBucketIOError,
+  | ConfigError.ConfigError
+  | ParseResult.ParseError
+  | StorageBucket.StorageBucketIOError,
   StorageClient.StorageClient
 > = Layer.effect(SanitizerPolicyConfig, make).pipe(
   Layer.provide(StorageBucket.layer(Config.string('ASSETS_BUCKET_NAME')))

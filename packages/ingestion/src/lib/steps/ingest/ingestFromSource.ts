@@ -32,14 +32,20 @@ const encodeHashedObservationId = flow(
 
 export function ingestFromSource(ctx: {
   ingestionId: string
-  fetchedAt: number
+  timestamp: number
   sourceName: string
   url: string
   collection: string
 }) {
   return Effect.gen(function* () {
     yield* Effect.logDebug('Fetching data from source target')
-    const result = yield* Fetcher.fetch(ctx.sourceName, ctx.collection, ctx.url)
+    const result = yield* Fetcher.fetch(
+      ctx.sourceName,
+      ctx.collection,
+      ctx.url,
+      ctx.timestamp
+    )
+
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId(result)
 
@@ -74,7 +80,7 @@ export function ingestFromSource(ctx: {
       return new ObservationIngested({
         observationId,
         runId: ctx.ingestionId,
-        fetchedAt: ctx.fetchedAt,
+        fetchedAt: ctx.timestamp,
         url: ctx.url,
         pointer: recordPointer,
         error: result.error,
@@ -96,7 +102,7 @@ export function ingestFromSource(ctx: {
     const fetchedBody = new FetchedBody({
       observationId,
       ingestionId: ctx.ingestionId,
-      fetchedAt: ctx.fetchedAt,
+      fetchedAt: ctx.timestamp,
       sourceName: ctx.sourceName,
       body: result.body,
       contentType: result.contentType,
@@ -143,7 +149,7 @@ export function ingestFromSource(ctx: {
     return new ObservationIngested({
       observationId,
       runId: ctx.ingestionId,
-      fetchedAt: ctx.fetchedAt,
+      fetchedAt: ctx.timestamp,
       url: ctx.url,
       finalUrl: result.finalUrl,
       source: {

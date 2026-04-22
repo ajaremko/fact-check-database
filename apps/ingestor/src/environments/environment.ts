@@ -8,10 +8,10 @@ import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
   FileSystemPublisher,
+  HttpClientFetcher,
 } from '@news-research/ingestion/adapters'
 
 import * as FileSystemTargetList from '../adapters/filesystem/TargetList'
-import * as HttpClientFetcher from '../adapters/http-client/Fetcher'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 

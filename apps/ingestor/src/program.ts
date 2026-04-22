@@ -1,9 +1,8 @@
-import { Array, Effect, Option, pipe, Schema } from 'effect'
+import { Array, Clock, Effect, Option, pipe, Schema } from 'effect'
 
 import {
   StorageWriter,
   ingestFromSource,
-  SourceTarget,
   ObservationIngested,
   Fetcher,
 } from '@news-research/ingestion/steps/ingest'
@@ -11,7 +10,7 @@ import { Publisher } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
-import { SourceList } from './TargetList'
+import { SourceList, Source } from './TargetList'
 
 const encodeOutgoing = pipe(
   ObservationIngested,
@@ -20,32 +19,33 @@ const encodeOutgoing = pipe(
   Schema.encode
 )
 
-function processTarget(target: SourceTarget, index: number) {
+function processTarget(target: Source, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
+    const timestamp = yield* Clock.currentTimeMillis
 
     // ingest from target and publish event
-    yield* Effect.logInfo('Processing target')
+    yield* Effect.logInfo(`Processing target ${index + 1}: ${target.name}`)
     const event = yield* ingestFromSource({
       ingestionId: job.runId,
-      source: target,
-      index,
+      timestamp,
+      sourceName: target.name,
+      url: target.url,
+      collection: target.collection,
     })
 
     const data = yield* encodeOutgoing(event)
 
     yield* Publisher.publish(data)
-  })
-    .pipe(
-      Effect.tapError(Effect.logError),
-      Effect.annotateLogs({
-        source: target.name,
-        url: target.url,
-        collection: target.collection,
-        index,
-      })
-    )
-    .pipe(Effect.withSpan('processTarget'))
+  }).pipe(
+    Effect.tapError(Effect.logError),
+    Effect.annotateLogs({
+      source: target.name,
+      url: target.url,
+      collection: target.collection,
+    }),
+    Effect.withSpan('processTarget')
+  )
 }
 
 export type Program = Effect.Effect<
@@ -73,12 +73,12 @@ export const Program: Program = withJobContextAnnotations(
 
     // compute success rate
     const successes = Array.filterMap(results, Option.getRight)
-    const successRate = successes.length / sources.length
     yield* Effect.logInfo(
       `Processed ${successes.length} of ${sources.length} targets`
     )
 
     // fail if below threshold
+    const successRate = successes.length / sources.length
     if (successRate < job.successThreshold) {
       yield* Effect.fail(
         new Error(

@@ -1,4 +1,4 @@
-import { Effect, pipe, Schema } from 'effect'
+import { Clock, Effect, pipe, Schema } from 'effect'
 
 import {
   type StorageWriter,
@@ -30,18 +30,17 @@ function processMessage(message: MessageQueue.Message) {
   return Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
     const incoming = yield* decodeIncoming(message.data)
+    const timestamp = yield* Clock.currentTimeMillis
 
-    yield* Effect.logDebug('Sanitizing observation')
-    const events = yield* sanitizeObservation({
-      observationId: incoming.observationId,
+    yield* Effect.logInfo('Sanitizing observation')
+    const event = yield* sanitizeObservation({
       pointer: incoming.pointer,
       policy,
+      timestamp,
     })
 
-    for (const event of events) {
-      const data = yield* encodeOutgoing(event)
-      yield* Publisher.publish(data)
-    }
+    const data = yield* encodeOutgoing(event)
+    yield* Publisher.publish(data)
 
     yield* message.ack
   })
@@ -72,14 +71,12 @@ export const Program: Program = Effect.gen(function* () {
 
   const handleMessages = messages.take.pipe(
     Effect.andThen(processMessage),
-    Effect.annotateLogs({ handler: 'message' }),
     Effect.forever
   )
 
   const handleErrors = errors.take.pipe(
     Effect.tap(Effect.logError),
-    Effect.andThen((err) => Effect.die(err.cause)),
-    Effect.annotateLogs({ handler: 'error' })
+    Effect.andThen((err) => Effect.die(err.cause))
   )
 
   yield* Effect.logDebug('Listening for messages...')

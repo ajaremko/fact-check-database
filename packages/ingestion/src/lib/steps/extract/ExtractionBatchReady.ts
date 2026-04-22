@@ -1,10 +1,6 @@
 import { Schema } from 'effect'
 
-import {
-  FilePointerSchema,
-  TablePointerSchema,
-  LoadJobMetadataSchema,
-} from '../../data'
+import { TablePointerSchema, LoadJobMetadataSchema } from '../../data'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -19,7 +15,10 @@ export class ExtractionBatchReady extends Schema.Class<ExtractionBatchReady>(
 )({
   batchId: Schema.String,
   extractedAt: Schema.Number,
-  pointer: FilePointerSchema,
+  pointer: Schema.Struct({
+    bucket: Schema.String,
+    object: Schema.String,
+  }),
   table: TablePointerSchema,
   meta: LoadJobMetadataSchema,
 }) {}

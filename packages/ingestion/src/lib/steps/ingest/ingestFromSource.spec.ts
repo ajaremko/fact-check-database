@@ -15,7 +15,7 @@ describe('ingestFromSourceTarget', () => {
         const storage = {}
         const result = yield* ingestFromSource({
           ingestionId: 'run-1',
-          fetchedAt: 0,
+          timestamp: 0,
           sourceName: 'source-1',
           url: 'https://test-rss.com/rss',
           collection: 'rss',
@@ -79,7 +79,7 @@ describe('ingestFromSourceTarget', () => {
 
         const result = yield* ingestFromSource({
           ingestionId: 'run-1',
-          fetchedAt: 0,
+          timestamp: 0,
           sourceName: 'source-1',
           url: 'https://test-rss.com/rss',
           collection: 'rss',

@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { SanitizerRecord } from '../../../data'
+import { ExtractorInput } from '../ExtractorInput'
 
 import { ExtractedClaims } from '../ExtractedClaim'
 
@@ -12,7 +12,7 @@ export interface ExtractionStrategy<E, R> {
     ingestionId: string
     observationId: string
     extractedAt: number
-    record: SanitizerRecord
+    record: ExtractorInput
     data: Uint8Array
   }) => Effect.Effect<ExtractedClaims, E, R>
 }

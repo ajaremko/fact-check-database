@@ -31,7 +31,10 @@ function processMessage(message: MessageQueue.Message) {
     yield* loadJsonFromGcs({
       pointer: incoming.pointer,
       meta: incoming.meta,
-      table: incoming.table,
+      table: {
+        dataset: incoming.table.datasetId,
+        table: incoming.table.tableId,
+      },
     })
     yield* message.ack
   }).pipe(
@@ -39,7 +42,7 @@ function processMessage(message: MessageQueue.Message) {
     Effect.withSpan('processMessage'),
     Effect.catchTags({
       ParseError: () => message.ack,
-      LoadJsonFromGcsError: () => message.nack,
+      BigQueryClientIOError: () => message.nack,
     })
   )
 }
@@ -49,14 +52,12 @@ const Program = Effect.gen(function* () {
 
   const handleMessages = messages.take.pipe(
     Effect.andThen(processMessage),
-    Effect.annotateLogs({ handler: 'message' }),
     Effect.forever
   )
 
   const handleErrors = errors.take.pipe(
     Effect.tap(Effect.logError),
-    Effect.andThen(Effect.fail),
-    Effect.annotateLogs({ handler: 'error' })
+    Effect.andThen(Effect.fail)
   )
 
   yield* Effect.logInfo('Listening for messages...')
@@ -84,6 +85,7 @@ const otel = cloudRunInstanceId.pipe(
   ),
   Layer.unwrapEffect
 )
+
 const logger = Logger.replaceScoped(
   Logger.defaultLogger,
   GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))

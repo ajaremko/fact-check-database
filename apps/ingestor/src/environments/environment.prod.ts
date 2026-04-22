@@ -7,6 +7,7 @@ import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import {
   CloudStorageStorageWriter,
   CloudPubsubPublisher,
+  HttpClientFetcher,
 } from '@news-research/ingestion/adapters'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
@@ -15,7 +16,6 @@ import { cloudRunInstanceId } from '@news-research/cloud-run'
 import { pinoLogger } from '@news-research/pino'
 
 import * as CloudStorageTargetList from '../adapters/cloud-storage/TargetList'
-import * as HttpClientFetcher from '../adapters/http-client/Fetcher'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 

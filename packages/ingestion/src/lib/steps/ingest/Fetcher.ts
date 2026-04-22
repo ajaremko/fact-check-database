@@ -13,7 +13,8 @@ export class Fetcher extends Context.Tag('Fetcher')<
     readonly fetch: (
       name: string,
       collection: string,
-      url: string
+      url: string,
+      timestamp: number
     ) => Effect.Effect<FetchResult, FetcherError>
   }
 >() {}
