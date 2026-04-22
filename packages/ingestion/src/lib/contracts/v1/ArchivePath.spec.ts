@@ -16,7 +16,7 @@ describe('ArchivePath', () => {
         observationId: 'obs-1',
       })
     ).toBe(
-      'v1/test_collection/source=https://test-rss.com/rss/date=2024-01-01/ingestionId=run-1/obs-1.sanitizer.yml'
+      'v1/test_collection/source=https://test-rss.com/rss/date=2024-01-01/ingestion_id=run-1/obs-1.sanitizer.yml'
     )
   })
 })

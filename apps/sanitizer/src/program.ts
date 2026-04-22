@@ -3,24 +3,24 @@ import { Effect, pipe, Schema } from 'effect'
 import {
   type StorageWriter,
   type StorageReader,
-  SanitizationAttempted,
+  ObservationSanitized,
   sanitizeRawObservation,
 } from '@news-research/ingestion/steps/sanitize'
-import { IngestionAttempted } from '@news-research/ingestion/steps/ingest'
+import { ObservationIngested } from '@news-research/ingestion/steps/ingest'
 import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
 
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 import { Node } from '@news-research/ingestion/util'
 
 const decodeIncoming = pipe(
-  IngestionAttempted,
+  ObservationIngested,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
 )
 
 const encodeOutgoing = pipe(
-  SanitizationAttempted,
+  ObservationSanitized,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

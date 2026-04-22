@@ -4,7 +4,7 @@ import { Effect } from 'effect'
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
 import { sanitizeRawObservation } from './sanitizeRawObservation'
-import { SanitizationAttempted } from './SanitizationAttempted'
+import { ObservationSanitized } from './ObservationSanitized'
 
 describe('sanitizeRawObservation', () => {
   it.effect(
@@ -17,9 +17,9 @@ describe('sanitizeRawObservation', () => {
           kind: fetch_attempt
           outcome: no_response
           error: Network error
-          observationId: 'obs-1'
-          ingestionId: 'run-1'
-          fetchedAt: 0
+          observation_id: 'obs-1'
+          ingestion_id: 'run-1'
+          fetched_at: 0
           url: 'https://test-rss.com/rss'
           source:
             name: 'test'
@@ -28,7 +28,6 @@ describe('sanitizeRawObservation', () => {
         }
 
         const result = yield* sanitizeRawObservation({
-          observationId: 'obs-1',
           policy: {
             version: 1,
             stripQueryParams: [],
@@ -46,6 +45,7 @@ describe('sanitizeRawObservation', () => {
             bucket: 'test-bucket',
             object: 'test-record.yml',
           },
+          timestamp: 0,
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
           Effect.provide(InMemoryStorageWriter.layer(storage))
@@ -64,28 +64,27 @@ describe('sanitizeRawObservation', () => {
           version: 1
           kind: fetch_attempt
           outcome: data_fetched
-          observationId: obs-1
-          ingestionId: run-1
-          fetchedAt: 0
-          url: https://test-rss.com/rss
+          observation_id: 'obs-1'
+          ingestion_id: 'run-1'
+          fetched_at: 0
+          url: 'https://test-rss.com/rss'
           source: 
             name: 'test'
             collection: 'rss'
           http: 
             status: 200
             headers: {} 
-            contentType: 'text/xml'
-          content: 
-            sha256: ''
-            bytes: 0
+            content_type: 'text/xml'
+          content:
+            sha256: abc
+            bytes: 256
           pointer:
-            bucket: ''
-            object: ''
+            bucket: test-bucket
+            object: test-record.yml
           `,
         }
 
         const result = yield* sanitizeRawObservation({
-          observationId: 'obs-1',
           policy: {
             version: 1,
             stripQueryParams: [],
@@ -103,16 +102,17 @@ describe('sanitizeRawObservation', () => {
             bucket: 'test-bucket',
             object: 'test-record.yml',
           },
+          timestamp: 0,
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
         expect(result).toStrictEqual([
-          new SanitizationAttempted({
+          new ObservationSanitized({
             content: {
-              bytes: 0,
-              sha256: '',
+              bytes: 256,
+              sha256: 'abc',
             },
             error: undefined,
             fetchedAt: 0,

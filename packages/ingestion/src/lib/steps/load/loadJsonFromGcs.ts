@@ -1,26 +1,18 @@
-import { Data, Effect } from 'effect'
+import { Effect } from 'effect'
 import { JobLoadMetadata } from '@google-cloud/bigquery'
 
 import { StorageBucketCache, StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 
-import { FilePointer, TablePointer, LoadJobMetadata } from '../../data'
-
-export class LoadJsonFromGcsError extends Data.TaggedError(
-  'LoadJsonFromGcsError'
-)<{
-  readonly cause: unknown
-  readonly pointer: FilePointer
-  readonly table: TablePointer
-}> {}
+import { LoadJobMetadata } from './LoadJobMetadata'
 
 export function loadJsonFromGcs(input: {
-  pointer: FilePointer
+  pointer: { object: string; bucket: string }
+  table: { dataset: string; table: string }
   meta: LoadJobMetadata
-  table: TablePointer
 }): Effect.Effect<
   void,
-  LoadJsonFromGcsError,
+  BigQueryClient.BigQueryClientIOError,
   | BigQueryClient.BigQueryClient
   | StorageBucketCache.StorageBucketCache
   | StorageClient.StorageClient
@@ -31,6 +23,7 @@ export function loadJsonFromGcs(input: {
     const { bucket } = yield* buckets.get(input.pointer.bucket)
 
     const file = bucket.file(input.pointer.object)
+
     const metadata: JobLoadMetadata = {
       ...(input.meta as JobLoadMetadata),
       location: 'US',
@@ -40,14 +33,12 @@ export function loadJsonFromGcs(input: {
     yield* Effect.tryPromise({
       try: () =>
         bq.client
-          .dataset(input.table.datasetId)
-          .table(input.table.tableId)
+          .dataset(input.table.dataset)
+          .table(input.table.table)
           .load(file, metadata),
       catch: (cause) =>
-        new LoadJsonFromGcsError({
+        new BigQueryClient.BigQueryClientIOError({
           cause,
-          pointer: input.pointer,
-          table: input.table,
         }),
     })
   }).pipe(Effect.withSpan('ingestFromSourceTarget'))

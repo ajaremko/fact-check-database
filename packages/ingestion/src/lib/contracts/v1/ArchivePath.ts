@@ -1,12 +1,12 @@
 import { ParseResult, Schema } from 'effect'
-import { NumberFromFormattedDate } from './NumberFromFormattedDate'
+import { NumberFromFormattedDate } from '../../data/NumberFromFormattedDate'
 
 /**
  * Schema for the GCS object path where a sanitizer record is stored. Encodes the
- * `collectionName`, `sourceName`, `date`, `runId`, `id`, and `ext` fields into a structured path for
+ * `collectionName`, `sourceName`, `date`, `ingestionId`, `observationId`, and `ext` fields into a structured path for
  * queryable organization in GCS.
  *
- * Example path: `v1/records/source=example_source/date=2024-01-01/run=abc123/record_id.sanitizer.yml`
+ * Example path: `v1/records/source=example_source/date=2024-01-01/ingestion_id=abc123/observation_id.sanitizer.yml`
  */
 export const ArchivePathSchema = Schema.transformOrFail(
   Schema.String,
@@ -27,7 +27,7 @@ export const ArchivePathSchema = Schema.transformOrFail(
         input.collectionName,
         `source=${input.sourceName}`,
         `date=${input.date}`,
-        `ingestionId=${input.ingestionId}`,
+        `ingestion_id=${input.ingestionId}`,
         `${input.observationId}.${input.ext}`,
       ].join('/')
       return ParseResult.succeed(output)

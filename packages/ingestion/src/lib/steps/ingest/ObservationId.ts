@@ -1,19 +1,30 @@
 import { ParseResult, Schema } from 'effect'
-import { NumberFromFormattedDate } from '../../data/NumberFromFormattedDate'
 
-const FailedObservationIdSchema = Schema.transformOrFail(
-  Schema.String,
-  Schema.Struct({
-    version: Schema.Literal(1),
-    url: Schema.String,
-    fetchedAt: NumberFromFormattedDate('yyyy-MM-dd'),
-    error: Schema.String,
-  }),
+import * as v1 from '../../contracts/v1'
+
+import { FetchResult } from './FetchResult'
+
+export const ObservationIdSchema = Schema.transformOrFail(
+  v1.ObservationIdSchema,
+  FetchResult,
   {
     strict: true,
-    encode: ({ version, url, fetchedAt, error }) => {
-      const id = `v${version}|url=${url}|t=${fetchedAt}|error=${error}`
-      return ParseResult.succeed(id)
+    encode: (input) => {
+      if (input._tag === 'FetchFailure') {
+        return ParseResult.succeed({
+          version: 1,
+          success: false as const,
+          url: input.url,
+          fetchedAt: input.fetchedAt,
+          error: input.error,
+        })
+      }
+      return ParseResult.succeed({
+        version: 1,
+        success: true as const,
+        url: input.url,
+        sha256: input.sha256,
+      })
     },
     decode: (input, _, ast) =>
       ParseResult.fail(
@@ -24,35 +35,6 @@ const FailedObservationIdSchema = Schema.transformOrFail(
         )
       ),
   }
-)
-
-const SuccessfulObservationIdSchema = Schema.transformOrFail(
-  Schema.String,
-  Schema.Struct({
-    version: Schema.Literal(1),
-    url: Schema.String,
-    sha256: Schema.String,
-  }),
-  {
-    strict: true,
-    encode: ({ version, url, sha256 }) => {
-      const id = `v${version}|url=${url}|sha256=${sha256}`
-      return ParseResult.succeed(id)
-    },
-    decode: (input, _, ast) =>
-      ParseResult.fail(
-        new ParseResult.Forbidden(
-          ast,
-          input,
-          'Decoding observation IDs not implemented'
-        )
-      ),
-  }
-)
-
-export const ObservationIdSchema = Schema.Union(
-  FailedObservationIdSchema,
-  SuccessfulObservationIdSchema
 )
 
 export type ObservationId = Schema.Schema.Type<typeof ObservationIdSchema>

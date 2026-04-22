@@ -2,12 +2,11 @@ import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { Node, NodeCsv } from '@news-research/ingestion/util'
-import { SourceTargetSchema } from '@news-research/ingestion/steps/ingest'
 
-import { TargetList } from '../../TargetList'
+import { SourceList, SourceSchema } from '../../TargetList'
 
 const decodeSources = pipe(
-  SourceTargetSchema,
+  SourceSchema,
   NodeCsv.parseCsv({
     parse: {
       columns: true,
@@ -25,7 +24,7 @@ export const make = Effect.gen(function* () {
   const sourcesData = yield* fs.readFile(sourcesPath)
   const sources = yield* decodeSources(sourcesData)
 
-  return TargetList.of({ sources })
+  return SourceList.of({ sources })
 })
 
-export const layer = Layer.effect(TargetList, make)
+export const layer = Layer.effect(SourceList, make)

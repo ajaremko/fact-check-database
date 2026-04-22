@@ -1,13 +1,11 @@
 import { Schema } from 'effect'
 
-import {
-  ClaimsTableRowSchema,
-  ClaimVerdictSchema,
-  NumberFromFormattedDate,
-} from '../../data'
+import * as v1 from '../../contracts/v1'
+
+import { NumberFromFormattedDate } from '../../data'
 
 export const ExtractedClaimSchema = Schema.transform(
-  ClaimsTableRowSchema,
+  v1.ClaimsTableRowSchema,
   Schema.Struct({
     id: Schema.String,
     observationId: Schema.String,
@@ -24,7 +22,7 @@ export const ExtractedClaimSchema = Schema.transform(
     publishedAt: Schema.NullOr(Schema.String),
     title: Schema.NullOr(Schema.String),
     claim: Schema.NullOr(Schema.String),
-    verdict: Schema.NullOr(ClaimVerdictSchema),
+    verdict: Schema.NullOr(v1.ClaimVerdictSchema),
     summary: Schema.NullOr(Schema.String),
   }),
   {

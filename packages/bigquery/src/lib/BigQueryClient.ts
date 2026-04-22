@@ -1,4 +1,4 @@
-import { Context, Effect, Config, flow, Layer } from 'effect'
+import { Context, Effect, Config, flow, Layer, Data } from 'effect'
 import { BigQuery, BigQueryOptions } from '@google-cloud/bigquery'
 
 /**
@@ -14,6 +14,15 @@ export class BigQueryClient extends Context.Tag('BigQueryClient')<
     readonly client: BigQuery
   }
 >() {}
+
+/**
+ * Provided to thrown when a BigQuery client call rejects.
+ */
+export class BigQueryClientIOError extends Data.TaggedError(
+  'BigQueryClientIOError'
+)<{
+  readonly cause: unknown
+}> {}
 
 type BigQueryOptionsConfig = {
   [k in keyof BigQueryOptions]?: Config.Config<NonNullable<BigQueryOptions[k]>>

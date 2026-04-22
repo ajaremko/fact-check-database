@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema } from '../../data/FilePointer.js'
+import { FilePointerSchema } from '../../contracts/v1/FilePointer.js'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -10,8 +10,8 @@ import { FilePointerSchema } from '../../data/FilePointer.js'
  * deduplication across runs. The `pointer` field references the archived
  * ingestor record in cloud storage.
  */
-export class IngestionAttempted extends Schema.Class<IngestionAttempted>(
-  'IngestionAttempted'
+export class ObservationIngested extends Schema.Class<ObservationIngested>(
+  'ObservationIngested'
 )({
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
   runId: Schema.String,

@@ -3,7 +3,7 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
 
-import { IngestionAttempted } from './IngestionAttempted'
+import { ObservationIngested } from './ObservationIngested'
 import { ingestFromSourceTarget } from './ingestFromSourceTarget'
 
 describe('ingestFromSourceTarget', () => {
@@ -12,16 +12,14 @@ describe('ingestFromSourceTarget', () => {
     () =>
       Effect.gen(function* () {
         const storage = {}
-
         const result = yield* ingestFromSourceTarget({
-          runId: 'run-1',
+          ingestionId: 'run-1',
+          fetchedAt: 0,
           source: {
-            id: 'source-1',
             name: 'source-1',
             url: 'https://test-rss.com/rss',
             collection: 'rss',
           },
-          index: 0,
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer({
@@ -33,7 +31,7 @@ describe('ingestFromSourceTarget', () => {
         )
 
         expect(result).toStrictEqual(
-          new IngestionAttempted({
+          new ObservationIngested({
             observationId:
               'b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4',
             runId: 'run-1',
@@ -74,14 +72,13 @@ describe('ingestFromSourceTarget', () => {
         const storage = {}
 
         const result = yield* ingestFromSourceTarget({
-          runId: 'run-1',
+          ingestionId: 'run-1',
+          fetchedAt: 0,
           source: {
-            id: 'source-1',
             name: 'source-1',
             url: 'https://test-rss.com/rss',
             collection: 'rss',
           },
-          index: 0,
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer({
@@ -99,7 +96,7 @@ describe('ingestFromSourceTarget', () => {
         )
 
         expect(result).toStrictEqual(
-          new IngestionAttempted({
+          new ObservationIngested({
             observationId:
               '3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9',
             runId: 'run-1',

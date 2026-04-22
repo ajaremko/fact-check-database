@@ -1,6 +1,20 @@
 import { Schema } from 'effect'
 
-import { PolicyLabelSchema } from '../../data'
+/**
+ * High-level access classification assigned to each sanitized record.
+ * Determines who may access the record downstream:
+ * - `SAFE_PUBLIC` — suitable for unrestricted downstream access
+ * - `RESTRICTED` — requires access controls before use
+ * - `QUARANTINED` — withheld from downstream use pending review
+ */
+export const PolicyLabelSchema = Schema.Literal(
+  'SAFE_PUBLIC',
+  'RESTRICTED',
+  'QUARANTINED'
+)
+
+/** High-level access classification assigned to each sanitized record. */
+export type PolicyLabel = Schema.Schema.Type<typeof PolicyLabelSchema>
 
 /**
  * A simple allowlist-based policy per source collection.
@@ -47,12 +61,12 @@ export const SourceOverrideSchema = Schema.Struct({
 
 export type SourceOverride = Schema.Schema.Type<typeof SourceOverrideSchema>
 
-export const SanitizerPolicySchema = Schema.Struct({
+export class SanitizerPolicy extends Schema.Class<SanitizerPolicy>(
+  'SanitizerPolicy'
+)({
   version: Schema.Number,
   stripQueryParams: Schema.Array(Schema.String),
   dropHeaders: Schema.Array(Schema.String),
   collections: Schema.Array(CollectionRuleSchema),
   overrides: Schema.optional(Schema.Array(SourceOverrideSchema)),
-})
-
-export type SanitizerPolicy = Schema.Schema.Type<typeof SanitizerPolicySchema>
+}) {}

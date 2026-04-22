@@ -1,27 +1,27 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { FilePointer, SanitizerRecordSchema } from '../../data'
 import { Node, Yaml } from '../../util'
 import { StorageReader } from '../../ports'
 
+import { ExtractorInputSchema } from './ExtractorInput'
 import { extractors } from './extraction-strategy'
 
-const decodeSanitizerRecord = pipe(
-  SanitizerRecordSchema,
+const decodeExtractorInput = pipe(
+  ExtractorInputSchema,
   Yaml.parseYaml(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
 
-export function extractRowsFromSanitized(input: {
+export function extractRowsFromSanitized(ctx: {
   extractionId: string
   observationId: string
-  pointer: FilePointer
+  pointer: { object: string; bucket: string }
   extractedAt: number
 }) {
   return Effect.gen(function* () {
-    const recordData = yield* StorageReader.readFile(input.pointer)
-    const record = yield* decodeSanitizerRecord(recordData)
+    const recordData = yield* StorageReader.readFile(ctx.pointer)
+    const record = yield* decodeExtractorInput(recordData)
 
     const extractor = extractors.find((e) =>
       e.canHandle({
@@ -32,20 +32,20 @@ export function extractRowsFromSanitized(input: {
 
     if (!extractor) {
       yield* Effect.logWarning(
-        `No extractor available for collection ${record.source.collection} for observation ${input.observationId}, skipping extraction`
+        `No extractor available for collection ${record.source.collection} for observation ${ctx.observationId}, skipping extraction`
       )
       return []
     }
 
     yield* Effect.logInfo(
-      `Extracting rows for observation ${input.observationId} from sanitized record`
+      `Extracting rows for observation ${ctx.observationId} from sanitized record`
     )
 
-    const responsePointer = record.sanitizedRaw ?? record.input.raw
+    const responsePointer = record.sanitized ?? record.raw
 
     if (!responsePointer) {
       yield* Effect.logWarning(
-        `No pointer available for observation ${input.observationId}, skipping extraction`
+        `No pointer available for observation ${ctx.observationId}, skipping extraction`
       )
       return []
     }
@@ -55,8 +55,8 @@ export function extractRowsFromSanitized(input: {
       .extractor({
         extractionId: extractor.id,
         ingestionId: record.ingestionId,
-        observationId: input.observationId,
-        extractedAt: input.extractedAt,
+        observationId: ctx.observationId,
+        extractedAt: ctx.extractedAt,
         record,
         data: responseData,
       })
@@ -64,7 +64,7 @@ export function extractRowsFromSanitized(input: {
         Effect.tapError(Effect.logWarning),
         Effect.catchAll(() => Effect.succeed([])),
         Effect.annotateLogs({
-          observationId: input.observationId,
+          observationId: ctx.observationId,
           collection: record.source.collection,
           name: record.source.name,
           extractorId: extractor.id,
@@ -72,7 +72,7 @@ export function extractRowsFromSanitized(input: {
         Effect.withSpan(`extractor.${extractor.id}`)
       )
   }).pipe(
-    Effect.annotateLogs({ extractionId: input.extractionId }),
+    Effect.annotateLogs({ extractionId: ctx.extractionId }),
     Effect.withSpan('extractRowsFromSanitized')
   )
 }

@@ -1,10 +1,17 @@
-import { Context } from 'effect'
+import { Context, Schema } from 'effect'
 
-import type { SourceTarget } from '@news-research/ingestion/steps/ingest'
+export const SourceSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  url: Schema.String,
+  collection: Schema.String, // "csv" | "rss" | "gdelt" later
+})
 
-export class TargetList extends Context.Tag('TargetList')<
-  TargetList,
+export type Source = Schema.Schema.Type<typeof SourceSchema>
+
+export class SourceList extends Context.Tag('SourceList')<
+  SourceList,
   {
-    sources: readonly SourceTarget[]
+    sources: readonly Source[]
   }
 >() {}

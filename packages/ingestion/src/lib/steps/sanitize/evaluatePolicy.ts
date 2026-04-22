@@ -1,17 +1,6 @@
-import type {
-  IngestionRecord,
-  PolicyLabel,
-  SanitizationAction,
-} from '../../data'
-
 import type { CollectionRule, SanitizerPolicy } from './SanitizerPolicy'
-
-export type PolicyDecision = {
-  label: PolicyLabel
-  actions: SanitizationAction[]
-  error?: string
-  rewriteBody: boolean
-}
+import type { SanitizationAction, PolicyDecision } from './PolicyDecision'
+import type { SanitizerInput } from './SanitizerInput'
 
 const collectionRuleDefaults: Partial<CollectionRule> = {
   defaultLabel: 'RESTRICTED',
@@ -20,28 +9,24 @@ const collectionRuleDefaults: Partial<CollectionRule> = {
   rewriteBody: false,
 }
 
-export function pickRule(input: {
-  policy: SanitizerPolicy
+export function pickRule(
+  policy: SanitizerPolicy,
   source: {
     collection: string
     name: string
   }
-}): CollectionRule {
+): CollectionRule {
   const base =
-    input.policy.collections.find(
-      (c) => c.collection === input.source.collection
-    ) ??
-    input.policy.collections.find((c) => c.collection === 'default') ??
+    policy.collections.find((c) => c.collection === source.collection) ??
+    policy.collections.find((c) => c.collection === 'default') ??
     // last resort: super conservative
     ({
       ...collectionRuleDefaults,
-      collection: input.source.collection,
+      collection: source.collection,
       maxBytes: 1_000_000,
     } as CollectionRule)
 
-  const ov = input.policy.overrides?.find(
-    (o) => o.sourceName === input.source.name
-  )
+  const ov = policy.overrides?.find((o) => o.sourceName === source.name)
   if (!ov) return { ...collectionRuleDefaults, ...base }
 
   return {
@@ -85,27 +70,27 @@ function contentTypeAllowed(
       }
 }
 
-export function evaluatePolicy(input: {
-  policy: SanitizerPolicy
-  record: IngestionRecord
-}): PolicyDecision {
-  const actions: PolicyDecision['actions'] = []
+export function evaluatePolicy(
+  policy: SanitizerPolicy,
+  input: SanitizerInput
+): PolicyDecision {
+  const actions: SanitizationAction[] = []
 
   // Fetch failed: quarantine
-  if (input.record.outcome !== 'data_fetched') {
+  if (!input.dataFetched) {
     actions.push('QUARANTINED_FETCH_FAILED')
     return {
       label: 'QUARANTINED',
       actions,
-      error: input.record.error ?? 'NoResponse',
+      error: input.error,
       rewriteBody: false,
     }
   }
 
-  const rule = pickRule({ policy: input.policy, source: input.record.source })
+  const rule = pickRule(policy, input.source)
 
   // Size gate
-  const bytes = input.record.content?.bytes
+  const bytes = input.content?.bytes
   if (typeof bytes === 'number' && bytes > rule.maxBytes) {
     actions.push('QUARANTINED_TOO_LARGE')
     return {
@@ -117,7 +102,7 @@ export function evaluatePolicy(input: {
   }
 
   // Content-type gate
-  const ct = input.record.http?.contentType
+  const ct = input.http?.contentType
   const ctCheck = contentTypeAllowed(ct, rule)
   if (!ctCheck.allowed) {
     actions.push(

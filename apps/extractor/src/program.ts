@@ -8,13 +8,13 @@ import {
   ExtractionBatchReady,
 } from '@news-research/ingestion/steps/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
-import { SanitizationAttempted } from '@news-research/ingestion/steps/sanitize'
+import { ObservationSanitized } from '@news-research/ingestion/steps/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 
 const decodeIncoming = pipe(
-  SanitizationAttempted,
+  ObservationSanitized,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode

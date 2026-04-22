@@ -3,12 +3,11 @@ import { ParseError } from 'effect/ParseResult'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 import { Node, NodeCsv } from '@news-research/ingestion/util'
-import { SourceTargetSchema } from '@news-research/ingestion/steps/ingest'
 
-import { TargetList } from '../../TargetList'
+import { SourceList, SourceSchema } from '../../TargetList'
 
 const decodeSources = pipe(
-  SourceTargetSchema,
+  SourceSchema,
   NodeCsv.parseCsv({
     parse: {
       columns: true,
@@ -24,13 +23,13 @@ export const make = Effect.gen(function* () {
   const uri = yield* Config.string('TARGET_LIST_URI')
   const [buf] = yield* StorageBucket.downloadFile(uri)
   const sources = yield* decodeSources(buf)
-  return TargetList.of({ sources })
+  return SourceList.of({ sources })
 })
 
 export const layer: Layer.Layer<
-  TargetList,
+  SourceList,
   ConfigError.ConfigError | ParseError | StorageBucket.StorageBucketIOError,
   StorageClient.StorageClient
-> = Layer.effect(TargetList, make).pipe(
+> = Layer.effect(SourceList, make).pipe(
   Layer.provide(StorageBucket.layer(Config.string('TARGET_LIST_BUCKET_NAME')))
 )

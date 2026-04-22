@@ -1,6 +1,9 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema } from './FilePointer.js'
+import { ContentSummarySchema } from './ContentSummary'
+import { FilePointerSchema } from './FilePointer'
+import { HttpSummarySchema } from './HttpSummary'
+import { SourceSummarySchema } from './SourceSummary'
 
 /**
  * High-level access classification assigned to each sanitized record.
@@ -40,34 +43,6 @@ export type SanitizationAction = Schema.Schema.Type<
   typeof SanitizationActionSchema
 >
 
-/** Source name and collection label shared across record types. */
-export const SourceSchema = Schema.Struct({
-  name: Schema.String,
-  collection: Schema.String, // "rss" | "api" | "html" | ...
-})
-
-/**
- * HTTP response metadata included in sanitized records.
- * `headers` is optional — many pipelines omit it entirely in sanitized outputs.
- */
-export const HttpSummarySchema = Schema.Struct({
-  status: Schema.Number,
-  contentType: Schema.optional(Schema.String),
-  etag: Schema.optional(Schema.String),
-  lastModified: Schema.optional(Schema.String),
-
-  // Keep optional: many pipelines omit headers entirely in sanitized outputs.
-  headers: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.String })
-  ),
-})
-
-/** Content metrics included in sanitized records. */
-export const ContentSummarySchema = Schema.Struct({
-  sha256: Schema.optional(Schema.String),
-  bytes: Schema.optional(Schema.Number),
-})
-
 /**
  * Reference to the input ingestor record that was sanitized.
  * `raw` optionally points to the original raw bytes if they were retained.
@@ -86,38 +61,40 @@ export const InputRecordRefSchema = Schema.Struct({
  * the modified bytes; for quarantined records, `error` describes the reason.
  */
 export const SanitizerRecordSchema = Schema.Struct({
-  kind: Schema.Literal('sanitized_record'),
   version: Schema.Literal(1),
-
+  kind: Schema.Literal('sanitized_record'),
   // Identity
-  observationId: Schema.String,
-  ingestionId: Schema.String,
-  fetchedAt: Schema.Number,
-  sanitizedAt: Schema.Number,
-
+  observation_id: Schema.String,
+  ingestion_id: Schema.String,
+  fetched_at: Schema.Number,
+  sanitized_at: Schema.Number,
   // Provenance
   input: InputRecordRefSchema,
-
   // Normalized fields
   url: Schema.String,
-  finalUrl: Schema.optional(Schema.String),
-  source: SourceSchema,
-
-  http: HttpSummarySchema,
-  content: ContentSummarySchema,
-
-  policy: Schema.Struct({
+  final_url: Schema.optional(Schema.String),
+  source: SourceSummarySchema,
+  http: Schema.optional(HttpSummarySchema),
+  content: Schema.optional(ContentSummarySchema),
+  outcome: Schema.Struct({
     label: PolicyLabelSchema,
     actions: Schema.Array(SanitizationActionSchema),
     notes: Schema.optional(Schema.String),
+    // Set to true if the sanitizer rewrote the body bytes
+    bytes_rewritten: Schema.optional(Schema.Boolean),
   }),
-
-  // If you rewrite bytes, point to sanitized raw here.
-  // If you do not rewrite, you can omit or point to original raw depending on your policy stance.
-  sanitizedRaw: Schema.optional(FilePointerSchema),
-
+  // If you rewrite bytes, point to sanitized raw in content summary.
+  pointer: Schema.optional(FilePointerSchema),
   // For quarantined items (or other failures)
   error: Schema.optional(Schema.String),
+}).annotations({
+  identifier: 'v1SanitizerRecord',
+  title: 'SanitizerRecord',
+  description: `
+    Produced when a sanitization policy is applied to an ingested 
+    observation. Documents the policy outcome and traceable actions 
+    taken, with pointers to the original ingestor record and sanitized 
+    bytes if applicable.`,
 })
 
 export type SanitizerRecord = Schema.Schema.Type<typeof SanitizerRecordSchema>

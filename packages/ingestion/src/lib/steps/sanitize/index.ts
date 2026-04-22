@@ -1,5 +1,5 @@
 export * from './evaluatePolicy.js'
-export * from './SanitizationAttempted.js'
+export * from './ObservationSanitized.js'
 export * from './sanitizeRawObservation.js'
 export * from './SanitizerPolicy.js'
 export * from '../../ports/index.js'

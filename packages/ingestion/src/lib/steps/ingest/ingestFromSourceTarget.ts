@@ -1,213 +1,86 @@
-import { Clock, Effect, Schema, flow, pipe } from 'effect'
+import { Effect, Schema, flow, pipe } from 'effect'
 
-import {
-  ArchivePathSchema,
-  IngestionRecordMetadataSchema,
-  IngestionRecordSchema,
-} from '../../data'
 import { Node, Yaml } from '../../util'
 import { StorageWriter } from '../../ports'
 
-import { Fetcher, FetchFailure, FetchSuccess } from './Fetcher'
-import { IngestionAttempted } from './IngestionAttempted'
-import { SourceTarget } from './SourceTarget'
+import * as Fetcher from './Fetcher'
+import {
+  RawObservation,
+  RawObservationSchema,
+  RawObservationMetadataSchema,
+  RawObservationPathSchema,
+} from './RawObservation'
+import { FetchedBody, FetchedBodyPathSchema } from './FetchedBody'
 import { ObservationIdSchema } from './ObservationId'
+import { ObservationIngested } from './ObservationIngested'
 
-const encodeIngestionRecord = pipe(
-  IngestionRecordSchema,
+const encodeRawObservation = pipe(
+  RawObservationSchema,
   Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
 
-const encodeIngestionRecordMetadata = Schema.encode(
-  IngestionRecordMetadataSchema
-)
-
-const encodeArchivePath = Schema.encode(ArchivePathSchema)
-
-function writeFetchFailureRecord(input: {
-  observationId: string
-  ingestionId: string
-  source: SourceTarget
-  fetchedAt: number
-  result: FetchFailure
-}) {
-  return Effect.gen(function* () {
-    // Write a record of the failed attempt, without a pointer
-    // or content fields since there is no body to archive
-    yield* Effect.logDebug('Writing fetch failure record')
-    const recordPath = yield* encodeArchivePath({
-      version: 1,
-      ingestionId: input.ingestionId,
-      collectionName: 'records',
-      ext: 'ingestion.yml',
-      sourceName: input.source.name,
-      observationId: input.observationId,
-      date: input.fetchedAt,
-    })
-    const recordData = yield* encodeIngestionRecord({
-      version: 1,
-      kind: 'fetch_attempt',
-      outcome: 'no_response',
-      observationId: input.observationId,
-      ingestionId: input.ingestionId,
-      fetchedAt: input.fetchedAt,
-      url: input.source.url,
-      source: {
-        name: input.source.name,
-        collection: input.source.collection,
-      },
-      error: input.result.error,
-    })
-    const recordMeta = yield* encodeIngestionRecordMetadata({
-      observationId: input.observationId,
-      url: input.source.url,
-      sourceName: input.source.name,
-      sourceCollection: input.source.collection,
-      ingestionId: input.ingestionId,
-      fetchedAt: input.fetchedAt,
-    })
-    return yield* StorageWriter.writeFile({
-      path: recordPath,
-      data: recordData,
-      meta: recordMeta,
-      contentType: 'application/yaml',
-    })
-  }).pipe(
-    Effect.annotateLogs({
-      result: input.result.type,
-    })
-  )
-}
-
-function writeDataFetchedRecord(input: {
-  observationId: string
-  ingestionId: string
-  source: SourceTarget
-  fetchedAt: number
-  result: FetchSuccess
-}) {
-  return Effect.gen(function* () {
-    // Write the raw response body to the archive
-    yield* Effect.logDebug('Writing raw response body')
-    const bodyPath = yield* encodeArchivePath({
-      version: 1,
-      sourceName: input.source.name,
-      collectionName: 'raw',
-      ext: 'bin',
-      date: input.fetchedAt,
-      ingestionId: input.ingestionId,
-      observationId: input.observationId,
-    })
-    const bodyPointer = yield* StorageWriter.writeFile({
-      path: bodyPath,
-      data: input.result.body,
-      contentType: input.result.contentType,
-    })
-
-    // Write a record of the successful attempt, including a
-    // pointer to the archived body
-    yield* Effect.logDebug('Writing fetch success record')
-    const recordPath = yield* encodeArchivePath({
-      version: 1,
-      ingestionId: input.ingestionId,
-      collectionName: 'records',
-      ext: 'ingestion.yml',
-      sourceName: input.source.name,
-      observationId: input.observationId,
-      date: input.fetchedAt,
-    })
-    const recordData = yield* encodeIngestionRecord({
-      version: 1,
-      kind: 'fetch_attempt',
-      outcome: 'data_fetched',
-      ingestionId: input.ingestionId,
-      observationId: input.observationId,
-      fetchedAt: input.fetchedAt,
-      url: input.source.url,
-      source: {
-        name: input.source.name,
-        collection: input.source.collection,
-      },
-      http: {
-        status: input.result.status,
-        contentType: input.result.contentType,
-        etag: input.result.etag,
-        lastModified: input.result.lastModified,
-        headers: input.result.headers,
-      },
-      content: {
-        sha256: input.result.sha256,
-        bytes: input.result.bytes,
-      },
-      pointer: bodyPointer,
-    })
-    const recordMeta = yield* encodeIngestionRecordMetadata({
-      observationId: input.observationId,
-      url: input.source.url,
-      sourceName: input.source.name,
-      sourceCollection: input.source.collection,
-      ingestionId: input.ingestionId,
-      fetchedAt: input.fetchedAt,
-    })
-    return yield* StorageWriter.writeFile({
-      path: recordPath,
-      data: recordData,
-      meta: recordMeta,
-      contentType: 'application/yaml',
-    })
-  }).pipe(
-    Effect.annotateLogs({
-      result: input.result.type,
-    })
-  )
-}
+const encodeRawObservationMetadata = Schema.encode(RawObservationMetadataSchema)
+const encodeRawObservationPath = Schema.encode(RawObservationPathSchema)
+const encodeFetchedBodyPath = Schema.encode(FetchedBodyPathSchema)
 
 const encodeHashedObservationId = flow(
   Schema.encode(ObservationIdSchema),
   Effect.andThen((base) => Node.sha256Hex(base, 'utf8'))
 )
 
-export function ingestFromSourceTarget(input: {
-  runId: string
-  source: SourceTarget
-  index: number
+export function ingestFromSourceTarget(ctx: {
+  ingestionId: string
+  fetchedAt: number
+  source: {
+    name: string
+    collection: string
+    url: string
+  }
 }) {
   return Effect.gen(function* () {
-    const fetcher = yield* Fetcher
-    const fetchedAt = yield* Clock.currentTimeMillis
-
     yield* Effect.logDebug('Fetching data from source target')
-    const result = yield* fetcher.fetch(input.source)
+    const result = yield* Fetcher.fetch(ctx.source)
+    // Derive a stable observation ID from fetch result
+    const observationId = yield* encodeHashedObservationId(result)
 
-    if (result.type === 'failure') {
-      // Derive a stable observation ID from failure
-      const id = yield* encodeHashedObservationId({
-        version: 1,
-        url: input.source.url,
-        fetchedAt: fetchedAt,
-        error: result.error,
-      })
-      // write a record of the failed attempt, without a pointer
-      const recordPointer = yield* writeFetchFailureRecord({
-        observationId: id,
-        ingestionId: input.runId,
-        source: input.source,
-        fetchedAt,
+    if (result._tag === 'FetchFailure') {
+      // For a failed fetch, we won't have a body to archive,
+      // so we can skip straight to creating an observation
+      // with no pointer to a body
+      const observation = new RawObservation({
+        observationId,
+        ingestionId: ctx.ingestionId,
         result,
+        pointer: null,
       })
-      // Return an `IngestionAttempted` event with error details
+      // Encode to a record of the failed attempt, without a
+      // pointer
+      yield* Effect.logDebug('Writing fetch failure record')
+      const recordPath = yield* encodeRawObservationPath(observation)
+      const recordData = yield* encodeRawObservation(observation)
+      const recordMeta = yield* encodeRawObservationMetadata(observation)
+      // write the record to storage
+      const recordPointer = yield* StorageWriter.writeFile({
+        path: recordPath,
+        data: recordData,
+        meta: recordMeta,
+        contentType: 'application/yaml',
+      })
+      // Return an `ObservationIngested` event with error details
       // and pointer to the attempt record, but no content fields
       // since there is no body to archive
-      return new IngestionAttempted({
-        observationId: id,
-        runId: input.runId,
-        fetchedAt,
-        url: input.source.url,
+      return new ObservationIngested({
+        observationId,
+        runId: ctx.ingestionId,
+        fetchedAt: ctx.fetchedAt,
+        url: ctx.source.url,
+        pointer: recordPointer,
+        error: result.error,
         source: {
-          name: input.source.name,
-          collection: input.source.collection,
+          name: ctx.source.name,
+          collection: ctx.source.collection,
         },
         http: {
           status: 0,
@@ -216,38 +89,59 @@ export function ingestFromSourceTarget(input: {
           sha256: undefined,
           bytes: undefined,
         },
-        error: result.error,
-        pointer: recordPointer,
       })
     }
-    // Derive a stable observation ID from the success
-    const id = yield* encodeHashedObservationId({
-      version: 1,
-      url: input.source.url,
-      sha256: result.sha256,
+    // For a successful fetch, we need to archive the body
+    const fetchedBody = new FetchedBody({
+      observationId,
+      ingestionId: ctx.ingestionId,
+      fetchedAt: ctx.fetchedAt,
+      sourceName: ctx.source.name,
+      body: result.body,
+      contentType: result.contentType,
+    })
+    // Write the raw response body to the archive
+    yield* Effect.logDebug('Writing raw response body')
+    const bodyPath = yield* encodeFetchedBodyPath(fetchedBody)
+    // write the body to storage
+    const bodyPointer = yield* StorageWriter.writeFile({
+      path: bodyPath,
+      data: fetchedBody.body,
+      contentType: fetchedBody.contentType,
+    })
+    // We have archived the body so we create an
+    // observation with a pointer to the body
+    const observation = new RawObservation({
+      observationId,
+      ingestionId: ctx.ingestionId,
+      result,
+      pointer: bodyPointer,
     })
     // Write a record of the successful attempt, including a
     // pointer to the archived body
-    const recordPointer = yield* writeDataFetchedRecord({
-      observationId: id,
-      ingestionId: input.runId,
-      source: input.source,
-      fetchedAt,
-      result,
+    yield* Effect.logDebug('Writing fetch success record')
+    const recordPath = yield* encodeRawObservationPath(observation)
+    const recordData = yield* encodeRawObservation(observation)
+    const recordMeta = yield* encodeRawObservationMetadata(observation)
+    // write the record to storage
+    const recordPointer = yield* StorageWriter.writeFile({
+      path: recordPath,
+      data: recordData,
+      meta: recordMeta,
+      contentType: 'application/yaml',
     })
-
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which
     // references the archived body
-    return new IngestionAttempted({
-      observationId: id,
-      runId: input.runId,
-      fetchedAt,
-      url: input.source.url,
+    return new ObservationIngested({
+      observationId,
+      runId: ctx.ingestionId,
+      fetchedAt: ctx.fetchedAt,
+      url: ctx.source.url,
       finalUrl: result.finalUrl,
       source: {
-        name: input.source.name,
-        collection: input.source.collection,
+        name: ctx.source.name,
+        collection: ctx.source.collection,
       },
       http: {
         status: result.status,
@@ -264,10 +158,9 @@ export function ingestFromSourceTarget(input: {
     })
   }).pipe(
     Effect.annotateLogs({
-      index: input.index,
-      source: input.source.name,
-      url: input.source.url,
-      collection: input.source.collection,
+      source: ctx.source.name,
+      url: ctx.source.url,
+      collection: ctx.source.collection,
     }),
     Effect.withSpan('ingestFromSourceTarget')
   )

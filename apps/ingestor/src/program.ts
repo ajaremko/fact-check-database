@@ -4,17 +4,17 @@ import {
   StorageWriter,
   ingestFromSourceTarget,
   SourceTarget,
-  IngestionAttempted,
+  ObservationIngested,
   Fetcher,
 } from '@news-research/ingestion/steps/ingest'
 import { Publisher } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
-import { TargetList } from './TargetList'
+import { SourceList } from './TargetList'
 
 const encodeOutgoing = pipe(
-  IngestionAttempted,
+  ObservationIngested,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
@@ -27,7 +27,7 @@ function processTarget(target: SourceTarget, index: number) {
     // ingest from target and publish event
     yield* Effect.logInfo('Processing target')
     const event = yield* ingestFromSourceTarget({
-      runId: job.runId,
+      ingestionId: job.runId,
       source: target,
       index,
     })
@@ -52,7 +52,7 @@ export type Program = Effect.Effect<
   void,
   Error,
   | JobContext
-  | TargetList
+  | SourceList
   | Publisher.Publisher
   | StorageWriter.StorageWriter
   | Fetcher.Fetcher
@@ -61,7 +61,7 @@ export type Program = Effect.Effect<
 export const Program: Program = withJobContextAnnotations(
   Effect.gen(function* () {
     const job = yield* JobContext
-    const { sources } = yield* TargetList
+    const { sources } = yield* SourceList
 
     // process all targets with configured concurrency
     yield* Effect.logInfo(`Processing ${sources.length} targets`)
