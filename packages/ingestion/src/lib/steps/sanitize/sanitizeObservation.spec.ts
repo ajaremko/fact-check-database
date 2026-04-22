@@ -3,10 +3,10 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
-import { sanitizeRawObservation } from './sanitizeRawObservation'
+import { sanitizeObservation } from './sanitizeObservation'
 import { ObservationSanitized } from './ObservationSanitized'
 
-describe('sanitizeRawObservation', () => {
+describe('sanitizeObservation', () => {
   it.effect(
     'skips non-data_fetched records and returns empty array without writing',
     () =>
@@ -27,7 +27,7 @@ describe('sanitizeRawObservation', () => {
           `,
         }
 
-        const result = yield* sanitizeRawObservation({
+        const result = yield* sanitizeObservation({
           policy: {
             version: 1,
             stripQueryParams: [],
@@ -51,7 +51,24 @@ describe('sanitizeRawObservation', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual([])
+        expect(result).toStrictEqual(
+          new ObservationSanitized({
+            observationId: 'obs-1',
+            ingestionId: 'run-1',
+            fetchedAt: 0,
+            url: 'https://test-rss.com/rss',
+            error: 'Network error',
+            source: {
+              collection: 'rss',
+              name: 'test',
+            },
+            pointer: {
+              bucket: 'inmemory',
+              object:
+                'v1/records/source=test/date=1970-01-01/ingestion_id=run-1/obs-1.sanitize.yml',
+            },
+          })
+        )
       })
   )
 
@@ -84,7 +101,7 @@ describe('sanitizeRawObservation', () => {
           `,
         }
 
-        const result = yield* sanitizeRawObservation({
+        const result = yield* sanitizeObservation({
           policy: {
             version: 1,
             stripQueryParams: [],
@@ -108,15 +125,13 @@ describe('sanitizeRawObservation', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual([
+        expect(result).toStrictEqual(
           new ObservationSanitized({
             content: {
               bytes: 256,
               sha256: 'abc',
             },
-            error: undefined,
             fetchedAt: 0,
-            finalUrl: 'https://test-rss.com/rss',
             http: {
               contentType: 'text/xml',
               status: 200,
@@ -125,7 +140,7 @@ describe('sanitizeRawObservation', () => {
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=test/date=1970-01-01/ingestionId=run-1/obs-1.sanitizer.yml',
+                'v1/records/source=test/date=1970-01-01/ingestion_id=run-1/obs-1.sanitize.yml',
             },
             ingestionId: 'run-1',
             source: {
@@ -133,8 +148,8 @@ describe('sanitizeRawObservation', () => {
               name: 'test',
             },
             url: 'https://test-rss.com/rss',
-          }),
-        ])
+          })
+        )
       })
   )
 })

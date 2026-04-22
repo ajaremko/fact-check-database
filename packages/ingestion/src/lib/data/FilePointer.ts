@@ -6,10 +6,7 @@ import { Schema } from 'effect'
  * When `generation` is present, reads are pinned to an immutable object
  * version and will not reflect subsequent overwrites.
  */
-export class FilePointer extends Schema.TaggedClass<FilePointer>()(
-  'FilePointer',
-  {
-    bucket: Schema.String,
-    object: Schema.String,
-  }
-) {}
+export class FilePointer extends Schema.Class<FilePointer>('FilePointer')({
+  bucket: Schema.String,
+  object: Schema.String,
+}) {}

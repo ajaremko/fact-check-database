@@ -4,7 +4,8 @@ import { Effect } from 'effect'
 import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
 
 import { ObservationIngested } from './ObservationIngested'
-import { ingestFromSourceTarget } from './ingestFromSourceTarget'
+import { ingestFromSource } from './ingestFromSource'
+import { FetchFailure, FetchSuccess } from './FetchResult'
 
 describe('ingestFromSourceTarget', () => {
   it.effect(
@@ -12,20 +13,25 @@ describe('ingestFromSourceTarget', () => {
     () =>
       Effect.gen(function* () {
         const storage = {}
-        const result = yield* ingestFromSourceTarget({
+        const result = yield* ingestFromSource({
           ingestionId: 'run-1',
           fetchedAt: 0,
-          source: {
-            name: 'source-1',
-            url: 'https://test-rss.com/rss',
-            collection: 'rss',
-          },
+          sourceName: 'source-1',
+          url: 'https://test-rss.com/rss',
+          collection: 'rss',
         }).pipe(
           Effect.provide(
-            InMemoryFetcher.layer({
-              type: 'failure',
-              error: 'Network error',
-            })
+            InMemoryFetcher.layer(
+              new FetchFailure({
+                fetchedAt: 0,
+                url: 'https://test-rss.com/rss',
+                source: {
+                  collection: 'rss',
+                  name: 'source-1',
+                },
+                error: 'Network error',
+              })
+            )
           ),
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
@@ -52,16 +58,16 @@ describe('ingestFromSourceTarget', () => {
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml',
+                'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml',
             },
           })
         )
 
         expect(storage).not.toHaveProperty(
-          'v1/raw/source=source-1/date=1970-01-01/ingestionId=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
+          'v1/raw/source=source-1/date=1970-01-01/ingestion_id=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
+          'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
         )
       })
   )
@@ -71,26 +77,31 @@ describe('ingestFromSourceTarget', () => {
       Effect.gen(function* () {
         const storage = {}
 
-        const result = yield* ingestFromSourceTarget({
+        const result = yield* ingestFromSource({
           ingestionId: 'run-1',
           fetchedAt: 0,
-          source: {
-            name: 'source-1',
-            url: 'https://test-rss.com/rss',
-            collection: 'rss',
-          },
+          sourceName: 'source-1',
+          url: 'https://test-rss.com/rss',
+          collection: 'rss',
         }).pipe(
           Effect.provide(
-            InMemoryFetcher.layer({
-              type: 'success',
-              finalUrl: 'https://test-rss.com/rss',
-              status: 200,
-              headers: {},
-              bytes: 100,
-              sha256: 'dummy-sha256',
-              body: new Uint8Array(),
-              error: null,
-            })
+            InMemoryFetcher.layer(
+              new FetchSuccess({
+                finalUrl: 'https://test-rss.com/rss',
+                status: 200,
+                fetchedAt: 0,
+                url: 'https://test-rss.com/rss',
+                source: {
+                  collection: 'rss',
+                  name: 'source-1',
+                },
+                headers: {},
+                bytes: 100,
+                sha256: 'dummy-sha256',
+                body: new Uint8Array(),
+                error: null,
+              })
+            )
           ),
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
@@ -121,16 +132,16 @@ describe('ingestFromSourceTarget', () => {
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml',
+                'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml',
             },
           })
         )
 
         expect(storage).toHaveProperty(
-          'v1/raw/source=source-1/date=1970-01-01/ingestionId=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
+          'v1/raw/source=source-1/date=1970-01-01/ingestion_id=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=source-1/date=1970-01-01/ingestionId=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
+          'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
         )
       })
   )

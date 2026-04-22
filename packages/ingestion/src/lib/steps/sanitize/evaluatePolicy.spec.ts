@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { SanitizerInput } from './SanitizerInput'
+import { Observation } from './Observation'
 import { SanitizerPolicy } from './SanitizerPolicy'
 import { evaluatePolicy, pickRule } from './evaluatePolicy'
 
@@ -20,14 +20,14 @@ describe('evaluatePolicy', () => {
           },
         ],
       }),
-      new SanitizerInput({
+      new Observation({
         observationId: 'obs-1',
         ingestionId: 'ingest-1',
-        dataFetched: false,
         fetchedAt: 0,
         url: 'https://example.com/feed',
         source: { name: 'source-1', collection: 'rss' },
         error: 'Network error',
+        raw: null,
       })
     )
     expect(decision).toStrictEqual({
@@ -53,18 +53,19 @@ describe('evaluatePolicy', () => {
           },
         ],
       }),
-      new SanitizerInput({
-        dataFetched: true,
+      new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
         url: 'https://example.com/feed',
         source: { name: 'source-1', collection: 'rss' },
-        http: { status: 200, contentType: 'text/xml', headers: {} },
-        content: { bytes: 2_000, sha256: 'abc123' }, // exceeds maxBytes: 1_000
-        pointer: {
-          bucket: 'test-bucket',
-          object: 'records/path/record.yml',
+        raw: {
+          http: { status: 200, contentType: 'text/xml', headers: {} },
+          content: { bytes: 2_000, sha256: 'abc123' }, // exceeds maxBytes: 1_000
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
         },
       })
     )
@@ -91,18 +92,19 @@ describe('evaluatePolicy', () => {
           },
         ],
       }),
-      new SanitizerInput({
+      new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        dataFetched: true,
         fetchedAt: 0,
         url: 'https://example.com/feed',
         source: { name: 'source-1', collection: 'rss' },
-        http: { status: 200, contentType: 'text/html', headers: {} },
-        content: { bytes: 100, sha256: 'abc123' },
-        pointer: {
-          bucket: 'test-bucket',
-          object: 'records/path/record.yml',
+        raw: {
+          http: { status: 200, contentType: 'text/html', headers: {} },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
         },
       })
     )
@@ -129,22 +131,23 @@ describe('evaluatePolicy', () => {
           },
         ],
       }),
-      new SanitizerInput({
+      new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
-        dataFetched: true,
         url: 'https://example.com/feed',
         source: { name: 'source-1', collection: 'rss' },
-        http: {
-          status: 200,
-          contentType: 'text/xml; charset=utf-8',
-          headers: {},
-        },
-        content: { bytes: 500, sha256: 'abc123' },
-        pointer: {
-          bucket: 'test-bucket',
-          object: 'records/path/record.yml',
+        raw: {
+          http: {
+            status: 200,
+            contentType: 'text/xml; charset=utf-8',
+            headers: {},
+          },
+          content: { bytes: 500, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
         },
       })
     )
@@ -171,18 +174,19 @@ describe('evaluatePolicy', () => {
         ],
         overrides: [{ sourceName: 'source-1', defaultLabel: 'RESTRICTED' }],
       }),
-      new SanitizerInput({
+      new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        dataFetched: true,
         fetchedAt: 0,
         url: 'https://example.com/feed',
         source: { name: 'source-1', collection: 'rss' },
-        http: { status: 200, contentType: 'text/xml', headers: {} },
-        content: { bytes: 100, sha256: 'abc123' },
-        pointer: {
-          bucket: 'test-bucket',
-          object: 'records/path/record.yml',
+        raw: {
+          http: { status: 200, contentType: 'text/xml', headers: {} },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
         },
       })
     )
@@ -201,18 +205,19 @@ describe('evaluatePolicy', () => {
         dropHeaders: [],
         collections: [],
       }),
-      new SanitizerInput({
+      new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        dataFetched: true,
         fetchedAt: 0,
         url: 'https://example.com/feed',
         source: { name: 'source-1', collection: 'rss' },
-        http: { status: 200, contentType: 'text/xml', headers: {} },
-        content: { bytes: 100, sha256: 'abc123' },
-        pointer: {
-          bucket: 'test-bucket',
-          object: 'records/path/record.yml',
+        raw: {
+          http: { status: 200, contentType: 'text/xml', headers: {} },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
         },
       })
     )

@@ -2,7 +2,7 @@ import { Array, Effect, Option, pipe, Schema } from 'effect'
 
 import {
   StorageWriter,
-  ingestFromSourceTarget,
+  ingestFromSource,
   SourceTarget,
   ObservationIngested,
   Fetcher,
@@ -26,7 +26,7 @@ function processTarget(target: SourceTarget, index: number) {
 
     // ingest from target and publish event
     yield* Effect.logInfo('Processing target')
-    const event = yield* ingestFromSourceTarget({
+    const event = yield* ingestFromSource({
       ingestionId: job.runId,
       source: target,
       index,

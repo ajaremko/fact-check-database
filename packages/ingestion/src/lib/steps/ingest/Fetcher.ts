@@ -10,11 +10,11 @@ export class FetcherError extends Data.TaggedError('FetcherError')<{
 export class Fetcher extends Context.Tag('Fetcher')<
   Fetcher,
   {
-    readonly fetch: (source: {
-      name: string
-      collection: string
+    readonly fetch: (
+      name: string,
+      collection: string,
       url: string
-    }) => Effect.Effect<FetchResult, FetcherError>
+    ) => Effect.Effect<FetchResult, FetcherError>
   }
 >() {}
 

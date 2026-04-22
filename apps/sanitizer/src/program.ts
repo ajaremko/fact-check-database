@@ -4,7 +4,7 @@ import {
   type StorageWriter,
   type StorageReader,
   ObservationSanitized,
-  sanitizeRawObservation,
+  sanitizeObservation,
 } from '@news-research/ingestion/steps/sanitize'
 import { ObservationIngested } from '@news-research/ingestion/steps/ingest'
 import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
@@ -32,7 +32,7 @@ function processMessage(message: MessageQueue.Message) {
     const incoming = yield* decodeIncoming(message.data)
 
     yield* Effect.logDebug('Sanitizing observation')
-    const events = yield* sanitizeRawObservation({
+    const events = yield* sanitizeObservation({
       observationId: incoming.observationId,
       pointer: incoming.pointer,
       policy,

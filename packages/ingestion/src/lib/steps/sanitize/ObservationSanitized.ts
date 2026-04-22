@@ -18,20 +18,24 @@ export class ObservationSanitized extends Schema.Class<ObservationSanitized>(
   fetchedAt: Schema.Number,
   url: Schema.String,
   finalUrl: Schema.optional(Schema.String),
+  error: Schema.optional(Schema.String),
   source: Schema.Struct({
     name: Schema.String,
-    collection: Schema.String, // "csv" | "rss" | "gdelt" later
+    collection: Schema.String,
   }),
-  http: Schema.Struct({
-    status: Schema.Number,
-    contentType: Schema.optional(Schema.String),
-    etag: Schema.optional(Schema.String),
-    lastModified: Schema.optional(Schema.String),
-  }),
-  content: Schema.Struct({
-    sha256: Schema.optional(Schema.String),
-    bytes: Schema.optional(Schema.Number),
-  }),
-  error: Schema.optional(Schema.String),
+  http: Schema.optional(
+    Schema.Struct({
+      status: Schema.Number,
+      contentType: Schema.optional(Schema.String),
+      etag: Schema.optional(Schema.String),
+      lastModified: Schema.optional(Schema.String),
+    })
+  ),
+  content: Schema.optional(
+    Schema.Struct({
+      sha256: Schema.optional(Schema.String),
+      bytes: Schema.optional(Schema.Number),
+    })
+  ),
   pointer: FilePointerSchema,
 }) {}

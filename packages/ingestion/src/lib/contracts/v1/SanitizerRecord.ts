@@ -112,6 +112,14 @@ export const SanitizerRecordMetadataSchema = Schema.Struct({
   sanitizedAt: Schema.NumberFromString,
   observationId: Schema.String,
   ingestionId: Schema.String,
+}).annotations({
+  identifier: 'v1SanitizerRecordMetadata',
+  title: 'SanitizerRecordMetadata',
+  description: `
+    Flat metadata stored as GCS object metadata fields alongside 
+    each archived sanitizer record. Provides key provenance and 
+    traceability details for quick reference without accessing the 
+    full record content.`,
 })
 
 /** Metadata for a sanitized record. */

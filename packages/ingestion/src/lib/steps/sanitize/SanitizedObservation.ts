@@ -4,8 +4,8 @@ import * as v1 from '../../contracts/v1'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 
-export class SanitizerOutcome extends Schema.Class<SanitizerOutcome>(
-  'SanitizerOutcome'
+export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
+  'SanitizedObservation'
 )({
   observationId: Schema.String,
   ingestionId: Schema.String,
@@ -15,7 +15,7 @@ export class SanitizerOutcome extends Schema.Class<SanitizerOutcome>(
   finalUrl: Schema.optional(Schema.String),
   outcome: Schema.Struct({
     decision: PolicyDecisionSchema,
-    sanitized: Schema.optional(
+    sanitized: Schema.NullOr(
       Schema.Struct({
         object: Schema.String,
         bucket: Schema.String,
@@ -56,9 +56,9 @@ export class SanitizerOutcome extends Schema.Class<SanitizerOutcome>(
   }),
 }) {}
 
-export const SanitizerOutcomeSchema = Schema.transformOrFail(
+export const SanitizedObservationSchema = Schema.transformOrFail(
   v1.SanitizerRecordSchema,
-  SanitizerOutcome,
+  SanitizedObservation,
   {
     strict: true,
     decode: (input, _, ast) =>
@@ -66,7 +66,7 @@ export const SanitizerOutcomeSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding SanitizerOutcome not implemented'
+          'Decoding SanitizedObservation not implemented'
         )
       ),
     encode: (input) =>
@@ -111,9 +111,9 @@ export const SanitizerOutcomeSchema = Schema.transformOrFail(
   }
 )
 
-export const SanitizerOutcomeMetaSchema = Schema.transformOrFail(
+export const SanitizedObservationMetaSchema = Schema.transformOrFail(
   v1.SanitizerRecordMetadataSchema,
-  SanitizerOutcome,
+  SanitizedObservation,
   {
     strict: true,
     decode: (input, _, ast) =>
@@ -121,7 +121,7 @@ export const SanitizerOutcomeMetaSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding SanitizerOutcomeMeta not implemented'
+          'Decoding SanitizedObservationMeta not implemented'
         )
       ),
     encode: (input) =>
@@ -133,6 +133,32 @@ export const SanitizerOutcomeMetaSchema = Schema.transformOrFail(
         sanitizedAt: input.sanitizedAt,
         observationId: input.observationId,
         ingestionId: input.ingestionId,
+      }),
+  }
+)
+
+export const SanitizedObservationPathSchema = Schema.transformOrFail(
+  v1.ArchivePathSchema,
+  SanitizedObservation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding SanitizedObservationPath not implemented'
+        )
+      ),
+    encode: (input) =>
+      ParseResult.succeed({
+        version: 1 as const,
+        collectionName: 'records',
+        ext: `sanitize.yml`,
+        sourceName: input.source.name,
+        date: input.fetchedAt,
+        ingestionId: input.ingestionId,
+        observationId: input.observationId,
       }),
   }
 )

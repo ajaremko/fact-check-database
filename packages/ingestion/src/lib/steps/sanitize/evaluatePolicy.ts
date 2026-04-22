@@ -1,6 +1,6 @@
 import type { CollectionRule, SanitizerPolicy } from './SanitizerPolicy'
 import type { SanitizationAction, PolicyDecision } from './PolicyDecision'
-import type { SanitizerInput } from './SanitizerInput'
+import type { Observation } from './Observation'
 
 const collectionRuleDefaults: Partial<CollectionRule> = {
   defaultLabel: 'RESTRICTED',
@@ -72,25 +72,25 @@ function contentTypeAllowed(
 
 export function evaluatePolicy(
   policy: SanitizerPolicy,
-  input: SanitizerInput
+  observation: Observation
 ): PolicyDecision {
   const actions: SanitizationAction[] = []
 
   // Fetch failed: quarantine
-  if (!input.dataFetched) {
+  if (!observation.raw) {
     actions.push('QUARANTINED_FETCH_FAILED')
     return {
       label: 'QUARANTINED',
       actions,
-      error: input.error,
+      error: observation.error,
       rewriteBody: false,
     }
   }
 
-  const rule = pickRule(policy, input.source)
+  const rule = pickRule(policy, observation.source)
 
   // Size gate
-  const bytes = input.content?.bytes
+  const bytes = observation.raw.content?.bytes
   if (typeof bytes === 'number' && bytes > rule.maxBytes) {
     actions.push('QUARANTINED_TOO_LARGE')
     return {
@@ -102,7 +102,7 @@ export function evaluatePolicy(
   }
 
   // Content-type gate
-  const ct = input.http?.contentType
+  const ct = observation.raw.http?.contentType
   const ctCheck = contentTypeAllowed(ct, rule)
   if (!ctCheck.allowed) {
     actions.push(

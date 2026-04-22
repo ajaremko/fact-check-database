@@ -13,14 +13,14 @@ import { FilePointerSchema } from '../../contracts/v1/FilePointer.js'
 export class ObservationIngested extends Schema.Class<ObservationIngested>(
   'ObservationIngested'
 )({
-  observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
+  observationId: Schema.String,
   runId: Schema.String,
   fetchedAt: Schema.Number,
   url: Schema.String,
   finalUrl: Schema.optional(Schema.String),
   source: Schema.Struct({
     name: Schema.String,
-    collection: Schema.String, // "csv" | "rss" | "gdelt" later
+    collection: Schema.String,
   }),
   http: Schema.Struct({
     status: Schema.Number,

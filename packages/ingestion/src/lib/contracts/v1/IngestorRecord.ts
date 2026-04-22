@@ -12,7 +12,7 @@ import { SourceSummarySchema } from './SourceSummary'
  * Discriminators: `version: 1`, `kind: 'fetch_attempt'`, `outcome: 'data_fetched'`.
  *
  * Includes full response headers in `http.headers` alongside the archived body pointer.
- * No `pointer` or content fields are present — there is no body to archive.
+ * If no `pointer` or content fields are present — there is no body to archive.
  */
 export const IngestionRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
@@ -32,8 +32,10 @@ export const IngestionRecordSchema = Schema.Struct({
   identifier: 'v1IngestionRecord',
   title: 'IngestionRecord',
   description: `
-    Schema for a record produced when an HTTP fetch returns 
-    a response body or encounters an error.`,
+    A record produced when data is ingested via http. 
+    It captures both successful http GET requests with data 
+    and failed attempts with error details as well as 
+    metadata about the source and HTTP response.`,
 })
 
 export type IngestionRecord = Schema.Schema.Type<typeof IngestionRecordSchema>
@@ -45,6 +47,14 @@ export const IngestionRecordMetadataSchema = Schema.Struct({
   sourceCollection: Schema.String,
   fetchedAt: Schema.NumberFromString,
   url: Schema.String,
+}).annotations({
+  identifier: 'v1IngestionRecordMetadata',
+  title: 'IngestionRecordMetadata',
+  description: `
+    Flat metadata stored as GCS object metadata fields alongside 
+    each archived ingestion record. Provides key provenance and 
+    traceability details for quick reference without accessing the 
+    full record content.`,
 })
 
 export type IngestionRecordMetadata = Schema.Schema.Type<

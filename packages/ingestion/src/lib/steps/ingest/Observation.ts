@@ -4,8 +4,8 @@ import * as v1 from '../../contracts/v1'
 
 import { FetchResult } from './FetchResult'
 
-export class RawObservation extends Schema.TaggedClass<RawObservation>()(
-  'RawObservation',
+export class Observation extends Schema.TaggedClass<Observation>()(
+  'Observation',
   {
     observationId: Schema.String,
     ingestionId: Schema.String,
@@ -19,9 +19,9 @@ export class RawObservation extends Schema.TaggedClass<RawObservation>()(
   }
 ) {}
 
-export const RawObservationSchema = Schema.transformOrFail(
+export const ObservationSchema = Schema.transformOrFail(
   v1.IngestionRecordSchema,
-  RawObservation,
+  Observation,
   {
     strict: true,
     decode: (input, _, ast) =>
@@ -29,7 +29,7 @@ export const RawObservationSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding RawObservations not implemented'
+          'Decoding Observations not implemented'
         )
       ),
     encode: (input) => {
@@ -85,9 +85,9 @@ export const RawObservationSchema = Schema.transformOrFail(
   }
 )
 
-export const RawObservationMetadataSchema = Schema.transformOrFail(
+export const ObservationMetadataSchema = Schema.transformOrFail(
   v1.IngestionRecordMetadataSchema,
-  RawObservation,
+  Observation,
   {
     strict: true,
     decode: (input, _, ast) =>
@@ -95,7 +95,7 @@ export const RawObservationMetadataSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding RawObservationMetadata not implemented'
+          'Decoding ObservationMetadata not implemented'
         )
       ),
     encode: (input) => {
@@ -111,13 +111,13 @@ export const RawObservationMetadataSchema = Schema.transformOrFail(
   }
 )
 
-export type RawObservationMetadata = Schema.Schema.Type<
-  typeof RawObservationMetadataSchema
+export type ObservationMetadata = Schema.Schema.Type<
+  typeof ObservationMetadataSchema
 >
 
-export const RawObservationPathSchema = Schema.transformOrFail(
+export const ObservationPathSchema = Schema.transformOrFail(
   v1.ArchivePathSchema,
-  RawObservation,
+  Observation,
   {
     strict: true,
     decode: (input, _, ast) =>
@@ -131,8 +131,8 @@ export const RawObservationPathSchema = Schema.transformOrFail(
     encode: (input) =>
       ParseResult.succeed({
         version: 1 as const,
-        collectionName: 'raw',
-        ext: `bin`,
+        collectionName: 'records',
+        ext: `ingestion.yml`,
         sourceName: input.result.source.name,
         date: input.result.fetchedAt,
         ingestionId: input.ingestionId,

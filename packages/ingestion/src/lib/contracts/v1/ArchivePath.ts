@@ -41,4 +41,9 @@ export const ArchivePathSchema = Schema.transformOrFail(
         )
       ),
   }
-)
+).annotations({
+  identifier: 'v1ArchivePath',
+  title: 'ArchivePath',
+  description: `
+    Schema for the GCS object path where a sanitizer record is stored.`,
+})

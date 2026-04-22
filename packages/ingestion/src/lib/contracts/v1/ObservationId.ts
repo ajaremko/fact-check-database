@@ -38,6 +38,13 @@ export const ObservationIdSchema = Schema.transformOrFail(
         )
       ),
   }
-)
+).annotations({
+  identifier: 'v1ObservationId',
+  title: 'ObservationId',
+  description: `
+    A unique identifier of an observation encoding the 
+    version, success status, URL, and either fetch timestamp 
+    with error message (for failures) or content hash (for successes).`,
+})
 
 export type ObservationId = Schema.Schema.Type<typeof ObservationIdSchema>
