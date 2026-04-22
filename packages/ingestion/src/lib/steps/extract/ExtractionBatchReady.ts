@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { TablePointerSchema, LoadJobMetadataSchema } from '../../data'
+import { TablePointerSchema } from '../../data'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

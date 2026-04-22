@@ -30,7 +30,7 @@ function processMessage(message: MessageQueue.Message) {
     const incoming = yield* decodeIncoming(message.data)
     yield* loadJsonFromGcs({
       pointer: incoming.pointer,
-      meta: incoming.meta,
+      sourceFormat: incoming.sourceFormat,
       table: {
         dataset: incoming.table.datasetId,
         table: incoming.table.tableId,
