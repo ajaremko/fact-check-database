@@ -36,13 +36,17 @@ export function loadBatch(input: {
         bq.client
           .dataset(input.table.dataset)
           .table(input.table.table)
-          .load(file, metadata),
+          .load(
+            gcs.client.bucket(input.pointer.bucket).file(input.pointer.object),
+            metadata
+          ),
       catch: (cause) =>
         new BigQueryClient.BigQueryClientIOError({
           cause,
         }),
     })
   }).pipe(
+    Effect.tapError(Effect.logError),
     Effect.annotateLogs({
       tableId: input.table.table,
       datasetId: input.table.dataset,
