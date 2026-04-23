@@ -16,7 +16,9 @@ const make = Effect.gen(function* () {
     MaxConcurrencySchema
   ).pipe(Config.withDefault(10))
 
-  return { runId, concurrency, startedAt }
+  const datasetId = yield* Schema.Config('DATASET_ID', Schema.String)
+
+  return { runId, concurrency, startedAt, datasetId }
 })
 
 type JobContextShape = Effect.Effect.Success<typeof make>

@@ -4,7 +4,7 @@ import {
   type StorageWriter,
   type StorageReader,
   extractClaims,
-  writeExtractedRows,
+  writeBatch,
   ExtractionBatchReady,
 } from '@news-research/ingestion/steps/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
@@ -73,10 +73,11 @@ export const Program: Program = withJobContextAnnotations(
 
     // write rows to storage
     const rows = Array.flatten(successes)
-    const outgoing = yield* writeExtractedRows({
+    const outgoing = yield* writeBatch({
       runId: job.runId,
-      rows,
+      claims: rows,
       extractedAt: job.startedAt,
+      datasetId: job.datasetId,
     })
 
     // publish message

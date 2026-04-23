@@ -6,22 +6,24 @@ import { StorageWriter } from '../../ports'
 import { ExtractedClaimSchema, ExtractedClaims } from './Claim'
 import { ExtractionBatchReady } from './ExtractionBatchReady'
 
-const encodeExtractedRows = pipe(
+const encodeClaims = pipe(
   ExtractedClaimSchema,
   Ndjson.parseNdjson(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.encode
 )
 
-export function writeExtractedRows(input: {
+export function writeBatch(input: {
   runId: string
-  rows: ExtractedClaims
+  claims: ExtractedClaims
   extractedAt: number
+  datasetId: string
 }) {
   return Effect.gen(function* () {
-    const data = yield* encodeExtractedRows(input.rows)
+    const data = yield* encodeClaims(input.claims)
+    const tableId = 'claims'
     const pointer = yield* StorageWriter.writeFile({
-      path: `claims/${input.runId}.ndjson`,
+      path: `${tableId}/${input.runId}.ndjson`,
       data,
       contentType: 'application/x-ndjson',
     })
@@ -29,14 +31,14 @@ export function writeExtractedRows(input: {
       batchId: input.runId,
       extractedAt: input.extractedAt,
       table: {
-        tableId: 'claims',
-        datasetId: 'default_dataset',
+        tableId,
+        datasetId: input.datasetId,
       },
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })
   }).pipe(
-    Effect.annotateLogs({ rowCount: input.rows.length }),
-    Effect.withSpan('writeExtractedRows')
+    Effect.annotateLogs({ rowCount: input.claims.length }),
+    Effect.withSpan('writeBatch')
   )
 }
