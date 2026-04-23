@@ -7,7 +7,7 @@ import {
 } from '@effect/platform'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
-import { Config, Effect, Layer, Schema, flow, pipe } from 'effect'
+import { Config, Effect, Layer, Schema } from 'effect'
 
 import { MessageQueue } from '../../messaging'
 import { Node } from '../../util'
