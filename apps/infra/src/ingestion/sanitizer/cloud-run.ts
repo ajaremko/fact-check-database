@@ -22,7 +22,6 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
   {
     location: gcpRegion,
     deletionProtection: false,
-    launchStage: 'BETA',
     template: {
       serviceAccount: sanitizerServiceAccount.email,
       containers: [

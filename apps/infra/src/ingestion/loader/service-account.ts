@@ -1,9 +1,14 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { tag } from '../config'
+import { gcpProject, tag } from '../config'
 import { provider } from '../provider'
 import { stagingBucket } from '../storage'
+import { ingestionDataset } from '../big-query'
+// import {
+//   ingestionDatasetId,
+//   // claimsTableId
+// } from '../big-query'
 
 export const loaderServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-loader-sa`,
@@ -19,6 +24,16 @@ export const loaderStagingBucketViewer = new gcp.storage.BucketIAMMember(
   {
     bucket: stagingBucket.name,
     role: 'roles/storage.objectViewer',
+    member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const loaderBigQueryDataCreator = new gcp.bigquery.DatasetIamMember(
+  `${tag}-loader-bigquery-data-creator`,
+  {
+    datasetId: ingestionDataset.datasetId,
+    role: 'roles/bigquery.dataEditor',
     member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
   },
   { provider }

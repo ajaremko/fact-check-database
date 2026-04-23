@@ -1,10 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject, logRetention } from './config'
+import { gcpProject, logRetention, tag } from './config'
 import { provider } from './provider'
 
 export const loggingBucketConfig = new gcp.logging.ProjectBucketConfig(
-  'logging-bucket-config',
+  `${tag}-logging-bucket-config`,
   {
     project: gcpProject,
     location: 'global',

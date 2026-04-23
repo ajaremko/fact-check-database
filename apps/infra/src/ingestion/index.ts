@@ -9,4 +9,5 @@ export {
   loaderServiceName,
 } from './loader'
 export { gcpProject, ingestionLabels } from './config'
+export { claimsTableId, ingestionDatasetId } from './big-query'
 export { loggingBucketConfigName } from './logging'

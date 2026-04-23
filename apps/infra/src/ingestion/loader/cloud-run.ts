@@ -18,7 +18,6 @@ export const loaderService = new gcp.cloudrunv2.Service(
   {
     location: gcpRegion,
     deletionProtection: false,
-    launchStage: 'BETA',
     template: {
       serviceAccount: loaderServiceAccount.email,
       containers: [
