@@ -16,7 +16,7 @@ const make = Effect.gen(function* () {
     MaxConcurrencySchema
   ).pipe(Config.withDefault(10))
 
-  const datasetId = yield* Schema.Config('DATASET_ID', Schema.String)
+  const datasetId = yield* Schema.Config('BIGQUERY_DATASET', Schema.String)
 
   return { runId, concurrency, startedAt, datasetId }
 })
