@@ -20,6 +20,10 @@ export function loadBatch(input: {
     const bucket = gcs.client.bucket(input.pointer.bucket)
     const file = bucket.file(input.pointer.object)
 
+    console.log('file.exists()', file.exists())
+    console.log('file.bucket.name', file.bucket.name)
+    console.log('file.cloudStorageURI', file.cloudStorageURI)
+
     // Load data from fileRef into specified bq table
     const bq = yield* BigQueryClient.BigQueryClient
     const metadata: JobLoadMetadata = {
