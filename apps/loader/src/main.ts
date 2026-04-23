@@ -8,14 +8,14 @@ import {
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
 } from '@news-research/ingestion/adapters'
-import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
+import { StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 import { ExtractionBatchReady } from '@news-research/ingestion/steps/extract'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { MessageQueue } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/util'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
-import { loadJsonFromGcs } from '@news-research/ingestion/steps/load'
+import { loadBatch } from '@news-research/ingestion/steps/load'
 import { pinoLogger } from '@news-research/pino'
 
 const decodeIncoming = pipe(
@@ -28,7 +28,7 @@ const decodeIncoming = pipe(
 function processMessage(message: MessageQueue.Message) {
   return Effect.gen(function* () {
     const incoming = yield* decodeIncoming(message.data)
-    yield* loadJsonFromGcs({
+    yield* loadBatch({
       pointer: incoming.pointer,
       sourceFormat: incoming.sourceFormat,
       table: {
@@ -93,7 +93,6 @@ const logger = Logger.replaceScoped(
 
 const main = Program.pipe(
   Effect.provide(HttpServerMessageQueueFeeder.layer),
-  Effect.provide(StorageBucketCache.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(BigQueryClient.layer()),
   Effect.provide(InMemoryMessageQueue.layer),

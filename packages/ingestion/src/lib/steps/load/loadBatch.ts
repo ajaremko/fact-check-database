@@ -1,33 +1,32 @@
 import { Effect } from 'effect'
 import { JobLoadMetadata } from '@google-cloud/bigquery'
 
-import { StorageBucketCache, StorageClient } from '@news-research/cloud-storage'
+import { StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 
-export function loadJsonFromGcs(input: {
+export function loadBatch(input: {
   pointer: { object: string; bucket: string }
   table: { dataset: string; table: string }
   sourceFormat: string
 }): Effect.Effect<
   void,
   BigQueryClient.BigQueryClientIOError,
-  | BigQueryClient.BigQueryClient
-  | StorageBucketCache.StorageBucketCache
-  | StorageClient.StorageClient
+  BigQueryClient.BigQueryClient | StorageClient.StorageClient
 > {
   return Effect.gen(function* () {
-    const bq = yield* BigQueryClient.BigQueryClient
-    const buckets = yield* StorageBucketCache.StorageBucketCache
-    const { bucket } = yield* buckets.get(input.pointer.bucket)
-
+    // Access fileRef from GCS
+    yield* Effect.logInfo('Loading data from GCS object into BigQuery table')
+    const gcs = yield* StorageClient.StorageClient
+    const bucket = gcs.client.bucket(input.pointer.bucket)
     const file = bucket.file(input.pointer.object)
+
+    // Load data from fileRef into specified bq table
+    const bq = yield* BigQueryClient.BigQueryClient
     const metadata: JobLoadMetadata = {
       sourceFormat: input.sourceFormat,
       autodetect: true,
       location: 'US',
     }
-
-    // Load data from a Google Cloud Storage file into the table
     yield* Effect.tryPromise({
       try: () =>
         bq.client
@@ -39,5 +38,13 @@ export function loadJsonFromGcs(input: {
           cause,
         }),
     })
-  }).pipe(Effect.withSpan('ingestFromSourceTarget'))
+  }).pipe(
+    Effect.annotateLogs({
+      tableId: input.table.table,
+      datasetId: input.table.dataset,
+      bucket: input.pointer.bucket,
+      object: input.pointer.object,
+    }),
+    Effect.withSpan('loadBatch')
+  )
 }

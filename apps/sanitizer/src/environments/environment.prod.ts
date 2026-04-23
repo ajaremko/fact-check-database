@@ -10,7 +10,7 @@ import {
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
 } from '@news-research/ingestion/adapters'
-import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
+import { StorageClient } from '@news-research/cloud-storage'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
@@ -49,7 +49,6 @@ export const main = Program.pipe(
   Effect.provide(CloudStorageSanitizerPolicyDocument.layer),
   Effect.provide(CloudStorageStorageReader.layer),
   Effect.provide(CloudStorageStorageWriter.layer),
-  Effect.provide(StorageBucketCache.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(PubsubClient.layer()),
   Effect.provide(InMemoryMessageQueue.layer),

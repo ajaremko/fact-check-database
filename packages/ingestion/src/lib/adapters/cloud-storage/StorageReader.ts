@@ -1,17 +1,11 @@
 import { ConfigError, Effect, Layer } from 'effect'
 
-import {
-  StorageBucket,
-  StorageClient,
-  StorageBucketCache,
-} from '@news-research/cloud-storage'
+import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 
 import { StorageReader } from '../../ports'
 
 export const make = Effect.gen(function* () {
   const { client } = yield* StorageClient.StorageClient
-  const buckets = yield* StorageBucketCache.StorageBucketCache
-
   return StorageReader.StorageReader.of({
     read: (pointer) =>
       StorageBucket.downloadFile(pointer.object).pipe(
@@ -24,10 +18,9 @@ export const make = Effect.gen(function* () {
               bucket: pointer.bucket,
             })
         ),
-        Effect.provideServiceEffect(
-          StorageBucket.StorageBucket,
-          buckets.get(pointer.bucket)
-        ),
+        Effect.provideService(StorageBucket.StorageBucket, {
+          bucket: client.bucket(pointer.bucket),
+        }),
         Effect.provideService(StorageClient.StorageClient, { client })
       ),
   })
@@ -36,5 +29,5 @@ export const make = Effect.gen(function* () {
 export const layer: Layer.Layer<
   StorageReader.StorageReader,
   ConfigError.ConfigError,
-  StorageClient.StorageClient | StorageBucketCache.StorageBucketCache
+  StorageClient.StorageClient
 > = Layer.effect(StorageReader.StorageReader, make)

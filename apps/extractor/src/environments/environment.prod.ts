@@ -13,7 +13,7 @@ import {
   PubsubSubscriberClient,
   PubsubClient,
 } from '@news-research/cloud-pubsub'
-import { StorageClient, StorageBucketCache } from '@news-research/cloud-storage'
+import { StorageClient } from '@news-research/cloud-storage'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
 import { pinoLogger } from '@news-research/pino'
@@ -52,7 +52,6 @@ export const main = Program.pipe(
   Effect.provide(CloudStorageStorageWriter.layer),
   Effect.provide(PubsubSubscriberClient.layer()),
   Effect.provide(PubsubClient.layer()),
-  Effect.provide(StorageBucketCache.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(JobContext.layer),
   Effect.provide(logger),
