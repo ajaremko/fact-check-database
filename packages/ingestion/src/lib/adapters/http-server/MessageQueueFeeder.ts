@@ -7,7 +7,7 @@ import {
 } from '@effect/platform'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
-import { Config, Effect, Layer, Schema, pipe } from 'effect'
+import { Config, Effect, Layer, Schema, flow, pipe } from 'effect'
 
 import { MessageQueue } from '../../messaging'
 import { Node } from '../../util'
@@ -15,16 +15,11 @@ import { Node } from '../../util'
 const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({
     message: Schema.Struct({
-      data: Schema.String,
+      data: Schema.String.pipe(
+        Node.parseBufferEncoded({ decode: 'base64', encode: 'utf-8' })
+      ),
     }),
   })
-)
-
-const decodeData = pipe(
-  Schema.String,
-  Node.parseBufferEncoded({ decode: 'base64', encode: 'utf-8' }),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.encode // reverse target and source to decode from string to Buffer
 )
 
 const router = HttpRouter.empty.pipe(
@@ -36,7 +31,7 @@ const router = HttpRouter.empty.pipe(
 
       const body = yield* req.json
       const { message } = yield* decodeMessage(body)
-      const data = yield* decodeData(message.data)
+      const data = Buffer.from(message.data, 'utf-8')
 
       return yield* Effect.asyncEffect<
         HttpServerResponse.HttpServerResponse,
