@@ -16,7 +16,7 @@ const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({
     message: Schema.Struct({
       data: Schema.String.pipe(
-        Node.parseBufferEncoded({ decode: 'base64', encode: 'utf-8' })
+        Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' })
       ),
     }),
   })
