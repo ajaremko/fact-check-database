@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpRegion, dockerTag, tag } from '../config'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { stagingBucket } from '../storage'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
@@ -59,12 +59,8 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 value: '10',
               },
               {
-                name: 'LOG_LEVEL',
-                value: 'error',
-              },
-              {
                 name: 'PINO_LOG_LEVEL',
-                value: 'debug',
+                value: logLevel,
               },
               {
                 name: 'SERVICE_NAME',

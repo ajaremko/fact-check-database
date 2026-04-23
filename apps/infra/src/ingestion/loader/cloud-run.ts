@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { rawArchiveBucketName } from '../../core'
 
-import { gcpRegion, dockerTag, tag } from '../config'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { stagingBucket } from '../storage'
@@ -38,7 +38,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'PINO_LOG_LEVEL',
-              value: 'debug',
+              value: logLevel,
             },
             {
               name: 'SERVICE_NAME',

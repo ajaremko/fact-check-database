@@ -1,14 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpProject, tag } from '../config'
+import { tag } from '../config'
 import { provider } from '../provider'
 import { stagingBucket } from '../storage'
 import { ingestionDataset } from '../big-query'
-// import {
-//   ingestionDatasetId,
-//   // claimsTableId
-// } from '../big-query'
 
 export const loaderServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-loader-sa`,

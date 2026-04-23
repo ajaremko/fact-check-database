@@ -8,7 +8,8 @@ config:
   core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:tag: dev-127
+  ingestion:tag: dev-131
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */4 * * *'
+  ingestion:logLevel: debug
   ingestion:logRetentionDays: 1

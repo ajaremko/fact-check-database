@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { rawArchiveBucketName } from '../../core'
 
-import { gcpRegion, dockerTag, tag } from '../config'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
@@ -45,12 +45,8 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
               value: rawArchiveBucketName,
             },
             {
-              name: 'LOG_LEVEL',
-              value: 'error',
-            },
-            {
               name: 'PINO_LOG_LEVEL',
-              value: 'debug',
+              value: logLevel,
             },
             {
               name: 'SERVICE_NAME',
