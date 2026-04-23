@@ -1,7 +1,12 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { ingestionLabels, gcpRegion, tag } from '../config'
+import {
+  ingestionLabels,
+  gcpRegion,
+  tag,
+  deadletterRetentionDuration,
+} from '../config'
 import { provider } from '../provider'
 import { pubsubService } from '../services'
 import { extractorTopic } from '../pubsub'
@@ -43,6 +48,7 @@ export const loaderExtractorDeadletterTopic = new gcp.pubsub.Topic(
   {
     name: 'loader-extractor-deadletter-topic',
     labels: ingestionLabels,
+    messageRetentionDuration: deadletterRetentionDuration,
   },
   {
     dependsOn: [pubsubService],

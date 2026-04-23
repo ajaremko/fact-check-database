@@ -1,15 +1,16 @@
 import * as gcp from '@pulumi/gcp'
 
-import { ingestionLabels, tag } from '../config'
+import { deadletterRetentionDuration, ingestionLabels, tag } from '../config'
 import { provider } from '../provider'
 import { pubsubService } from '../services'
 import { sanitizerTopic } from '../pubsub'
 
-export const extractorSanitizerDeadletterTopic = new gcp.pubsub.Topic(
-  `${tag}-extractor-sanitizer-deadletter-topic`,
+export const extractorDeadletterTopic = new gcp.pubsub.Topic(
+  `${tag}-extractor-deadletter-topic`,
   {
-    name: 'extractor-sanitizer-deadletter-topic',
+    name: 'extractor-deadletter-topic',
     labels: ingestionLabels,
+    messageRetentionDuration: deadletterRetentionDuration,
   },
   {
     dependsOn: [pubsubService],
@@ -26,7 +27,7 @@ export const extractorSanitizerTopicSubscription = new gcp.pubsub.Subscription(
     topic: sanitizerTopic.id,
     ackDeadlineSeconds: 60,
     deadLetterPolicy: {
-      deadLetterTopic: extractorSanitizerDeadletterTopic.id,
+      deadLetterTopic: extractorDeadletterTopic.id,
       maxDeliveryAttempts: 5,
     },
   },

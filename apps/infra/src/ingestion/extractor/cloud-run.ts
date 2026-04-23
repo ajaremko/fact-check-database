@@ -6,7 +6,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { extractorTopic } from '../pubsub'
 import { getAppImageUri } from '../getImageUrl'
-import { claimsTable, ingestionDataset } from '../big-query'
+import { ingestionDataset } from '../big-query'
 
 import {
   extractorServiceAccount,
@@ -49,10 +49,6 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               {
                 name: 'BIGQUERY_DATASET',
                 value: ingestionDataset.datasetId,
-              },
-              {
-                name: 'BIGQUERY_CLAIMS_TABLE',
-                value: claimsTable.tableId,
               },
               {
                 name: 'MAX_CONCURRENCY',
