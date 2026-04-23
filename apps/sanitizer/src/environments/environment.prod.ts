@@ -23,7 +23,7 @@ const otel = cloudRunInstanceId.pipe(
   Effect.map((instanceId) =>
     NodeSdk.layer(() => ({
       resource: {
-        serviceName: 'ingestor',
+        serviceName: 'sanitizer',
         attributes: {
           'service.instance.id': instanceId,
         },
