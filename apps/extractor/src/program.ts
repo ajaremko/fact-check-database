@@ -72,14 +72,18 @@ export const Program: Program = withJobContextAnnotations(
     )
 
     // write rows to storage
-    const rows = Array.flatten(successes)
+    const claims = Array.flatten(successes)
+    if (claims.length === 0) {
+      yield* Effect.logWarning('No claims extracted to be written to storage')
+      return
+    }
+
     const outgoing = yield* writeBatch({
       runId: job.runId,
-      claims: rows,
+      claims: claims,
       extractedAt: job.startedAt,
       datasetId: job.datasetId,
     })
-
     // publish message
     const data = yield* encodeOutgoing(outgoing)
     yield* Publisher.publish(data)
