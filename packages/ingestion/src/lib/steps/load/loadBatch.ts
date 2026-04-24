@@ -16,6 +16,10 @@ export function loadBatch(input: {
     yield* Effect.logInfo('Loading data from GCS object into BigQuery table')
     const bq = yield* BigQueryClient.BigQueryClient
     const gsUri = `gs://${input.pointer.bucket}/${input.pointer.object}`
+    console.log(
+      `Loading data from ${gsUri} into ${input.table.dataset}.${input.table.table}`
+    )
+    console.log(`Project ID: ${input.projectId}`)
 
     yield* Effect.tryPromise({
       try: () =>
