@@ -30,6 +30,7 @@ export function loadBatch(input: {
             configuration: {
               load: {
                 destinationTable: {
+                  projectId: input.projectId,
                   datasetId: input.table.dataset,
                   tableId: input.table.table,
                 },
