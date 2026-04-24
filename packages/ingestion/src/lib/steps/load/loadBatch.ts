@@ -20,26 +20,21 @@ export function loadBatch(input: {
     const bucket = gcs.client.bucket(input.pointer.bucket)
     const file = bucket.file(input.pointer.object)
 
-    console.log('file.exists()', file.exists())
     console.log('file.bucket.name', file.bucket.name)
     console.log('file.cloudStorageURI', file.cloudStorageURI)
 
     // Load data from fileRef into specified bq table
     const bq = yield* BigQueryClient.BigQueryClient
+    const table = bq.client
+      .dataset(input.table.dataset)
+      .table(input.table.table)
     const metadata: JobLoadMetadata = {
       sourceFormat: input.sourceFormat,
       autodetect: true,
       location: 'US',
     }
     yield* Effect.tryPromise({
-      try: () =>
-        bq.client
-          .dataset(input.table.dataset)
-          .table(input.table.table)
-          .load(
-            gcs.client.bucket(input.pointer.bucket).file(input.pointer.object),
-            metadata
-          ),
+      try: () => table.load(file, metadata),
       catch: (cause) =>
         new BigQueryClient.BigQueryClientIOError({
           cause,
