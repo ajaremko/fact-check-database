@@ -1,7 +1,5 @@
 import { Effect } from 'effect'
-import { JobLoadMetadata } from '@google-cloud/bigquery'
 
-import { StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
 
 export function loadBatch(input: {
@@ -11,34 +9,37 @@ export function loadBatch(input: {
 }): Effect.Effect<
   void,
   BigQueryClient.BigQueryClientIOError,
-  BigQueryClient.BigQueryClient | StorageClient.StorageClient
+  BigQueryClient.BigQueryClient
 > {
   return Effect.gen(function* () {
-    // Access fileRef from GCS
     yield* Effect.logInfo('Loading data from GCS object into BigQuery table')
-    const gcs = yield* StorageClient.StorageClient
-    const bucket = gcs.client.bucket(input.pointer.bucket)
-    const file = bucket.file(input.pointer.object)
-
-    console.log('file.bucket.name', file.bucket.name)
-    console.log('file.cloudStorageURI', file.cloudStorageURI)
-
-    // Load data from fileRef into specified bq table
     const bq = yield* BigQueryClient.BigQueryClient
-    const table = bq.client
-      .dataset(input.table.dataset)
-      .table(input.table.table)
-    const metadata: JobLoadMetadata = {
-      sourceFormat: input.sourceFormat,
-      autodetect: true,
-      location: 'US',
-    }
+    const gsUri = `gs://${input.pointer.bucket}/${input.pointer.object}`
+
     yield* Effect.tryPromise({
-      try: () => table.load(file, metadata),
-      catch: (cause) =>
-        new BigQueryClient.BigQueryClientIOError({
-          cause,
-        }),
+      try: () =>
+        bq.client
+          .createJob({
+            location: 'US',
+            configuration: {
+              load: {
+                destinationTable: {
+                  datasetId: input.table.dataset,
+                  tableId: input.table.table,
+                },
+                sourceUris: [gsUri],
+                sourceFormat: input.sourceFormat,
+                autodetect: true,
+              },
+            },
+          })
+          .then(
+            ([job]) =>
+              new Promise<void>((resolve, reject) => {
+                job.on('error', reject).on('complete', () => resolve())
+              })
+          ),
+      catch: (cause) => new BigQueryClient.BigQueryClientIOError({ cause }),
     })
   }).pipe(
     Effect.tapError(Effect.logError),
