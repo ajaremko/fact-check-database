@@ -24,4 +24,13 @@ export class ExtractionBatchReady extends Schema.Class<ExtractionBatchReady>(
     Schema.Literal('NEWLINE_DELIMITED_JSON'),
     Schema.String
   ),
+  schema: Schema.Struct({
+    fields: Schema.Array(
+      Schema.Struct({
+        name: Schema.String,
+        type: Schema.String,
+        mode: Schema.String,
+      })
+    ),
+  }),
 }) {}

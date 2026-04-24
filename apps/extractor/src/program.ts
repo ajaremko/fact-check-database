@@ -12,6 +12,7 @@ import { ObservationSanitized } from '@news-research/ingestion/steps/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
+import { ClaimsSchema } from './ClaimsSchema'
 
 const decodeIncoming = pipe(
   ObservationSanitized,
@@ -46,6 +47,7 @@ export type Program = Effect.Effect<
   void,
   Error,
   | JobContext
+  | ClaimsSchema
   | StorageReader.StorageReader
   | MessageBatch.MessageBatch
   | Publisher.Publisher
@@ -79,11 +81,13 @@ export const Program: Program = withJobContextAnnotations(
     }
 
     // publish message
+    const schema = yield* ClaimsSchema
     const outgoing = yield* writeBatch({
       runId: job.runId,
       claims: claims,
       extractedAt: job.startedAt,
       datasetId: job.datasetId,
+      schema,
     })
     const data = yield* encodeOutgoing(outgoing)
     yield* Publisher.publish(data)

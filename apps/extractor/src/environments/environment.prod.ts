@@ -18,6 +18,7 @@ import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
 import { pinoLogger } from '@news-research/pino'
 
+import * as CloudStorageClaimsSchema from '../adapters/cloud-storage/ClaimsSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 
@@ -50,6 +51,7 @@ export const main = Program.pipe(
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageStorageReader.layer),
   Effect.provide(CloudStorageStorageWriter.layer),
+  Effect.provide(CloudStorageClaimsSchema.layer),
   Effect.provide(PubsubSubscriberClient.layer()),
   Effect.provide(PubsubClient.layer()),
   Effect.provide(StorageClient.layer()),

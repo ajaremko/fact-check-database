@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
-import { stagingBucket } from '../storage'
+import { assetsBucket, stagingBucket } from '../storage'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { extractorTopic } from '../pubsub'
@@ -16,6 +16,7 @@ import {
   extractorTopicPublisher,
 } from './service-account'
 import { extractorSanitizerTopicSubscription } from './pubsub'
+import { claimsSchemaObject } from './storage'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
   `${tag}-extractor-job`,
@@ -30,6 +31,14 @@ export const extractorJob = new gcp.cloudrunv2.Job(
           {
             image: getAppImageUri('apps-extractor', dockerTag),
             envs: [
+              {
+                name: 'ASSETS_BUCKET_NAME',
+                value: assetsBucket.name,
+              },
+              {
+                name: 'CLAIMS_SCHEMA_URI',
+                value: claimsSchemaObject.name,
+              },
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',
                 value: extractorSanitizerTopicSubscription.id,

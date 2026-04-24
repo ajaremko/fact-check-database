@@ -18,6 +18,7 @@ export function writeBatch(input: {
   claims: ExtractedClaims
   extractedAt: number
   datasetId: string
+  schema: { fields: readonly { name: string; type: string; mode: string }[] }
 }) {
   return Effect.gen(function* () {
     const data = yield* encodeClaims(input.claims)
@@ -34,6 +35,7 @@ export function writeBatch(input: {
         tableId,
         datasetId: input.datasetId,
       },
+      schema: input.schema,
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })

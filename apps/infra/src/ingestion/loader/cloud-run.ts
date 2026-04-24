@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { rawArchiveBucketName } from '../../core'
 
-import { gcpRegion, dockerTag, tag, logLevel } from '../config'
+import { gcpRegion, dockerTag, tag, logLevel, gcpProject } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { stagingBucket } from '../storage'
@@ -11,6 +11,8 @@ import { getAppImageUri } from '../getImageUrl'
 import {
   loaderServiceAccount,
   loaderStagingBucketViewer,
+  loaderBigQueryJobUser,
+  loaderBigQueryDataEditor,
 } from './service-account'
 
 export const loaderService = new gcp.cloudrunv2.Service(
@@ -48,13 +50,22 @@ export const loaderService = new gcp.cloudrunv2.Service(
               name: 'SERVICE_VERSION',
               value: dockerTag,
             },
+            {
+              name: 'GOOGLE_CLOUD_PROJECT',
+              value: gcpProject,
+            },
           ],
         },
       ],
     },
   },
   {
-    dependsOn: [cloudRunService, loaderStagingBucketViewer],
+    dependsOn: [
+      cloudRunService,
+      loaderStagingBucketViewer,
+      loaderBigQueryJobUser,
+      loaderBigQueryDataEditor,
+    ],
     provider,
   }
 )

@@ -37,6 +37,7 @@ function processMessage(message: MessageQueue.Message) {
         dataset: incoming.table.datasetId,
         table: incoming.table.tableId,
       },
+      schema: incoming.schema,
     })
     yield* message.ack
   }).pipe(

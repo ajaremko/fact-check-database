@@ -1,5 +1,10 @@
 import { Context, Effect, Config, flow, Layer, Data } from 'effect'
-import { BigQuery, BigQueryOptions } from '@google-cloud/bigquery'
+import {
+  BigQuery,
+  BigQueryOptions,
+  Job,
+  JobOptions,
+} from '@google-cloud/bigquery'
 
 /**
  * Provides a shared Google Cloud `BigQuery` client instance.
@@ -55,3 +60,24 @@ function make(config?: BigQueryOptionsConfig) {
  * Effect.provide(BigQueryClient.layer({ projectId: Config.string('GCP_PROJECT_ID') }))
  */
 export const layer = flow(make, Layer.effect(BigQueryClient))
+
+export function createJob(options: JobOptions) {
+  return BigQueryClient.pipe(
+    Effect.flatMap(({ client }) =>
+      Effect.tryPromise({
+        try: () => client.createJob(options),
+        catch: (cause) => new BigQueryClientIOError({ cause }),
+      })
+    )
+  )
+}
+
+export function awaitJob(job: Job) {
+  return Effect.tryPromise({
+    try: () =>
+      new Promise<void>((resolve, reject) => {
+        job.on('error', reject).on('complete', () => resolve())
+      }),
+    catch: (cause) => new BigQueryClientIOError({ cause }),
+  })
+}
