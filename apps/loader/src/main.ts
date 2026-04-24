@@ -1,4 +1,4 @@
-import { Effect, Layer, Logger, Schema, pipe } from 'effect'
+import { Config, Effect, Layer, Logger, Schema, pipe } from 'effect'
 import { NodeFileSystem, NodeRuntime } from '@effect/platform-node'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeSdk } from '@effect/opentelemetry'
@@ -27,8 +27,10 @@ const decodeIncoming = pipe(
 
 function processMessage(message: MessageQueue.Message) {
   return Effect.gen(function* () {
+    const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
     const incoming = yield* decodeIncoming(message.data)
     yield* loadBatch({
+      projectId,
       pointer: incoming.pointer,
       sourceFormat: incoming.sourceFormat,
       table: {

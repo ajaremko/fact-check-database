@@ -3,6 +3,7 @@ import { Effect } from 'effect'
 import { BigQueryClient } from '@news-research/bigquery'
 
 export function loadBatch(input: {
+  projectId: string
   pointer: { object: string; bucket: string }
   table: { dataset: string; table: string }
   sourceFormat: string
@@ -21,6 +22,7 @@ export function loadBatch(input: {
         bq.client
           .createJob({
             location: 'US',
+            projectId: input.projectId,
             configuration: {
               load: {
                 destinationTable: {
