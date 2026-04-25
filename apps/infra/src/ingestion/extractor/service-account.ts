@@ -4,7 +4,7 @@ import * as pulumi from '@pulumi/pulumi'
 import { rawArchiveBucketName } from '../../core'
 
 import { gcpProject, tag } from '../config'
-import { stagingBucket } from '../storage'
+import { assetsBucket, stagingBucket } from '../storage'
 import { provider } from '../provider'
 import { extractorTopic } from '../pubsub'
 
@@ -23,6 +23,16 @@ export const extractorRawArchiveBucketViewer = new gcp.storage.BucketIAMMember(
   `${tag}-extractor-raw-archive-bucket-viewer`,
   {
     bucket: rawArchiveBucketName,
+    role: 'roles/storage.objectViewer',
+    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const extractorAssetsBucketViewer = new gcp.storage.BucketIAMMember(
+  `${tag}-extractor-assets-bucket-viewer`,
+  {
+    bucket: assetsBucket.name,
     role: 'roles/storage.objectViewer',
     member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
   },
