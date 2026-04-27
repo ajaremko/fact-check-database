@@ -3,14 +3,14 @@ import * as gcp from '@pulumi/gcp'
 import { tag } from '../config'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
-import { claimsSchema } from '../big-query'
+import { factChecksSchema } from '../big-query'
 
-export const claimsSchemaObject = new gcp.storage.BucketObject(
-  `${tag}-claims-schema-json`,
+export const factChecksSchemaObject = new gcp.storage.BucketObject(
+  `${tag}-fact-checks-schema-json`,
   {
     bucket: assetsBucket.name,
-    name: 'claims-schema.json',
-    content: JSON.stringify(claimsSchema),
+    name: 'fact-checks-schema.json',
+    content: JSON.stringify(factChecksSchema),
     contentType: 'application/json',
   },
   { provider }

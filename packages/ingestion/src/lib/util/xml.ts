@@ -37,7 +37,7 @@ import { ParseResult, Schema } from 'effect'
  * const result = encode({ name: 'example', count: 42 })
  * // → "<name>example</name><count>42</count>"
  */
-export function parseXml<I>(opts?: {
+export function parseXml(opts?: {
   parser?: X2jOptions
   builder?: XmlBuilderOptions
 }) {

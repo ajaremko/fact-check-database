@@ -64,7 +64,7 @@ export const AtomExtractor = makeExtractionStrategy({
   extractor: (input) =>
     Effect.gen(function* () {
       const { feed } = yield* decodeAtom(input.data)
-      const extractedClaims = []
+      const extractedFactChecks = []
 
       const entries = feed.entry
         ? feed.entry instanceof Array
@@ -82,7 +82,7 @@ export const AtomExtractor = makeExtractionStrategy({
           publishedAt: item.pubDate ?? null,
         }
         const id = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
-        const claim = {
+        const factCheck = {
           id,
           extractionId: input.extractionId,
           ingestionId: input.ingestionId,
@@ -99,8 +99,8 @@ export const AtomExtractor = makeExtractionStrategy({
           summary: values.summary,
           publishedAt: values.publishedAt,
         }
-        extractedClaims.push(claim)
+        extractedFactChecks.push(factCheck)
       }
-      return extractedClaims
+      return extractedFactChecks
     }),
 })

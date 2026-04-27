@@ -8,8 +8,8 @@ export const FieldSchema = Schema.Struct({
 
 export type Field = Schema.Schema.Type<typeof FieldSchema>
 
-export class ClaimsSchema extends Context.Tag('ClaimsSchema')<
-  ClaimsSchema,
+export class FactChecksSchema extends Context.Tag('FactChecksSchema')<
+  FactChecksSchema,
   {
     fields: readonly Field[]
   }

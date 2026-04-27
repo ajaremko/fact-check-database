@@ -3,9 +3,9 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
-import { extractClaims } from './extractClaims'
+import { extractFactChecks } from './extractFactChecks'
 
-describe('extractClaims', () => {
+describe('extractFactChecks', () => {
   it.effect('when observation is safe, extracts array of claims', () =>
     Effect.gen(function* () {
       const storage = {
@@ -57,7 +57,7 @@ describe('extractClaims', () => {
                 </channel>
             </rss>`,
       }
-      const result = yield* extractClaims({
+      const result = yield* extractFactChecks({
         extractionId: 'run-1',
         observationId: 'obs-1',
         extractedAt: 0,
@@ -145,7 +145,7 @@ describe('extractClaims', () => {
                 </channel>
             </rss>`,
       }
-      const result = yield* extractClaims({
+      const result = yield* extractFactChecks({
         extractionId: 'run-1',
         observationId: 'obs-1',
         extractedAt: 0,

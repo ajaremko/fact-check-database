@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-export const ClaimVerdictSchema = Schema.Literal(
+export const FactCheckVerdictSchema = Schema.Literal(
   'true',
   'false',
   'misleading',
@@ -8,9 +8,9 @@ export const ClaimVerdictSchema = Schema.Literal(
   'exaggerated'
 )
 
-export type ClaimVerdict = Schema.Schema.Type<typeof ClaimVerdictSchema>
+export type FactCheckVerdict = Schema.Schema.Type<typeof FactCheckVerdictSchema>
 
-export const ClaimsTableRowSchema = Schema.Struct({
+export const FactChecksTableRowSchema = Schema.Struct({
   id: Schema.String,
   observation_id: Schema.String,
   ingestion_id: Schema.String,
@@ -24,14 +24,16 @@ export const ClaimsTableRowSchema = Schema.Struct({
   published_at: Schema.optional(Schema.String),
   title: Schema.optional(Schema.String),
   claim: Schema.optional(Schema.String),
-  verdict: Schema.optional(ClaimVerdictSchema),
+  verdict: Schema.optional(FactCheckVerdictSchema),
   summary: Schema.optional(Schema.String),
 }).annotations({
-  identifier: 'v1ClaimsTableRow',
-  title: 'ClaimsTableRow',
+  identifier: 'v1FactChecksTableRow',
+  title: 'FactChecksTableRow',
   description: `
-    A row in the claims table, representing a claim extracted 
+    A row in the fact checks table, representing a fack check extracted 
     from an observation along with its metadata and verdict.`,
 })
 
-export type ClaimsTableRow = Schema.Schema.Type<typeof ClaimsTableRowSchema>
+export type FactChecksTableRow = Schema.Schema.Type<
+  typeof FactChecksTableRowSchema
+>

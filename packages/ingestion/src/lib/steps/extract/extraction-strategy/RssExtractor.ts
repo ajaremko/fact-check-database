@@ -67,7 +67,7 @@ export const RssExtractor = makeExtractionStrategy({
   extractor: (input) =>
     Effect.gen(function* () {
       const { rss } = yield* decodeRss(input.data)
-      const extractedClaims = []
+      const extractedFactChecks = []
 
       const items = rss.channel.item
         ? rss.channel.item instanceof Array
@@ -90,7 +90,7 @@ export const RssExtractor = makeExtractionStrategy({
           publishedAt: item.pubDate ?? null,
         }
         const id = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
-        const claim = {
+        const factCheck = {
           id,
           extractionId: input.extractionId,
           ingestionId: input.ingestionId,
@@ -107,8 +107,8 @@ export const RssExtractor = makeExtractionStrategy({
           summary: values.summary,
           publishedAt: values.publishedAt,
         }
-        extractedClaims.push(claim)
+        extractedFactChecks.push(factCheck)
       }
-      return extractedClaims
+      return extractedFactChecks
     }),
 })

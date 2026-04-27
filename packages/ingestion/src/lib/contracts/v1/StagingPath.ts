@@ -6,7 +6,7 @@ import { NumberFromFormattedDate } from '../../data/NumberFromFormattedDate'
  * `collectionName`, `date`, `extractionId`, and `ext` fields into a structured path for
  * queryable organization in GCS.
  *
- * Example path: `v1/claims/date=2024-01-01/extraction-1.ndjson`
+ * Example path: `v1/fact_checks/date=2024-01-01/extraction-1.ndjson`
  */
 export const StagingPathSchema = Schema.transformOrFail(
   Schema.String,

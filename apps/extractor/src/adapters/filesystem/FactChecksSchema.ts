@@ -3,7 +3,7 @@ import { FileSystem } from '@effect/platform'
 
 import { Node } from '@news-research/ingestion/util'
 
-import { ClaimsSchema, FieldSchema } from '../../ClaimsSchema'
+import { FactChecksSchema, FieldSchema } from '../../FactChecksSchema'
 
 const decodeFields = pipe(
   Schema.Array(FieldSchema),
@@ -17,7 +17,7 @@ export const make = Effect.gen(function* () {
   const path = yield* Config.string('CLAIMS_SCHEMA_PATH')
   const data = yield* fs.readFile(path)
   const fields = yield* decodeFields(data)
-  return ClaimsSchema.of({ fields })
+  return FactChecksSchema.of({ fields })
 })
 
-export const layer = Layer.effect(ClaimsSchema, make)
+export const layer = Layer.effect(FactChecksSchema, make)

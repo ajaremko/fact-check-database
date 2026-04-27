@@ -8,13 +8,13 @@ export const ingestionDataset = new gcp.bigquery.Dataset(
   {
     datasetId: 'ingestion',
     friendlyName: 'News Research Dataset',
-    description: 'Dataset for storing extracted claims and related data',
+    description: 'Dataset for storing extracted fact checks and related data',
     location: 'US', // Regional location for data storage
   },
   { provider }
 )
 
-export const claimsSchema = [
+export const factChecksSchema = [
   { name: 'id', type: 'STRING', mode: 'REQUIRED' },
   { name: 'observation_id', type: 'STRING', mode: 'REQUIRED' },
   { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
@@ -32,13 +32,13 @@ export const claimsSchema = [
   { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
 ]
 
-export const claimsTable = new gcp.bigquery.Table(
-  `${tag}-claims-table`,
+export const factChecksTable = new gcp.bigquery.Table(
+  `${tag}-fact-checks-table`,
   {
     datasetId: ingestionDataset.datasetId,
-    tableId: 'claims',
+    tableId: 'fact-checks',
     deletionProtection: false,
-    schema: JSON.stringify(claimsSchema),
+    schema: JSON.stringify(factChecksSchema),
     timePartitioning: {
       type: 'MONTH',
       field: 'extracted_at',
@@ -49,4 +49,4 @@ export const claimsTable = new gcp.bigquery.Table(
 )
 
 export const ingestionDatasetId = ingestionDataset.datasetId
-export const claimsTableId = claimsTable.tableId
+export const factChecksTableId = factChecksTable.tableId

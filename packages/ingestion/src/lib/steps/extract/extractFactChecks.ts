@@ -13,7 +13,7 @@ const decodeObservation = pipe(
   Schema.decode
 )
 
-export function extractClaims(ctx: {
+export function extractFactChecks(ctx: {
   extractionId: string
   observationId: string
   pointer: { object: string; bucket: string }
@@ -45,7 +45,7 @@ export function extractClaims(ctx: {
     }
 
     yield* Effect.logInfo(
-      `Extracting claims for observation ${ctx.observationId} from sanitized record`
+      `Extracting fact checks for observation ${ctx.observationId} from sanitized record`
     )
 
     const responsePointer = record.sanitized ?? record.raw

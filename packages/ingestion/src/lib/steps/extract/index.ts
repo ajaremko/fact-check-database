@@ -1,4 +1,4 @@
 export * from './ExtractionBatchReady'
-export * from './extractClaims'
+export * from './extractFactChecks'
 export * from './writeBatch'
 export * from '../../ports'

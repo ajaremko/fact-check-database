@@ -4,7 +4,7 @@ import * as v1 from '../../contracts/v1'
 
 import { NumberFromFormattedDate } from '../../data'
 
-export class Claim extends Schema.Class<Claim>('Claim')({
+export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
   id: Schema.String,
   observationId: Schema.String,
   ingestionId: Schema.String,
@@ -20,13 +20,13 @@ export class Claim extends Schema.Class<Claim>('Claim')({
   publishedAt: Schema.NullOr(Schema.String),
   title: Schema.NullOr(Schema.String),
   claim: Schema.NullOr(Schema.String),
-  verdict: Schema.NullOr(v1.ClaimVerdictSchema),
+  verdict: Schema.NullOr(v1.FactCheckVerdictSchema),
   summary: Schema.NullOr(Schema.String),
 }) {}
 
-export const ExtractedClaimSchema = Schema.transform(
-  v1.ClaimsTableRowSchema,
-  Claim,
+export const FactCheckSchema = Schema.transform(
+  v1.FactChecksTableRowSchema,
+  FactCheck,
   {
     strict: true,
     decode: (input) => ({
@@ -68,8 +68,10 @@ export const ExtractedClaimSchema = Schema.transform(
   }
 )
 
-export type ExtractedClaim = Schema.Schema.Type<typeof ExtractedClaimSchema>
+export type ExtractedFactCheck = Schema.Schema.Type<typeof FactCheckSchema>
 
-export const ExtractedClaimsSchema = Schema.Array(ExtractedClaimSchema)
+export const ExtractedFactChecksSchema = Schema.Array(FactCheckSchema)
 
-export type ExtractedClaims = Schema.Schema.Type<typeof ExtractedClaimsSchema>
+export type ExtractedFactChecks = Schema.Schema.Type<
+  typeof ExtractedFactChecksSchema
+>

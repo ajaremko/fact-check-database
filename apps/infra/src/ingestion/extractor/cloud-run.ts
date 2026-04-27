@@ -16,7 +16,7 @@ import {
   extractorTopicPublisher,
 } from './service-account'
 import { extractorSanitizerTopicSubscription } from './pubsub'
-import { claimsSchemaObject } from './storage'
+import { factChecksSchemaObject } from './storage'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
   `${tag}-extractor-job`,
@@ -37,7 +37,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'CLAIMS_SCHEMA_URI',
-                value: claimsSchemaObject.name,
+                value: factChecksSchemaObject.name,
               },
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',

@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 
 import { Observation } from '../Observation'
 
-import { ExtractedClaims } from '../Claim'
+import { ExtractedFactChecks } from '../FactCheck'
 
 export interface ExtractionStrategy<E, R> {
   id: string
@@ -14,7 +14,7 @@ export interface ExtractionStrategy<E, R> {
     extractedAt: number
     record: Observation
     data: Uint8Array
-  }) => Effect.Effect<ExtractedClaims, E, R>
+  }) => Effect.Effect<ExtractedFactChecks, E, R>
 }
 
 export function makeExtractionStrategy<E, R>(

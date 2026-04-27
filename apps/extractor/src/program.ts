@@ -3,7 +3,7 @@ import { Array, Effect, Option, Schema, pipe } from 'effect'
 import {
   type StorageWriter,
   type StorageReader,
-  extractClaims,
+  extractFactChecks,
   writeBatch,
   ExtractionBatchReady,
 } from '@news-research/ingestion/steps/extract'
@@ -12,7 +12,7 @@ import { ObservationSanitized } from '@news-research/ingestion/steps/sanitize'
 import { Node } from '@news-research/ingestion/util'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
-import { ClaimsSchema } from './ClaimsSchema'
+import { FactChecksSchema } from './FactChecksSchema'
 
 const decodeIncoming = pipe(
   ObservationSanitized,
@@ -32,7 +32,7 @@ function processMessage(message: MessageBatch.Message) {
   return Effect.gen(function* () {
     const incoming = yield* decodeIncoming(message.data)
     const job = yield* JobContext
-    const rows = yield* extractClaims({
+    const rows = yield* extractFactChecks({
       extractionId: job.runId,
       observationId: incoming.observationId,
       pointer: incoming.pointer,
@@ -47,7 +47,7 @@ export type Program = Effect.Effect<
   void,
   Error,
   | JobContext
-  | ClaimsSchema
+  | FactChecksSchema
   | StorageReader.StorageReader
   | MessageBatch.MessageBatch
   | Publisher.Publisher
@@ -73,18 +73,20 @@ export const Program: Program = withJobContextAnnotations(
       `Processed ${successes.length} of ${messages.length} messages`
     )
 
-    // write rows to storage, exit if no claims were extracted
-    const claims = Array.flatten(successes)
-    if (claims.length === 0) {
-      yield* Effect.logWarning('No claims extracted to be written to storage')
+    // write rows to storage, exit if no fact checks were extracted
+    const factChecks = Array.flatten(successes)
+    if (factChecks.length === 0) {
+      yield* Effect.logWarning(
+        'No fact checks extracted to be written to storage'
+      )
       return
     }
 
     // publish message
-    const schema = yield* ClaimsSchema
+    const schema = yield* FactChecksSchema
     const outgoing = yield* writeBatch({
       runId: job.runId,
-      claims: claims,
+      factChecks: factChecks,
       extractedAt: job.startedAt,
       datasetId: job.datasetId,
       schema,

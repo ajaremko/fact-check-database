@@ -11,7 +11,7 @@ import {
   FileSystemMessageBatch,
 } from '@news-research/ingestion/adapters'
 
-import * as FileSystemClaimsSchema from '../adapters/filesystem/ClaimsSchema'
+import * as FileSystemFactChecksSchema from '../adapters/filesystem/FactChecksSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 
@@ -25,7 +25,7 @@ export const main = Program.pipe(
   Effect.provide(FileSystemStorageWriter.layer),
   Effect.provide(FileSystemMessageBatch.layer),
   Effect.provide(FileSystemPublisher.layer),
-  Effect.provide(FileSystemClaimsSchema.layer),
+  Effect.provide(FileSystemFactChecksSchema.layer),
   Effect.provide(JobContext.layer),
   Effect.provide(NodeFileSystem.layer),
   Effect.provide(otel)
