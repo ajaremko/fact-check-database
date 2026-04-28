@@ -9,5 +9,10 @@ export {
   loaderServiceName,
 } from './loader'
 export { gcpProject, ingestionLabels } from './config'
-export { factChecksTableId, ingestionDatasetId } from './big-query'
+export {
+  stagingDatasetId,
+  stagingFactChecksTableId,
+  curatedDatasetId,
+  curatedFactChecksTableId,
+} from './bigquery'
 export { loggingBucketConfigName } from './logging'

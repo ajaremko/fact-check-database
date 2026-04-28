@@ -3,14 +3,14 @@ import * as gcp from '@pulumi/gcp'
 import { tag } from '../config'
 import { provider } from '../provider'
 import { assetsBucket } from '../storage'
-import { factChecksSchema } from '../big-query'
+import { stagingFactChecksSchema } from '../bigquery'
 
-export const factChecksSchemaObject = new gcp.storage.BucketObject(
-  `${tag}-fact-checks-schema-json`,
+export const stagingFactChecksSchemaObject = new gcp.storage.BucketObject(
+  `${tag}-staging-fact-checks-schema-json`,
   {
     bucket: assetsBucket.name,
-    name: 'fact-checks-schema.json',
-    content: JSON.stringify(factChecksSchema),
+    name: 'staging-fact-checks-schema.json',
+    content: JSON.stringify(stagingFactChecksSchema),
     contentType: 'application/json',
   },
   { provider }

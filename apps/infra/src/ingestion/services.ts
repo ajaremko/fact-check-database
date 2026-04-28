@@ -66,3 +66,11 @@ export const monitoringService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const dataflowService = new gcp.projects.Service(
+  `${tag}-dataflow-service`,
+  {
+    service: 'dataflow.googleapis.com',
+  },
+  { provider }
+)

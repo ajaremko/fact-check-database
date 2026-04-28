@@ -6,7 +6,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { extractorTopic } from '../pubsub'
 import { getAppImageUri } from '../getImageUrl'
-import { ingestionDataset } from '../big-query'
+import { stagingDataset } from '../bigquery'
 
 import {
   extractorServiceAccount,
@@ -16,7 +16,7 @@ import {
   extractorTopicPublisher,
 } from './service-account'
 import { extractorSanitizerTopicSubscription } from './pubsub'
-import { factChecksSchemaObject } from './storage'
+import { stagingFactChecksSchemaObject } from './storage'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
   `${tag}-extractor-job`,
@@ -37,7 +37,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'CLAIMS_SCHEMA_URI',
-                value: factChecksSchemaObject.name,
+                value: stagingFactChecksSchemaObject.name,
               },
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',
@@ -57,7 +57,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'BIGQUERY_DATASET',
-                value: ingestionDataset.datasetId,
+                value: stagingDataset.datasetId,
               },
               {
                 name: 'MAX_CONCURRENCY',

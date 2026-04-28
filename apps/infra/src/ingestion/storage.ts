@@ -35,3 +35,41 @@ export const stagingBucket = new gcp.storage.Bucket(
     provider,
   }
 )
+
+export const eventLogBucket = new gcp.storage.Bucket(
+  `${tag}-event-log-bucket`,
+  {
+    location: gcpRegion,
+    name: `ingestor-event-log`,
+    uniformBucketLevelAccess: true,
+    publicAccessPrevention: 'enforced',
+    forceDestroy: true,
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [storageService],
+    provider,
+  }
+)
+
+export const dataflowBucket = new gcp.storage.Bucket(
+  `${tag}-dataflow-bucket`,
+  {
+    location: gcpRegion,
+    name: 'ingestion-dataflow-tmp',
+    uniformBucketLevelAccess: true,
+    publicAccessPrevention: 'enforced',
+    forceDestroy: true,
+    labels: ingestionLabels,
+    lifecycleRules: [
+      {
+        action: { type: 'Delete' },
+        condition: { age: 1 },
+      },
+    ],
+  },
+  {
+    dependsOn: [storageService],
+    provider,
+  }
+)

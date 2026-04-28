@@ -3,12 +3,11 @@ config:
   core:region: us-central1
   core:kmsLocation: us
   core:archiveLocation: US
-  core:archiveTTL: 1
   core:githubOrg: ajaremko
   core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:tag: dev-147
+  ingestion:tag: dev-148
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */4 * * *'
   ingestion:logLevel: debug
