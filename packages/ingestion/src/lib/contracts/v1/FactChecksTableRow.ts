@@ -11,12 +11,12 @@ export const FactCheckVerdictSchema = Schema.Literal(
 export type FactCheckVerdict = Schema.Schema.Type<typeof FactCheckVerdictSchema>
 
 export const FactChecksTableRowSchema = Schema.Struct({
-  id: Schema.String,
+  content_hash: Schema.String,
   observation_id: Schema.String,
   ingestion_id: Schema.String,
   extraction_id: Schema.String,
-  extracted_at: Schema.String,
-  fetched_at: Schema.String,
+  extracted_at: Schema.Date,
+  fetched_at: Schema.Date,
   collection: Schema.String,
   source: Schema.String,
   url: Schema.String,

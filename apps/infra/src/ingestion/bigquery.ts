@@ -18,12 +18,12 @@ export const stagingDataset = new gcp.bigquery.Dataset(
 export const stagingDatasetId = stagingDataset.datasetId
 
 export const stagingFactChecksSchema = [
-  { name: 'id', type: 'STRING', mode: 'REQUIRED' },
+  { name: 'content_hash', type: 'STRING', mode: 'REQUIRED' },
   { name: 'observation_id', type: 'STRING', mode: 'REQUIRED' },
   { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
   { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
-  { name: 'fetched_at', type: 'DATE', mode: 'REQUIRED' },
-  { name: 'extracted_at', type: 'DATE', mode: 'REQUIRED' },
+  { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
+  { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
   { name: 'collection', type: 'STRING', mode: 'REQUIRED' },
   { name: 'source', type: 'STRING', mode: 'REQUIRED' },
   { name: 'url', type: 'STRING', mode: 'REQUIRED' },

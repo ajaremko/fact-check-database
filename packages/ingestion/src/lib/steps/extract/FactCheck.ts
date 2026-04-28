@@ -2,7 +2,7 @@ import { Schema } from 'effect'
 
 import * as v1 from '../../contracts/v1'
 
-import { NumberFromFormattedDate } from '../../data'
+import { NumberFromDate } from '../../data'
 
 export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
   id: Schema.String,
@@ -15,8 +15,8 @@ export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
   }),
   url: Schema.String,
   finalUrl: Schema.String,
-  fetchedAt: NumberFromFormattedDate('yyyy-MM-dd'),
-  extractedAt: NumberFromFormattedDate('yyyy-MM-dd'),
+  fetchedAt: NumberFromDate,
+  extractedAt: NumberFromDate,
   publishedAt: Schema.NullOr(Schema.String),
   title: Schema.NullOr(Schema.String),
   claim: Schema.NullOr(Schema.String),
@@ -30,7 +30,7 @@ export const FactCheckSchema = Schema.transform(
   {
     strict: true,
     decode: (input) => ({
-      id: input.id,
+      id: input.content_hash,
       observationId: input.observation_id,
       ingestionId: input.ingestion_id,
       extractionId: input.extraction_id,
@@ -49,7 +49,7 @@ export const FactCheckSchema = Schema.transform(
       summary: input.summary ?? null,
     }),
     encode: (input) => ({
-      id: input.id,
+      content_hash: input.id,
       observation_id: input.observationId,
       ingestion_id: input.ingestionId,
       extraction_id: input.extractionId,

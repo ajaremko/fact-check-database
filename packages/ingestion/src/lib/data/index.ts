@@ -1,4 +1,5 @@
 export * from './FilePointer'
 export * from './LoadJobMetadata'
+export * from './NumberFromDate'
 export * from './NumberFromFormattedDate'
 export * from './TablePointer'
