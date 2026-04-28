@@ -43,8 +43,9 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
     deletionProtection: false,
     schema: JSON.stringify(stagingFactChecksSchema),
     timePartitioning: {
-      type: 'MONTH',
+      type: 'DAY',
       field: 'extracted_at',
+      expirationMs: 7 * 1000 * 60 * 60 * 24, // 7 days in milliseconds
     },
     labels: ingestionLabels,
   },
@@ -88,7 +89,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
   `${tag}-curated-fact-checks-table`,
   {
     datasetId: curatedDataset.datasetId,
-    tableId: 'curated-fact-checks',
+    tableId: 'fact-checks',
     deletionProtection: false,
     schema: JSON.stringify(stagingFactChecksSchema),
     timePartitioning: {

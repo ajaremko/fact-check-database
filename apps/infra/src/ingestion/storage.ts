@@ -29,6 +29,12 @@ export const stagingBucket = new gcp.storage.Bucket(
     publicAccessPrevention: 'enforced',
     forceDestroy: true,
     labels: ingestionLabels,
+    lifecycleRules: [
+      {
+        action: { type: 'Delete' },
+        condition: { age: 2 },
+      },
+    ],
   },
   {
     dependsOn: [storageService],
@@ -43,7 +49,6 @@ export const eventLogBucket = new gcp.storage.Bucket(
     name: `ingestor-event-log`,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
-    forceDestroy: true,
     labels: ingestionLabels,
   },
   {
