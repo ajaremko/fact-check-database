@@ -47,9 +47,7 @@ export const ingestorTopicLogSubscription = new gcp.pubsub.Subscription(
     topic: ingestorTopic.name,
     cloudStorageConfig: {
       bucket: eventLogBucket.name,
-      filenameDatetimeFormat: 'YYYY-MM-DD/hh_mm_ssZ',
-      maxBytes: 1000,
-      maxDuration: '300s',
+      filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
       maxMessages: 1000,
     },
     labels: ingestionLabels,

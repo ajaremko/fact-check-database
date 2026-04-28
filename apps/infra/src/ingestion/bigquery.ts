@@ -1,6 +1,7 @@
 import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
 
-import { tag, ingestionLabels } from './config'
+import { tag, ingestionLabels, gcpProject } from './config'
 import { provider } from './provider'
 
 export const stagingDataset = new gcp.bigquery.Dataset(
@@ -100,3 +101,22 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
 )
 
 export const curatedFactChecksTableId = curatedFactChecksTable.tableId
+
+const curatedTableRef = pulumi.interpolate`${gcpProject}.${curatedDataset.datasetId}.${curatedFactChecksTable.tableId}`
+const stagingTableRef = pulumi.interpolate`${gcpProject}.${stagingDataset.datasetId}.${stagingFactChecksTable.tableId}`
+const query = pulumi.interpolate`
+  INSERT INTO \`${curatedTableRef}\`
+  SELECT *
+  FROM \`${stagingTableRef}\``
+
+export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
+  `${tag}-staging-to-curated-transfer-job`,
+  {
+    displayName: 'Curated Fact Checks Transfer Job',
+    dataSourceId: 'scheduled_query',
+    location: 'US',
+    schedule: 'every 6 hours',
+    params: { query },
+  },
+  { provider }
+)
