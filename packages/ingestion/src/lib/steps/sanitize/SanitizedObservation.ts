@@ -1,7 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-import { stripNullValues } from '../../util'
+import { omitNullKeys } from '../../util'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 import { DeepMutable, Mutable } from 'effect/Types'
@@ -99,7 +99,7 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
         output.error = input.outcome.decision.error
       }
       if (input.http) {
-        output.http = stripNullValues({
+        output.http = omitNullKeys({
           status: input.http.status,
           final_url: input.http.finalUrl,
           content_type: input.http.contentType,

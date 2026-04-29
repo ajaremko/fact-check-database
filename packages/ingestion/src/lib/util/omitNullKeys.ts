@@ -1,4 +1,4 @@
-export function stripNullValues<T extends { [key: string]: unknown }>(
+export function omitNullKeys<T extends { [key: string]: unknown }>(
   obj: T
 ): {
   [k in keyof T]: null extends T[k] ? NonNullable<T[k]> | undefined : T[k]

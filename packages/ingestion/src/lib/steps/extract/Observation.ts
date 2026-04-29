@@ -7,33 +7,40 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,
-  url: Schema.String,
   shouldExtract: Schema.Boolean,
-  sanitized: Schema.optional(
+  sanitized: Schema.NullOr(
     Schema.Struct({
       object: Schema.String,
       bucket: Schema.String,
     })
   ),
-  raw: Schema.optional(
+  raw: Schema.NullOr(
     Schema.Struct({
       object: Schema.String,
       bucket: Schema.String,
     })
   ),
-  finalUrl: Schema.optional(Schema.String),
-  error: Schema.optional(Schema.String),
+  error: Schema.NullOr(Schema.String),
   source: Schema.Struct({
+    id: Schema.String,
     name: Schema.String,
     collection: Schema.String,
+    url: Schema.String,
   }),
-  http: Schema.optional(
+  http: Schema.NullOr(
     Schema.Struct({
+      finalUrl: Schema.NullOr(Schema.String),
       status: Schema.Number,
-      contentType: Schema.optional(Schema.String),
-      etag: Schema.optional(Schema.String),
-      lastModified: Schema.optional(Schema.String),
+      contentType: Schema.NullOr(Schema.String),
+      etag: Schema.NullOr(Schema.String),
+      lastModified: Schema.NullOr(Schema.String),
       headers: Schema.Record({ key: Schema.String, value: Schema.String }),
+    })
+  ),
+  content: Schema.NullOr(
+    Schema.Struct({
+      sha256: Schema.String,
+      bytes: Schema.Number,
     })
   ),
 }) {}
@@ -50,32 +57,31 @@ export const ObservationSchema = Schema.transformOrFail(
         fetchedAt: input.fetched_at,
         sanitizedAt: input.sanitized_at,
         shouldExtract: input.label === 'SAFE_PUBLIC',
-        error: input.error,
-        url: input.source.url,
-        finalUrl: input.http?.final_url,
-        sanitized: input.content?.sanitized,
-        raw: input.input.raw,
+        error: input.error ?? null,
+        sanitized: input.content?.sanitized ?? null,
+        raw: input.input.raw ?? null,
         source: {
           name: input.source.name,
           collection: input.source.collection,
+          url: input.source.url,
+          id: input.source.id,
         },
-        http:
-          typeof input.http !== 'undefined'
-            ? {
-                status: input.http.status,
-                contentType: input.http.content_type,
-                etag: input.http.etag,
-                lastModified: input.http.last_modified,
-                headers: input.http.headers ?? {},
-              }
-            : undefined,
-        content:
-          typeof input.content !== 'undefined'
-            ? {
-                sha256: input.content.sha256,
-                bytes: input.content.bytes,
-              }
-            : undefined,
+        http: input.http
+          ? {
+              finalUrl: input.http.final_url ?? null,
+              status: input.http.status ?? null,
+              contentType: input.http.content_type ?? null,
+              etag: input.http.etag ?? null,
+              lastModified: input.http.last_modified ?? null,
+              headers: input.http.headers ?? {},
+            }
+          : null,
+        content: input.content
+          ? {
+              sha256: input.content.sha256,
+              bytes: input.content.bytes,
+            }
+          : null,
       }),
     encode: (input, _, ast) =>
       ParseResult.fail(

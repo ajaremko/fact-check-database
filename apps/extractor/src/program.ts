@@ -74,8 +74,8 @@ export const Program: Program = withJobContextAnnotations(
     )
 
     // write rows to storage, exit if no fact checks were extracted
-    const factChecks = Array.flatten(successes)
-    if (factChecks.length === 0) {
+    const extracted = Array.flatten(successes)
+    if (extracted.length === 0) {
       yield* Effect.logWarning(
         'No fact checks extracted to be written to storage'
       )
@@ -86,7 +86,7 @@ export const Program: Program = withJobContextAnnotations(
     const schema = yield* FactChecksSchema
     const outgoing = yield* writeBatch({
       runId: job.runId,
-      factChecks: factChecks,
+      extracted,
       extractedAt: job.startedAt,
       datasetId: job.datasetId,
       schema,

@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, stripNullValues, Yaml } from '../../util'
+import { Node, omitNullKeys, Yaml } from '../../util'
 import { StorageReader, StorageWriter } from '../../ports'
 
 import {
@@ -91,7 +91,7 @@ export function sanitizeObservation(ctx: {
       fetchedAt: sanitizedObservation.fetchedAt,
       source: sanitizedObservation.source,
       ...(sanitizedObservation.http
-        ? { http: stripNullValues(sanitizedObservation.http) }
+        ? { http: omitNullKeys(sanitizedObservation.http) }
         : {}),
       ...(sanitizedObservation.content
         ? { content: sanitizedObservation.content }

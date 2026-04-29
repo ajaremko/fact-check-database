@@ -19,19 +19,17 @@ const encodeOutgoing = pipe(
   Schema.encode
 )
 
-function processTarget(target: Source, index: number) {
+function processTarget(source: Source, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
     const timestamp = yield* Clock.currentTimeMillis
 
     // ingest from target and publish event
-    yield* Effect.logInfo(`Processing target ${index + 1}: ${target.name}`)
+    yield* Effect.logInfo(`Processing target ${index + 1}: ${source.name}`)
     const event = yield* ingestFromSource({
       ingestionId: job.runId,
       timestamp,
-      sourceName: target.name,
-      url: target.url,
-      collection: target.collection,
+      source,
     })
 
     const data = yield* encodeOutgoing(event)
@@ -40,9 +38,9 @@ function processTarget(target: Source, index: number) {
   }).pipe(
     Effect.tapError(Effect.logError),
     Effect.annotateLogs({
-      source: target.name,
-      url: target.url,
-      collection: target.collection,
+      source: source.name,
+      url: source.url,
+      collection: source.collection,
     }),
     Effect.withSpan('processTarget')
   )

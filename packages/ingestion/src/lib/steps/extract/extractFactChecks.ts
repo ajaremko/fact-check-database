@@ -1,10 +1,11 @@
-import { Effect, pipe, Schema } from 'effect'
+import { Array, Effect, pipe, Schema } from 'effect'
 
 import { Node, Yaml } from '../../util'
 import { StorageReader } from '../../ports'
 
 import { ObservationSchema } from './Observation'
 import { extractors } from './extraction-strategy'
+import { FactCheckRow } from './FactCheck'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -21,9 +22,9 @@ export function extractFactChecks(ctx: {
 }) {
   return Effect.gen(function* () {
     const recordData = yield* StorageReader.readFile(ctx.pointer)
-    const record = yield* decodeObservation(recordData)
-
-    if (!record.shouldExtract) {
+    const observation = yield* decodeObservation(recordData)
+    const { content, http } = observation
+    if (!http || !content || !observation.shouldExtract) {
       yield* Effect.logInfo(
         `Skipping extraction for observation ${ctx.observationId}`
       )
@@ -32,14 +33,14 @@ export function extractFactChecks(ctx: {
 
     const extractor = extractors.find((e) =>
       e.canHandle({
-        collection: record.source.collection,
-        name: record.source.name,
+        collection: observation.source.collection,
+        name: observation.source.name,
       })
     )
 
     if (!extractor) {
       yield* Effect.logWarning(
-        `No extractor available for collection ${record.source.collection} for observation ${ctx.observationId}, skipping extraction`
+        `No extractor available for collection ${observation.source.collection} for observation ${ctx.observationId}, skipping extraction`
       )
       return []
     }
@@ -48,7 +49,7 @@ export function extractFactChecks(ctx: {
       `Extracting fact checks for observation ${ctx.observationId} from sanitized record`
     )
 
-    const responsePointer = record.sanitized ?? record.raw
+    const responsePointer = observation.sanitized ?? observation.raw
 
     if (!responsePointer) {
       yield* Effect.logWarning(
@@ -61,16 +62,39 @@ export function extractFactChecks(ctx: {
     return yield* extractor
       .extractor({
         timestamp: ctx.extractedAt,
-        record,
+        record: observation,
         data: responseData,
       })
       .pipe(
+        Effect.map(
+          Array.map(
+            (factCheck): FactCheckRow => ({
+              id: factCheck.sha256,
+              observationId: ctx.observationId,
+              extractionId: ctx.extractionId,
+              fetchedAt: observation.fetchedAt,
+              extractedAt: ctx.extractedAt,
+              ingestionId: observation.ingestionId,
+              factCheck,
+              http: {
+                contentSha256: content.sha256,
+                finalUrl: http.finalUrl,
+                status: http.status,
+                contentType: http.contentType,
+                etag: http.etag,
+                lastModified: http.lastModified,
+                headers: http.headers,
+              },
+              source: observation.source,
+            })
+          )
+        ),
         Effect.tapError(Effect.logWarning),
         Effect.catchAll(() => Effect.succeed([])),
         Effect.annotateLogs({
           observationId: ctx.observationId,
-          collection: record.source.collection,
-          name: record.source.name,
+          collection: observation.source.collection,
+          name: observation.source.name,
           extractorId: extractor.id,
         }),
         Effect.withSpan('extractor')

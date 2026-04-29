@@ -2,7 +2,7 @@ import { ParseResult, Schema } from 'effect'
 
 import * as v1 from '../../contracts/v1'
 import { NumberFromDate } from '../../data'
-import { stripNullValues } from '../../util'
+import { omitNullKeys } from '../../util'
 
 export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
   sha256: Schema.String,
@@ -20,7 +20,7 @@ export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
   extractedFrom: Schema.NullOr(Schema.String),
 }) {}
 
-export const FactCheckSchema = Schema.transformOrFail(
+export const FactCheckRowSchema = Schema.transformOrFail(
   v1.FactChecksTableRowSchema,
   Schema.Struct({
     id: Schema.String,
@@ -33,11 +33,11 @@ export const FactCheckSchema = Schema.transformOrFail(
     http: Schema.Struct({
       contentSha256: Schema.String,
       status: Schema.Number,
-      finalUrl: Schema.String,
-      contentType: Schema.optional(Schema.String),
-      etag: Schema.optional(Schema.String),
-      lastModified: Schema.optional(Schema.String),
-      headers: Schema.optional(
+      finalUrl: Schema.NullOr(Schema.String),
+      contentType: Schema.NullOr(Schema.String),
+      etag: Schema.NullOr(Schema.String),
+      lastModified: Schema.NullOr(Schema.String),
+      headers: Schema.NullOr(
         Schema.Record({ key: Schema.String, value: Schema.String })
       ),
     }),
@@ -72,7 +72,7 @@ export const FactCheckSchema = Schema.transformOrFail(
           collection: input.source.collection,
           url: input.source.url,
         },
-        fact_check: stripNullValues({
+        fact_check: omitNullKeys({
           sha256: input.factCheck.sha256,
           title: input.factCheck.title,
           claim: input.factCheck.claim,
@@ -83,23 +83,21 @@ export const FactCheckSchema = Schema.transformOrFail(
           extractor_version: input.factCheck.extractorVersion,
           extracted_from: input.factCheck.extractedFrom,
         }),
-        http: {
+        http: omitNullKeys({
           content_sha256: input.http.contentSha256,
           final_url: input.http.finalUrl,
           status_code: input.http.status,
-          etag: input.http.etag ?? undefined,
-          content_type: input.http.contentType ?? undefined,
-          last_modified: input.http.lastModified ?? undefined,
-          headers: input.http.headers ?? undefined,
-        },
+          etag: input.http.etag,
+          content_type: input.http.contentType,
+          last_modified: input.http.lastModified,
+          headers: input.http.headers,
+        }),
       }),
   }
 )
 
-export type ExtractedFactCheck = Schema.Schema.Type<typeof FactCheckSchema>
+export type FactCheckRow = Schema.Schema.Type<typeof FactCheckRowSchema>
 
-export const ExtractedFactChecksSchema = Schema.Array(FactCheckSchema)
+export const FactCheckRowsSchema = Schema.Array(FactCheckRowSchema)
 
-export type ExtractedFactChecks = Schema.Schema.Type<
-  typeof ExtractedFactChecksSchema
->
+export type FactCheckRows = Schema.Schema.Type<typeof FactCheckRowsSchema>

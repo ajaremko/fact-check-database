@@ -3,11 +3,11 @@ import { Effect, pipe, Schema } from 'effect'
 import { Node, Ndjson } from '../../util'
 import { StorageWriter } from '../../ports'
 
-import { FactCheckSchema, ExtractedFactChecks } from './FactCheck'
+import { FactCheckRowSchema, FactCheckRows } from './FactCheck'
 import { ExtractionBatchReady } from './ExtractionBatchReady'
 
 const encodeFactChecks = pipe(
-  FactCheckSchema,
+  FactCheckRowSchema,
   Ndjson.parseNdjson(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.encode
@@ -15,13 +15,13 @@ const encodeFactChecks = pipe(
 
 export function writeBatch(input: {
   runId: string
-  factChecks: ExtractedFactChecks
+  extracted: FactCheckRows
   extractedAt: number
   datasetId: string
   schema: { fields: readonly { name: string; type: string; mode: string }[] }
 }) {
   return Effect.gen(function* () {
-    const data = yield* encodeFactChecks(input.factChecks)
+    const data = yield* encodeFactChecks(input.extracted)
     const tableId = 'fact-checks'
     const pointer = yield* StorageWriter.writeFile({
       path: `${tableId}/${input.runId}.ndjson`,
@@ -40,7 +40,7 @@ export function writeBatch(input: {
       pointer,
     })
   }).pipe(
-    Effect.annotateLogs({ rowCount: input.factChecks.length }),
+    Effect.annotateLogs({ rowCount: input.extracted.length }),
     Effect.withSpan('writeBatch')
   )
 }
