@@ -44,7 +44,7 @@ export function pickRule(
 }
 
 function contentTypeAllowed(
-  contentType: string | undefined,
+  contentType: string | null,
   rule: CollectionRule
 ): { allowed: boolean; quarantineReason?: SanitizationAction } {
   const allowList = rule.allowedContentTypeSubstrings ?? []
@@ -120,6 +120,7 @@ export function evaluatePolicy(
   return {
     label: rule.defaultLabel,
     actions,
+    error: null,
     rewriteBody: rule.rewriteBody ?? false,
   }
 }

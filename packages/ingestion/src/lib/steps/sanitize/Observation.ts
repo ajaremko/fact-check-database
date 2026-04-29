@@ -6,20 +6,21 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
-  url: Schema.String,
-  finalUrl: Schema.optional(Schema.String),
-  error: Schema.optional(Schema.String),
+  error: Schema.NullOr(Schema.String),
   source: Schema.Struct({
+    id: Schema.String,
     name: Schema.String,
-    collection: Schema.String,
+    collection: Schema.Literal('rss', 'atom'),
+    url: Schema.String,
   }),
   raw: Schema.NullOr(
     Schema.Struct({
       http: Schema.Struct({
         status: Schema.Number,
-        contentType: Schema.optional(Schema.String),
-        etag: Schema.optional(Schema.String),
-        lastModified: Schema.optional(Schema.String),
+        finalUrl: Schema.NullOr(Schema.String),
+        contentType: Schema.NullOr(Schema.String),
+        etag: Schema.NullOr(Schema.String),
+        lastModified: Schema.NullOr(Schema.String),
         headers: Schema.Record({ key: Schema.String, value: Schema.String }),
       }),
       content: Schema.Struct({
@@ -41,55 +42,52 @@ export const ObservationSchema = Schema.transformOrFail(
     strict: true,
     decode: (input) => {
       if (
-        typeof input.http === 'undefined' ||
-        typeof input.content === 'undefined' ||
-        typeof input.pointer === 'undefined'
+        typeof input.status === 'undefined' ||
+        typeof input.content === 'undefined'
       ) {
         return ParseResult.succeed({
-          observationId: input.observation_id,
-          ingestionId: input.ingestion_id,
+          observationId: input.content_lineage_id,
+          ingestionId: input.ingestion_batch_id,
           fetchedAt: input.fetched_at,
-          error: input.error,
-          url: input.url,
-          finalUrl: input.final_url,
+          error: input.error ?? null,
+          finalUrl: input.final_url ?? null,
           raw: null,
           source: {
+            id: input.source.id,
+            url: input.source.url,
             name: input.source.name,
             collection: input.source.collection,
           },
         })
       }
       return ParseResult.succeed({
-        observationId: input.observation_id,
-        ingestionId: input.ingestion_id,
+        observationId: input.content_lineage_id,
+        ingestionId: input.ingestion_batch_id,
         fetchedAt: input.fetched_at,
-        error: input.error,
-        url: input.url,
-        finalUrl: input.final_url,
+        error: input.error ?? null,
         source: {
+          id: input.source.id,
+          url: input.source.url,
           name: input.source.name,
           collection: input.source.collection,
         },
-        raw: {
-          http: {
-            status: input.http.status,
-            headers: input.http.headers ?? {},
-            ...(typeof input.http.content_type !== 'undefined'
-              ? { contentType: input.http.content_type }
-              : {}),
-            ...(typeof input.http.etag !== 'undefined'
-              ? { etag: input.http.etag }
-              : {}),
-            ...(typeof input.http.last_modified !== 'undefined'
-              ? { lastModified: input.http.last_modified }
-              : {}),
-          },
-          content: {
-            sha256: input.content.sha256,
-            bytes: input.content.bytes,
-          },
-          pointer: input.pointer,
-        },
+        raw: input.status
+          ? {
+              http: {
+                finalUrl: input.final_url ?? null,
+                status: input.status,
+                headers: input.headers ?? {},
+                contentType: input.content_type ?? null,
+                etag: input.etag ?? null,
+                lastModified: input.last_modified ?? null,
+              },
+              content: {
+                sha256: input.content.sha256,
+                bytes: input.content.bytes,
+              },
+              pointer: input.content.raw,
+            }
+          : null,
       })
     },
     encode: (input, _, ast) =>

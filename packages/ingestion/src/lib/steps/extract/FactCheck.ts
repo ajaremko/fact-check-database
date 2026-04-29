@@ -1,70 +1,98 @@
-import { Schema } from 'effect'
+import { ParseResult, Schema } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-
 import { NumberFromDate } from '../../data'
+import { stripNullValues } from '../../util'
 
 export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
-  id: Schema.String,
-  observationId: Schema.String,
-  ingestionId: Schema.String,
-  extractionId: Schema.String,
-  source: Schema.Struct({
-    name: Schema.String,
-    collection: Schema.String,
-  }),
-  url: Schema.String,
-  finalUrl: Schema.String,
-  fetchedAt: NumberFromDate,
-  extractedAt: NumberFromDate,
-  publishedAt: Schema.NullOr(Schema.String),
+  sha256: Schema.String,
   title: Schema.NullOr(Schema.String),
   claim: Schema.NullOr(Schema.String),
-  verdict: Schema.NullOr(v1.FactCheckVerdictSchema),
+  verdict: Schema.NullOr(Schema.String),
+  link: Schema.NullOr(Schema.String),
+  normalizeVerdict: Schema.NullOr(
+    Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
+  ),
   summary: Schema.NullOr(Schema.String),
+  publishedAt: Schema.NullOr(Schema.String),
+  canonicalUrl: Schema.NullOr(Schema.String),
+  extractorVersion: Schema.NullOr(Schema.String),
+  extractedFrom: Schema.NullOr(Schema.String),
 }) {}
 
-export const FactCheckSchema = Schema.transform(
+export const FactCheckSchema = Schema.transformOrFail(
   v1.FactChecksTableRowSchema,
-  FactCheck,
+  Schema.Struct({
+    id: Schema.String,
+    observationId: Schema.String,
+    ingestionId: Schema.String,
+    extractionId: Schema.String,
+    extractedAt: NumberFromDate,
+    fetchedAt: NumberFromDate,
+    factCheck: FactCheck,
+    http: Schema.Struct({
+      contentSha256: Schema.String,
+      status: Schema.Number,
+      finalUrl: Schema.String,
+      contentType: Schema.optional(Schema.String),
+      etag: Schema.optional(Schema.String),
+      lastModified: Schema.optional(Schema.String),
+      headers: Schema.optional(
+        Schema.Record({ key: Schema.String, value: Schema.String })
+      ),
+    }),
+    source: Schema.Struct({
+      id: Schema.String,
+      name: Schema.String,
+      url: Schema.String,
+      collection: Schema.String,
+    }),
+  }),
   {
     strict: true,
-    decode: (input) => ({
-      id: input.content_hash,
-      observationId: input.observation_id,
-      ingestionId: input.ingestion_id,
-      extractionId: input.extraction_id,
-      source: {
-        name: input.source,
-        collection: input.collection,
-      },
-      url: input.url,
-      finalUrl: input.final_url,
-      publishedAt: input.published_at ?? null,
-      fetchedAt: input.fetched_at,
-      extractedAt: input.extracted_at,
-      title: input.title ?? null,
-      claim: input.claim ?? null,
-      verdict: input.verdict ?? null,
-      summary: input.summary ?? null,
-    }),
-    encode: (input) => ({
-      content_hash: input.id,
-      observation_id: input.observationId,
-      ingestion_id: input.ingestionId,
-      extraction_id: input.extractionId,
-      source: input.source.name,
-      collection: input.source.collection,
-      url: input.url,
-      final_url: input.finalUrl,
-      fetched_at: input.fetchedAt,
-      extracted_at: input.extractedAt,
-      ...(input.publishedAt ? { published_at: input.publishedAt } : {}),
-      ...(input.title ? { title: input.title } : {}),
-      ...(input.claim ? { claim: input.claim } : {}),
-      ...(input.verdict ? { verdict: input.verdict } : {}),
-      ...(input.summary ? { summary: input.summary } : {}),
-    }),
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding FactCheck not implemented'
+        )
+      ),
+    encode: (input) =>
+      ParseResult.succeed({
+        content_lineage_id: input.id,
+        extracted_at: input.extractedAt,
+        fetched_at: input.fetchedAt,
+        ingestion_id: input.ingestionId,
+        content_hash: input.http.contentSha256,
+        extraction_id: input.extractionId,
+        source: {
+          id: input.source.id,
+          name: input.source.name,
+          collection: input.source.collection,
+          url: input.source.url,
+        },
+        fact_check: stripNullValues({
+          sha256: input.factCheck.sha256,
+          title: input.factCheck.title,
+          claim: input.factCheck.claim,
+          verdict: input.factCheck.verdict,
+          summary: input.factCheck.summary,
+          published_at: input.factCheck.publishedAt,
+          canonical_url: input.factCheck.canonicalUrl,
+          extractor_version: input.factCheck.extractorVersion,
+          extracted_from: input.factCheck.extractedFrom,
+        }),
+        http: {
+          content_sha256: input.http.contentSha256,
+          final_url: input.http.finalUrl,
+          status_code: input.http.status,
+          etag: input.http.etag ?? undefined,
+          content_type: input.http.contentType ?? undefined,
+          last_modified: input.http.lastModified ?? undefined,
+          headers: input.http.headers ?? undefined,
+        },
+      }),
   }
 )
 

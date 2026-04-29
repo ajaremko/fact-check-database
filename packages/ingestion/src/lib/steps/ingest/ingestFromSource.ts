@@ -33,18 +33,16 @@ const encodeHashedObservationId = flow(
 export function ingestFromSource(ctx: {
   ingestionId: string
   timestamp: number
-  sourceName: string
-  url: string
-  collection: string
+  source: {
+    id: string
+    name: string
+    url: string
+    collection: 'rss' | 'atom'
+  }
 }) {
   return Effect.gen(function* () {
     yield* Effect.logDebug('Fetching data from source target')
-    const result = yield* Fetcher.fetch(
-      ctx.sourceName,
-      ctx.collection,
-      ctx.url,
-      ctx.timestamp
-    )
+    const result = yield* Fetcher.fetch(ctx.source, ctx.timestamp)
 
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId(result)
@@ -81,13 +79,10 @@ export function ingestFromSource(ctx: {
         observationId,
         runId: ctx.ingestionId,
         fetchedAt: ctx.timestamp,
-        url: ctx.url,
+        url: ctx.source.url,
         pointer: recordPointer,
         error: result.error,
-        source: {
-          name: ctx.sourceName,
-          collection: ctx.collection,
-        },
+        source: ctx.source,
         http: {
           status: 0,
         },
@@ -103,7 +98,7 @@ export function ingestFromSource(ctx: {
       observationId,
       ingestionId: ctx.ingestionId,
       fetchedAt: ctx.timestamp,
-      sourceName: ctx.sourceName,
+      sourceName: ctx.source.name,
       body: result.body,
       contentType: result.contentType,
     })
@@ -150,12 +145,9 @@ export function ingestFromSource(ctx: {
       observationId,
       runId: ctx.ingestionId,
       fetchedAt: ctx.timestamp,
-      url: ctx.url,
+      url: ctx.source.url,
       finalUrl: result.finalUrl,
-      source: {
-        name: ctx.sourceName,
-        collection: ctx.collection,
-      },
+      source: ctx.source,
       http: {
         status: result.status,
         contentType: result.contentType,
@@ -171,9 +163,9 @@ export function ingestFromSource(ctx: {
     })
   }).pipe(
     Effect.annotateLogs({
-      source: ctx.sourceName,
-      url: ctx.url,
-      collection: ctx.collection,
+      source: ctx.source.name,
+      url: ctx.source.url,
+      collection: ctx.source.collection,
     }),
     Effect.withSpan('ingestFromSourceTarget')
   )

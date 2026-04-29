@@ -45,15 +45,15 @@ export const ObservationSchema = Schema.transformOrFail(
     strict: true,
     decode: (input) =>
       ParseResult.succeed({
-        observationId: input.observation_id,
-        ingestionId: input.ingestion_id,
+        observationId: input.content_lineage_id,
+        ingestionId: input.ingestion_batch_id,
         fetchedAt: input.fetched_at,
         sanitizedAt: input.sanitized_at,
-        shouldExtract: input.outcome.label === 'SAFE_PUBLIC',
+        shouldExtract: input.label === 'SAFE_PUBLIC',
         error: input.error,
-        url: input.url,
-        finalUrl: input.final_url,
-        sanitized: input.pointer,
+        url: input.source.url,
+        finalUrl: input.http?.final_url,
+        sanitized: input.content?.sanitized,
         raw: input.input.raw,
         source: {
           name: input.source.name,

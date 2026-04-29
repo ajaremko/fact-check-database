@@ -27,7 +27,7 @@ export type SanitizationAction = Schema.Schema.Type<
 export const PolicyDecisionSchema = Schema.Struct({
   label: PolicyLabelSchema,
   actions: Schema.Array(SanitizationActionSchema),
-  error: Schema.optional(Schema.String),
+  error: Schema.NullOr(Schema.String),
   rewriteBody: Schema.Boolean,
 })
 

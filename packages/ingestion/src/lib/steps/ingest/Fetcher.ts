@@ -11,9 +11,12 @@ export class Fetcher extends Context.Tag('Fetcher')<
   Fetcher,
   {
     readonly fetch: (
-      name: string,
-      collection: string,
-      url: string,
+      source: {
+        id: string
+        name: string
+        collection: 'rss' | 'atom'
+        url: string
+      },
       timestamp: number
     ) => Effect.Effect<FetchResult, FetcherError>
   }

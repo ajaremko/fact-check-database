@@ -3,10 +3,12 @@ import { Effect, pipe, Schema } from 'effect'
 import { Node, Xml } from '../../../util'
 
 import { makeExtractionStrategy } from './ExtractionStrategy'
+import { FactCheck } from '../FactCheck'
 
 const AtomEntrySchema = Schema.Struct({
   id: Schema.optional(Schema.String),
   title: Schema.optional(Schema.String),
+  verdict: Schema.optional(Schema.String),
   link: Schema.optional(
     Schema.Union(Schema.String, Schema.Struct({ href: Schema.String }))
   ),
@@ -81,24 +83,20 @@ export const AtomExtractor = makeExtractionStrategy({
           summary: item.description ?? null,
           publishedAt: item.pubDate ?? null,
         }
-        const id = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
-        const factCheck = {
-          id,
-          extractionId: input.extractionId,
-          ingestionId: input.ingestionId,
-          observationId: input.observationId,
-          source: input.record.source,
-          url: input.record.url,
-          finalUrl: input.record.finalUrl || input.record.url,
-          fetchedAt: input.record.fetchedAt,
-          extractedAt: input.extractedAt,
+        const sha256 = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
+        const factCheck = new FactCheck({
+          sha256,
           claim: values.claim,
-          link: values.link,
+          link: values.link ? JSON.stringify(values.link) : null,
           title: values.title,
           verdict: values.verdict,
+          normalizeVerdict: values.verdict,
           summary: values.summary,
           publishedAt: values.publishedAt,
-        }
+          canonicalUrl: null,
+          extractorVersion: '1',
+          extractedFrom: null,
+        })
         extractedFactChecks.push(factCheck)
       }
       return extractedFactChecks

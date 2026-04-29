@@ -1,6 +1,6 @@
 export * from './ArchivePath'
+export * from './ContentLineageId'
 export * from './FactChecksTableRow'
 export * from './IngestorRecord'
 export * from './SanitizerRecord'
-export * from './ObservationId'
 export * from './StagingPath'

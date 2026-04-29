@@ -39,31 +39,28 @@ export const ObservationSchema = Schema.transformOrFail(
             version: 1,
             kind: 'fetch_attempt' as const,
             outcome: 'data_fetched' as const,
-            observation_id: input.observationId,
-            ingestion_id: input.ingestionId,
+            content_lineage_id: input.observationId,
+            ingestion_batch_id: input.ingestionId,
             fetched_at: input.result.fetchedAt,
-            url: input.result.url,
             source: input.result.source,
-            http: {
-              status: input.result.status,
-              headers: input.result.headers,
-              ...(input.result.contentType
-                ? { content_type: input.result.contentType }
-                : {}),
-              ...(input.result.etag ? { etag: input.result.etag } : {}),
-              ...(input.result.lastModified
-                ? { last_modified: input.result.lastModified }
-                : {}),
-            },
-            content: {
-              sha256: input.result.sha256,
-              bytes: input.result.bytes,
-            },
+            status: input.result.status,
+            headers: input.result.headers,
+            ...(input.result.contentType
+              ? { content_type: input.result.contentType }
+              : {}),
+            ...(input.result.etag ? { etag: input.result.etag } : {}),
+            ...(input.result.lastModified
+              ? { last_modified: input.result.lastModified }
+              : {}),
             ...(input.pointer
               ? {
-                  pointer: {
-                    bucket: input.pointer.bucket,
-                    object: input.pointer.object,
+                  content: {
+                    sha256: input.result.sha256,
+                    bytes: input.result.bytes,
+                    raw: {
+                      bucket: input.pointer.bucket,
+                      object: input.pointer.object,
+                    },
                   },
                 }
               : {}),
@@ -73,10 +70,9 @@ export const ObservationSchema = Schema.transformOrFail(
             version: 1,
             kind: 'fetch_attempt' as const,
             outcome: 'no_response' as const,
-            observation_id: input.observationId,
-            ingestion_id: input.ingestionId,
+            content_lineage_id: input.observationId,
+            ingestion_batch_id: input.ingestionId,
             fetched_at: input.result.fetchedAt,
-            url: input.result.url,
             source: input.result.source,
             error: input.result.error,
           })
@@ -103,7 +99,7 @@ export const ObservationMetadataSchema = Schema.transformOrFail(
         observationId: input.observationId,
         ingestionId: input.ingestionId,
         fetchedAt: input.result.fetchedAt,
-        url: input.result.url,
+        url: input.result.source.url,
         sourceName: input.result.source.name,
         sourceCollection: input.result.source.collection,
       })

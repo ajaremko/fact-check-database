@@ -16,16 +16,17 @@ export class ObservationSanitized extends Schema.Class<ObservationSanitized>(
   observationId: Schema.String, // deterministic: hash(url + fetchedAt + contentHash) or hash(url + contentHash)
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
-  url: Schema.String,
-  finalUrl: Schema.optional(Schema.String),
   error: Schema.optional(Schema.String),
   source: Schema.Struct({
+    id: Schema.String,
+    url: Schema.String,
     name: Schema.String,
     collection: Schema.String,
   }),
   http: Schema.optional(
     Schema.Struct({
       status: Schema.Number,
+      finalUrl: Schema.optional(Schema.String),
       contentType: Schema.optional(Schema.String),
       etag: Schema.optional(Schema.String),
       lastModified: Schema.optional(Schema.String),

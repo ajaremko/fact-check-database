@@ -2,7 +2,7 @@ import { ParseResult, Schema } from 'effect'
 
 import { NumberFromFormattedDate } from '../../data'
 
-export const ObservationIdSchema = Schema.transformOrFail(
+export const ContentLineageIdSchema = Schema.transformOrFail(
   Schema.String,
   Schema.Union(
     Schema.Struct({
@@ -34,17 +34,17 @@ export const ObservationIdSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding observation IDs not implemented'
+          'Decoding Content Lineage IDs not implemented'
         )
       ),
   }
 ).annotations({
-  identifier: 'v1ObservationId',
-  title: 'ObservationId',
+  identifier: 'v1ContentLineageId',
+  title: 'ContentLineageId',
   description: `
     A unique identifier of an observation encoding the 
     version, success status, URL, and either fetch timestamp 
     with error message (for failures) or content hash (for successes).`,
 })
 
-export type ObservationId = Schema.Schema.Type<typeof ObservationIdSchema>
+export type ContentLineageId = Schema.Schema.Type<typeof ContentLineageIdSchema>

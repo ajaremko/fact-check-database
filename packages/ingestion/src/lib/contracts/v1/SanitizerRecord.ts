@@ -1,9 +1,6 @@
 import { Schema } from 'effect'
 
-import { ContentSummarySchema } from './ContentSummary'
 import { FilePointerSchema } from './FilePointer'
-import { HttpSummarySchema } from './HttpSummary'
-import { SourceSummarySchema } from './SourceSummary'
 
 /**
  * High-level access classification assigned to each sanitized record.
@@ -63,30 +60,46 @@ export const InputRecordRefSchema = Schema.Struct({
 export const SanitizerRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('sanitized_record'),
-  // Identity
-  observation_id: Schema.String,
-  ingestion_id: Schema.String,
+  content_lineage_id: Schema.String,
+  ingestion_batch_id: Schema.String,
   fetched_at: Schema.Number,
   sanitized_at: Schema.Number,
-  // Provenance
-  input: InputRecordRefSchema,
-  // Normalized fields
-  url: Schema.String,
-  final_url: Schema.optional(Schema.String),
-  source: SourceSummarySchema,
-  http: Schema.optional(HttpSummarySchema),
-  content: Schema.optional(ContentSummarySchema),
-  outcome: Schema.Struct({
-    label: PolicyLabelSchema,
-    actions: Schema.Array(SanitizationActionSchema),
-    notes: Schema.optional(Schema.String),
-    // Set to true if the sanitizer rewrote the body bytes
-    bytes_rewritten: Schema.optional(Schema.Boolean),
+  source: Schema.Struct({
+    id: Schema.String,
+    name: Schema.String,
+    url: Schema.String,
+    collection: Schema.Literal('rss', 'atom'),
   }),
-  // If you rewrite bytes, point to sanitized raw in content summary.
-  pointer: Schema.optional(FilePointerSchema),
-  // For quarantined items (or other failures)
+  input: Schema.Struct({
+    record: FilePointerSchema,
+    raw: Schema.optional(FilePointerSchema),
+  }),
   error: Schema.optional(Schema.String),
+  label: PolicyLabelSchema,
+  actions: Schema.Array(SanitizationActionSchema),
+  notes: Schema.optional(Schema.String),
+  // Set to true if the sanitizer rewrote the body bytes
+  bytes_rewritten: Schema.optional(Schema.Boolean),
+  http: Schema.optional(
+    Schema.Struct({
+      error: Schema.optional(Schema.String),
+      final_url: Schema.optional(Schema.String),
+      status: Schema.Number,
+      content_type: Schema.optional(Schema.String),
+      etag: Schema.optional(Schema.String),
+      last_modified: Schema.optional(Schema.String),
+      headers: Schema.optional(
+        Schema.Record({ key: Schema.String, value: Schema.String })
+      ),
+    })
+  ),
+  content: Schema.optional(
+    Schema.Struct({
+      sha256: Schema.String,
+      bytes: Schema.Number,
+      sanitized: FilePointerSchema,
+    })
+  ),
 }).annotations({
   identifier: 'v1SanitizerRecord',
   title: 'SanitizerRecord',

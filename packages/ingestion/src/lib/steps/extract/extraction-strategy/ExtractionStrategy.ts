@@ -2,19 +2,16 @@ import { Effect } from 'effect'
 
 import { Observation } from '../Observation'
 
-import { ExtractedFactChecks } from '../FactCheck'
+import { FactCheck } from '../FactCheck'
 
 export interface ExtractionStrategy<E, R> {
   id: string
   canHandle: (source: { collection: string; name: string }) => boolean
   extractor: (input: {
-    extractionId: string
-    ingestionId: string
-    observationId: string
-    extractedAt: number
+    timestamp: number
     record: Observation
     data: Uint8Array
-  }) => Effect.Effect<ExtractedFactChecks, E, R>
+  }) => Effect.Effect<FactCheck[], E, R>
 }
 
 export function makeExtractionStrategy<E, R>(

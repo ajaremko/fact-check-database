@@ -5,7 +5,7 @@ import * as v1 from '../../contracts/v1'
 import { FetchResult } from './FetchResult'
 
 export const ObservationIdSchema = Schema.transformOrFail(
-  v1.ObservationIdSchema,
+  v1.ContentLineageIdSchema,
   FetchResult,
   {
     strict: true,
@@ -14,7 +14,7 @@ export const ObservationIdSchema = Schema.transformOrFail(
         return ParseResult.succeed({
           version: 1,
           success: false as const,
-          url: input.url,
+          url: input.source.url,
           fetchedAt: input.fetchedAt,
           error: input.error,
         })
@@ -22,7 +22,7 @@ export const ObservationIdSchema = Schema.transformOrFail(
       return ParseResult.succeed({
         version: 1,
         success: true as const,
-        url: input.url,
+        url: input.source.url,
         sha256: input.sha256,
       })
     },

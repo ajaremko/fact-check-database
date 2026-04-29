@@ -1,9 +1,6 @@
 import { Schema } from 'effect'
 
-import { ContentSummarySchema } from './ContentSummary'
 import { FilePointerSchema } from './FilePointer'
-import { HttpSummarySchema } from './HttpSummary'
-import { SourceSummarySchema } from './SourceSummary'
 
 /**
  * Schema for a record produced when an HTTP fetch returns a response body, or
@@ -18,16 +15,31 @@ export const IngestionRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('no_response', 'data_fetched'),
-  observation_id: Schema.String,
-  ingestion_id: Schema.String,
+  content_lineage_id: Schema.String,
+  ingestion_batch_id: Schema.String,
   fetched_at: Schema.Number,
-  url: Schema.String,
-  final_url: Schema.optional(Schema.String),
+  source: Schema.Struct({
+    id: Schema.String,
+    name: Schema.String,
+    url: Schema.String,
+    collection: Schema.Literal('rss', 'atom'),
+  }),
   error: Schema.optional(Schema.String),
-  source: SourceSummarySchema,
-  http: Schema.optional(HttpSummarySchema),
-  content: Schema.optional(ContentSummarySchema),
-  pointer: Schema.optional(FilePointerSchema),
+  final_url: Schema.optional(Schema.String),
+  status: Schema.optional(Schema.Number),
+  content_type: Schema.optional(Schema.String),
+  etag: Schema.optional(Schema.String),
+  last_modified: Schema.optional(Schema.String),
+  headers: Schema.optional(
+    Schema.Record({ key: Schema.String, value: Schema.String })
+  ),
+  content: Schema.optional(
+    Schema.Struct({
+      sha256: Schema.String,
+      bytes: Schema.Number,
+      raw: FilePointerSchema,
+    })
+  ),
 }).annotations({
   identifier: 'v1IngestionRecord',
   title: 'IngestionRecord',

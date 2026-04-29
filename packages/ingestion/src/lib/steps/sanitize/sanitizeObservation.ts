@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, Yaml } from '../../util'
+import { Node, stripNullValues, Yaml } from '../../util'
 import { StorageReader, StorageWriter } from '../../ports'
 
 import {
@@ -52,19 +52,18 @@ export function sanitizeObservation(ctx: {
       observationId: observation.observationId,
       ingestionId: observation.ingestionId,
       fetchedAt: observation.fetchedAt,
-      url: observation.url,
-      finalUrl: observation.finalUrl,
       sanitizedAt: ctx.timestamp,
       source: observation.source,
-      http: observation.raw?.http,
-      content: observation.raw?.content,
+      http:
+        observation.raw && observation.raw.http ? observation.raw.http : null,
+      content: observation.raw ? observation.raw.content : null,
       outcome: {
         decision,
         sanitized: null,
       },
       input: {
         record: ctx.pointer,
-        raw: observation.raw ? observation.raw.pointer : undefined,
+        raw: observation.raw ? observation.raw.pointer : null,
       },
       error: decision.error,
     })
@@ -90,18 +89,14 @@ export function sanitizeObservation(ctx: {
       observationId: sanitizedObservation.observationId,
       ingestionId: sanitizedObservation.ingestionId,
       fetchedAt: sanitizedObservation.fetchedAt,
-      url: sanitizedObservation.url,
       source: sanitizedObservation.source,
-      ...(typeof sanitizedObservation.finalUrl !== 'undefined'
-        ? { finalUrl: sanitizedObservation.finalUrl }
+      ...(sanitizedObservation.http
+        ? { http: stripNullValues(sanitizedObservation.http) }
         : {}),
-      ...(typeof sanitizedObservation.http !== 'undefined'
-        ? { http: sanitizedObservation.http }
-        : {}),
-      ...(typeof sanitizedObservation.content !== 'undefined'
+      ...(sanitizedObservation.content
         ? { content: sanitizedObservation.content }
         : {}),
-      ...(typeof sanitizedObservation.error !== 'undefined'
+      ...(sanitizedObservation.error
         ? { error: sanitizedObservation.error }
         : {}),
       pointer: recordPointer,

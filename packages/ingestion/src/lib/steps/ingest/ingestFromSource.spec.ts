@@ -16,18 +16,22 @@ describe('ingestFromSourceTarget', () => {
         const result = yield* ingestFromSource({
           ingestionId: 'run-1',
           timestamp: 0,
-          sourceName: 'source-1',
-          url: 'https://test-rss.com/rss',
-          collection: 'rss',
+          source: {
+            id: 'source-1',
+            name: 'source-1',
+            url: 'https://test-rss.com/rss',
+            collection: 'rss',
+          },
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
               new FetchFailure({
                 fetchedAt: 0,
-                url: 'https://test-rss.com/rss',
                 source: {
+                  id: 'source-1',
                   collection: 'rss',
                   name: 'source-1',
+                  url: 'https://test-rss.com/rss',
                 },
                 error: 'Network error',
               })
@@ -80,9 +84,12 @@ describe('ingestFromSourceTarget', () => {
         const result = yield* ingestFromSource({
           ingestionId: 'run-1',
           timestamp: 0,
-          sourceName: 'source-1',
-          url: 'https://test-rss.com/rss',
-          collection: 'rss',
+          source: {
+            id: 'source-1',
+            name: 'source-1',
+            url: 'https://test-rss.com/rss',
+            collection: 'rss',
+          },
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
@@ -90,10 +97,11 @@ describe('ingestFromSourceTarget', () => {
                 finalUrl: 'https://test-rss.com/rss',
                 status: 200,
                 fetchedAt: 0,
-                url: 'https://test-rss.com/rss',
                 source: {
+                  id: 'source-1',
                   collection: 'rss',
                   name: 'source-1',
+                  url: 'https://test-rss.com/rss',
                 },
                 headers: {},
                 bytes: 100,

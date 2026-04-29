@@ -9,12 +9,13 @@ describe('ObservationIdSchema', () => {
     expect(
       Schema.encodeSync(ObservationIdSchema)(
         new FetchFailure({
-          url: 'https://test-rss.com/rss',
           fetchedAt: 0,
           error: 'Network error',
           source: {
+            id: 'test-source',
             name: 'Test Source',
             collection: 'rss',
+            url: 'https://test-rss.com/rss',
           },
         })
       )
@@ -24,7 +25,6 @@ describe('ObservationIdSchema', () => {
     expect(
       Schema.encodeSync(ObservationIdSchema)(
         new FetchSuccess({
-          url: 'https://test-rss.com/rss',
           fetchedAt: 0,
           error: null,
           finalUrl: 'https://test-rss.com/rss',
@@ -34,8 +34,10 @@ describe('ObservationIdSchema', () => {
           sha256: 'dummy-sha256',
           body: new Uint8Array(),
           source: {
+            id: 'test-source',
             name: 'Test Source',
             collection: 'rss',
+            url: 'https://test-rss.com/rss',
           },
         })
       )

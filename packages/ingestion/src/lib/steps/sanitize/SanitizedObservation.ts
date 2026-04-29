@@ -1,8 +1,10 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
+import { stripNullValues } from '../../util'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
+import { DeepMutable, Mutable } from 'effect/Types'
 
 export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
   'SanitizedObservation'
@@ -11,8 +13,6 @@ export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,
-  url: Schema.String,
-  finalUrl: Schema.optional(Schema.String),
   outcome: Schema.Struct({
     decision: PolicyDecisionSchema,
     sanitized: Schema.NullOr(
@@ -23,31 +23,34 @@ export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
     ),
   }),
   source: Schema.Struct({
+    id: Schema.String,
     name: Schema.String,
-    collection: Schema.String,
+    collection: Schema.Literal('rss', 'atom'),
+    url: Schema.String,
   }),
-  http: Schema.optional(
+  http: Schema.NullOr(
     Schema.Struct({
+      finalUrl: Schema.NullOr(Schema.String),
       status: Schema.Number,
-      contentType: Schema.optional(Schema.String),
-      etag: Schema.optional(Schema.String),
-      lastModified: Schema.optional(Schema.String),
+      contentType: Schema.NullOr(Schema.String),
+      etag: Schema.NullOr(Schema.String),
+      lastModified: Schema.NullOr(Schema.String),
       headers: Schema.Record({ key: Schema.String, value: Schema.String }),
     })
   ),
-  content: Schema.optional(
+  content: Schema.NullOr(
     Schema.Struct({
       sha256: Schema.String,
       bytes: Schema.Number,
     })
   ),
-  error: Schema.optional(Schema.String),
+  error: Schema.NullOr(Schema.String),
   input: Schema.Struct({
     record: Schema.Struct({
       object: Schema.String,
       bucket: Schema.String,
     }),
-    raw: Schema.optional(
+    raw: Schema.NullOr(
       Schema.Struct({
         object: Schema.String,
         bucket: Schema.String,
@@ -69,45 +72,62 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
           'Decoding SanitizedObservation not implemented'
         )
       ),
-    encode: (input) =>
-      ParseResult.succeed({
+    encode: (input) => {
+      const output: DeepMutable<v1.SanitizerRecord> = {
         version: 1 as const,
         kind: 'sanitized_record' as const,
-        observation_id: input.observationId,
-        ingestion_id: input.ingestionId,
-        sanitized_at: input.sanitizedAt,
+        content_lineage_id: input.observationId,
+        ingestion_batch_id: input.ingestionId,
         fetched_at: input.fetchedAt,
-        outcome: input.outcome.decision,
-        input: {
-          record: input.input.record,
-          raw: input.input.raw,
-        },
-        sanitized: input.outcome.sanitized,
-        error: input.error,
-        url: input.url,
-        final_url: input.finalUrl ?? input.url,
+        sanitized_at: input.sanitizedAt,
         source: {
+          id: input.source.id,
           name: input.source.name,
+          url: input.source.url,
           collection: input.source.collection,
         },
-        http:
-          typeof input.http !== 'undefined'
-            ? {
-                status: input.http.status,
-                content_type: input.http.contentType,
-                etag: input.http.etag,
-                last_modified: input.http.lastModified,
-                headers: input.http.headers ?? {},
-              }
-            : undefined,
-        content:
-          typeof input.content !== 'undefined'
-            ? {
-                sha256: input.content.sha256,
-                bytes: input.content.bytes,
-              }
-            : undefined,
-      }),
+        input: {
+          record: input.input.record,
+        },
+        label: input.outcome.decision.label,
+        actions: input.outcome.decision.actions as Mutable<
+          typeof input.outcome.decision.actions
+        >,
+        bytes_rewritten: input.outcome.decision.rewriteBody,
+      }
+      if (input.outcome.decision.error) {
+        output.error = input.outcome.decision.error
+      }
+      if (input.http) {
+        output.http = stripNullValues({
+          status: input.http.status,
+          final_url: input.http.finalUrl,
+          content_type: input.http.contentType,
+          etag: input.http.etag,
+          last_modified: input.http.lastModified,
+          headers: input.http.headers,
+        })
+      }
+      if (input.input.raw) {
+        output.input.raw = input.input.raw
+      }
+      if (input.content) {
+        if (input.outcome.sanitized) {
+          output.content = {
+            sha256: input.content.sha256,
+            bytes: input.content.bytes,
+            sanitized: input.outcome.sanitized,
+          }
+        } else if (input.input.raw) {
+          output.content = {
+            sha256: input.content.sha256,
+            bytes: input.content.bytes,
+            sanitized: input.input.raw,
+          }
+        }
+      }
+      return ParseResult.succeed(output)
+    },
   }
 )
 
@@ -126,7 +146,7 @@ export const SanitizedObservationMetaSchema = Schema.transformOrFail(
       ),
     encode: (input) =>
       ParseResult.succeed({
-        url: input.url,
+        url: input.source.url,
         sourceName: input.source.name,
         sourceCollection: input.source.collection,
         fetchedAt: input.fetchedAt,

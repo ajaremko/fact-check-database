@@ -60,10 +60,7 @@ export function extractFactChecks(ctx: {
     const responseData = yield* StorageReader.readFile(responsePointer)
     return yield* extractor
       .extractor({
-        extractionId: extractor.id,
-        ingestionId: record.ingestionId,
-        observationId: ctx.observationId,
-        extractedAt: ctx.extractedAt,
+        timestamp: ctx.extractedAt,
         record,
         data: responseData,
       })
@@ -76,7 +73,7 @@ export function extractFactChecks(ctx: {
           name: record.source.name,
           extractorId: extractor.id,
         }),
-        Effect.withSpan(`extractor.${extractor.id}`)
+        Effect.withSpan('extractor')
       )
   }).pipe(
     Effect.annotateLogs({ extractionId: ctx.extractionId }),

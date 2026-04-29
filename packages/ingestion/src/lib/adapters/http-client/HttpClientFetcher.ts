@@ -19,10 +19,10 @@ export const make = Effect.gen(function* () {
     Connection: 'keep-alive',
   }
   return Fetcher.Fetcher.of({
-    fetch: (sourceName, collection, url, timestamp) =>
+    fetch: (source, timestamp) =>
       Effect.gen(function* () {
         // Make the HTTP request using the client
-        const result = yield* Effect.either(client.get(url, { headers }))
+        const result = yield* Effect.either(client.get(source.url, { headers }))
 
         // Check if the result is a success or failure and construct an
         // appropriate FetchResult
@@ -34,8 +34,7 @@ export const make = Effect.gen(function* () {
           if (error._tag === 'RequestError') {
             return new FetchFailure({
               error: error.message,
-              url,
-              source: { name: sourceName, collection },
+              source,
               fetchedAt: timestamp,
             })
           }
@@ -64,12 +63,11 @@ export const make = Effect.gen(function* () {
 
           return new FetchSuccess({
             error: error.message,
-            source: { name: sourceName, collection },
+            source,
             fetchedAt: timestamp,
             status: error.response.status,
             headers: error.response.headers,
             finalUrl: error.response.request.url,
-            url,
             contentType,
             etag,
             lastModified,
@@ -101,8 +99,7 @@ export const make = Effect.gen(function* () {
           headers: response.headers,
           finalUrl: response.request.url,
           fetchedAt: timestamp,
-          url,
-          source: { name: sourceName, collection },
+          source,
           contentType,
           etag,
           lastModified,
