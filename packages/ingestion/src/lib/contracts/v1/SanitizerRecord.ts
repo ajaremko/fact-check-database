@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
 import { FilePointerSchema } from './FilePointer'
+import { SourceSchema } from './Source'
 
 /**
  * High-level access classification assigned to each sanitized record.
@@ -64,12 +65,7 @@ export const SanitizerRecordSchema = Schema.Struct({
   ingestion_batch_id: Schema.String,
   fetched_at: Schema.Number,
   sanitized_at: Schema.Number,
-  source: Schema.Struct({
-    id: Schema.String,
-    name: Schema.String,
-    url: Schema.String,
-    collection: Schema.String,
-  }),
+  source: SourceSchema,
   input: Schema.Struct({
     record: FilePointerSchema,
     raw: Schema.optional(FilePointerSchema),

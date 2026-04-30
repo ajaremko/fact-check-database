@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
 import { FilePointerSchema } from './FilePointer'
+import { SourceSchema } from './Source'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -15,12 +16,7 @@ export const ObservationIngestedSchema = Schema.Struct({
   content_lineage_id: Schema.String,
   ingestion_batch_id: Schema.String,
   fetched_at: Schema.Number,
-  source: Schema.Struct({
-    id: Schema.String,
-    name: Schema.String,
-    url: Schema.String,
-    collection: Schema.String,
-  }),
+  source: SourceSchema,
   error: Schema.optional(Schema.String),
   final_url: Schema.optional(Schema.String),
   status: Schema.optional(Schema.Number),

@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+import { SourceSchema } from './Source'
 
 export const FactChecksTableRowSchema = Schema.Struct({
   content_lineage_id: Schema.String,
@@ -6,12 +7,7 @@ export const FactChecksTableRowSchema = Schema.Struct({
   fetched_at: Schema.Date,
   ingestion_id: Schema.String,
   extraction_id: Schema.String,
-  source: Schema.Struct({
-    id: Schema.String,
-    name: Schema.String,
-    collection: Schema.String,
-    url: Schema.String,
-  }),
+  source: SourceSchema,
   fact_check: Schema.Struct({
     sha256: Schema.String,
     title: Schema.optional(Schema.String),
