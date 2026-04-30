@@ -3,7 +3,7 @@ import { HttpClient } from '@effect/platform'
 
 import * as Fetcher from '../../steps/ingest/Fetcher'
 import { FetchSuccess, FetchFailure } from '../../steps/ingest/FetchResult'
-import { Node } from '../../util'
+import { Node } from '../../data'
 
 function pickHeaders(names: string[]) {
   return function (headers: Record<string, string>) {

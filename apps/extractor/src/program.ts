@@ -9,7 +9,7 @@ import {
 } from '@news-research/ingestion/steps/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
 import { ObservationSanitized } from '@news-research/ingestion/steps/sanitize'
-import { Node } from '@news-research/ingestion/util'
+import { Node } from '@news-research/ingestion/data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { FactChecksSchema } from './FactChecksSchema'

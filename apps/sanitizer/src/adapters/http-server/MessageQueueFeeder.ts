@@ -10,7 +10,7 @@ import { createServer } from 'node:http'
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 
 import { MessageQueue } from '@news-research/ingestion/messaging'
-import { Node } from '@news-research/ingestion/util'
+import { Node } from '@news-research/ingestion/data'
 
 const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({

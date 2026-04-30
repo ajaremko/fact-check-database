@@ -2,7 +2,7 @@ import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { ParseError } from 'effect/ParseResult'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import { Node, NodeCsv } from '@news-research/ingestion/util'
+import { Node, NodeCsv } from '@news-research/ingestion/data'
 
 import { SourceList, SourceSchema } from '../../TargetList'
 

@@ -1,6 +1,6 @@
 import { Context, Clock, Config, Effect, Layer, Schema } from 'effect'
 
-import { Node } from '@news-research/ingestion/util'
+import { Node } from '@news-research/ingestion/data'
 
 const MaxConcurrencySchema = Schema.NumberFromString.pipe(
   Schema.nonNegative(),

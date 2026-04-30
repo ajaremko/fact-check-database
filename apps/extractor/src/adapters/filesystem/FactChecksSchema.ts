@@ -1,7 +1,7 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { Node } from '@news-research/ingestion/util'
+import { Node } from '@news-research/ingestion/data'
 
 import { FactChecksSchema, FieldSchema } from '../../FactChecksSchema'
 

@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, Xml } from '../../../util'
+import { Node, Xml } from '../../../data'
 
 import { FactCheck } from '../FactCheck'
 

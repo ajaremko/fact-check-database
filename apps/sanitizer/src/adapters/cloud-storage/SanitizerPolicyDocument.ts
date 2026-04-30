@@ -9,7 +9,7 @@ import {
 } from 'effect'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
-import { Yaml, Node } from '@news-research/ingestion/util'
+import { Yaml, Node } from '@news-research/ingestion/data'
 import { SanitizerPolicy } from '@news-research/ingestion/steps/sanitize'
 
 import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'

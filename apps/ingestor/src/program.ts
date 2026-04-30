@@ -7,7 +7,7 @@ import {
 } from '@news-research/ingestion/steps/ingest'
 import * as v1 from '@news-research/ingestion/contracts/v1'
 import { Publisher } from '@news-research/ingestion/messaging'
-import { Node } from '@news-research/ingestion/util'
+import { Node } from '@news-research/ingestion/data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { SourceList, Source } from './TargetList'

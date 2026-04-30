@@ -10,7 +10,7 @@ import {
 import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
 
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
-import { Node } from '@news-research/ingestion/util'
+import { Node } from '@news-research/ingestion/data'
 
 const decodeIncoming = pipe(
   v1.ObservationIngestedSchema,

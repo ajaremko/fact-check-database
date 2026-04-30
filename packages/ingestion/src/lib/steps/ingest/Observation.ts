@@ -1,7 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-import { omitNullKeys } from '../../util'
+import { omitNullKeys } from '../../data'
 
 import { SourceSchema, FilePointerSchema, FilePointer } from '../shared'
 

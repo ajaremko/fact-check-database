@@ -1,6 +1,6 @@
 import { Array, Effect, pipe, Schema } from 'effect'
 
-import { Node, Yaml } from '../../util'
+import { Node, Yaml } from '../../data'
 import { StorageReader } from '../../ports'
 import { FilePointer } from '../shared'
 

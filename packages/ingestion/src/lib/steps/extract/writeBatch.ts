@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, Ndjson } from '../../util'
+import { Node, Ndjson } from '../../data'
 import { StorageWriter } from '../../ports'
 
 import { FactCheckRowSchema, FactCheckRows } from './FactCheck'

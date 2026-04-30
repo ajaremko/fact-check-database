@@ -3,7 +3,7 @@ import { DeepMutable, Mutable } from 'effect/Types'
 
 import * as v1 from '../../contracts/v1'
 import { SourceSchema } from '../shared'
-import { omitNullKeys } from '../../util'
+import { omitNullKeys } from '../../data'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 
