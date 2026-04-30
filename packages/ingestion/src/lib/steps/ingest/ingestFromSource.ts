@@ -45,7 +45,10 @@ export function ingestFromSource(ctx: {
     const result = yield* Fetcher.fetch(ctx.source, ctx.timestamp)
 
     // Derive a stable observation ID from fetch result
-    const observationId = yield* encodeHashedObservationId(result)
+    const observationId = yield* encodeHashedObservationId({
+      source: ctx.source,
+      result,
+    })
 
     if (result._tag === 'FetchFailure') {
       // For a failed fetch, we won't have a body to archive,
@@ -55,6 +58,7 @@ export function ingestFromSource(ctx: {
         observationId,
         ingestionId: ctx.ingestionId,
         result,
+        source: ctx.source,
         pointer: null,
       })
 
@@ -107,6 +111,7 @@ export function ingestFromSource(ctx: {
       observationId,
       ingestionId: ctx.ingestionId,
       result,
+      source: ctx.source,
       pointer: bodyPointer,
     })
 

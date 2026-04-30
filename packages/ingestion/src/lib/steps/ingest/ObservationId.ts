@@ -6,24 +6,32 @@ import { FetchResult } from './FetchResult'
 
 export const ObservationIdSchema = Schema.transformOrFail(
   v1.ContentLineageIdSchema,
-  FetchResult,
+  Schema.Struct({
+    result: FetchResult,
+    source: Schema.Struct({
+      id: Schema.String,
+      url: Schema.String,
+      name: Schema.String,
+      collection: Schema.Literal('rss', 'atom'),
+    }),
+  }),
   {
     strict: true,
     encode: (input) => {
-      if (input._tag === 'FetchFailure') {
+      if (input.result._tag === 'FetchFailure') {
         return ParseResult.succeed({
           version: 1,
           success: false as const,
           url: input.source.url,
-          fetchedAt: input.fetchedAt,
-          error: input.error,
+          fetchedAt: input.result.fetchedAt,
+          error: input.result.error,
         })
       }
       return ParseResult.succeed({
         version: 1,
         success: true as const,
         url: input.source.url,
-        sha256: input.sha256,
+        sha256: input.result.sha256,
       })
     },
     decode: (input, _, ast) =>

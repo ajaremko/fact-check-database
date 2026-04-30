@@ -46,7 +46,6 @@ export const make = Effect.gen(function* () {
           if (error._tag === 'RequestError') {
             return new FetchFailure({
               error: error.message,
-              source,
               fetchedAt: timestamp,
             })
           }
@@ -72,7 +71,6 @@ export const make = Effect.gen(function* () {
 
           return new FetchSuccess({
             error: error.message,
-            source,
             fetchedAt: timestamp,
             status: error.response.status,
             headers: error.response.headers,
@@ -107,7 +105,6 @@ export const make = Effect.gen(function* () {
           headers: response.headers,
           finalUrl: response.request.url,
           fetchedAt: timestamp,
-          source,
           contentType,
           etag,
           lastModified,

@@ -11,6 +11,12 @@ export class Observation extends Schema.TaggedClass<Observation>()(
     observationId: Schema.String,
     ingestionId: Schema.String,
     result: FetchResult,
+    source: Schema.Struct({
+      id: Schema.String,
+      name: Schema.String,
+      collection: Schema.Literal('rss', 'atom'),
+      url: Schema.String,
+    }),
     pointer: Schema.NullOr(
       Schema.Struct({
         bucket: Schema.String,
@@ -43,7 +49,7 @@ export const ObservationSchema = Schema.transformOrFail(
             content_lineage_id: input.observationId,
             ingestion_batch_id: input.ingestionId,
             fetched_at: input.result.fetchedAt,
-            source: input.result.source,
+            source: input.source,
             status: input.result.status,
             headers: input.result.headers,
             ...(input.result.contentType
@@ -74,7 +80,7 @@ export const ObservationSchema = Schema.transformOrFail(
             content_lineage_id: input.observationId,
             ingestion_batch_id: input.ingestionId,
             fetched_at: input.result.fetchedAt,
-            source: input.result.source,
+            source: input.source,
             error: input.result.error,
           })
       }
@@ -100,9 +106,9 @@ export const ObservationMetadataSchema = Schema.transformOrFail(
         observationId: input.observationId,
         ingestionId: input.ingestionId,
         fetchedAt: input.result.fetchedAt,
-        url: input.result.source.url,
-        sourceName: input.result.source.name,
-        sourceCollection: input.result.source.collection,
+        url: input.source.url,
+        sourceName: input.source.name,
+        sourceCollection: input.source.collection,
       })
     },
   }
@@ -130,7 +136,7 @@ export const ObservationPathSchema = Schema.transformOrFail(
         version: 1 as const,
         collectionName: 'records',
         ext: `ingestion.yml`,
-        sourceName: input.result.source.name,
+        sourceName: input.source.name,
         date: input.result.fetchedAt,
         ingestionId: input.ingestionId,
         observationId: input.observationId,
@@ -150,7 +156,7 @@ export function buildEventFromObservation(
           content_lineage_id: input.observationId,
           ingestion_batch_id: input.ingestionId,
           fetched_at: input.result.fetchedAt,
-          source: input.result.source,
+          source: input.source,
           status: input.result.status,
           final_url: input.result.finalUrl,
           content_type: input.result.contentType,
@@ -167,7 +173,7 @@ export function buildEventFromObservation(
         content_lineage_id: input.observationId,
         ingestion_batch_id: input.ingestionId,
         fetched_at: input.result.fetchedAt,
-        source: input.result.source,
+        source: input.source,
         error: input.result.error,
         pointer,
       })

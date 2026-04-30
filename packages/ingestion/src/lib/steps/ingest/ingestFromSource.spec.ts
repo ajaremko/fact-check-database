@@ -1,10 +1,11 @@
 import { it, expect } from '@effect/vitest'
-import { Effect } from 'effect'
+import { Effect, Layer } from 'effect'
 
 import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
 
 import { ingestFromSource } from './ingestFromSource'
 import { FetchFailure, FetchSuccess } from './FetchResult'
+import { Fetcher, FetcherError } from './Fetcher'
 
 describe('ingestFromSourceTarget', () => {
   it.effect(
@@ -150,6 +151,98 @@ describe('ingestFromSourceTarget', () => {
         )
         expect(storage).toHaveProperty(
           'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml'
+        )
+      })
+  )
+
+  it.effect(
+    'when fetcher throws FetcherError, the error propagates out of ingestFromSource',
+    () =>
+      Effect.gen(function* () {
+        const failingFetcherLayer = Layer.succeed(Fetcher, {
+          fetch: () =>
+            Effect.fail(
+              new FetcherError({
+                cause: 'network timeout',
+                source: {
+                  id: 'baddata',
+                  name: 'baddata.com',
+                  collection: 'rss',
+                  url: 'https://baddata.com/rss.xml',
+                },
+              })
+            ),
+        })
+
+        const err = yield* ingestFromSource({
+          ingestionId: 'run-1',
+          timestamp: 0,
+          source: {
+            id: 'baddata',
+            name: 'baddata.com',
+            url: 'https://baddata.com/rss.xml',
+            collection: 'rss',
+          },
+        }).pipe(
+          Effect.provide(failingFetcherLayer),
+          Effect.provide(InMemoryStorageWriter.layer({})),
+          Effect.flip
+        )
+
+        expect(err._tag).toBe('FetcherError')
+      })
+  )
+
+  it.effect(
+    'when fetch is successful with null optional fields, omits content_type, etag, last_modified from event',
+    () =>
+      Effect.gen(function* () {
+        const storage = {}
+
+        const result = yield* ingestFromSource({
+          ingestionId: 'run-1',
+          timestamp: 0,
+          source: {
+            id: 'politifact',
+            name: 'politifact.com',
+            url: 'https://www.politifact.com/rss/all/',
+            collection: 'rss',
+          },
+        }).pipe(
+          Effect.provide(
+            InMemoryFetcher.layer(
+              new FetchSuccess({
+                fetchedAt: 0,
+                source: {
+                  id: 'politifact',
+                  name: 'politifact.com',
+                  url: 'https://www.politifact.com/rss/all/',
+                  collection: 'rss',
+                },
+                finalUrl: 'https://www.politifact.com/rss/all/',
+                status: 200,
+                headers: {},
+                contentType: null,
+                etag: null,
+                lastModified: null,
+                bytes: 10648,
+                sha256:
+                  '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
+                body: new Uint8Array(),
+                error: null,
+              })
+            )
+          ),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
+
+        expect(result).not.toHaveProperty('content_type')
+        expect(result).not.toHaveProperty('etag')
+        expect(result).not.toHaveProperty('last_modified')
+
+        expect(Object.keys(storage).some((k) => k.includes('/raw/'))).toBe(true)
+        expect(Object.keys(storage).some((k) => k.includes('/records/'))).toBe(
+          true
         )
       })
   )
