@@ -5,10 +5,22 @@ import * as Fetcher from '../../steps/ingest/Fetcher'
 import { FetchSuccess, FetchFailure } from '../../steps/ingest/FetchResult'
 import { Node } from '../../util'
 
-function pickHeader(headers: Record<string, string>, name: string) {
-  const v = headers[name] ?? headers[name.toLowerCase()]
-  return v?.trim() ? v.trim() : undefined
+function pickHeaders(names: string[]) {
+  return function (headers: Record<string, string>) {
+    for (const name of names) {
+      const raw = headers[name] ?? headers[name.toLowerCase()]
+      const value = raw?.trim()
+      if (value) {
+        return value
+      }
+    }
+    return null
+  }
 }
+
+const pickEtag = pickHeaders(['etag'])
+const pickLastModified = pickHeaders(['last-modified', 'lastmodified'])
+const pickContentType = pickHeaders(['content-type', 'contenttype'])
 
 export const make = Effect.gen(function* () {
   const client = yield* HttpClient.HttpClient
@@ -46,7 +58,7 @@ export const make = Effect.gen(function* () {
               (cause) =>
                 new Fetcher.FetcherError({
                   cause,
-                  url: error.response.request.url,
+                  source,
                 })
             )
           )
@@ -54,12 +66,9 @@ export const make = Effect.gen(function* () {
           const sha256 = yield* Node.sha256Hex(body)
           const bytes = body.byteLength
 
-          const contentType = pickHeader(error.response.headers, 'content-type')
-          const etag = pickHeader(error.response.headers, 'etag')
-          const lastModified = pickHeader(
-            error.response.headers,
-            'last-modified'
-          )
+          const contentType = pickContentType(error.response.headers)
+          const etag = pickEtag(error.response.headers)
+          const lastModified = pickLastModified(error.response.headers)
 
           return new FetchSuccess({
             error: error.message,
@@ -82,17 +91,16 @@ export const make = Effect.gen(function* () {
         const body = yield* response.arrayBuffer.pipe(
           Effect.map((buffer) => new Uint8Array(buffer)),
           Effect.mapError(
-            (cause) =>
-              new Fetcher.FetcherError({ cause, url: response.request.url })
+            (cause) => new Fetcher.FetcherError({ cause, source })
           )
         )
 
         const sha256 = yield* Node.sha256Hex(body)
         const bytes = body.byteLength
 
-        const contentType = pickHeader(response.headers, 'content-type')
-        const etag = pickHeader(response.headers, 'etag')
-        const lastModified = pickHeader(response.headers, 'last-modified')
+        const contentType = pickContentType(response.headers)
+        const etag = pickEtag(response.headers)
+        const lastModified = pickLastModified(response.headers)
 
         return new FetchSuccess({
           status: response.status,

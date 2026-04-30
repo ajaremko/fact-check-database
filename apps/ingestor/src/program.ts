@@ -3,9 +3,9 @@ import { Array, Clock, Effect, Option, pipe, Schema } from 'effect'
 import {
   StorageWriter,
   ingestFromSource,
-  ObservationIngested,
   Fetcher,
 } from '@news-research/ingestion/steps/ingest'
+import * as v1 from '@news-research/ingestion/contracts/v1'
 import { Publisher } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/util'
 
@@ -13,7 +13,7 @@ import { JobContext, withJobContextAnnotations } from './JobContext'
 import { SourceList, Source } from './TargetList'
 
 const encodeOutgoing = pipe(
-  ObservationIngested,
+  v1.ObservationIngestedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

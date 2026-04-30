@@ -9,10 +9,10 @@ import {
   ObservationSchema,
   ObservationMetadataSchema,
   ObservationPathSchema,
+  buildEventFromObservation,
 } from './Observation'
 import { FetchedBody, FetchedBodyPathSchema } from './FetchedBody'
 import { ObservationIdSchema } from './ObservationId'
-import { ObservationIngested } from './ObservationIngested'
 
 const encodeObservation = pipe(
   ObservationSchema,
@@ -75,22 +75,7 @@ export function ingestFromSource(ctx: {
       // Return an `ObservationIngested` event with error details
       // and pointer to the attempt record, but no content fields
       // since there is no body to archive
-      return new ObservationIngested({
-        observationId,
-        runId: ctx.ingestionId,
-        fetchedAt: ctx.timestamp,
-        url: ctx.source.url,
-        pointer: recordPointer,
-        error: result.error,
-        source: ctx.source,
-        http: {
-          status: 0,
-        },
-        content: {
-          sha256: undefined,
-          bytes: undefined,
-        },
-      })
+      return buildEventFromObservation(observation, recordPointer)
     }
 
     // For a successful fetch, we need to archive the body
@@ -143,26 +128,7 @@ export function ingestFromSource(ctx: {
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which
     // references the archived body
-    return new ObservationIngested({
-      observationId,
-      runId: ctx.ingestionId,
-      fetchedAt: ctx.timestamp,
-      url: ctx.source.url,
-      finalUrl: result.finalUrl,
-      source: ctx.source,
-      http: omitNullKeys({
-        status: result.status,
-        contentType: result.contentType,
-        etag: result.etag,
-        lastModified: result.lastModified,
-      }),
-      content: {
-        sha256: result.sha256,
-        bytes: result.bytes,
-      },
-      error: undefined,
-      pointer: recordPointer,
-    })
+    return buildEventFromObservation(observation, recordPointer)
   }).pipe(
     Effect.annotateLogs({
       source: ctx.source.name,

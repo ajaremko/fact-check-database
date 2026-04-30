@@ -4,7 +4,12 @@ import { FetchResult } from './FetchResult'
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown
-  readonly url: string
+  readonly source: {
+    id: string
+    name: string
+    collection: 'rss' | 'atom'
+    url: string
+  }
 }> {}
 
 export class Fetcher extends Context.Tag('Fetcher')<

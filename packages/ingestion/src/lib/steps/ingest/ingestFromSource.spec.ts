@@ -3,7 +3,6 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
 
-import { ObservationIngested } from './ObservationIngested'
 import { ingestFromSource } from './ingestFromSource'
 import { FetchFailure, FetchSuccess } from './FetchResult'
 
@@ -40,32 +39,25 @@ describe('ingestFromSourceTarget', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual(
-          new ObservationIngested({
-            observationId:
-              'dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe',
-            runId: 'run-1',
-            fetchedAt: 0,
+        expect(result).toStrictEqual({
+          version: 1,
+          content_lineage_id:
+            'dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe',
+          ingestion_batch_id: 'run-1',
+          fetched_at: 0,
+          source: {
+            collection: 'rss',
+            id: 'baddata',
+            name: 'baddata.com',
             url: 'https://baddata.com/rss.xml',
-            source: {
-              collection: 'rss',
-              name: 'baddata.com',
-            },
-            http: {
-              status: 0,
-            },
-            content: {
-              bytes: undefined,
-              sha256: undefined,
-            },
-            error: 'Transport error (GET https://baddata.com/rss.xml)',
-            pointer: {
-              bucket: 'inmemory',
-              object:
-                'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.ingestion.yml',
-            },
-          })
-        )
+          },
+          pointer: {
+            bucket: 'inmemory',
+            object:
+              'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.ingestion.yml',
+          },
+          error: 'Transport error (GET https://baddata.com/rss.xml)',
+        })
 
         expect(storage).not.toHaveProperty(
           'v1/raw/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.bin'
@@ -126,37 +118,32 @@ describe('ingestFromSourceTarget', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual(
-          new ObservationIngested({
-            observationId:
-              'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
-            runId: 'run-1',
-            fetchedAt: 0,
+        expect(result).toStrictEqual({
+          version: 1,
+          content_lineage_id:
+            'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
+          ingestion_batch_id: 'run-1',
+          fetched_at: 0,
+          final_url: 'https://www.politifact.com/rss/all/',
+          source: {
+            id: 'politifact',
+            collection: 'rss',
+            name: 'politifact.com',
             url: 'https://www.politifact.com/rss/all/',
-            finalUrl: 'https://www.politifact.com/rss/all/',
-            source: {
-              collection: 'rss',
-              name: 'politifact.com',
-            },
-            http: {
-              status: 200,
-              etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
-              contentType: 'application/rss+xml; charset=utf-8',
-              lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
-            },
-            content: {
-              bytes: 10648,
-              sha256:
-                '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
-            },
-            error: undefined,
-            pointer: {
-              bucket: 'inmemory',
-              object:
-                'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml',
-            },
-          })
-        )
+          },
+          status: 200,
+          etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+          content_type: 'application/rss+xml; charset=utf-8',
+          last_modified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+          content_bytes: 10648,
+          content_sha256:
+            '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
+          pointer: {
+            bucket: 'inmemory',
+            object:
+              'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml',
+          },
+        })
 
         expect(storage).toHaveProperty(
           'v1/raw/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.bin'

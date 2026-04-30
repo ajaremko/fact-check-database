@@ -1,6 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
+import { omitNullKeys } from '../../util'
 
 import { FetchResult } from './FetchResult'
 
@@ -136,3 +137,39 @@ export const ObservationPathSchema = Schema.transformOrFail(
       }),
   }
 )
+
+export function buildEventFromObservation(
+  input: Observation,
+  pointer: { bucket: string; object: string }
+) {
+  switch (input.result._tag) {
+    case 'FetchSuccess':
+      return v1.ObservationIngestedSchema.make(
+        omitNullKeys({
+          version: 1,
+          content_lineage_id: input.observationId,
+          ingestion_batch_id: input.ingestionId,
+          fetched_at: input.result.fetchedAt,
+          source: input.result.source,
+          status: input.result.status,
+          final_url: input.result.finalUrl,
+          content_type: input.result.contentType,
+          etag: input.result.etag,
+          last_modified: input.result.lastModified,
+          content_sha256: input.result.sha256,
+          content_bytes: input.result.bytes,
+          pointer,
+        })
+      )
+    case 'FetchFailure':
+      return v1.ObservationIngestedSchema.make({
+        version: 1,
+        content_lineage_id: input.observationId,
+        ingestion_batch_id: input.ingestionId,
+        fetched_at: input.result.fetchedAt,
+        source: input.result.source,
+        error: input.result.error,
+        pointer,
+      })
+  }
+}
