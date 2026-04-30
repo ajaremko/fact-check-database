@@ -1,7 +1,12 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-import { SourceSchema } from '../shared'
+
+import {
+  FilePointerSchema,
+  SourceCollectionSchema,
+  SourceSchema,
+} from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
@@ -23,20 +28,28 @@ export class Observation extends Schema.Class<Observation>('Observation')({
         sha256: Schema.String,
         bytes: Schema.Number,
       }),
-      pointer: Schema.Struct({
-        bucket: Schema.String,
-        object: Schema.String,
-      }),
+      pointer: FilePointerSchema,
     })
   ),
 }) {}
+
+const isSourceCollection = Schema.is(SourceCollectionSchema)
 
 export const ObservationSchema = Schema.transformOrFail(
   v1.IngestionRecordSchema,
   Observation,
   {
     strict: true,
-    decode: (input) => {
+    decode: (input, _, ast) => {
+      if (!isSourceCollection(input.source.collection)) {
+        return ParseResult.fail(
+          new ParseResult.Type(
+            ast,
+            input,
+            'source.collection must be "rss" or "atom"'
+          )
+        )
+      }
       if (
         typeof input.status === 'undefined' ||
         typeof input.content === 'undefined'

@@ -68,7 +68,7 @@ export const SanitizerRecordSchema = Schema.Struct({
     id: Schema.String,
     name: Schema.String,
     url: Schema.String,
-    collection: Schema.Literal('rss', 'atom'),
+    collection: Schema.String,
   }),
   input: Schema.Struct({
     record: FilePointerSchema,

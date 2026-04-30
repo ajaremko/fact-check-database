@@ -1,7 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-import { SourceSchema } from '../shared'
+import { SourceCollectionSchema, SourceSchema } from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
@@ -41,13 +41,24 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   ),
 }) {}
 
+const isSourceCollection = Schema.is(SourceCollectionSchema)
+
 export const ObservationSchema = Schema.transformOrFail(
   v1.SanitizerRecordSchema,
   Observation,
   {
     strict: true,
-    decode: (input) =>
-      ParseResult.succeed({
+    decode: (input, _, ast) => {
+      if (!isSourceCollection(input.source.collection)) {
+        return ParseResult.fail(
+          new ParseResult.Type(
+            ast,
+            input,
+            'source.collection must be "rss" or "atom"'
+          )
+        )
+      }
+      return ParseResult.succeed({
         observationId: input.content_lineage_id,
         ingestionId: input.ingestion_batch_id,
         fetchedAt: input.fetched_at,
@@ -78,7 +89,8 @@ export const ObservationSchema = Schema.transformOrFail(
               bytes: input.content.bytes,
             }
           : null,
-      }),
+      })
+    },
     encode: (input, _, ast) =>
       ParseResult.fail(
         new ParseResult.Forbidden(
