@@ -17,9 +17,9 @@ describe('ingestFromSourceTarget', () => {
           ingestionId: 'run-1',
           timestamp: 0,
           source: {
-            id: 'source-1',
-            name: 'source-1',
-            url: 'https://test-rss.com/rss',
+            id: 'baddata',
+            name: 'baddata.com',
+            url: 'https://baddata.com/rss.xml',
             collection: 'rss',
           },
         }).pipe(
@@ -28,12 +28,12 @@ describe('ingestFromSourceTarget', () => {
               new FetchFailure({
                 fetchedAt: 0,
                 source: {
-                  id: 'source-1',
+                  id: 'baddata',
                   collection: 'rss',
-                  name: 'source-1',
-                  url: 'https://test-rss.com/rss',
+                  name: 'baddata.com',
+                  url: 'https://baddata.com/rss.xml',
                 },
-                error: 'Network error',
+                error: 'Transport error (GET https://baddata.com/rss.xml)',
               })
             )
           ),
@@ -43,13 +43,13 @@ describe('ingestFromSourceTarget', () => {
         expect(result).toStrictEqual(
           new ObservationIngested({
             observationId:
-              'b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4',
+              'dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe',
             runId: 'run-1',
             fetchedAt: 0,
-            url: 'https://test-rss.com/rss',
+            url: 'https://baddata.com/rss.xml',
             source: {
               collection: 'rss',
-              name: 'source-1',
+              name: 'baddata.com',
             },
             http: {
               status: 0,
@@ -58,20 +58,20 @@ describe('ingestFromSourceTarget', () => {
               bytes: undefined,
               sha256: undefined,
             },
-            error: 'Network error',
+            error: 'Transport error (GET https://baddata.com/rss.xml)',
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml',
+                'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.ingestion.yml',
             },
           })
         )
 
         expect(storage).not.toHaveProperty(
-          'v1/raw/source=source-1/date=1970-01-01/ingestion_id=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.bin'
+          'v1/raw/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/b57a9933660ea6f4e80b856bbab20a010ef8e5406d52f8d6fbe3fa00e3f410d4.ingestion.yml'
+          'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.ingestion.yml'
         )
       })
   )
@@ -85,27 +85,39 @@ describe('ingestFromSourceTarget', () => {
           ingestionId: 'run-1',
           timestamp: 0,
           source: {
-            id: 'source-1',
-            name: 'source-1',
-            url: 'https://test-rss.com/rss',
+            id: 'politifact',
+            name: 'politifact.com',
+            url: 'https://www.politifact.com/rss/all/',
             collection: 'rss',
           },
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
               new FetchSuccess({
-                finalUrl: 'https://test-rss.com/rss',
-                status: 200,
                 fetchedAt: 0,
                 source: {
-                  id: 'source-1',
+                  id: 'politifact',
+                  name: 'politifact.com',
+                  url: 'https://www.politifact.com/rss/all/',
                   collection: 'rss',
-                  name: 'source-1',
-                  url: 'https://test-rss.com/rss',
                 },
-                headers: {},
-                bytes: 100,
-                sha256: 'dummy-sha256',
+                finalUrl: 'https://www.politifact.com/rss/all/',
+                status: 200,
+                headers: {
+                  date: 'Wed, 29 Apr 2026 20:35:08 GMT',
+                  'content-type': 'application/rss+xml; charset=utf-8',
+                  'content-length': '10648',
+                  connection: 'keep-alive',
+                  'last-modified': 'Wed, 29 Apr 2026 16:20:04 GMT',
+                  'cache-control': 'public, max-age=3600',
+                  ETag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+                },
+                contentType: 'application/rss+xml; charset=utf-8',
+                etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+                lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+                bytes: 10648,
+                sha256:
+                  '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
                 body: new Uint8Array(),
                 error: null,
               })
@@ -117,39 +129,40 @@ describe('ingestFromSourceTarget', () => {
         expect(result).toStrictEqual(
           new ObservationIngested({
             observationId:
-              '3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9',
+              'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
             runId: 'run-1',
             fetchedAt: 0,
-            url: 'https://test-rss.com/rss',
-            finalUrl: 'https://test-rss.com/rss',
+            url: 'https://www.politifact.com/rss/all/',
+            finalUrl: 'https://www.politifact.com/rss/all/',
             source: {
               collection: 'rss',
-              name: 'source-1',
+              name: 'politifact.com',
             },
             http: {
               status: 200,
-              etag: undefined,
-              contentType: undefined,
-              lastModified: undefined,
+              etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+              contentType: 'application/rss+xml; charset=utf-8',
+              lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
             },
             content: {
-              bytes: 100,
-              sha256: 'dummy-sha256',
+              bytes: 10648,
+              sha256:
+                '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
             },
             error: undefined,
             pointer: {
               bucket: 'inmemory',
               object:
-                'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml',
+                'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml',
             },
           })
         )
 
         expect(storage).toHaveProperty(
-          'v1/raw/source=source-1/date=1970-01-01/ingestion_id=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.bin'
+          'v1/raw/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=source-1/date=1970-01-01/ingestion_id=run-1/3c6288f7453eb8da9b976edc9cb06412d3c9831f0141f0c6b3a7c475cc7c38f9.ingestion.yml'
+          'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml'
         )
       })
   )

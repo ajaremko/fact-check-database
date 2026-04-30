@@ -8,7 +8,7 @@ export class FetchedBody extends Schema.Class<FetchedBody>('FetchedBody')({
   body: Schema.instanceOf(Uint8Array),
   sourceName: Schema.String,
   fetchedAt: Schema.Number,
-  contentType: Schema.optional(Schema.String),
+  contentType: Schema.NullOr(Schema.String),
 }) {}
 
 export const FetchedBodyPathSchema = Schema.transformOrFail(

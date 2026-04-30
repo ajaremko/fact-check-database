@@ -1,6 +1,6 @@
 import { Effect, Schema, flow, pipe } from 'effect'
 
-import { Node, Yaml } from '../../util'
+import { Node, omitNullKeys, Yaml } from '../../util'
 import { StorageWriter } from '../../ports'
 
 import * as Fetcher from './Fetcher'
@@ -108,11 +108,13 @@ export function ingestFromSource(ctx: {
     const bodyPath = yield* encodeFetchedBodyPath(fetchedBody)
 
     // write the body to storage
-    const bodyPointer = yield* StorageWriter.writeFile({
-      path: bodyPath,
-      data: fetchedBody.body,
-      contentType: fetchedBody.contentType,
-    })
+    const bodyPointer = yield* StorageWriter.writeFile(
+      omitNullKeys({
+        path: bodyPath,
+        data: fetchedBody.body,
+        contentType: fetchedBody.contentType,
+      })
+    )
 
     // We have archived the body so we create an
     // observation with a pointer to the body
@@ -148,12 +150,12 @@ export function ingestFromSource(ctx: {
       url: ctx.source.url,
       finalUrl: result.finalUrl,
       source: ctx.source,
-      http: {
+      http: omitNullKeys({
         status: result.status,
         contentType: result.contentType,
         etag: result.etag,
         lastModified: result.lastModified,
-      },
+      }),
       content: {
         sha256: result.sha256,
         bytes: result.bytes,
