@@ -12,7 +12,7 @@ describe('sanitizeObservation', () => {
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
-          'test-record.yml': `
+          '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.sanitize.yml': `
             version: 1
             kind: fetch_attempt
             outcome: no_response
@@ -42,8 +42,9 @@ describe('sanitizeObservation', () => {
             ],
           },
           pointer: {
-            bucket: 'test-bucket',
-            object: 'test-record.yml',
+            bucket: 'inmemory',
+            object:
+              '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.sanitize.yml',
           },
           timestamp: 0,
         }).pipe(
@@ -79,7 +80,7 @@ describe('sanitizeObservation', () => {
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
-          'test-record.yml': `
+          '2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1.sanitize.yml': `
             version: 1
             kind: fetch_attempt
             outcome: data_fetched
@@ -132,8 +133,9 @@ describe('sanitizeObservation', () => {
             ],
           },
           pointer: {
-            bucket: 'test-bucket',
-            object: 'test-record.yml',
+            bucket: 'inmemory',
+            object:
+              '2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1.sanitize.yml',
           },
           timestamp: 0,
         }).pipe(
