@@ -3,6 +3,8 @@ import { Schema, ParseResult } from 'effect'
 import * as v1 from '../../contracts/v1'
 import { omitNullKeys } from '../../util'
 
+import { SourceSchema, FilePointerSchema, FilePointer } from '../shared'
+
 import { FetchResult } from './FetchResult'
 
 export class Observation extends Schema.TaggedClass<Observation>()(
@@ -11,18 +13,8 @@ export class Observation extends Schema.TaggedClass<Observation>()(
     observationId: Schema.String,
     ingestionId: Schema.String,
     result: FetchResult,
-    source: Schema.Struct({
-      id: Schema.String,
-      name: Schema.String,
-      collection: Schema.Literal('rss', 'atom'),
-      url: Schema.String,
-    }),
-    pointer: Schema.NullOr(
-      Schema.Struct({
-        bucket: Schema.String,
-        object: Schema.String,
-      })
-    ),
+    source: SourceSchema,
+    pointer: Schema.NullOr(FilePointerSchema),
   }
 ) {}
 
@@ -146,7 +138,7 @@ export const ObservationPathSchema = Schema.transformOrFail(
 
 export function buildEventFromObservation(
   input: Observation,
-  pointer: { bucket: string; object: string }
+  pointer: FilePointer
 ) {
   switch (input.result._tag) {
     case 'FetchSuccess':

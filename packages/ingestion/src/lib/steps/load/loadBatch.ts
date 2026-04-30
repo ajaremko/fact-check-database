@@ -2,9 +2,11 @@ import { Effect } from 'effect'
 
 import { BigQueryClient } from '@news-research/bigquery'
 
+import { FilePointer } from '../shared'
+
 export function loadBatch(input: {
   projectId: string
-  pointer: { object: string; bucket: string }
+  pointer: FilePointer
   table: { dataset: string; table: string }
   sourceFormat: string
   schema: { fields: readonly { name: string; type: string; mode: string }[] }

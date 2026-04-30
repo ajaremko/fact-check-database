@@ -336,7 +336,7 @@ describe('pickRule', () => {
           { collection: 'default', maxBytes: 500, defaultLabel: 'RESTRICTED' },
         ],
       }),
-      { collection: 'unknown-collection', name: 'any-source' }
+      { collection: 'unknown-collection' as 'rss', name: 'any-source' }
     )
     expect(rule).toStrictEqual({
       collection: 'default',

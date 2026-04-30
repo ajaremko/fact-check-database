@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { TablePointerSchema } from '../../data'
+import { FilePointerSchema } from '../shared'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -15,11 +15,11 @@ export class ExtractionBatchReady extends Schema.Class<ExtractionBatchReady>(
 )({
   batchId: Schema.String,
   extractedAt: Schema.Number,
-  pointer: Schema.Struct({
-    bucket: Schema.String,
-    object: Schema.String,
+  pointer: FilePointerSchema,
+  table: Schema.Struct({
+    tableId: Schema.String,
+    datasetId: Schema.String,
   }),
-  table: TablePointerSchema,
   sourceFormat: Schema.Union(
     Schema.Literal('NEWLINE_DELIMITED_JSON'),
     Schema.String

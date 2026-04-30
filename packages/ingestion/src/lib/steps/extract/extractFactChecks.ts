@@ -2,10 +2,11 @@ import { Array, Effect, pipe, Schema } from 'effect'
 
 import { Node, Yaml } from '../../util'
 import { StorageReader } from '../../ports'
+import { FilePointer } from '../shared'
 
+import { FactCheckRow } from './FactCheck'
 import { ObservationSchema } from './Observation'
 import { extractors } from './extraction-strategy'
-import { FactCheckRow } from './FactCheck'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -17,7 +18,7 @@ const decodeObservation = pipe(
 export function extractFactChecks(ctx: {
   extractionId: string
   observationId: string
-  pointer: { object: string; bucket: string }
+  pointer: FilePointer
   extractedAt: number
 }) {
   return Effect.gen(function* () {

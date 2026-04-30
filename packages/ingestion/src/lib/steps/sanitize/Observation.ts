@@ -1,18 +1,14 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
+import { SourceSchema } from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   error: Schema.NullOr(Schema.String),
-  source: Schema.Struct({
-    id: Schema.String,
-    name: Schema.String,
-    collection: Schema.Literal('rss', 'atom'),
-    url: Schema.String,
-  }),
+  source: SourceSchema,
   raw: Schema.NullOr(
     Schema.Struct({
       http: Schema.Struct({

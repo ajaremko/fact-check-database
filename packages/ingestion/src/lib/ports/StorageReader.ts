@@ -1,6 +1,6 @@
 import { Context, Data, Effect, flow } from 'effect'
 
-import { FilePointer } from '../data'
+import { FilePointer } from '../steps/shared'
 
 export class StorageReadError extends Data.TaggedError('StorageReadError')<{
   readonly cause: unknown

@@ -3,8 +3,8 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
-import { sanitizeObservation } from './sanitizeObservation'
 import { ObservationSanitized } from './ObservationSanitized'
+import { sanitizeObservation } from './sanitizeObservation'
 
 describe('sanitizeObservation', () => {
   it.effect(

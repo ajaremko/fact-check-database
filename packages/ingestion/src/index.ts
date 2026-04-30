@@ -1,4 +1,4 @@
-export * as Data from './lib/data'
+export * as Data from './lib/steps/shared'
 export * as Messaging from './lib/messaging'
 export * as Ports from './lib/ports'
 export * as Ingest from './lib/steps/ingest'

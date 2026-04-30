@@ -1,3 +1,5 @@
+import { Source } from '../shared'
+
 import type { CollectionRule, SanitizerPolicy } from './SanitizerPolicy'
 import type { SanitizationAction, PolicyDecision } from './PolicyDecision'
 import type { Observation } from './Observation'
@@ -11,10 +13,7 @@ const collectionRuleDefaults: Partial<CollectionRule> = {
 
 export function pickRule(
   policy: SanitizerPolicy,
-  source: {
-    collection: string
-    name: string
-  }
+  source: Pick<Source, 'collection' | 'name'>
 ): CollectionRule {
   const base =
     policy.collections.find((c) => c.collection === source.collection) ??

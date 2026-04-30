@@ -1,10 +1,11 @@
 import { Schema, ParseResult } from 'effect'
+import { DeepMutable, Mutable } from 'effect/Types'
 
 import * as v1 from '../../contracts/v1'
+import { SourceSchema } from '../shared'
 import { omitNullKeys } from '../../util'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
-import { DeepMutable, Mutable } from 'effect/Types'
 
 export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
   'SanitizedObservation'
@@ -22,12 +23,7 @@ export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
       })
     ),
   }),
-  source: Schema.Struct({
-    id: Schema.String,
-    name: Schema.String,
-    collection: Schema.Literal('rss', 'atom'),
-    url: Schema.String,
-  }),
+  source: SourceSchema,
   http: Schema.NullOr(
     Schema.Struct({
       finalUrl: Schema.NullOr(Schema.String),

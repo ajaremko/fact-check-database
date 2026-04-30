@@ -1,6 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
+import { SourceSchema } from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
@@ -21,12 +22,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
     })
   ),
   error: Schema.NullOr(Schema.String),
-  source: Schema.Struct({
-    id: Schema.String,
-    name: Schema.String,
-    collection: Schema.String,
-    url: Schema.String,
-  }),
+  source: SourceSchema,
   http: Schema.NullOr(
     Schema.Struct({
       finalUrl: Schema.NullOr(Schema.String),

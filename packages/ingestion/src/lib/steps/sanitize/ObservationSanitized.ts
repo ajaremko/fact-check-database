@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema } from '../../contracts/v1/FilePointer.js'
+import { SourceSchema, FilePointerSchema } from '../shared'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -17,12 +17,7 @@ export class ObservationSanitized extends Schema.Class<ObservationSanitized>(
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   error: Schema.optional(Schema.String),
-  source: Schema.Struct({
-    id: Schema.String,
-    url: Schema.String,
-    name: Schema.String,
-    collection: Schema.String,
-  }),
+  source: SourceSchema,
   http: Schema.optional(
     Schema.Struct({
       status: Schema.Number,

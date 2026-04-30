@@ -3,6 +3,8 @@ import { Effect, Schema, flow, pipe } from 'effect'
 import { Node, omitNullKeys, Yaml } from '../../util'
 import { StorageWriter } from '../../ports'
 
+import { Source } from '../shared'
+
 import * as Fetcher from './Fetcher'
 import {
   Observation,
@@ -33,12 +35,7 @@ const encodeHashedObservationId = flow(
 export function ingestFromSource(ctx: {
   ingestionId: string
   timestamp: number
-  source: {
-    id: string
-    name: string
-    url: string
-    collection: 'rss' | 'atom'
-  }
+  source: Source
 }) {
   return Effect.gen(function* () {
     yield* Effect.logDebug('Fetching data from source target')

@@ -1,8 +1,10 @@
 import { ParseResult, Schema } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-import { NumberFromDate } from '../../data'
+import { SourceSchema } from '../shared'
 import { omitNullKeys } from '../../util'
+
+import { NumberFromDate } from './NumberFromDate'
 
 export const FactCheck = Schema.Struct({
   sha256: Schema.String,
@@ -43,12 +45,7 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         Schema.Record({ key: Schema.String, value: Schema.String })
       ),
     }),
-    source: Schema.Struct({
-      id: Schema.String,
-      name: Schema.String,
-      url: Schema.String,
-      collection: Schema.String,
-    }),
+    source: SourceSchema,
   }),
   {
     strict: true,

@@ -1,6 +1,7 @@
 import { ParseResult, Schema } from 'effect'
 
 import * as v1 from '../../contracts/v1'
+import { SourceSchema } from '../shared'
 
 import { FetchResult } from './FetchResult'
 
@@ -8,12 +9,7 @@ export const ObservationIdSchema = Schema.transformOrFail(
   v1.ContentLineageIdSchema,
   Schema.Struct({
     result: FetchResult,
-    source: Schema.Struct({
-      id: Schema.String,
-      url: Schema.String,
-      name: Schema.String,
-      collection: Schema.Literal('rss', 'atom'),
-    }),
+    source: SourceSchema,
   }),
   {
     strict: true,
