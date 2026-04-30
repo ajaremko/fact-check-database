@@ -1,6 +1,6 @@
 import { Effect, Layer } from 'effect'
 
-import { Fetcher } from '../../steps/ingest'
+import { Fetcher } from '../../pipeline/ingest'
 
 type FetchResult = Effect.Effect.Success<ReturnType<typeof Fetcher.fetch>>
 

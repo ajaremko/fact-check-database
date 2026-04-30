@@ -6,7 +6,7 @@ import {
   type StorageReader,
   ObservationSanitized,
   sanitizeObservation,
-} from '@news-research/ingestion/steps/sanitize'
+} from '@news-research/ingestion/pipeline/sanitize'
 import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
 
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'

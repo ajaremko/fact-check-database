@@ -4,7 +4,7 @@ import {
   StorageWriter,
   ingestFromSource,
   Fetcher,
-} from '@news-research/ingestion/steps/ingest'
+} from '@news-research/ingestion/pipeline/ingest'
 import * as v1 from '@news-research/ingestion/contracts/v1'
 import { Publisher } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/data'

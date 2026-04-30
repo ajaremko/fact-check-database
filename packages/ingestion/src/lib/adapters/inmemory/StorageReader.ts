@@ -1,6 +1,6 @@
 import { Effect, Layer } from 'effect'
 
-import { StorageReader } from '../../steps/shared'
+import { StorageReader } from '../../pipeline/shared'
 
 export function layer(storage: Record<string, string>) {
   return Layer.succeed(StorageReader.StorageReader, {

@@ -1,8 +1,8 @@
 import { Effect, Layer } from 'effect'
 import { HttpClient } from '@effect/platform'
 
-import * as Fetcher from '../../steps/ingest/Fetcher'
-import { FetchResult } from '../../steps/ingest'
+import * as Fetcher from '../../pipeline/ingest/Fetcher'
+import { FetchResult } from '../../pipeline/ingest'
 import { Node } from '../../data'
 
 function pickHeaders(names: string[]) {

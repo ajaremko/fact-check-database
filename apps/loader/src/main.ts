@@ -10,12 +10,12 @@ import {
 } from '@news-research/ingestion/adapters'
 import { StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
-import { ExtractionBatchReady } from '@news-research/ingestion/steps/extract'
+import { ExtractionBatchReady } from '@news-research/ingestion/pipeline/extract'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { MessageQueue } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/data'
 import { cloudRunInstanceId } from '@news-research/cloud-run'
-import { loadBatch } from '@news-research/ingestion/steps/load'
+import { loadBatch } from '@news-research/ingestion/pipeline/load'
 import { pinoLogger } from '@news-research/pino'
 
 const decodeIncoming = pipe(

@@ -2,7 +2,7 @@ import { Effect, Layer } from 'effect'
 
 import { FileSystem } from '@effect/platform'
 
-import { StorageReader } from '../../steps/shared'
+import { StorageReader } from '../../pipeline/shared'
 
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem

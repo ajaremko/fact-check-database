@@ -6,9 +6,9 @@ import {
   extractFactChecks,
   writeBatch,
   ExtractionBatchReady,
-} from '@news-research/ingestion/steps/extract'
+} from '@news-research/ingestion/pipeline/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
-import { ObservationSanitized } from '@news-research/ingestion/steps/sanitize'
+import { ObservationSanitized } from '@news-research/ingestion/pipeline/sanitize'
 import { Node } from '@news-research/ingestion/data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
