@@ -4,13 +4,13 @@ import * as v1 from '../../contracts/v1'
 import { NumberFromDate } from '../../data'
 import { omitNullKeys } from '../../util'
 
-export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
+export const FactCheck = Schema.Struct({
   sha256: Schema.String,
   title: Schema.NullOr(Schema.String),
   claim: Schema.NullOr(Schema.String),
   verdict: Schema.NullOr(Schema.String),
   link: Schema.NullOr(Schema.String),
-  normalizeVerdict: Schema.NullOr(
+  normalizedVerdict: Schema.NullOr(
     Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
   ),
   summary: Schema.NullOr(Schema.String),
@@ -18,7 +18,9 @@ export class FactCheck extends Schema.Class<FactCheck>('FactCheck')({
   canonicalUrl: Schema.NullOr(Schema.String),
   extractorVersion: Schema.NullOr(Schema.String),
   extractedFrom: Schema.NullOr(Schema.String),
-}) {}
+})
+
+export type FactCheck = Schema.Schema.Type<typeof FactCheck>
 
 export const FactCheckRowSchema = Schema.transformOrFail(
   v1.FactChecksTableRowSchema,

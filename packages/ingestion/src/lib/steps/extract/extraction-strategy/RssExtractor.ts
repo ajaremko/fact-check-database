@@ -2,14 +2,18 @@ import { Effect, pipe, Schema } from 'effect'
 
 import { Node, Xml } from '../../../util'
 
-import { makeExtractionStrategy } from './ExtractionStrategy'
 import { FactCheck } from '../FactCheck'
 
+import { NormalizedTextSchema } from './NormalizedText'
+import { makeExtractionStrategy } from './ExtractionStrategy'
+
 const RssItemSchema = Schema.Struct({
-  title: Schema.optional(Schema.String),
-  link: Schema.optional(Schema.String),
-  description: Schema.optional(Schema.String),
-  pubDate: Schema.optional(Schema.String),
+  title: Schema.optional(NormalizedTextSchema),
+  link: Schema.optional(
+    Schema.Union(Schema.String, Schema.Struct({ href: Schema.String }))
+  ),
+  description: Schema.optional(NormalizedTextSchema),
+  pubDate: Schema.optional(NormalizedTextSchema),
 }).annotations({ title: 'RssItem' })
 
 const RssDocumentSchema = Schema.Struct({
@@ -91,13 +95,16 @@ export const RssExtractor = makeExtractionStrategy({
           publishedAt: item.pubDate ?? null,
         }
         const sha256 = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
-        const factCheck = new FactCheck({
+        const factCheck = FactCheck.make({
           sha256,
           claim: values.claim,
-          link: values.link ? JSON.stringify(values.link) : null,
+          link:
+            typeof values.link === 'string'
+              ? values.link
+              : values.link?.href ?? null,
           title: values.title,
           verdict: values.verdict,
-          normalizeVerdict: values.verdict,
+          normalizedVerdict: values.verdict,
           summary: values.summary,
           publishedAt: values.publishedAt,
           canonicalUrl: null,

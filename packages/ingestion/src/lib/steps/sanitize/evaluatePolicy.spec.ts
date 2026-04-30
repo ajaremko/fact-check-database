@@ -24,8 +24,12 @@ describe('evaluatePolicy', () => {
         observationId: 'obs-1',
         ingestionId: 'ingest-1',
         fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
+        source: {
+          id: 'source-1',
+          name: 'source-1',
+          collection: 'rss',
+          url: 'https://example.com/feed',
+        },
         error: 'Network error',
         raw: null,
       })
@@ -57,10 +61,22 @@ describe('evaluatePolicy', () => {
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
+        error: null,
+        source: {
+          id: 'source-1',
+          name: 'source-1',
+          collection: 'rss',
+          url: 'https://example.com/feed',
+        },
         raw: {
-          http: { status: 200, contentType: 'text/xml', headers: {} },
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 200,
+            contentType: 'text/xml',
+            headers: {},
+          },
           content: { bytes: 2_000, sha256: 'abc123' }, // exceeds maxBytes: 1_000
           pointer: {
             bucket: 'test-bucket',
@@ -96,10 +112,22 @@ describe('evaluatePolicy', () => {
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
         raw: {
-          http: { status: 200, contentType: 'text/html', headers: {} },
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 200,
+            contentType: 'text/html',
+            headers: {},
+          },
           content: { bytes: 100, sha256: 'abc123' },
           pointer: {
             bucket: 'test-bucket',
@@ -135,10 +163,18 @@ describe('evaluatePolicy', () => {
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
         raw: {
           http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
             status: 200,
             contentType: 'text/xml; charset=utf-8',
             headers: {},
@@ -155,6 +191,7 @@ describe('evaluatePolicy', () => {
       actions: [],
       label: 'SAFE_PUBLIC',
       rewriteBody: false,
+      error: null,
     })
   })
 
@@ -178,10 +215,22 @@ describe('evaluatePolicy', () => {
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
         raw: {
-          http: { status: 200, contentType: 'text/xml', headers: {} },
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 200,
+            contentType: 'text/xml',
+            headers: {},
+          },
           content: { bytes: 100, sha256: 'abc123' },
           pointer: {
             bucket: 'test-bucket',
@@ -194,6 +243,7 @@ describe('evaluatePolicy', () => {
       actions: [],
       label: 'RESTRICTED', // override label takes precedence
       rewriteBody: false,
+      error: null,
     })
   })
 
@@ -209,10 +259,22 @@ describe('evaluatePolicy', () => {
         ingestionId: 'run-1',
         observationId: 'obs-1',
         fetchedAt: 0,
-        url: 'https://example.com/feed',
-        source: { name: 'source-1', collection: 'rss' },
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
         raw: {
-          http: { status: 200, contentType: 'text/xml', headers: {} },
+          http: {
+            etag: null,
+            finalUrl: null,
+            lastModified: null,
+            status: 200,
+            contentType: 'text/xml',
+            headers: {},
+          },
           content: { bytes: 100, sha256: 'abc123' },
           pointer: {
             bucket: 'test-bucket',
@@ -225,6 +287,7 @@ describe('evaluatePolicy', () => {
       label: 'RESTRICTED',
       actions: [],
       rewriteBody: false,
+      error: null,
     })
   })
 })
