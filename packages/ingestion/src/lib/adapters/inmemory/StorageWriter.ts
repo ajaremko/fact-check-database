@@ -1,6 +1,6 @@
 import { Effect, Layer } from 'effect'
 
-import { StorageWriter } from '../../ports'
+import { StorageWriter } from '../../steps/shared'
 
 export function layer(storage: Record<string, string>) {
   return Layer.succeed(StorageWriter.StorageWriter, {

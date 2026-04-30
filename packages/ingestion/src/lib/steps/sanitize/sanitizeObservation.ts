@@ -1,8 +1,7 @@
 import { Effect, pipe, Schema } from 'effect'
 
 import { Node, omitNullKeys, Yaml } from '../../data'
-import { StorageReader, StorageWriter } from '../../ports'
-import { FilePointer } from '../shared'
+import { StorageReader, StorageWriter, FilePointer } from '../shared'
 
 import {
   SanitizedObservation,

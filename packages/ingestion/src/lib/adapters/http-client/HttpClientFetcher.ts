@@ -2,7 +2,7 @@ import { Effect, Layer } from 'effect'
 import { HttpClient } from '@effect/platform'
 
 import * as Fetcher from '../../steps/ingest/Fetcher'
-import { FetchSuccess, FetchFailure } from '../../steps/ingest/FetchResult'
+import { FetchResult } from '../../steps/ingest'
 import { Node } from '../../data'
 
 function pickHeaders(names: string[]) {
@@ -44,7 +44,7 @@ export const make = Effect.gen(function* () {
 
           // Network or other request error where we have no response
           if (error._tag === 'RequestError') {
-            return new FetchFailure({
+            return new FetchResult.FetchFailure({
               error: error.message,
               fetchedAt: timestamp,
             })
@@ -69,7 +69,7 @@ export const make = Effect.gen(function* () {
           const etag = pickEtag(error.response.headers)
           const lastModified = pickLastModified(error.response.headers)
 
-          return new FetchSuccess({
+          return new FetchResult.FetchSuccess({
             error: error.message,
             fetchedAt: timestamp,
             status: error.response.status,
@@ -100,7 +100,7 @@ export const make = Effect.gen(function* () {
         const etag = pickEtag(response.headers)
         const lastModified = pickLastModified(response.headers)
 
-        return new FetchSuccess({
+        return new FetchResult.FetchSuccess({
           status: response.status,
           headers: response.headers,
           finalUrl: response.request.url,

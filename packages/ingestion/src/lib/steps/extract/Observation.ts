@@ -1,6 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
+
 import { SourceCollectionSchema, SourceSchema } from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({

@@ -2,7 +2,7 @@ import { Config, Effect, Layer } from 'effect'
 
 import { FileSystem } from '@effect/platform'
 
-import { StorageWriter } from '../../ports'
+import { StorageWriter } from '../../steps/shared'
 
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')

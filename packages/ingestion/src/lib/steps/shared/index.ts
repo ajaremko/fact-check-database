@@ -1,2 +1,4 @@
+export * as StorageReader from './StorageReader'
+export * as StorageWriter from './StorageWriter'
 export * from './FilePointer'
 export * from './Source'

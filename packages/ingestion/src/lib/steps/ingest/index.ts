@@ -1,3 +1,4 @@
 export * as Fetcher from './Fetcher'
+export * as FetchResult from './FetchResult'
 export * from './ingestFromSource'
-export * from '../../ports'
+export * from '../shared'

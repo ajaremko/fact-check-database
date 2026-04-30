@@ -1,6 +1,6 @@
-export * as Data from './lib/steps/shared'
+export * as Data from './lib/data'
 export * as Messaging from './lib/messaging'
-export * as Ports from './lib/ports'
+export * as Shared from './lib/steps/shared'
 export * as Ingest from './lib/steps/ingest'
 export * as Sanitize from './lib/steps/sanitize'
 export * as Extract from './lib/steps/extract'

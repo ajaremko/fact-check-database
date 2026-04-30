@@ -2,7 +2,7 @@ import { Config, ConfigError, Effect, Layer } from 'effect'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 
-import { StorageWriter } from '../../ports'
+import { StorageWriter } from '../../steps/shared'
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket

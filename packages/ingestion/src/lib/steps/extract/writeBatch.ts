@@ -1,7 +1,8 @@
 import { Effect, pipe, Schema } from 'effect'
 
 import { Node, Ndjson } from '../../data'
-import { StorageWriter } from '../../ports'
+
+import { StorageWriter } from '../shared'
 
 import { FactCheckRowSchema, FactCheckRows } from './FactCheck'
 import { ExtractionBatchReady } from './ExtractionBatchReady'

@@ -1,9 +1,8 @@
 import { Effect, Schema, flow, pipe } from 'effect'
 
 import { Node, omitNullKeys, Yaml } from '../../data'
-import { StorageWriter } from '../../ports'
 
-import { Source } from '../shared'
+import { StorageWriter, Source } from '../shared'
 
 import * as Fetcher from './Fetcher'
 import {
