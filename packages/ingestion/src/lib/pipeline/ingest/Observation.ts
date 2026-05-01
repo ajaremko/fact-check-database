@@ -3,26 +3,18 @@ import { Schema, ParseResult } from 'effect'
 import * as v1 from '../../contracts/v1'
 import { omitNullKeys } from '../../data'
 
-import {
-  SourceSchema,
-  FilePointerSchema,
-  FilePointer,
-  TimestampSchema,
-} from '../shared'
+import { SourceSchema, FilePointerSchema, TimestampSchema } from '../shared'
 
 import { FetchResult } from './FetchResult'
 
-export class Observation extends Schema.TaggedClass<Observation>()(
-  'Observation',
-  {
-    observationId: Schema.String,
-    ingestionId: Schema.String,
-    fetchedAt: TimestampSchema,
-    result: FetchResult,
-    source: SourceSchema,
-    pointer: Schema.NullOr(FilePointerSchema),
-  }
-) {}
+export class Observation extends Schema.Class<Observation>('Observation')({
+  observationId: Schema.String,
+  ingestionId: Schema.String,
+  fetchedAt: TimestampSchema,
+  result: FetchResult,
+  source: SourceSchema,
+  pointer: Schema.NullOr(FilePointerSchema),
+}) {}
 
 export const ObservationSchema = Schema.transformOrFail(
   v1.IngestionRecordSchema,
@@ -142,38 +134,59 @@ export const ObservationPathSchema = Schema.transformOrFail(
   }
 )
 
-export function buildEventFromObservation(
-  input: Observation,
-  pointer: FilePointer
-) {
-  switch (input.result._tag) {
-    case 'FetchSuccess':
-      return v1.ObservationIngestedSchema.make(
-        omitNullKeys({
-          version: 1,
-          content_lineage_id: input.observationId,
-          ingestion_batch_id: input.ingestionId,
-          fetched_at: input.fetchedAt,
-          source: input.source,
-          status: input.result.status,
-          final_url: input.result.finalUrl,
-          content_type: input.result.contentType,
-          etag: input.result.etag,
-          last_modified: input.result.lastModified,
-          content_sha256: input.result.sha256,
-          content_bytes: input.result.bytes,
-          pointer,
-        })
-      )
-    case 'FetchFailure':
-      return v1.ObservationIngestedSchema.make({
-        version: 1,
-        content_lineage_id: input.observationId,
-        ingestion_batch_id: input.ingestionId,
-        fetched_at: input.fetchedAt,
-        source: input.source,
-        error: input.result.error,
-        pointer,
-      })
+export const ObservationEventSchema = Schema.transformOrFail(
+  v1.ObservationIngestedSchema,
+  Schema.Struct({ observation: Observation, pointer: FilePointerSchema }),
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ObservationEvent not implemented'
+        )
+      ),
+    encode: (input) => {
+      switch (input.observation.result._tag) {
+        case 'FetchSuccess':
+          return ParseResult.succeed(
+            v1.ObservationIngestedSchema.make(
+              omitNullKeys({
+                version: 1,
+                content_lineage_id: input.observation.observationId,
+                ingestion_batch_id: input.observation.ingestionId,
+                fetched_at: input.observation.fetchedAt,
+                source: {
+                  id: input.observation.source.id,
+                  name: input.observation.source.name,
+                  url: input.observation.source.url,
+                  collection: input.observation.source.collection,
+                },
+                status: input.observation.result.status,
+                final_url: input.observation.result.finalUrl,
+                content_type: input.observation.result.contentType,
+                etag: input.observation.result.etag,
+                last_modified: input.observation.result.lastModified,
+                content_sha256: input.observation.result.sha256,
+                content_bytes: input.observation.result.bytes,
+                pointer: input.pointer,
+              })
+            )
+          )
+        case 'FetchFailure':
+          return ParseResult.succeed(
+            v1.ObservationIngestedSchema.make({
+              version: 1,
+              content_lineage_id: input.observation.observationId,
+              ingestion_batch_id: input.observation.ingestionId,
+              fetched_at: input.observation.fetchedAt,
+              source: input.observation.source,
+              error: input.observation.result.error,
+              pointer: input.pointer,
+            })
+          )
+      }
+    },
   }
-}
+)

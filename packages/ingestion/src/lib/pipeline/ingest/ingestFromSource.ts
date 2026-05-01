@@ -4,9 +4,10 @@ import { Node, omitNullKeys, Yaml } from '../../data'
 
 import {
   StorageWriter,
-  Source,
-  TimestampBrand,
+  SourceEncoded,
+  TimestampEncoded,
   TimestampSchema,
+  SourceSchema,
 } from '../shared'
 
 import * as Fetcher from './Fetcher'
@@ -15,7 +16,7 @@ import {
   ObservationSchema,
   ObservationMetadataSchema,
   ObservationPathSchema,
-  buildEventFromObservation,
+  ObservationEventSchema,
 } from './Observation'
 import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
 import { ObservationIdSchema } from './ObservationId'
@@ -30,30 +31,37 @@ const encodeObservation = pipe(
 const encodeObservationMetadata = Schema.encode(ObservationMetadataSchema)
 const encodeObservationPath = Schema.encode(ObservationPathSchema)
 const encodeFetchedBodyPath = Schema.encode(FetchedBodyPathSchema)
+const encodeObservationEvent = Schema.encode(ObservationEventSchema)
 
 const encodeHashedObservationId = flow(
   Schema.encode(ObservationIdSchema),
   Effect.andThen((base) => Node.sha256Hex(base, 'utf8'))
 )
 
-const decodeTimestamp = Schema.decodeSync(TimestampSchema)
+const decodeContext = Schema.decodeUnknownSync(
+  Schema.Struct({
+    ingestionId: Schema.String,
+    source: SourceSchema,
+    timestamp: TimestampSchema,
+  })
+)
 
-export function ingestFromSource(ctx: {
+export function ingestFromSource(args: {
   ingestionId: string
-  timestamp: number
-  source: Source
+  timestamp: TimestampEncoded
+  source: SourceEncoded
 }) {
   return Effect.gen(function* () {
-    const fetchedAt = decodeTimestamp(ctx.timestamp)
+    const ctx = decodeContext(args)
 
     yield* Effect.logDebug('Fetching data from source target')
-    const result = yield* Fetcher.fetch(ctx.source, fetchedAt)
+    const result = yield* Fetcher.fetch(ctx.source, ctx.timestamp)
 
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId({
       source: ctx.source,
       result,
-      fetchedAt,
+      fetchedAt: ctx.timestamp,
     })
 
     if (result._tag === 'FetchFailure') {
@@ -64,7 +72,7 @@ export function ingestFromSource(ctx: {
         observationId,
         ingestionId: ctx.ingestionId,
         source: ctx.source,
-        fetchedAt,
+        fetchedAt: ctx.timestamp,
         result,
         pointer: null,
       })
@@ -86,14 +94,18 @@ export function ingestFromSource(ctx: {
       // Return an `ObservationIngested` event with error details
       // and pointer to the attempt record, but no content fields
       // since there is no body to archive
-      return buildEventFromObservation(observation, recordPointer)
+      const event = yield* encodeObservationEvent({
+        observation,
+        pointer: recordPointer,
+      })
+      return event
     }
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
       observationId,
       ingestionId: ctx.ingestionId,
-      fetchedAt,
+      fetchedAt: ctx.timestamp,
       sourceName: ctx.source.name,
       body: result.body,
       contentType: result.contentType,
@@ -118,7 +130,7 @@ export function ingestFromSource(ctx: {
       observationId,
       ingestionId: ctx.ingestionId,
       source: ctx.source,
-      fetchedAt,
+      fetchedAt: ctx.timestamp,
       result,
       pointer: bodyPointer,
     })
@@ -141,12 +153,16 @@ export function ingestFromSource(ctx: {
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which
     // references the archived body
-    return buildEventFromObservation(observation, recordPointer)
+    const event = yield* encodeObservationEvent({
+      observation,
+      pointer: recordPointer,
+    })
+    return event
   }).pipe(
     Effect.annotateLogs({
-      source: ctx.source.name,
-      url: ctx.source.url,
-      collection: ctx.source.collection,
+      source: args.source.name,
+      url: args.source.url,
+      collection: args.source.collection,
     }),
     Effect.withSpan('ingestFromSourceTarget')
   )

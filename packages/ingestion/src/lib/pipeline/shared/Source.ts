@@ -15,3 +15,4 @@ export const SourceSchema = Schema.Struct({
 })
 
 export type Source = Schema.Schema.Type<typeof SourceSchema>
+export type SourceEncoded = Schema.Schema.Encoded<typeof SourceSchema>

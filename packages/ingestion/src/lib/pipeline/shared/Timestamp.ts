@@ -5,5 +5,6 @@ export const TimestampSchema = Schema.NonNegative.pipe(
 )
 
 export type Timestamp = Schema.Schema.Type<typeof TimestampSchema>
+export type TimestampEncoded = Schema.Schema.Encoded<typeof TimestampSchema>
 
 export const TimestampBrand = Brand.nominal<Timestamp>()

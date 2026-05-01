@@ -2,14 +2,12 @@ import { expect } from '@effect/vitest'
 import { Schema } from 'effect'
 
 import {
-  Observation,
   ObservationSchema,
   ObservationMetadataSchema,
   ObservationPathSchema,
-  buildEventFromObservation,
+  ObservationEventSchema,
 } from './Observation'
 import { FetchSuccessSchema, FetchFailureSchema } from './FetchResult'
-import { TimestampBrand } from '../shared'
 
 const source = {
   id: 'politifact',
@@ -37,16 +35,16 @@ const fetchFailure = FetchFailureSchema.make({
 
 describe('ObservationSchema', () => {
   it('encodes a successful fetch with pointer and all optional fields', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchSuccess,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
-    })
-
-    expect(Schema.encodeSync(ObservationSchema)(observation)).toStrictEqual({
+    expect(
+      Schema.encodeUnknownSync(ObservationSchema)({
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        result: fetchSuccess,
+        fetchedAt: 0,
+        source,
+        pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
+      })
+    ).toStrictEqual({
       version: 1,
       kind: 'fetch_attempt',
       outcome: 'data_fetched',
@@ -68,7 +66,7 @@ describe('ObservationSchema', () => {
   })
 
   it('omits content_type, etag, and last_modified when null', () => {
-    const observation = new Observation({
+    const record = Schema.encodeUnknownSync(ObservationSchema)({
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: FetchSuccessSchema.make({
@@ -77,12 +75,10 @@ describe('ObservationSchema', () => {
         etag: null,
         lastModified: null,
       }),
-      fetchedAt: TimestampBrand(0),
+      fetchedAt: 0,
       source,
       pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
     })
-
-    const record = Schema.encodeSync(ObservationSchema)(observation)
     expect(record).not.toHaveProperty('content_type')
     expect(record).not.toHaveProperty('etag')
     expect(record).not.toHaveProperty('last_modified')
@@ -90,31 +86,29 @@ describe('ObservationSchema', () => {
   })
 
   it('omits content when pointer is null', () => {
-    const observation = new Observation({
+    const record = Schema.encodeUnknownSync(ObservationSchema)({
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchSuccess,
-      fetchedAt: TimestampBrand(0),
+      fetchedAt: 0,
       source,
       pointer: null,
     })
-
-    const record = Schema.encodeSync(ObservationSchema)(observation)
     expect(record).not.toHaveProperty('content')
     expect(record.outcome).toBe('data_fetched')
   })
 
   it('encodes a failed fetch with no_response outcome', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchFailure,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: null,
-    })
-
-    expect(Schema.encodeSync(ObservationSchema)(observation)).toStrictEqual({
+    expect(
+      Schema.encodeUnknownSync(ObservationSchema)({
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        result: fetchFailure,
+        fetchedAt: 0,
+        source,
+        pointer: null,
+      })
+    ).toStrictEqual({
       version: 1,
       kind: 'fetch_attempt',
       outcome: 'no_response',
@@ -129,17 +123,15 @@ describe('ObservationSchema', () => {
 
 describe('ObservationMetadataSchema', () => {
   it('encodes metadata from a successful fetch observation', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchSuccess,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: null,
-    })
-
     expect(
-      Schema.encodeSync(ObservationMetadataSchema)(observation)
+      Schema.encodeUnknownSync(ObservationMetadataSchema)({
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        result: fetchSuccess,
+        fetchedAt: 0,
+        source,
+        pointer: null,
+      })
     ).toStrictEqual({
       observationId: 'obs-1',
       ingestionId: 'run-1',
@@ -151,17 +143,15 @@ describe('ObservationMetadataSchema', () => {
   })
 
   it('encodes metadata from a failed fetch observation', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchFailure,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: null,
-    })
-
     expect(
-      Schema.encodeSync(ObservationMetadataSchema)(observation)
+      Schema.encodeUnknownSync(ObservationMetadataSchema)({
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        result: fetchFailure,
+        fetchedAt: 0,
+        source,
+        pointer: null,
+      })
     ).toStrictEqual({
       observationId: 'obs-1',
       ingestionId: 'run-1',
@@ -175,50 +165,51 @@ describe('ObservationMetadataSchema', () => {
 
 describe('ObservationPathSchema', () => {
   it('encodes to a records archive path from a successful fetch', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchSuccess,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: null,
-    })
-
-    expect(Schema.encodeSync(ObservationPathSchema)(observation)).toBe(
+    expect(
+      Schema.encodeUnknownSync(ObservationPathSchema)({
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        result: fetchSuccess,
+        fetchedAt: 0,
+        source,
+        pointer: null,
+      })
+    ).toBe(
       'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.ingestion.yml'
     )
   })
 
   it('encodes to a records archive path from a failed fetch', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchFailure,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: null,
-    })
-
-    expect(Schema.encodeSync(ObservationPathSchema)(observation)).toBe(
+    expect(
+      Schema.encodeUnknownSync(ObservationPathSchema)({
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        result: fetchFailure,
+        fetchedAt: 0,
+        source,
+        pointer: null,
+      })
+    ).toBe(
       'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.ingestion.yml'
     )
   })
 })
 
 describe('buildEventFromObservation', () => {
-  const pointer = { bucket: 'records-bucket', object: 'path/to/record.yml' }
-
   it('builds a success event including all optional fields', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      result: fetchSuccess,
-      fetchedAt: TimestampBrand(0),
-      source,
-      pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
-    })
-
-    expect(buildEventFromObservation(observation, pointer)).toStrictEqual({
+    expect(
+      Schema.encodeUnknownSync(ObservationEventSchema)({
+        observation: {
+          observationId: 'obs-1',
+          ingestionId: 'run-1',
+          result: fetchSuccess,
+          fetchedAt: 0,
+          source,
+          pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
+        },
+        pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
+      })
+    ).toStrictEqual({
       version: 1,
       content_lineage_id: 'obs-1',
       ingestion_batch_id: 'run-1',
@@ -231,26 +222,27 @@ describe('buildEventFromObservation', () => {
       last_modified: 'Wed, 29 Apr 2026 16:20:04 GMT',
       content_sha256: 'abc123sha256',
       content_bytes: 1024,
-      pointer,
+      pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
     })
   })
 
   it('omits content_type, etag, and last_modified from event when null', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      fetchedAt: TimestampBrand(0),
-      result: FetchSuccessSchema.make({
-        ...fetchSuccess,
-        contentType: null,
-        etag: null,
-        lastModified: null,
-      }),
-      source,
-      pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
+    const event = Schema.encodeUnknownSync(ObservationEventSchema)({
+      observation: {
+        observationId: 'obs-1',
+        ingestionId: 'run-1',
+        fetchedAt: 0,
+        result: {
+          ...fetchSuccess,
+          contentType: null,
+          etag: null,
+          lastModified: null,
+        },
+        source,
+        pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
+      },
+      pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
     })
-
-    const event = buildEventFromObservation(observation, pointer)
     expect(event).not.toHaveProperty('content_type')
     expect(event).not.toHaveProperty('etag')
     expect(event).not.toHaveProperty('last_modified')
@@ -259,23 +251,26 @@ describe('buildEventFromObservation', () => {
   })
 
   it('builds a failure event with error and no content fields', () => {
-    const observation = new Observation({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
-      fetchedAt: TimestampBrand(0),
-      result: fetchFailure,
-      source,
-      pointer: null,
-    })
-
-    expect(buildEventFromObservation(observation, pointer)).toStrictEqual({
+    expect(
+      Schema.encodeUnknownSync(ObservationEventSchema)({
+        observation: {
+          observationId: 'obs-1',
+          ingestionId: 'run-1',
+          fetchedAt: 0,
+          result: fetchFailure,
+          source,
+          pointer: null,
+        },
+        pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
+      })
+    ).toStrictEqual({
       version: 1,
       content_lineage_id: 'obs-1',
       ingestion_batch_id: 'run-1',
       fetched_at: 0,
       source,
       error: 'Transport error (GET https://www.politifact.com/rss/all/)',
-      pointer,
+      pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
     })
   })
 })
