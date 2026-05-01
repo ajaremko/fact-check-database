@@ -1,13 +1,15 @@
 import { ParseResult, Schema } from 'effect'
 
 import * as v1 from '../../contracts/v1'
-import { SourceSchema } from '../shared'
+
+import { SourceSchema, TimestampSchema } from '../shared'
 
 import { FetchResult } from './FetchResult'
 
 export const ObservationIdSchema = Schema.transformOrFail(
   v1.ContentLineageIdSchema,
   Schema.Struct({
+    fetchedAt: TimestampSchema,
     result: FetchResult,
     source: SourceSchema,
   }),
@@ -19,7 +21,7 @@ export const ObservationIdSchema = Schema.transformOrFail(
           version: 1,
           success: false as const,
           url: input.source.url,
-          fetchedAt: input.result.fetchedAt,
+          fetchedAt: input.fetchedAt,
           error: input.result.error,
         })
       }

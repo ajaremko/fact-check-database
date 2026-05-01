@@ -2,7 +2,12 @@ import { Effect, Schema, flow, pipe } from 'effect'
 
 import { Node, omitNullKeys, Yaml } from '../../data'
 
-import { StorageWriter, Source } from '../shared'
+import {
+  StorageWriter,
+  Source,
+  TimestampBrand,
+  TimestampSchema,
+} from '../shared'
 
 import * as Fetcher from './Fetcher'
 import {
@@ -12,7 +17,7 @@ import {
   ObservationPathSchema,
   buildEventFromObservation,
 } from './Observation'
-import { FetchedBody, FetchedBodyPathSchema } from './FetchedBody'
+import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
 import { ObservationIdSchema } from './ObservationId'
 
 const encodeObservation = pipe(
@@ -31,19 +36,24 @@ const encodeHashedObservationId = flow(
   Effect.andThen((base) => Node.sha256Hex(base, 'utf8'))
 )
 
+const decodeTimestamp = Schema.decodeSync(TimestampSchema)
+
 export function ingestFromSource(ctx: {
   ingestionId: string
   timestamp: number
   source: Source
 }) {
   return Effect.gen(function* () {
+    const fetchedAt = decodeTimestamp(ctx.timestamp)
+
     yield* Effect.logDebug('Fetching data from source target')
-    const result = yield* Fetcher.fetch(ctx.source, ctx.timestamp)
+    const result = yield* Fetcher.fetch(ctx.source, fetchedAt)
 
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId({
       source: ctx.source,
       result,
+      fetchedAt,
     })
 
     if (result._tag === 'FetchFailure') {
@@ -53,8 +63,9 @@ export function ingestFromSource(ctx: {
       const observation = new Observation({
         observationId,
         ingestionId: ctx.ingestionId,
-        result,
         source: ctx.source,
+        fetchedAt,
+        result,
         pointer: null,
       })
 
@@ -79,10 +90,10 @@ export function ingestFromSource(ctx: {
     }
 
     // For a successful fetch, we need to archive the body
-    const fetchedBody = new FetchedBody({
+    const fetchedBody = FetchedBodySchema.make({
       observationId,
       ingestionId: ctx.ingestionId,
-      fetchedAt: ctx.timestamp,
+      fetchedAt,
       sourceName: ctx.source.name,
       body: result.body,
       contentType: result.contentType,
@@ -106,8 +117,9 @@ export function ingestFromSource(ctx: {
     const observation = new Observation({
       observationId,
       ingestionId: ctx.ingestionId,
-      result,
       source: ctx.source,
+      fetchedAt,
+      result,
       pointer: bodyPointer,
     })
 

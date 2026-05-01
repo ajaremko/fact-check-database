@@ -2,18 +2,20 @@ import { Schema, ParseResult } from 'effect'
 
 import * as v1 from '../../contracts/v1'
 
-export class FetchedBody extends Schema.Class<FetchedBody>('FetchedBody')({
+import { TimestampSchema } from '../shared'
+
+export const FetchedBodySchema = Schema.Struct({
   observationId: Schema.String,
   ingestionId: Schema.String,
   body: Schema.instanceOf(Uint8Array),
   sourceName: Schema.String,
-  fetchedAt: Schema.Number,
+  fetchedAt: TimestampSchema,
   contentType: Schema.NullOr(Schema.String),
-}) {}
+})
 
 export const FetchedBodyPathSchema = Schema.transformOrFail(
   v1.ArchivePathSchema,
-  FetchedBody,
+  FetchedBodySchema,
   {
     strict: true,
     decode: (input, _, ast) =>

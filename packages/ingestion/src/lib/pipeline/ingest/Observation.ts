@@ -3,7 +3,12 @@ import { Schema, ParseResult } from 'effect'
 import * as v1 from '../../contracts/v1'
 import { omitNullKeys } from '../../data'
 
-import { SourceSchema, FilePointerSchema, FilePointer } from '../shared'
+import {
+  SourceSchema,
+  FilePointerSchema,
+  FilePointer,
+  TimestampSchema,
+} from '../shared'
 
 import { FetchResult } from './FetchResult'
 
@@ -12,6 +17,7 @@ export class Observation extends Schema.TaggedClass<Observation>()(
   {
     observationId: Schema.String,
     ingestionId: Schema.String,
+    fetchedAt: TimestampSchema,
     result: FetchResult,
     source: SourceSchema,
     pointer: Schema.NullOr(FilePointerSchema),
@@ -40,7 +46,7 @@ export const ObservationSchema = Schema.transformOrFail(
             outcome: 'data_fetched' as const,
             content_lineage_id: input.observationId,
             ingestion_batch_id: input.ingestionId,
-            fetched_at: input.result.fetchedAt,
+            fetched_at: input.fetchedAt,
             source: input.source,
             status: input.result.status,
             headers: input.result.headers,
@@ -71,7 +77,7 @@ export const ObservationSchema = Schema.transformOrFail(
             outcome: 'no_response' as const,
             content_lineage_id: input.observationId,
             ingestion_batch_id: input.ingestionId,
-            fetched_at: input.result.fetchedAt,
+            fetched_at: input.fetchedAt,
             source: input.source,
             error: input.result.error,
           })
@@ -97,7 +103,7 @@ export const ObservationMetadataSchema = Schema.transformOrFail(
       return ParseResult.succeed({
         observationId: input.observationId,
         ingestionId: input.ingestionId,
-        fetchedAt: input.result.fetchedAt,
+        fetchedAt: input.fetchedAt,
         url: input.source.url,
         sourceName: input.source.name,
         sourceCollection: input.source.collection,
@@ -129,7 +135,7 @@ export const ObservationPathSchema = Schema.transformOrFail(
         collectionName: 'records',
         ext: `ingestion.yml`,
         sourceName: input.source.name,
-        date: input.result.fetchedAt,
+        date: input.fetchedAt,
         ingestionId: input.ingestionId,
         observationId: input.observationId,
       }),
@@ -147,7 +153,7 @@ export function buildEventFromObservation(
           version: 1,
           content_lineage_id: input.observationId,
           ingestion_batch_id: input.ingestionId,
-          fetched_at: input.result.fetchedAt,
+          fetched_at: input.fetchedAt,
           source: input.source,
           status: input.result.status,
           final_url: input.result.finalUrl,
@@ -164,7 +170,7 @@ export function buildEventFromObservation(
         version: 1,
         content_lineage_id: input.observationId,
         ingestion_batch_id: input.ingestionId,
-        fetched_at: input.result.fetchedAt,
+        fetched_at: input.fetchedAt,
         source: input.source,
         error: input.result.error,
         pointer,

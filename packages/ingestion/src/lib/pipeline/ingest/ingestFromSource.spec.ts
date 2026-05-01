@@ -4,7 +4,7 @@ import { Effect, Layer } from 'effect'
 import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
 
 import { ingestFromSource } from './ingestFromSource'
-import { FetchFailure, FetchSuccess } from './FetchResult'
+import { FetchFailureSchema, FetchSuccessSchema } from './FetchResult'
 import { Fetcher, FetcherError } from './Fetcher'
 
 describe('ingestFromSourceTarget', () => {
@@ -25,14 +25,7 @@ describe('ingestFromSourceTarget', () => {
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
-              new FetchFailure({
-                fetchedAt: 0,
-                source: {
-                  id: 'baddata',
-                  collection: 'rss',
-                  name: 'baddata.com',
-                  url: 'https://baddata.com/rss.xml',
-                },
+              FetchFailureSchema.make({
                 error: 'Transport error (GET https://baddata.com/rss.xml)',
               })
             )
@@ -86,14 +79,7 @@ describe('ingestFromSourceTarget', () => {
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
-              new FetchSuccess({
-                fetchedAt: 0,
-                source: {
-                  id: 'politifact',
-                  name: 'politifact.com',
-                  url: 'https://www.politifact.com/rss/all/',
-                  collection: 'rss',
-                },
+              FetchSuccessSchema.make({
                 finalUrl: 'https://www.politifact.com/rss/all/',
                 status: 200,
                 headers: {
@@ -211,14 +197,7 @@ describe('ingestFromSourceTarget', () => {
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
-              new FetchSuccess({
-                fetchedAt: 0,
-                source: {
-                  id: 'politifact',
-                  name: 'politifact.com',
-                  url: 'https://www.politifact.com/rss/all/',
-                  collection: 'rss',
-                },
+              FetchSuccessSchema.make({
                 finalUrl: 'https://www.politifact.com/rss/all/',
                 status: 200,
                 headers: {},

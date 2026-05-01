@@ -8,7 +8,8 @@ import {
   ObservationPathSchema,
   buildEventFromObservation,
 } from './Observation'
-import { FetchSuccess, FetchFailure } from './FetchResult'
+import { FetchSuccessSchema, FetchFailureSchema } from './FetchResult'
+import { TimestampBrand } from '../shared'
 
 const source = {
   id: 'politifact',
@@ -17,8 +18,7 @@ const source = {
   collection: 'rss' as const,
 }
 
-const fetchSuccess = new FetchSuccess({
-  fetchedAt: 0,
+const fetchSuccess = FetchSuccessSchema.make({
   finalUrl: 'https://www.politifact.com/rss/all/',
   status: 200,
   headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
@@ -31,8 +31,7 @@ const fetchSuccess = new FetchSuccess({
   error: null,
 })
 
-const fetchFailure = new FetchFailure({
-  fetchedAt: 0,
+const fetchFailure = FetchFailureSchema.make({
   error: 'Transport error (GET https://www.politifact.com/rss/all/)',
 })
 
@@ -42,6 +41,7 @@ describe('ObservationSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchSuccess,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
     })
@@ -71,12 +71,13 @@ describe('ObservationSchema', () => {
     const observation = new Observation({
       observationId: 'obs-1',
       ingestionId: 'run-1',
-      result: new FetchSuccess({
+      result: FetchSuccessSchema.make({
         ...fetchSuccess,
         contentType: null,
         etag: null,
         lastModified: null,
       }),
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
     })
@@ -93,6 +94,7 @@ describe('ObservationSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchSuccess,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: null,
     })
@@ -107,6 +109,7 @@ describe('ObservationSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchFailure,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: null,
     })
@@ -130,6 +133,7 @@ describe('ObservationMetadataSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchSuccess,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: null,
     })
@@ -151,6 +155,7 @@ describe('ObservationMetadataSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchFailure,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: null,
     })
@@ -174,6 +179,7 @@ describe('ObservationPathSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchSuccess,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: null,
     })
@@ -188,6 +194,7 @@ describe('ObservationPathSchema', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchFailure,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: null,
     })
@@ -206,6 +213,7 @@ describe('buildEventFromObservation', () => {
       observationId: 'obs-1',
       ingestionId: 'run-1',
       result: fetchSuccess,
+      fetchedAt: TimestampBrand(0),
       source,
       pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
     })
@@ -231,7 +239,8 @@ describe('buildEventFromObservation', () => {
     const observation = new Observation({
       observationId: 'obs-1',
       ingestionId: 'run-1',
-      result: new FetchSuccess({
+      fetchedAt: TimestampBrand(0),
+      result: FetchSuccessSchema.make({
         ...fetchSuccess,
         contentType: null,
         etag: null,
@@ -253,6 +262,7 @@ describe('buildEventFromObservation', () => {
     const observation = new Observation({
       observationId: 'obs-1',
       ingestionId: 'run-1',
+      fetchedAt: TimestampBrand(0),
       result: fetchFailure,
       source,
       pointer: null,

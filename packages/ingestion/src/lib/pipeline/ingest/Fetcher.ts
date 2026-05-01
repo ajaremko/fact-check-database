@@ -1,6 +1,6 @@
 import { Context, Data, Effect } from 'effect'
 
-import { Source } from '../shared'
+import { Source, Timestamp } from '../shared'
 
 import { FetchResult } from './FetchResult'
 
@@ -14,7 +14,7 @@ export class Fetcher extends Context.Tag('Fetcher')<
   {
     readonly fetch: (
       source: Source,
-      timestamp: number
+      timestamp: Timestamp
     ) => Effect.Effect<FetchResult, FetcherError>
   }
 >() {}
