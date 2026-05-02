@@ -1,5 +1,6 @@
 export * from './ArchivePath'
 export * from './ContentLineageId'
+export * from './ExtractionBatchReady'
 export * from './FactChecksTableRow'
 export * from './IngestorRecord'
 export * from './ObservationIngested'

@@ -10,7 +10,7 @@ import {
 } from '@news-research/ingestion/adapters'
 import { StorageClient } from '@news-research/cloud-storage'
 import { BigQueryClient } from '@news-research/bigquery'
-import { ExtractionBatchReady } from '@news-research/ingestion/pipeline/extract'
+import { ExtractionBatchReadySchema } from '@news-research/ingestion/contracts/v1'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
 import { MessageQueue } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/data'
@@ -19,7 +19,7 @@ import { loadBatch } from '@news-research/ingestion/pipeline/load'
 import { pinoLogger } from '@news-research/pino'
 
 const decodeIncoming = pipe(
-  ExtractionBatchReady,
+  ExtractionBatchReadySchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
@@ -32,10 +32,10 @@ function processMessage(message: MessageQueue.Message) {
     yield* loadBatch({
       projectId,
       pointer: incoming.pointer,
-      sourceFormat: incoming.sourceFormat,
+      sourceFormat: incoming.source_format,
       table: {
-        dataset: incoming.table.datasetId,
-        table: incoming.table.tableId,
+        dataset: incoming.table.dataset_id,
+        table: incoming.table.table_id,
       },
       schema: incoming.schema,
     })

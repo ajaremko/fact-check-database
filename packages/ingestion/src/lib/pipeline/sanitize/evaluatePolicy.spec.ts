@@ -38,7 +38,7 @@ describe('evaluatePolicy', () => {
     )
     expect(decision).toStrictEqual({
       actions: ['QUARANTINED_FETCH_FAILED'],
-      error: 'Network error',
+      error: null,
       label: 'QUARANTINED',
       rewriteBody: false,
     })

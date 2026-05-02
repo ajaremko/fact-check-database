@@ -5,24 +5,23 @@ import {
   type StorageReader,
   extractFactChecks,
   writeBatch,
-  ExtractionBatchReady,
 } from '@news-research/ingestion/pipeline/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
-import { ObservationSanitized } from '@news-research/ingestion/pipeline/sanitize'
+import * as v1 from '@news-research/ingestion/contracts/v1'
 import { Node } from '@news-research/ingestion/data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { FactChecksSchema } from './FactChecksSchema'
 
 const decodeIncoming = pipe(
-  ObservationSanitized,
+  v1.ObservationSanitizedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
 )
 
 const encodeOutgoing = pipe(
-  ExtractionBatchReady,
+  Schema.Object,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
@@ -34,7 +33,7 @@ function processMessage(message: MessageBatch.Message) {
     const job = yield* JobContext
     const rows = yield* extractFactChecks({
       extractionId: job.runId,
-      observationId: incoming.observationId,
+      observationId: incoming.content_lineage_id,
       pointer: incoming.pointer,
       extractedAt: job.startedAt,
     })

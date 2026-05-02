@@ -4,8 +4,11 @@ import { Node, Ndjson } from '../../data'
 
 import { StorageWriter } from '../shared'
 
+import {
+  ExtractionBatchSchema,
+  ExtractionBatchEventSchema,
+} from './ExtractionBatch'
 import { FactCheckRowSchema, FactCheckRows } from './FactCheck'
-import { ExtractionBatchReady } from './ExtractionBatchReady'
 
 const encodeFactChecks = pipe(
   FactCheckRowSchema,
@@ -13,6 +16,8 @@ const encodeFactChecks = pipe(
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.encode
 )
+
+const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 
 export function writeBatch(input: {
   runId: string
@@ -29,7 +34,7 @@ export function writeBatch(input: {
       data,
       contentType: 'application/x-ndjson',
     })
-    return new ExtractionBatchReady({
+    const batch = ExtractionBatchSchema.make({
       batchId: input.runId,
       extractedAt: input.extractedAt,
       table: {
@@ -40,6 +45,7 @@ export function writeBatch(input: {
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })
+    return yield* encodeExtractionBatchEvent(batch)
   }).pipe(
     Effect.annotateLogs({ rowCount: input.extracted.length }),
     Effect.withSpan('writeBatch')
