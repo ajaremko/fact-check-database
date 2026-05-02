@@ -2,7 +2,7 @@ import { ConfigError, Effect, Layer } from 'effect'
 
 import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
 
-import { StorageReader } from '../../pipeline/shared'
+import { StorageReader } from '..'
 
 export const make = Effect.gen(function* () {
   const { client } = yield* StorageClient.StorageClient

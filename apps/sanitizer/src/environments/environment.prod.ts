@@ -6,10 +6,12 @@ import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
+} from '@news-research/ingestion/pipeline/shared'
+import {
   CloudPubsubPublisher,
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
-} from '@news-research/ingestion/adapters'
+} from '@news-research/ingestion/messaging'
 import { StorageClient } from '@news-research/cloud-storage'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'

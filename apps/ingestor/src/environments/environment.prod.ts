@@ -4,11 +4,9 @@ import { NodeHttpClient } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 
-import {
-  CloudStorageStorageWriter,
-  CloudPubsubPublisher,
-  HttpClientFetcher,
-} from '@news-research/ingestion/adapters'
+import { CloudStorageStorageWriter } from '@news-research/ingestion/pipeline/shared'
+import { CloudPubsubPublisher } from '@news-research/ingestion/messaging'
+import { HttpClientFetcher } from '@news-research/ingestion/pipeline/ingest'
 import { PubsubClient } from '@news-research/cloud-pubsub'
 import { StorageClient } from '@news-research/cloud-storage'
 import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'

@@ -1,7 +1,7 @@
 import { Config, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { MessageBatch } from '../../messaging'
+import { MessageBatch } from '..'
 
 const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem

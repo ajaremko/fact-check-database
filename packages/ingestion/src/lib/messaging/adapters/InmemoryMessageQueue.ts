@@ -1,6 +1,6 @@
 import { Effect, Queue, Layer } from 'effect'
 
-import { MessageQueue } from '../../messaging'
+import { MessageQueue } from '..'
 
 const acquire = Effect.gen(function* () {
   const messages = yield* Queue.unbounded<MessageQueue.Message>()

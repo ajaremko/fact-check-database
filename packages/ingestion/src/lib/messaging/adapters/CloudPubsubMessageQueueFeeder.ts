@@ -3,7 +3,7 @@ import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
 import { PubsubClient, PubsubSubscription } from '@news-research/cloud-pubsub'
 
-import { MessageQueue } from '../../messaging'
+import { MessageQueue } from '..'
 
 const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription

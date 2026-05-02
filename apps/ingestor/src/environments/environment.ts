@@ -7,9 +7,9 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
-  FileSystemPublisher,
-  HttpClientFetcher,
-} from '@news-research/ingestion/adapters'
+} from '@news-research/ingestion/pipeline/shared'
+import { FileSystemPublisher } from '@news-research/ingestion/messaging'
+import { HttpClientFetcher } from '@news-research/ingestion/pipeline/ingest'
 
 import * as FileSystemTargetList from '../adapters/filesystem/TargetList'
 import * as JobContext from '../JobContext'

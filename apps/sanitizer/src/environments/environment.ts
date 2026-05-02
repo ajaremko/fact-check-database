@@ -7,9 +7,11 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
+} from '@news-research/ingestion/pipeline/shared'
+import {
   FileSystemPublisher,
   InMemoryMessageQueue,
-} from '@news-research/ingestion/adapters'
+} from '@news-research/ingestion/messaging'
 
 import * as FileSystemMessageQueueFeeder from '../adapters/filesystem/MessageQueueFeeder'
 import * as FileSystemSanitizerPolicyDocument from '../adapters/filesystem/SanitizerPolicyDocument'

@@ -7,9 +7,11 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
+} from '@news-research/ingestion/pipeline/extract'
+import {
   FileSystemPublisher,
   FileSystemMessageBatch,
-} from '@news-research/ingestion/adapters'
+} from '@news-research/ingestion/messaging'
 
 import * as FileSystemFactChecksSchema from '../adapters/filesystem/FactChecksSchema'
 import * as JobContext from '../JobContext'

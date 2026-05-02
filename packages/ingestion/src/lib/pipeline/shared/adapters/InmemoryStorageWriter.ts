@@ -1,6 +1,6 @@
 import { Effect, Layer } from 'effect'
 
-import { StorageWriter } from '../../pipeline/shared'
+import { StorageWriter } from '..'
 
 export function layer(storage: Record<string, string>) {
   return Layer.succeed(StorageWriter.StorageWriter, {

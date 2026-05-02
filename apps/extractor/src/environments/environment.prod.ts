@@ -6,9 +6,11 @@ import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
+} from '@news-research/ingestion/pipeline/shared'
+import {
   CloudPubsubMessageBatch,
   CloudPubsubPublisher,
-} from '@news-research/ingestion/adapters'
+} from '@news-research/ingestion/messaging'
 import {
   PubsubSubscriberClient,
   PubsubClient,
