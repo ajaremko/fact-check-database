@@ -6,7 +6,7 @@ import { omitNullKeys } from '../../data'
 
 import { NumberFromDate } from './NumberFromDate'
 
-export const FactCheck = Schema.Struct({
+export const FactCheckSchema = Schema.Struct({
   sha256: Schema.String,
   title: Schema.NullOr(Schema.String),
   claim: Schema.NullOr(Schema.String),
@@ -22,7 +22,7 @@ export const FactCheck = Schema.Struct({
   extractedFrom: Schema.NullOr(Schema.String),
 })
 
-export type FactCheck = Schema.Schema.Type<typeof FactCheck>
+export type FactCheck = Schema.Schema.Type<typeof FactCheckSchema>
 
 export const FactCheckRowSchema = Schema.transformOrFail(
   v1.FactChecksTableRowSchema,
@@ -33,7 +33,7 @@ export const FactCheckRowSchema = Schema.transformOrFail(
     extractionId: Schema.String,
     extractedAt: NumberFromDate,
     fetchedAt: NumberFromDate,
-    factCheck: FactCheck,
+    factCheck: FactCheckSchema,
     http: Schema.Struct({
       contentSha256: Schema.String,
       status: Schema.Number,

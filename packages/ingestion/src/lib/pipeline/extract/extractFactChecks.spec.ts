@@ -310,4 +310,44 @@ describe('extractFactChecks', () => {
       expect(result).toStrictEqual([])
     })
   )
+
+  it.effect(
+    'when observation is SAFE_PUBLIC but has no content, returns an empty array',
+    () =>
+      Effect.gen(function* () {
+        const storage = {
+          'no-content.sanitize.yml': `
+            version: 1
+            kind: sanitized_record
+            content_lineage_id: no-content-obs
+            ingestion_batch_id: ing-1
+            fetched_at: 0
+            sanitized_at: 0
+            source:
+              id: politifact
+              name: politifact.com
+              url: https://www.politifact.com/rss/all/
+              collection: rss
+            input:
+              record:
+                bucket: local
+                object: record.yml
+            label: SAFE_PUBLIC
+            actions: []
+            http:
+              status: 200
+              content_type: application/rss+xml`,
+        }
+        const result = yield* extractFactChecks({
+          extractionId: 'run-1',
+          observationId: 'no-content-obs',
+          extractedAt: 0,
+          pointer: { bucket: 'inmemory', object: 'no-content.sanitize.yml' },
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
+        expect(result).toStrictEqual([])
+      })
+  )
 })

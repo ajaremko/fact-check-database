@@ -2,7 +2,7 @@ import { Effect, pipe, Schema } from 'effect'
 
 import { Node, Xml } from '../../../data'
 
-import { FactCheck } from '../FactCheck'
+import { FactCheckSchema } from '../FactCheck'
 
 import { NormalizedTextSchema } from './NormalizedText'
 import { makeExtractionStrategy } from './ExtractionStrategy'
@@ -21,7 +21,9 @@ const AtomEntrySchema = Schema.Struct({
 
 const AtomDocumentSchema = Schema.Struct({
   feed: Schema.Struct({
-    entry: Schema.Array(AtomEntrySchema),
+    entry: Schema.optional(
+      Schema.Union(AtomEntrySchema, Schema.Array(AtomEntrySchema))
+    ),
   }),
 })
 
@@ -86,7 +88,7 @@ export const AtomExtractor = makeExtractionStrategy({
           publishedAt: item.pubDate ?? null,
         }
         const sha256 = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
-        const factCheck = FactCheck.make({
+        const factCheck = FactCheckSchema.make({
           sha256,
           claim: values.claim,
           link:
