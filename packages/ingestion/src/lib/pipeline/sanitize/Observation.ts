@@ -6,12 +6,13 @@ import {
   FilePointerSchema,
   SourceCollectionSchema,
   SourceSchema,
+  TimestampSchema,
 } from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
   ingestionId: Schema.String,
-  fetchedAt: Schema.Number,
+  fetchedAt: TimestampSchema,
   error: Schema.NullOr(Schema.String),
   source: SourceSchema,
   raw: Schema.NullOr(
@@ -104,7 +105,7 @@ export const ObservationSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Encoding SanitizerInput not implemented'
+          'Encoding Observation not implemented'
         )
       ),
   }

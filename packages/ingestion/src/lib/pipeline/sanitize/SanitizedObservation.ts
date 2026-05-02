@@ -2,8 +2,9 @@ import { Schema, ParseResult } from 'effect'
 import { DeepMutable, Mutable } from 'effect/Types'
 
 import * as v1 from '../../contracts/v1'
-import { SourceSchema } from '../shared'
-import { omitNullKeys } from '../../data'
+import { omitNullKeys, omitNullableKeys } from '../../data'
+
+import { FilePointerSchema, SourceSchema, TimestampSchema } from '../shared'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 
@@ -12,8 +13,8 @@ export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
 )({
   observationId: Schema.String,
   ingestionId: Schema.String,
-  fetchedAt: Schema.Number,
-  sanitizedAt: Schema.Number,
+  fetchedAt: TimestampSchema,
+  sanitizedAt: TimestampSchema,
   outcome: Schema.Struct({
     decision: PolicyDecisionSchema,
     sanitized: Schema.NullOr(
@@ -176,5 +177,49 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
         ingestionId: input.ingestionId,
         observationId: input.observationId,
       }),
+  }
+)
+
+export const SanitizedObservationEventSchema = Schema.transformOrFail(
+  v1.ObservationSanitizedSchema,
+  Schema.Struct({
+    observation: SanitizedObservation,
+    pointer: FilePointerSchema,
+  }),
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ObservationEvent not implemented'
+        )
+      ),
+    encode: (input) => {
+      return ParseResult.succeed(
+        v1.ObservationSanitizedSchema.make(
+          omitNullableKeys({
+            version: 1,
+            content_lineage_id: input.observation.observationId,
+            ingestion_batch_id: input.observation.ingestionId,
+            fetched_at: input.observation.fetchedAt,
+            sanitized_at: input.observation.sanitizedAt,
+            source: {
+              id: input.observation.source.id,
+              name: input.observation.source.name,
+              url: input.observation.source.url,
+              collection: input.observation.source.collection,
+            },
+            error: input.observation.outcome.decision.error,
+            label: input.observation.outcome.decision.label,
+            actions: input.observation.outcome.decision.actions,
+            content_sha256: input.observation.content?.sha256,
+            content_bytes: input.observation.content?.bytes,
+            pointer: input.pointer,
+          })
+        )
+      )
+    },
   }
 )

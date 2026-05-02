@@ -1,17 +1,24 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, omitNullKeys, Yaml } from '../../data'
-import { StorageReader, StorageWriter, FilePointer } from '../shared'
+import { Node, Yaml } from '../../data'
+import {
+  StorageReader,
+  StorageWriter,
+  FilePointer,
+  TimestampEncoded,
+  FilePointerSchema,
+  TimestampSchema,
+} from '../shared'
 
 import {
   SanitizedObservation,
   SanitizedObservationMetaSchema,
   SanitizedObservationSchema,
   SanitizedObservationPathSchema,
+  SanitizedObservationEventSchema,
 } from './SanitizedObservation'
-import type { SanitizerPolicy } from './SanitizerPolicy'
+import { SanitizerPolicy } from './SanitizerPolicy'
 import { ObservationSchema } from './Observation'
-import { ObservationSanitized } from './ObservationSanitized'
 import { evaluatePolicy } from './evaluatePolicy'
 
 const decodeObservation = pipe(
@@ -34,13 +41,26 @@ const encodeSanitizedObservationMeta = Schema.encode(
 const encodeSanitizedObservationPath = Schema.encode(
   SanitizedObservationPathSchema
 )
+const encodeSanitizedObservationEvent = Schema.encode(
+  SanitizedObservationEventSchema
+)
 
-export function sanitizeObservation(ctx: {
+const decodeArgs = Schema.decodeSync(
+  Schema.Struct({
+    policy: SanitizerPolicy,
+    pointer: FilePointerSchema,
+    timestamp: TimestampSchema,
+  })
+)
+
+export function sanitizeObservation(args: {
   policy: SanitizerPolicy
   pointer: FilePointer
-  timestamp: number
+  timestamp: TimestampEncoded
 }) {
   return Effect.gen(function* () {
+    const ctx = decodeArgs(args)
+
     yield* Effect.logDebug(`Reading record for observation`)
     const inputRecordData = yield* StorageReader.readFile(ctx.pointer)
     const observation = yield* decodeObservation(inputRecordData)
@@ -85,20 +105,9 @@ export function sanitizeObservation(ctx: {
       meta: recordMetadata,
     })
 
-    return new ObservationSanitized({
-      observationId: sanitizedObservation.observationId,
-      ingestionId: sanitizedObservation.ingestionId,
-      fetchedAt: sanitizedObservation.fetchedAt,
-      source: sanitizedObservation.source,
-      ...(sanitizedObservation.http
-        ? { http: omitNullKeys(sanitizedObservation.http) }
-        : {}),
-      ...(sanitizedObservation.content
-        ? { content: sanitizedObservation.content }
-        : {}),
-      ...(sanitizedObservation.error
-        ? { error: sanitizedObservation.error }
-        : {}),
+    // return the encoded event data
+    return yield* encodeSanitizedObservationEvent({
+      observation: sanitizedObservation,
       pointer: recordPointer,
     })
   }).pipe(Effect.withSpan('sanitizeObservation'))

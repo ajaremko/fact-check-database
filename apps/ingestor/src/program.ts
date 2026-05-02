@@ -5,7 +5,6 @@ import {
   ingestFromSource,
   Fetcher,
 } from '@news-research/ingestion/pipeline/ingest'
-import * as v1 from '@news-research/ingestion/contracts/v1'
 import { Publisher } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/data'
 
@@ -13,7 +12,7 @@ import { JobContext, withJobContextAnnotations } from './JobContext'
 import { SourceList, Source } from './TargetList'
 
 const encodeOutgoing = pipe(
-  v1.ObservationIngestedSchema,
+  Schema.Object,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

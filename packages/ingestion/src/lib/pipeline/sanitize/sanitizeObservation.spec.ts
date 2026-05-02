@@ -3,7 +3,6 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../../adapters'
 
-import { ObservationSanitized } from './ObservationSanitized'
 import { sanitizeObservation } from './sanitizeObservation'
 
 describe('sanitizeObservation', () => {
@@ -16,9 +15,9 @@ describe('sanitizeObservation', () => {
             version: 1
             kind: fetch_attempt
             outcome: no_response
-            content_lineage_id: 9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab
-            ingestion_batch_id: d8af0771-64e4-4e86-99ba-000c6550d2de
-            fetched_at: 0
+            content_lineage_id: 526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1
+            ingestion_batch_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
+            fetched_at: 1777751768896
             source:
               id: baddata
               name: baddata.com
@@ -52,71 +51,62 @@ describe('sanitizeObservation', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual(
-          new ObservationSanitized({
-            ingestionId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
-            observationId:
-              '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab',
-            fetchedAt: 0,
-            error: 'Transport error (GET https://baddata.com/rss.xml)',
-            source: {
-              id: 'baddata',
-              name: 'baddata.com',
-              url: 'https://baddata.com/rss.xml',
-              collection: 'rss',
-            },
-            pointer: {
-              bucket: 'inmemory',
-              object:
-                'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.sanitize.yml',
-            },
-          })
-        )
+        expect(result).toStrictEqual({
+          version: 1,
+          content_lineage_id:
+            '526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1',
+          ingestion_batch_id: '738aceb2-3212-4c1f-bcc4-3142f18396fb',
+          fetched_at: 1777751768896,
+          sanitized_at: 0,
+          source: {
+            id: 'baddata',
+            name: 'baddata.com',
+            url: 'https://baddata.com/rss.xml',
+            collection: 'rss',
+          },
+          label: 'QUARANTINED',
+          actions: ['QUARANTINED_FETCH_FAILED'],
+          pointer: {
+            bucket: 'inmemory',
+            object:
+              'v1/records/source=baddata.com/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1.sanitize.yml',
+          },
+        })
       })
   )
 
   it.effect(
-    'writes sanitizer record and returns SanitizationAttempted event for data_fetched records',
+    'writes sanitizer record and returns event for data_fetched records',
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
-          '2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1.sanitize.yml': `
+          '50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.sanitize.yml': `
             version: 1
             kind: fetch_attempt
             outcome: data_fetched
-            content_lineage_id: 2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1
-            ingestion_batch_id: d8af0771-64e4-4e86-99ba-000c6550d2de
-            fetched_at: 0
+            content_lineage_id: 50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a
+            ingestion_batch_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
+            fetched_at: 1777751768881
             source:
-              id: leadstories
-              name: leadstories.com
-              url: https://leadstories.com/atom.xml
-              collection: atom
+              id: factcheck
+              name: factcheck.org
+              url: https://www.factcheck.org/feed/
+              collection: rss
             status: 200
-            content_type: application/xml
-            etag: W/"1cc80-6509d7f79734d-gzip"
-            last_modified: Wed, 29 Apr 2026 18:27:19 GMT
+            content_type: application/rss+xml; charset=UTF-8
+            etag: '"a89eb068250919fc594f4fde501b45dd"'
+            last_modified: Fri, 01 May 2026 18:25:40 GMT
             headers:
-              date: Wed, 29 Apr 2026 20:35:08 GMT
-              content-type: application/xml
-              transfer-encoding: chunked
-              connection: keep-alive
-              server: cloudflare
-              last-modified: Wed, 29 Apr 2026 18:27:19 GMT
-              cf-cache-status: DYNAMIC
-              vary: Accept-Encoding
-              access-control-allow-origin: "*"
-              cache-control: s-maxage=10
-              speculation-rules: '"/cdn-cgi/speculation"'
-              etag: W/"1cc80-6509d7f79734d-gzip"
-              cf-ray: 9f411768cb7ecfa8-SJC
-              alt-svc: h3=":443"; ma=86400
+              date: Sat, 02 May 2026 19:56:09 GMT
+              content-type: application/rss+xml; charset=UTF-8
+              last-modified: Fri, 01 May 2026 18:25:40 GMT
+              etag: '"a89eb068250919fc594f4fde501b45dd"'
             content:
-              sha256: 767ad7d658f71e21ac22d35bc871a6d9f17e6d2bd322ac28be942af63cba8ecd
-              bytes: 117888
+              sha256: 64916224466c53b233ca3de8ba1f055d157801216f030221afc03b4caf16dae0
+              bytes: 256
               raw:
                 bucket: local
-                object: tmp/archive/v1/raw/source=leadstories.com/date=1970-01-01/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1.bin`,
+                object: tmp/archive/v1/raw/source=factcheck.org/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.bin`,
         }
         const result = yield* sanitizeObservation({
           policy: {
@@ -135,7 +125,7 @@ describe('sanitizeObservation', () => {
           pointer: {
             bucket: 'inmemory',
             object:
-              '2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1.sanitize.yml',
+              '50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.sanitize.yml',
           },
           timestamp: 0,
         }).pipe(
@@ -143,36 +133,30 @@ describe('sanitizeObservation', () => {
           Effect.provide(InMemoryStorageWriter.layer(storage))
         )
 
-        expect(result).toStrictEqual(
-          new ObservationSanitized({
-            ingestionId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
-            observationId:
-              '2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1',
-            content: {
-              bytes: 117888,
-              sha256:
-                '767ad7d658f71e21ac22d35bc871a6d9f17e6d2bd322ac28be942af63cba8ecd',
-            },
-            fetchedAt: 0,
-            http: {
-              contentType: 'application/xml',
-              etag: 'W/"1cc80-6509d7f79734d-gzip"',
-              lastModified: 'Wed, 29 Apr 2026 18:27:19 GMT',
-              status: 200,
-            },
-            pointer: {
-              bucket: 'inmemory',
-              object:
-                'v1/records/source=leadstories.com/date=1970-01-01/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/2c7d4fb69c6364835e25a40a877703a80ecb9947b5f5b8f4861edfd5052595f1.sanitize.yml',
-            },
-            source: {
-              collection: 'atom',
-              id: 'leadstories',
-              name: 'leadstories.com',
-              url: 'https://leadstories.com/atom.xml',
-            },
-          })
-        )
+        expect(result).toStrictEqual({
+          version: 1,
+          content_lineage_id:
+            '50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a',
+          ingestion_batch_id: '738aceb2-3212-4c1f-bcc4-3142f18396fb',
+          fetched_at: 1777751768881,
+          sanitized_at: 0,
+          source: {
+            id: 'factcheck',
+            name: 'factcheck.org',
+            url: 'https://www.factcheck.org/feed/',
+            collection: 'rss',
+          },
+          label: 'SAFE_PUBLIC',
+          actions: [],
+          content_sha256:
+            '64916224466c53b233ca3de8ba1f055d157801216f030221afc03b4caf16dae0',
+          content_bytes: 256,
+          pointer: {
+            bucket: 'inmemory',
+            object:
+              'v1/records/source=factcheck.org/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.sanitize.yml',
+          },
+        })
       })
   )
 })

@@ -4,13 +4,13 @@ import * as v1 from '../../contracts/v1'
 
 import { SourceSchema, TimestampSchema } from '../shared'
 
-import { FetchResult } from './FetchResult'
+import { FetchResultSchema } from './FetchResult'
 
 export const ObservationIdSchema = Schema.transformOrFail(
   v1.ContentLineageIdSchema,
   Schema.Struct({
     fetchedAt: TimestampSchema,
-    result: FetchResult,
+    result: FetchResultSchema,
     source: SourceSchema,
   }),
   {

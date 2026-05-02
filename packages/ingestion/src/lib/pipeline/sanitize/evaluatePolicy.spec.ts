@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
 
+import { TimestampBrand } from '../shared'
+
+import { evaluatePolicy, pickRule } from './evaluatePolicy'
 import { Observation } from './Observation'
 import { SanitizerPolicy } from './SanitizerPolicy'
-import { evaluatePolicy, pickRule } from './evaluatePolicy'
 
 describe('evaluatePolicy', () => {
   it('quarantines with QUARANTINED_FETCH_FAILED when record is not data_fetched', () => {
@@ -23,7 +25,7 @@ describe('evaluatePolicy', () => {
       new Observation({
         observationId: 'obs-1',
         ingestionId: 'ingest-1',
-        fetchedAt: 0,
+        fetchedAt: TimestampBrand(0),
         source: {
           id: 'source-1',
           name: 'source-1',
@@ -60,7 +62,7 @@ describe('evaluatePolicy', () => {
       new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        fetchedAt: 0,
+        fetchedAt: TimestampBrand(0),
         error: null,
         source: {
           id: 'source-1',
@@ -111,7 +113,7 @@ describe('evaluatePolicy', () => {
       new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        fetchedAt: 0,
+        fetchedAt: TimestampBrand(0),
         error: null,
         source: {
           id: 'source-1',
@@ -162,7 +164,7 @@ describe('evaluatePolicy', () => {
       new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        fetchedAt: 0,
+        fetchedAt: TimestampBrand(0),
         error: null,
         source: {
           id: 'source-1',
@@ -214,7 +216,7 @@ describe('evaluatePolicy', () => {
       new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        fetchedAt: 0,
+        fetchedAt: TimestampBrand(0),
         error: null,
         source: {
           id: 'source-1',
@@ -258,7 +260,7 @@ describe('evaluatePolicy', () => {
       new Observation({
         ingestionId: 'run-1',
         observationId: 'obs-1',
-        fetchedAt: 0,
+        fetchedAt: TimestampBrand(0),
         error: null,
         source: {
           id: 'source-1',

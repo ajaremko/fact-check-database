@@ -2,7 +2,7 @@ import { Context, Data, Effect } from 'effect'
 
 import { Source, Timestamp } from '../shared'
 
-import { FetchResult } from './FetchResult'
+import { FetchResultSchema } from './FetchResult'
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown
@@ -15,7 +15,7 @@ export class Fetcher extends Context.Tag('Fetcher')<
     readonly fetch: (
       source: Source,
       timestamp: Timestamp
-    ) => Effect.Effect<FetchResult, FetcherError>
+    ) => Effect.Effect<FetchResultSchema, FetcherError>
   }
 >() {}
 

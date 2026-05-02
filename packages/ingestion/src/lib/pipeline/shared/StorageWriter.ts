@@ -1,6 +1,6 @@
 import { Context, Data, Effect, flow } from 'effect'
 
-import { FilePointer } from '.'
+import { FilePointer } from './FilePointer'
 
 export class StorageWriteError extends Data.TaggedError('StorageWriteError')<{
   readonly cause: unknown

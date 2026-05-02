@@ -5,13 +5,13 @@ import { omitNullKeys } from '../../data'
 
 import { SourceSchema, FilePointerSchema, TimestampSchema } from '../shared'
 
-import { FetchResult } from './FetchResult'
+import { FetchResultSchema } from './FetchResult'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
   ingestionId: Schema.String,
   fetchedAt: TimestampSchema,
-  result: FetchResult,
+  result: FetchResultSchema,
   source: SourceSchema,
   pointer: Schema.NullOr(FilePointerSchema),
 }) {}

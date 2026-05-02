@@ -81,7 +81,7 @@ export function evaluatePolicy(
     return {
       label: 'QUARANTINED',
       actions,
-      error: observation.error,
+      error: null,
       rewriteBody: false,
     }
   }

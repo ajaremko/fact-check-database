@@ -94,11 +94,10 @@ export function ingestFromSource(args: {
       // Return an `ObservationIngested` event with error details
       // and pointer to the attempt record, but no content fields
       // since there is no body to archive
-      const event = yield* encodeObservationEvent({
+      return yield* encodeObservationEvent({
         observation,
         pointer: recordPointer,
       })
-      return event
     }
 
     // For a successful fetch, we need to archive the body
@@ -153,11 +152,10 @@ export function ingestFromSource(args: {
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which
     // references the archived body
-    const event = yield* encodeObservationEvent({
+    return yield* encodeObservationEvent({
       observation,
       pointer: recordPointer,
     })
-    return event
   }).pipe(
     Effect.annotateLogs({
       source: args.source.name,

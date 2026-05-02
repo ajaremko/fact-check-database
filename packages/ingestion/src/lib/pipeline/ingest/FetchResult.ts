@@ -17,6 +17,9 @@ export const FetchSuccessSchema = Schema.TaggedStruct('FetchSuccess', {
   error: Schema.NullOr(Schema.String),
 })
 
-export const FetchResult = Schema.Union(FetchSuccessSchema, FetchFailureSchema)
+export const FetchResultSchema = Schema.Union(
+  FetchSuccessSchema,
+  FetchFailureSchema
+)
 
-export type FetchResult = Schema.Schema.Type<typeof FetchResult>
+export type FetchResultSchema = Schema.Schema.Type<typeof FetchResultSchema>

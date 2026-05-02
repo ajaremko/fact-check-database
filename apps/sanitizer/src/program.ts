@@ -4,7 +4,6 @@ import * as v1 from '@news-research/ingestion/contracts/v1'
 import {
   type StorageWriter,
   type StorageReader,
-  ObservationSanitized,
   sanitizeObservation,
 } from '@news-research/ingestion/pipeline/sanitize'
 import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
@@ -20,7 +19,7 @@ const decodeIncoming = pipe(
 )
 
 const encodeOutgoing = pipe(
-  ObservationSanitized,
+  Schema.Object,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode

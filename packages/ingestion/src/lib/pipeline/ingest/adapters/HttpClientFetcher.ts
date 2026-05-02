@@ -1,9 +1,10 @@
 import { Effect, Layer } from 'effect'
 import { HttpClient } from '@effect/platform'
 
-import * as Fetcher from '../../pipeline/ingest/Fetcher'
-import { FetchResult } from '../../pipeline/ingest'
-import { Node } from '../../data'
+import { Node } from '../../../data'
+
+import * as Fetcher from '../Fetcher'
+import { FetchSuccessSchema, FetchFailureSchema } from '../FetchResult'
 
 function pickHeaders(names: string[]) {
   return function (headers: Record<string, string>) {
@@ -31,7 +32,7 @@ export const make = Effect.gen(function* () {
     Connection: 'keep-alive',
   }
   return Fetcher.Fetcher.of({
-    fetch: (source, timestamp) =>
+    fetch: (source) =>
       Effect.gen(function* () {
         // Make the HTTP request using the client
         const result = yield* Effect.either(client.get(source.url, { headers }))
@@ -44,9 +45,8 @@ export const make = Effect.gen(function* () {
 
           // Network or other request error where we have no response
           if (error._tag === 'RequestError') {
-            return new FetchResult.FetchFailure({
+            return FetchFailureSchema.make({
               error: error.message,
-              fetchedAt: timestamp,
             })
           }
 
@@ -69,9 +69,8 @@ export const make = Effect.gen(function* () {
           const etag = pickEtag(error.response.headers)
           const lastModified = pickLastModified(error.response.headers)
 
-          return new FetchResult.FetchSuccess({
+          return FetchSuccessSchema.make({
             error: error.message,
-            fetchedAt: timestamp,
             status: error.response.status,
             headers: error.response.headers,
             finalUrl: error.response.request.url,
@@ -100,11 +99,10 @@ export const make = Effect.gen(function* () {
         const etag = pickEtag(response.headers)
         const lastModified = pickLastModified(response.headers)
 
-        return new FetchResult.FetchSuccess({
+        return FetchSuccessSchema.make({
           status: response.status,
           headers: response.headers,
           finalUrl: response.request.url,
-          fetchedAt: timestamp,
           contentType,
           etag,
           lastModified,
