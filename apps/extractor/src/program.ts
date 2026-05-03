@@ -1,13 +1,15 @@
 import { Array, Effect, Option, Schema, pipe } from 'effect'
 
+import * as v1 from '@news-research/ingestion/contracts/v1'
+import type {
+  StorageWriter,
+  StorageReader,
+} from '@news-research/ingestion/pipeline/shared'
 import {
-  type StorageWriter,
-  type StorageReader,
   extractFactChecks,
   writeBatch,
 } from '@news-research/ingestion/pipeline/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion/messaging'
-import * as v1 from '@news-research/ingestion/contracts/v1'
 import { Node } from '@news-research/ingestion/data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'

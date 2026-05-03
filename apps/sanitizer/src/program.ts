@@ -1,15 +1,15 @@
 import { Clock, Effect, pipe, Schema } from 'effect'
 
 import * as v1 from '@news-research/ingestion/contracts/v1'
-import {
-  type StorageWriter,
-  type StorageReader,
-  sanitizeObservation,
-} from '@news-research/ingestion/pipeline/sanitize'
 import { Publisher, MessageQueue } from '@news-research/ingestion/messaging'
+import type {
+  StorageWriter,
+  StorageReader,
+} from '@news-research/ingestion/pipeline/shared'
+import { Node } from '@news-research/ingestion/data'
+import { sanitizeObservation } from '@news-research/ingestion/pipeline/sanitize'
 
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
-import { Node } from '@news-research/ingestion/data'
 
 const decodeIncoming = pipe(
   v1.ObservationIngestedSchema,

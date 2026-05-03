@@ -7,7 +7,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
-} from '@news-research/ingestion/pipeline/extract'
+} from '@news-research/ingestion/pipeline/shared'
 import {
   FileSystemPublisher,
   FileSystemMessageBatch,

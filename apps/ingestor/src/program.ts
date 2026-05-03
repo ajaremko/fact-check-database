@@ -1,10 +1,10 @@
 import { Array, Clock, Effect, Option, pipe, Schema } from 'effect'
 
 import {
-  StorageWriter,
-  ingestFromSource,
   Fetcher,
+  ingestFromSource,
 } from '@news-research/ingestion/pipeline/ingest'
+import type { StorageWriter } from '@news-research/ingestion/pipeline/shared'
 import { Publisher } from '@news-research/ingestion/messaging'
 import { Node } from '@news-research/ingestion/data'
 
