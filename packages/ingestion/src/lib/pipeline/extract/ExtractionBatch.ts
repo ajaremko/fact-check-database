@@ -1,9 +1,10 @@
 import { ParseResult, Schema } from 'effect'
 
-import * as v1 from '../../contracts/v1'
 import { omitNullKeys } from '../../data'
 
 import { FilePointerSchema } from '../shared'
+
+import { ExtractionBatchReadySchema } from './contracts/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -37,7 +38,7 @@ export const ExtractionBatchSchema = Schema.Struct({
 })
 
 export const ExtractionBatchEventSchema = Schema.transformOrFail(
-  v1.ExtractionBatchReadySchema,
+  ExtractionBatchReadySchema,
   ExtractionBatchSchema,
   {
     strict: true,
@@ -46,12 +47,12 @@ export const ExtractionBatchEventSchema = Schema.transformOrFail(
         new ParseResult.Forbidden(
           ast,
           input,
-          'Decoding ObservationEvent not implemented'
+          'Decoding ExtractionBatchEvent not implemented'
         )
       ),
     encode: (input) => {
       return ParseResult.succeed(
-        v1.ExtractionBatchReadySchema.make(
+        ExtractionBatchReadySchema.make(
           omitNullKeys({
             version: 1,
             extraction_batch_id: input.batchId,

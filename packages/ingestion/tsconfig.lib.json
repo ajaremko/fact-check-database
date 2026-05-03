@@ -9,17 +9,7 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "../../apps/ingestor/src/SourceTarget.ts"],
-  "references": [
-    {
-      "path": "../bigquery/tsconfig.lib.json"
-    },
-    {
-      "path": "../cloud-storage/tsconfig.lib.json"
-    },
-    {
-      "path": "../cloud-pubsub/tsconfig.lib.json"
-    }
-  ],
+  "references": [],
   "exclude": [
     "vite.config.ts",
     "vite.config.mts",

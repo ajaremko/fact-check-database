@@ -1,6 +1,6 @@
 import { Array, Effect, Option, Schema, pipe } from 'effect'
 
-import * as v1 from '@news-research/ingestion/contracts/v1'
+import { ObservationSanitizedSchema } from '@news-research/ingestion/pipeline/sanitize/contracts/v1'
 import type {
   StorageWriter,
   StorageReader,
@@ -16,7 +16,7 @@ import { JobContext, withJobContextAnnotations } from './JobContext'
 import { FactChecksSchema } from './FactChecksSchema'
 
 const decodeIncoming = pipe(
-  v1.ObservationSanitizedSchema,
+  ObservationSanitizedSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode

@@ -1,11 +1,17 @@
 import { Schema, ParseResult } from 'effect'
 
-import * as v1 from '../../contracts/v1'
 import { omitNullKeys } from '../../data'
+
+import {
+  IngestionRecordSchema,
+  IngestionRecordMetadataSchema,
+  ArchivePathSchema,
+} from '../shared/contracts/v1'
 
 import { SourceSchema, FilePointerSchema, TimestampSchema } from '../shared'
 
 import { FetchResultSchema } from './FetchResult'
+import { ObservationIngestedSchema } from './contracts/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,
@@ -17,7 +23,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
 }) {}
 
 export const ObservationSchema = Schema.transformOrFail(
-  v1.IngestionRecordSchema,
+  IngestionRecordSchema,
   Observation,
   {
     strict: true,
@@ -79,7 +85,7 @@ export const ObservationSchema = Schema.transformOrFail(
 )
 
 export const ObservationMetadataSchema = Schema.transformOrFail(
-  v1.IngestionRecordMetadataSchema,
+  IngestionRecordMetadataSchema,
   Observation,
   {
     strict: true,
@@ -109,7 +115,7 @@ export type ObservationMetadata = Schema.Schema.Type<
 >
 
 export const ObservationPathSchema = Schema.transformOrFail(
-  v1.ArchivePathSchema,
+  ArchivePathSchema,
   Observation,
   {
     strict: true,
@@ -135,7 +141,7 @@ export const ObservationPathSchema = Schema.transformOrFail(
 )
 
 export const ObservationEventSchema = Schema.transformOrFail(
-  v1.ObservationIngestedSchema,
+  ObservationIngestedSchema,
   Schema.Struct({ observation: Observation, pointer: FilePointerSchema }),
   {
     strict: true,
@@ -151,7 +157,7 @@ export const ObservationEventSchema = Schema.transformOrFail(
       switch (input.observation.result._tag) {
         case 'FetchSuccess':
           return ParseResult.succeed(
-            v1.ObservationIngestedSchema.make(
+            ObservationIngestedSchema.make(
               omitNullKeys({
                 version: 1,
                 content_lineage_id: input.observation.observationId,
@@ -176,7 +182,7 @@ export const ObservationEventSchema = Schema.transformOrFail(
           )
         case 'FetchFailure':
           return ParseResult.succeed(
-            v1.ObservationIngestedSchema.make({
+            ObservationIngestedSchema.make({
               version: 1,
               content_lineage_id: input.observation.observationId,
               ingestion_batch_id: input.observation.ingestionId,

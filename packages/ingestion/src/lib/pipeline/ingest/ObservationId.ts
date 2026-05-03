@@ -1,13 +1,13 @@
 import { ParseResult, Schema } from 'effect'
 
-import * as v1 from '../../contracts/v1'
+import { ContentLineageIdSchema } from '../shared/contracts/v1'
 
 import { SourceSchema, TimestampSchema } from '../shared'
 
 import { FetchResultSchema } from './FetchResult'
 
 export const ObservationIdSchema = Schema.transformOrFail(
-  v1.ContentLineageIdSchema,
+  ContentLineageIdSchema,
   Schema.Struct({
     fetchedAt: TimestampSchema,
     result: FetchResultSchema,

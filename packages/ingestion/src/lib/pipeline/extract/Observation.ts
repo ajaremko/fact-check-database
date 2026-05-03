@@ -1,6 +1,6 @@
 import { Schema, ParseResult } from 'effect'
 
-import * as v1 from '../../contracts/v1'
+import { SanitizerRecordSchema } from '../shared/contracts/v1'
 
 import { SourceCollectionSchema, SourceSchema } from '../shared'
 
@@ -45,7 +45,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
 const isSourceCollection = Schema.is(SourceCollectionSchema)
 
 export const ObservationSchema = Schema.transformOrFail(
-  v1.SanitizerRecordSchema,
+  SanitizerRecordSchema,
   Observation,
   {
     strict: true,

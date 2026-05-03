@@ -1,11 +1,17 @@
 import { Schema, ParseResult } from 'effect'
 import { DeepMutable, Mutable } from 'effect/Types'
 
-import * as v1 from '../../contracts/v1'
 import { omitNullKeys, omitNullableKeys } from '../../data'
 
+import {
+  ArchivePathSchema,
+  SanitizerRecordSchema,
+  SanitizerRecord,
+  SanitizerRecordMetadataSchema,
+} from '../shared/contracts/v1'
 import { FilePointerSchema, SourceSchema, TimestampSchema } from '../shared'
 
+import { ObservationSanitizedSchema } from './contracts/v1'
 import { PolicyDecisionSchema } from './PolicyDecision'
 
 export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
@@ -57,7 +63,7 @@ export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
 }) {}
 
 export const SanitizedObservationSchema = Schema.transformOrFail(
-  v1.SanitizerRecordSchema,
+  SanitizerRecordSchema,
   SanitizedObservation,
   {
     strict: true,
@@ -70,7 +76,7 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
         )
       ),
     encode: (input) => {
-      const output: DeepMutable<v1.SanitizerRecord> = {
+      const output: DeepMutable<SanitizerRecord> = {
         version: 1 as const,
         kind: 'sanitized_record' as const,
         content_lineage_id: input.observationId,
@@ -129,7 +135,7 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
 )
 
 export const SanitizedObservationMetaSchema = Schema.transformOrFail(
-  v1.SanitizerRecordMetadataSchema,
+  SanitizerRecordMetadataSchema,
   SanitizedObservation,
   {
     strict: true,
@@ -155,7 +161,7 @@ export const SanitizedObservationMetaSchema = Schema.transformOrFail(
 )
 
 export const SanitizedObservationPathSchema = Schema.transformOrFail(
-  v1.ArchivePathSchema,
+  ArchivePathSchema,
   SanitizedObservation,
   {
     strict: true,
@@ -181,7 +187,7 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
 )
 
 export const SanitizedObservationEventSchema = Schema.transformOrFail(
-  v1.ObservationSanitizedSchema,
+  ObservationSanitizedSchema,
   Schema.Struct({
     observation: SanitizedObservation,
     pointer: FilePointerSchema,
@@ -198,7 +204,7 @@ export const SanitizedObservationEventSchema = Schema.transformOrFail(
       ),
     encode: (input) => {
       return ParseResult.succeed(
-        v1.ObservationSanitizedSchema.make(
+        ObservationSanitizedSchema.make(
           omitNullableKeys({
             version: 1,
             content_lineage_id: input.observation.observationId,

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { SourceSchema } from './Source'
+import { SourceSchema } from '../../../shared/contracts/v1'
 
 export const FactChecksTableRowSchema = Schema.Struct({
   content_lineage_id: Schema.String,
@@ -37,7 +37,7 @@ export const FactChecksTableRowSchema = Schema.Struct({
   identifier: 'v1FactChecksTableRow',
   title: 'FactChecksTableRow',
   description: `
-    A row in the fact checks table, representing a fack check extracted 
+    A row in the fact checks table, representing a fact check extracted 
     from an observation along with its metadata and verdict.`,
 })
 

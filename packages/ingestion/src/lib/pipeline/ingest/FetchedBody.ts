@@ -1,6 +1,6 @@
 import { Schema, ParseResult } from 'effect'
 
-import * as v1 from '../../contracts/v1'
+import { ArchivePathSchema } from '../shared/contracts/v1'
 
 import { TimestampSchema } from '../shared'
 
@@ -14,7 +14,7 @@ export const FetchedBodySchema = Schema.Struct({
 })
 
 export const FetchedBodyPathSchema = Schema.transformOrFail(
-  v1.ArchivePathSchema,
+  ArchivePathSchema,
   FetchedBodySchema,
   {
     strict: true,

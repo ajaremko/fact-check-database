@@ -1,6 +1,6 @@
 import { Schema, ParseResult } from 'effect'
 
-import * as v1 from '../../contracts/v1'
+import { IngestionRecordSchema } from '../shared/contracts/v1'
 
 import {
   FilePointerSchema,
@@ -37,7 +37,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
 const isSourceCollection = Schema.is(SourceCollectionSchema)
 
 export const ObservationSchema = Schema.transformOrFail(
-  v1.IngestionRecordSchema,
+  IngestionRecordSchema,
   Observation,
   {
     strict: true,

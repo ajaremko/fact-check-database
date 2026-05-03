@@ -14,11 +14,11 @@ import {
 import {
   PubsubSubscriberClient,
   PubsubClient,
-} from '@news-research/cloud-pubsub'
-import { StorageClient } from '@news-research/cloud-storage'
-import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
-import { cloudRunInstanceId } from '@news-research/cloud-run'
-import { pinoLogger } from '@news-research/pino'
+} from '@news-research/ingestion/vendor/cloud-pubsub'
+import { StorageClient } from '@news-research/ingestion/vendor/cloud-storage'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion/vendor/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/ingestion/vendor/cloud-run'
+import { pinoLogger } from '@news-research/ingestion/vendor/pino'
 
 import * as CloudStorageFactChecksSchema from '../adapters/cloud-storage/FactChecksSchema'
 import * as JobContext from '../JobContext'

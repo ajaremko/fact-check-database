@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import * as v1 from '../../contracts/v1'
+import { FactChecksTableRowSchema } from './contracts/v1'
 import { SourceSchema } from '../shared'
 import { omitNullKeys } from '../../data'
 
@@ -25,7 +25,7 @@ export const FactCheckSchema = Schema.Struct({
 export type FactCheck = Schema.Schema.Type<typeof FactCheckSchema>
 
 export const FactCheckRowSchema = Schema.transformOrFail(
-  v1.FactChecksTableRowSchema,
+  FactChecksTableRowSchema,
   Schema.Struct({
     id: Schema.String,
     observationId: Schema.String,

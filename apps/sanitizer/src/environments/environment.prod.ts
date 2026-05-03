@@ -12,11 +12,11 @@ import {
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
 } from '@news-research/ingestion/messaging'
-import { StorageClient } from '@news-research/cloud-storage'
-import { PubsubClient } from '@news-research/cloud-pubsub'
-import { GcpLoggingPinoConfig } from '@news-research/pino-logging-gcp-config'
-import { cloudRunInstanceId } from '@news-research/cloud-run'
-import { pinoLogger } from '@news-research/pino'
+import { StorageClient } from '@news-research/ingestion/vendor/cloud-storage'
+import { PubsubClient } from '@news-research/ingestion/vendor/cloud-pubsub'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion/vendor/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/ingestion/vendor/cloud-run'
+import { pinoLogger } from '@news-research/ingestion/vendor/pino'
 
 import * as CloudStorageSanitizerPolicyDocument from '../adapters/cloud-storage/SanitizerPolicyDocument'
 import { Program } from '../program'

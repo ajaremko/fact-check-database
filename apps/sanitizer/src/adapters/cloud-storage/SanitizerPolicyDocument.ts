@@ -8,7 +8,10 @@ import {
   Schema,
 } from 'effect'
 
-import { StorageBucket, StorageClient } from '@news-research/cloud-storage'
+import {
+  StorageBucket,
+  StorageClient,
+} from '@news-research/ingestion/vendor/cloud-storage'
 import { Yaml, Node } from '@news-research/ingestion/data'
 import { SanitizerPolicy } from '@news-research/ingestion/pipeline/sanitize'
 
