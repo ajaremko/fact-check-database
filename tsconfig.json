@@ -10,12 +10,6 @@
       "path": "./apps/ingestor"
     },
     {
-      "path": "./packages/cloud-storage"
-    },
-    {
-      "path": "./packages/cloud-pubsub"
-    },
-    {
       "path": "./apps/sanitizer"
     },
     {
@@ -25,19 +19,7 @@
       "path": "./apps/extractor"
     },
     {
-      "path": "./packages/bigquery"
-    },
-    {
       "path": "./apps/loader"
-    },
-    {
-      "path": "./packages/pino"
-    },
-    {
-      "path": "./packages/pino-logging-gcp-config"
-    },
-    {
-      "path": "./packages/cloud-run"
     }
   ]
 }
