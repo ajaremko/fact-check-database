@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { InMemoryStorageWriter } from '../../adapters'
+import { InMemoryStorageWriter } from '../shared'
 
 import { writeBatch } from './writeBatch'
 

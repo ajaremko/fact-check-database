@@ -1,7 +1,8 @@
 import { it, expect } from '@effect/vitest'
 import { Effect, Layer } from 'effect'
 
-import { InMemoryStorageWriter, InMemoryFetcher } from '../../adapters'
+import * as InMemoryFetcher from './adapters/InmemoryFetcher'
+import { InMemoryStorageWriter } from '../shared'
 
 import { ingestFromSource } from './ingestFromSource'
 import { FetchFailureSchema, FetchSuccessSchema } from './FetchResult'
