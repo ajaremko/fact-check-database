@@ -9,9 +9,9 @@ import { CloudPubsubPublisher } from '@news-research/ingestion-core/messaging'
 import { HttpClientFetcher } from '@news-research/ingestion-core/pipeline/ingest'
 import { PubsubClient } from '@news-research/ingestion-core/vendor/cloud-pubsub'
 import { StorageClient } from '@news-research/ingestion-core/vendor/cloud-storage'
-// import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
-// import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
+import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
 
 import * as CloudStorageTargetList from '../adapters/cloud-storage/TargetList'
 import * as JobContext from '../JobContext'
@@ -36,10 +36,6 @@ const otel = cloudRunInstanceId.pipe(
   Layer.unwrapEffect
 )
 
-// const logger = Logger.addEffect(
-//   GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))
-// )
-
 export const main = Program.pipe(
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageStorageWriter.layer),
@@ -49,7 +45,13 @@ export const main = Program.pipe(
   Effect.provide(HttpClientFetcher.layer),
   Effect.provide(NodeHttpClient.layer),
   Effect.provide(JobContext.layer),
-  // Effect.provide(logger),
+  Effect.provide(
+    Logger.addScoped(
+      GcpLoggingPinoConfig.make.pipe(
+        Effect.andThen((config) => pinoLogger(config))
+      )
+    )
+  ),
   Effect.provide(Logger.remove(Logger.prettyLoggerDefault)),
   Effect.provide(otel)
 )
