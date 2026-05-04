@@ -36,8 +36,7 @@ const otel = cloudRunInstanceId.pipe(
   Layer.unwrapEffect
 )
 
-const logger = Logger.replaceScoped(
-  Logger.defaultLogger,
+const logger = Logger.addEffect(
   GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))
 )
 
