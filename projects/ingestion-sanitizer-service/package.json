@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
+    "name": "ingestion-sanitizer-service",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -95,8 +96,7 @@
           "prune"
         ]
       }
-    },
-    "name": "@news-research/ingestion-sanitizer-service"
+    }
   },
   "dependencies": {}
 }
