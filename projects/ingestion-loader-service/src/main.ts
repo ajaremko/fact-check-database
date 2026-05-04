@@ -95,7 +95,9 @@ const logger = Logger.replaceScoped(
 )
 
 const main = Program.pipe(
-  Effect.provide(HttpServerMessageQueueFeeder.layer),
+  Effect.provide(
+    HttpServerMessageQueueFeeder.layer('/sanitizer-topic-messages')
+  ),
   Effect.provide(StorageClient.layer()),
   Effect.provide(BigQueryClient.layer()),
   Effect.provide(InMemoryMessageQueue.layer),

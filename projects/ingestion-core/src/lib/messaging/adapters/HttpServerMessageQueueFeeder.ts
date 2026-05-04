@@ -23,53 +23,55 @@ const decodeMessage = Schema.decodeUnknown(
   })
 )
 
-const router = HttpRouter.empty.pipe(
-  HttpRouter.post(
-    '/',
-    Effect.gen(function* () {
-      const { messages } = yield* MessageQueue.MessageQueue
-      const req = yield* HttpServerRequest.HttpServerRequest
+export function layer(path: HttpRouter.PathInput) {
+  const router = HttpRouter.empty.pipe(
+    HttpRouter.post(
+      path,
+      Effect.gen(function* () {
+        const { messages } = yield* MessageQueue.MessageQueue
+        const req = yield* HttpServerRequest.HttpServerRequest
 
-      const body = yield* req.json
-      const { message } = yield* decodeMessage(body)
-      const data = Buffer.from(message.data, 'utf-8')
+        const body = yield* req.json
+        const { message } = yield* decodeMessage(body)
+        const data = Buffer.from(message.data, 'utf-8')
 
-      return yield* Effect.asyncEffect<
-        HttpServerResponse.HttpServerResponse,
-        HttpBody.HttpBodyError,
-        never,
-        never,
-        never,
-        never
-      >((resume) =>
-        Effect.asVoid(
-          messages.offer({
-            data,
-            ack: Effect.sync(() =>
-              resume(HttpServerResponse.json({}, { status: 200 }))
-            ),
-            nack: Effect.sync(() =>
-              resume(HttpServerResponse.json({}, { status: 400 }))
-            ),
-          })
+        return yield* Effect.asyncEffect<
+          HttpServerResponse.HttpServerResponse,
+          HttpBody.HttpBodyError,
+          never,
+          never,
+          never,
+          never
+        >((resume) =>
+          Effect.asVoid(
+            messages.offer({
+              data,
+              ack: Effect.sync(() =>
+                resume(HttpServerResponse.json({}, { status: 200 }))
+              ),
+              nack: Effect.sync(() =>
+                resume(HttpServerResponse.json({}, { status: 400 }))
+              ),
+            })
+          )
         )
+      }).pipe(
+        Effect.catchTags({
+          ParseError: () => HttpServerResponse.json({}, { status: 400 }),
+          RequestError: () => HttpServerResponse.json({}, { status: 400 }),
+        })
       )
-    }).pipe(
-      Effect.catchTags({
-        ParseError: () => HttpServerResponse.json({}, { status: 400 }),
-        RequestError: () => HttpServerResponse.json({}, { status: 400 }),
-      })
     )
   )
-)
 
-const app = router.pipe(HttpServer.serve(), HttpServer.withLogAddress)
+  const app = router.pipe(HttpServer.serve(), HttpServer.withLogAddress)
 
-const server = Layer.unwrapEffect(
-  Effect.gen(function* () {
-    const port = yield* Config.number('PORT')
-    return NodeHttpServer.layer(() => createServer(), { port })
-  })
-)
+  const server = Layer.unwrapEffect(
+    Effect.gen(function* () {
+      const port = yield* Config.number('PORT')
+      return NodeHttpServer.layer(() => createServer(), { port })
+    })
+  )
 
-export const layer = Layer.provide(app, server)
+  return Layer.provide(app, server)
+}

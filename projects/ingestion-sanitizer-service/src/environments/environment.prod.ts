@@ -46,7 +46,9 @@ const logger = Logger.replaceScoped(
 )
 
 export const main = Program.pipe(
-  Effect.provide(HttpServerMessageQueueFeeder.layer),
+  Effect.provide(
+    HttpServerMessageQueueFeeder.layer('/ingestor-topic-messages')
+  ),
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageSanitizerPolicyDocument.layer),
   Effect.provide(CloudStorageStorageReader.layer),
