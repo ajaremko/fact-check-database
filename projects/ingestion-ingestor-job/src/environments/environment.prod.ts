@@ -50,5 +50,6 @@ export const main = Program.pipe(
   Effect.provide(NodeHttpClient.layer),
   Effect.provide(JobContext.layer),
   Effect.provide(logger),
+  Effect.provide(Logger.remove(Logger.prettyLoggerDefault)),
   Effect.provide(otel)
 )
