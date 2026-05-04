@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@news-research/ingestion-extractor-job:build",
+          "buildTarget": "ingestion-extractor-job:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@news-research/ingestion-extractor-job:build:development"
+            "buildTarget": "ingestion-extractor-job:build:development"
           },
           "production": {
-            "buildTarget": "@news-research/ingestion-extractor-job:build:production"
+            "buildTarget": "ingestion-extractor-job:build:production"
           }
         }
       },

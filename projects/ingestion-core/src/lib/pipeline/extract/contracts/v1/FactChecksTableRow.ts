@@ -16,6 +16,8 @@ export const FactChecksTableRowSchema = Schema.Struct({
     summary: Schema.optional(Schema.String),
     published_at: Schema.optional(Schema.String),
     canonical_url: Schema.optional(Schema.String),
+    language: Schema.optional(Schema.String),
+    normalized_verdict: Schema.optional(Schema.String),
     extractor_version: Schema.optional(Schema.String),
     extracted_from: Schema.optional(Schema.String),
   }),

@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@news-research/ingestion-ingestor-job:build",
+          "buildTarget": "ingestion-ingestor-job:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@news-research/ingestion-ingestor-job:build:development"
+            "buildTarget": "ingestion-ingestor-job:build:development"
           },
           "production": {
-            "buildTarget": "@news-research/ingestion-ingestor-job:build:production"
+            "buildTarget": "ingestion-ingestor-job:build:production"
           }
         }
       },

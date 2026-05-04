@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@news-research/ingestion-sanitizer-service:build",
+          "buildTarget": "ingestion-sanitizer-service:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@news-research/ingestion-sanitizer-service:build:development"
+            "buildTarget": "ingestion-sanitizer-service:build:development"
           },
           "production": {
-            "buildTarget": "@news-research/ingestion-sanitizer-service:build:production"
+            "buildTarget": "ingestion-sanitizer-service:build:production"
           }
         }
       },

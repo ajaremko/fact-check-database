@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@news-research/ingestion-loader-service:build",
+          "buildTarget": "ingestion-loader-service:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@news-research/ingestion-loader-service:build:development"
+            "buildTarget": "ingestion-loader-service:build:development"
           },
           "production": {
-            "buildTarget": "@news-research/ingestion-loader-service:build:production"
+            "buildTarget": "ingestion-loader-service:build:production"
           }
         }
       },
