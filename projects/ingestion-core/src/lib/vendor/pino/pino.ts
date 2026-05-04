@@ -70,5 +70,6 @@ export const pinoLogger = flow(
         pinoLogger[level](metadata, String(message))
       }
     }).pipe(Logger.withSpanAnnotations)
-  )
+  ),
+  Effect.scoped
 )
