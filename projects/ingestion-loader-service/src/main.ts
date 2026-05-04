@@ -94,10 +94,15 @@ const logger = Logger.replaceScoped(
   GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))
 )
 
-const main = Program.pipe(
-  Effect.provide(
-    HttpServerMessageQueueFeeder.layer('/extractor-topic-messages')
-  ),
+const main = Effect.all(
+  [
+    Program,
+    Layer.launch(
+      HttpServerMessageQueueFeeder.layer('/extractor-topic-messages')
+    ),
+  ],
+  { concurrency: 2 }
+).pipe(
   Effect.provide(StorageClient.layer()),
   Effect.provide(BigQueryClient.layer()),
   Effect.provide(InMemoryMessageQueue.layer),

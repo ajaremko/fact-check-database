@@ -5,7 +5,7 @@ import {
   HttpServerResponse,
   HttpBody,
 } from '@effect/platform'
-import { Config, Effect, Layer, Schema, Tracer } from 'effect'
+import { Config, Effect, Layer, Schema } from 'effect'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
@@ -23,40 +23,44 @@ const decodeMessage = Schema.decodeUnknown(
   })
 )
 
+function process(id: string, data: Buffer) {
+  return Effect.gen(function* () {
+    const { messages } = yield* MessageQueue.MessageQueue
+    const span = yield* Effect.currentSpan
+    return yield* Effect.asyncEffect<
+      HttpServerResponse.HttpServerResponse,
+      HttpBody.HttpBodyError,
+      never,
+      never,
+      never,
+      never
+    >((resume) =>
+      Effect.asVoid(
+        messages.offer({
+          data,
+          ack: Effect.sync(() =>
+            resume(HttpServerResponse.json({}, { status: 200 }))
+          ),
+          nack: Effect.sync(() =>
+            resume(HttpServerResponse.json({}, { status: 400 }))
+          ),
+          span,
+        })
+      )
+    )
+  }).pipe(Effect.withSpan(id))
+}
+
 export function layer(path: HttpRouter.PathInput) {
   const router = HttpRouter.empty.pipe(
     HttpRouter.post(
       path,
       Effect.gen(function* () {
-        const { messages } = yield* MessageQueue.MessageQueue
-        const span = yield* Tracer.ParentSpan
         const req = yield* HttpServerRequest.HttpServerRequest
-
         const body = yield* req.json
         const { message } = yield* decodeMessage(body)
         const data = Buffer.from(message.data, 'utf-8')
-
-        return yield* Effect.asyncEffect<
-          HttpServerResponse.HttpServerResponse,
-          HttpBody.HttpBodyError,
-          never,
-          never,
-          never,
-          never
-        >((resume) =>
-          Effect.asVoid(
-            messages.offer({
-              data,
-              ack: Effect.sync(() =>
-                resume(HttpServerResponse.json({}, { status: 200 }))
-              ),
-              nack: Effect.sync(() =>
-                resume(HttpServerResponse.json({}, { status: 400 }))
-              ),
-              span,
-            })
-          )
-        )
+        return yield* process(req.url, data)
       }).pipe(
         Effect.catchTags({
           ParseError: () => HttpServerResponse.json({}, { status: 400 }),

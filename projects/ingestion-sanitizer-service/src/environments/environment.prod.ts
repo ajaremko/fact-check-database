@@ -45,10 +45,15 @@ const logger = Logger.replaceScoped(
   GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))
 )
 
-export const main = Program.pipe(
-  Effect.provide(
-    HttpServerMessageQueueFeeder.layer('/ingestor-topic-messages')
-  ),
+export const main = Effect.all(
+  [
+    Program,
+    Layer.launch(
+      HttpServerMessageQueueFeeder.layer('/ingestor-topic-messages')
+    ),
+  ],
+  { concurrency: 2 }
+).pipe(
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageSanitizerPolicyDocument.layer),
   Effect.provide(CloudStorageStorageReader.layer),

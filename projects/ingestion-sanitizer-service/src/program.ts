@@ -55,7 +55,7 @@ function processMessage(message: MessageQueue.Message) {
     })
   )
   if (message.span) {
-    return effect.pipe(Effect.withParentSpan(message.span))
+    return Effect.withParentSpan(effect, message.span)
   }
   return effect
 }
