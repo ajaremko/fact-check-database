@@ -30,7 +30,7 @@ function release(logger: PinoLogger<string, boolean>) {
 export const pinoLogger = flow(
   acquire,
   Effect.acquireRelease(release),
-  Effect.map((pinoLogger) =>
+  Effect.map((logger) =>
     Logger.make(({ logLevel, message, annotations, cause, fiberId, spans }) => {
       const level = levels[logLevel.label]
       if (level == null) {
@@ -65,9 +65,9 @@ export const pinoLogger = flow(
       }
 
       if (Array.isArray(message) && message.length > 1) {
-        pinoLogger[level]({ ...metadata, ...message[1] }, message[0])
+        logger[level]({ ...metadata, ...message[1] }, message[0])
       } else {
-        pinoLogger[level](metadata, String(message))
+        logger[level](metadata, String(message))
       }
     }).pipe(Logger.withSpanAnnotations)
   )

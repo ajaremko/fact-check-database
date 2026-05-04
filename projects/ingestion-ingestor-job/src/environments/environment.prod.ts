@@ -52,6 +52,6 @@ export const main = Program.pipe(
       )
     )
   ),
-  Effect.provide(Logger.remove(Logger.prettyLoggerDefault)),
+  Effect.provide(Logger.remove(Logger.defaultLogger)),
   Effect.provide(otel)
 )
