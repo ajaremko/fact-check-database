@@ -111,7 +111,12 @@
     },
     "groups": {
       "apps": {
-        "projects": ["ingestor", "sanitizer", "extractor", "loader"],
+        "projects": [
+          "ingestion-extractor-job",
+          "ingestion-ingestor-job",
+          "ingestion-loader-service",
+          "ingestion-sanitizer-service"
+        ],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",

@@ -37,10 +37,7 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/ingestor",
-    "apps/sanitizer",
-    "apps/extractor",
-    "apps/loader"
+    "apps/ingestion-*"
   ],
   "dependencies": {
     "@effect/opentelemetry": "^0.63.0",

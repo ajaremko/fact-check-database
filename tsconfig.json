@@ -7,19 +7,19 @@
       "path": "./apps/infra"
     },
     {
-      "path": "./apps/ingestor"
+      "path": "./apps/ingestion-sanitizer-service"
     },
     {
-      "path": "./apps/sanitizer"
+      "path": "./apps/ingestion-loader-service"
     },
     {
-      "path": "./packages/ingestion"
+      "path": "./apps/ingestion-extractor-job"
     },
     {
-      "path": "./apps/extractor"
+      "path": "./apps/ingestion-ingestor-job"
     },
     {
-      "path": "./apps/loader"
+      "path": "./packages/ingestion-core"
     }
   ]
 }
