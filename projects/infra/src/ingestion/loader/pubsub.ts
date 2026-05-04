@@ -73,7 +73,7 @@ export const loaderExtractorTopicSubscription = new gcp.pubsub.Subscription(
       maxDeliveryAttempts: 5,
     },
     pushConfig: {
-      pushEndpoint: loaderService.uri,
+      pushEndpoint: pulumi.interpolate`${loaderService.uri}/extractor-topic-messages`,
       oidcToken: {
         serviceAccountEmail: invokerServiceAccount.email,
       },

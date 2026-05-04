@@ -85,7 +85,7 @@ export const sanitizerIngestorTopicSubscription = new gcp.pubsub.Subscription(
       maxDeliveryAttempts: 5,
     },
     pushConfig: {
-      pushEndpoint: sanitizerService.uri,
+      pushEndpoint: pulumi.interpolate`${sanitizerService.uri}/ingestor-topic-messages`,
       oidcToken: {
         serviceAccountEmail: invokerServiceAccount.email,
       },
