@@ -4,22 +4,22 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/infra"
+      "path": "./projects/ingestion-sanitizer-service"
     },
     {
-      "path": "./apps/ingestion-sanitizer-service"
+      "path": "./projects/ingestion-loader-service"
     },
     {
-      "path": "./apps/ingestion-loader-service"
+      "path": "./projects/ingestion-extractor-job"
     },
     {
-      "path": "./apps/ingestion-extractor-job"
+      "path": "./projects/ingestion-ingestor-job"
     },
     {
-      "path": "./apps/ingestion-ingestor-job"
+      "path": "./projects/ingestion-core"
     },
     {
-      "path": "./packages/ingestion-core"
+      "path": "./projects/infra"
     }
   ]
 }

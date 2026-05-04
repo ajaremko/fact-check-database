@@ -36,8 +36,7 @@
     "vitest": "^3.2.4"
   },
   "workspaces": [
-    "packages/*",
-    "apps/ingestion-*"
+    "projects/*"
   ],
   "dependencies": {
     "@effect/opentelemetry": "^0.63.0",
