@@ -5,7 +5,7 @@ import {
   HttpServerResponse,
   HttpBody,
 } from '@effect/platform'
-import { Config, Effect, Layer, Schema } from 'effect'
+import { Config, Effect, Layer, Schema, Tracer } from 'effect'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
@@ -29,6 +29,7 @@ export function layer(path: HttpRouter.PathInput) {
       path,
       Effect.gen(function* () {
         const { messages } = yield* MessageQueue.MessageQueue
+        const span = yield* Tracer.ParentSpan
         const req = yield* HttpServerRequest.HttpServerRequest
 
         const body = yield* req.json
@@ -52,6 +53,7 @@ export function layer(path: HttpRouter.PathInput) {
               nack: Effect.sync(() =>
                 resume(HttpServerResponse.json({}, { status: 400 }))
               ),
+              span,
             })
           )
         )
@@ -59,7 +61,8 @@ export function layer(path: HttpRouter.PathInput) {
         Effect.catchTags({
           ParseError: () => HttpServerResponse.json({}, { status: 400 }),
           RequestError: () => HttpServerResponse.json({}, { status: 400 }),
-        })
+        }),
+        Effect.withSpan('HttpServerMessageQueueFeeder', { root: true })
       )
     )
   )

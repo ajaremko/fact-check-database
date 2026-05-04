@@ -29,7 +29,7 @@ const encodeOutgoing = pipe(
 )
 
 function processMessage(message: MessageQueue.Message) {
-  return Effect.gen(function* () {
+  const effect = Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
     const incoming = yield* decodeIncoming(message.data)
     const timestamp = yield* Clock.currentTimeMillis
@@ -45,17 +45,19 @@ function processMessage(message: MessageQueue.Message) {
     yield* Publisher.publish(data)
 
     yield* message.ack
-  })
-    .pipe(
-      Effect.tapError(Effect.logError),
-      Effect.catchTags({
-        ParseError: () => message.ack,
-        PublisherError: () => message.nack,
-        StorageReadError: () => message.nack,
-        StorageWriteError: () => message.nack,
-      })
-    )
-    .pipe(Effect.withSpan('processMessage'))
+  }).pipe(
+    Effect.tapError(Effect.logError),
+    Effect.catchTags({
+      ParseError: () => message.ack,
+      PublisherError: () => message.nack,
+      StorageReadError: () => message.nack,
+      StorageWriteError: () => message.nack,
+    })
+  )
+  if (message.span) {
+    return effect.pipe(Effect.withParentSpan(message.span))
+  }
+  return effect
 }
 
 export type Program = Effect.Effect<
