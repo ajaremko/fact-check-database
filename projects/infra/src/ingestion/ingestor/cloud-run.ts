@@ -29,7 +29,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
         serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
-            image: getAppImageUri('apps-ingestor', dockerTag),
+            image: getAppImageUri('projects-ingestion-ingestor-job', dockerTag),
             envs: [
               {
                 name: 'TARGET_LIST_BUCKET_NAME',

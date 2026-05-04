@@ -24,7 +24,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
       serviceAccount: loaderServiceAccount.email,
       containers: [
         {
-          image: getAppImageUri('apps-loader', dockerTag),
+          image: getAppImageUri('projects-ingestion-loader-service', dockerTag),
           envs: [
             {
               name: 'STORAGE_BUCKET_NAME',
