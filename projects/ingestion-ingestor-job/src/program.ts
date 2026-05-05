@@ -35,7 +35,7 @@ function processTarget(source: Source, index: number) {
 
     yield* Publisher.publish(data)
   }).pipe(
-    Effect.ignoreLogged,
+    Effect.catchAllCause(Effect.logError),
     Effect.annotateLogs({
       source: source.name,
       url: source.url,

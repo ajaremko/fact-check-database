@@ -46,7 +46,7 @@ function processMessage(message: MessageQueue.Message) {
 
     yield* message.ack
   }).pipe(
-    Effect.tapError(Effect.logError),
+    Effect.tapErrorCause(Effect.logError),
     Effect.catchTags({
       ParseError: () => message.ack,
       PublisherError: () => message.nack,
