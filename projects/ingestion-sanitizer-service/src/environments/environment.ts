@@ -1,4 +1,4 @@
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Logger } from 'effect'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
@@ -32,5 +32,7 @@ export const main = Effect.all(
   Effect.provide(FileSystemPublisher.layer),
   Effect.provide(FileSystemSanitizerPolicyDocument.layer),
   Effect.provide(NodeFileSystem.layer),
+  Effect.provide(Logger.add(Logger.prettyLoggerDefault)),
+  Effect.provide(Logger.remove(Logger.defaultLogger)),
   Effect.provide(otel)
 )

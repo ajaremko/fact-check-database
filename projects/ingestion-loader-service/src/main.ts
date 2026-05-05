@@ -89,11 +89,6 @@ const otel = cloudRunInstanceId.pipe(
   Layer.unwrapEffect
 )
 
-const logger = Logger.replaceScoped(
-  Logger.defaultLogger,
-  GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))
-)
-
 const main = Effect.all(
   [
     Program,
@@ -107,8 +102,15 @@ const main = Effect.all(
   Effect.provide(BigQueryClient.layer()),
   Effect.provide(InMemoryMessageQueue.layer),
   Effect.provide(NodeFileSystem.layer),
-  Effect.provide(logger),
+  Effect.provide(
+    Logger.addScoped(
+      GcpLoggingPinoConfig.make.pipe(
+        Effect.andThen((config) => pinoLogger(config))
+      )
+    )
+  ),
+  Effect.provide(Logger.remove(Logger.defaultLogger)),
   Effect.provide(otel)
 )
 
-NodeRuntime.runMain(main)
+NodeRuntime.runMain(main, { disablePrettyLogger: true })

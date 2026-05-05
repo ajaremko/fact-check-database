@@ -58,6 +58,13 @@ export const main = Program.pipe(
   Effect.provide(PubsubClient.layer()),
   Effect.provide(StorageClient.layer()),
   Effect.provide(JobContext.layer),
-  Effect.provide(logger),
+  Effect.provide(
+    Logger.addScoped(
+      GcpLoggingPinoConfig.make.pipe(
+        Effect.andThen((config) => pinoLogger(config))
+      )
+    )
+  ),
+  Effect.provide(Logger.remove(Logger.defaultLogger)),
   Effect.provide(otel)
 )

@@ -32,7 +32,6 @@ export const pinoLogger = flow(
   Effect.acquireRelease(release),
   Effect.map((logger) =>
     Logger.make(({ logLevel, message, annotations, cause, fiberId, spans }) => {
-      console.log('Logging message with pino')
       const level = levels[logLevel.label]
       if (level == null) {
         return

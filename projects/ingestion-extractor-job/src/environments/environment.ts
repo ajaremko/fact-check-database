@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { Effect, Logger } from 'effect'
 import { NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
@@ -30,5 +30,7 @@ export const main = Program.pipe(
   Effect.provide(FileSystemFactChecksSchema.layer),
   Effect.provide(JobContext.layer),
   Effect.provide(NodeFileSystem.layer),
+  Effect.provide(Logger.add(Logger.prettyLoggerDefault)),
+  Effect.provide(Logger.remove(Logger.defaultLogger)),
   Effect.provide(otel)
 )
