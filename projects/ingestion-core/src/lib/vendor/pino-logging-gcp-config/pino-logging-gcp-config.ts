@@ -9,7 +9,7 @@ export const make = Effect.gen(function* () {
   const service = yield* Config.string('SERVICE_NAME')
   const version = yield* Config.string('SERVICE_VERSION')
   const level = yield* PinoLogLevel('PINO_LOG_LEVEL')
-  return createGcpLoggingPinoConfig(
+  const config = createGcpLoggingPinoConfig(
     {
       serviceContext: {
         service,
@@ -18,4 +18,21 @@ export const make = Effect.gen(function* () {
     },
     { level }
   ) as LoggerOptions<string, boolean>
+  return {
+    ...config,
+    formatters: {
+      ...config.formatters,
+      // patch the log formatter to convert the `cause` property to `err` for better compatibility with GCP Logging
+      log: (obj: Record<string, unknown>) => {
+        const { cause, ...rest } = obj
+        if (cause && typeof cause === 'object') {
+          return {
+            ...rest,
+            err: cause,
+          }
+        }
+        return rest
+      },
+    },
+  }
 })

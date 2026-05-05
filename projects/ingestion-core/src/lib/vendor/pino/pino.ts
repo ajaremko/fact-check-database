@@ -3,7 +3,7 @@ import { pino, type Level } from 'pino'
 import type { Logger as PinoLogger } from 'pino'
 
 const levels: Record<LogLevel.LogLevel['label'], Level | null> = {
-  ALL: 'debug',
+  ALL: 'trace',
   FATAL: 'fatal',
   ERROR: 'error',
   WARN: 'warn',
@@ -27,12 +27,34 @@ function release(logger: PinoLogger<string, boolean>) {
   }).pipe(Effect.ignore)
 }
 
+export const pretty = <E>(cause: Cause.Cause<E>) => {
+  switch (cause._tag) {
+    case 'Die':
+      return null
+    case 'Empty':
+      return null
+    case 'Fail':
+      if (cause.error instanceof Error) {
+        console.log(cause.error.name)
+        return cause.error
+      }
+      return null
+    case 'Interrupt':
+      return null
+    case 'Parallel':
+      return null
+    case 'Sequential':
+      return null
+  }
+}
+
 export const pinoLogger = flow(
   acquire,
   Effect.acquireRelease(release),
   Effect.map((logger) =>
     Logger.make(({ logLevel, message, annotations, cause, fiberId, spans }) => {
       const level = levels[logLevel.label]
+
       if (level == null) {
         return
       }
@@ -56,7 +78,7 @@ export const pinoLogger = flow(
         ...annotationsMap,
         ...spansMap,
         level: logLevel.label,
-        cause: Cause.isEmpty(cause) ? undefined : Cause.pretty(cause),
+        cause: Cause.isEmpty(cause) ? undefined : pretty(cause),
         fiber: FiberId.threadName(fiberId),
         span:
           allSpans.length > 0
@@ -67,6 +89,7 @@ export const pinoLogger = flow(
       if (Array.isArray(message) && message.length > 1) {
         logger[level]({ ...metadata, ...message[1] }, message[0])
       } else {
+        console.log('Logging with:', metadata)
         logger[level](metadata, String(message))
       }
     }).pipe(Logger.withSpanAnnotations)
