@@ -43,11 +43,6 @@ const otel = cloudRunInstanceId.pipe(
   Layer.unwrapEffect
 )
 
-const logger = Logger.replaceScoped(
-  Logger.defaultLogger,
-  GcpLoggingPinoConfig.make.pipe(Effect.andThen((config) => pinoLogger(config)))
-)
-
 export const main = Program.pipe(
   Effect.provide(CloudPubsubMessageBatch.layer),
   Effect.provide(CloudPubsubPublisher.layer),
