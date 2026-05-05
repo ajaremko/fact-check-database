@@ -39,10 +39,17 @@ function process(id: string, data: Buffer) {
         messages.offer({
           data,
           ack: Effect.sync(() =>
-            resume(HttpServerResponse.json({}, { status: 200 }))
+            resume(HttpServerResponse.json({}, { status: 201 }))
           ),
           nack: Effect.sync(() =>
-            resume(HttpServerResponse.json({}, { status: 400 }))
+            resume(
+              HttpServerResponse.json(
+                {
+                  message: 'Failed to process message, please retry',
+                },
+                { status: 400 }
+              )
+            )
           ),
           span,
         })
