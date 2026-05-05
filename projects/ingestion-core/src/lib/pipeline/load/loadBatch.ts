@@ -37,7 +37,6 @@ export function loadBatch(input: {
     })
     yield* BigQueryClient.awaitJob(job)
   }).pipe(
-    Effect.tapError(Effect.logError),
     Effect.annotateLogs({
       tableId: input.table.table,
       datasetId: input.table.dataset,

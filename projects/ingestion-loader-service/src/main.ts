@@ -41,7 +41,6 @@ function processMessage(message: MessageQueue.Message) {
     })
     yield* message.ack
   }).pipe(
-    Effect.tapError(Effect.logError),
     Effect.withSpan('processMessage'),
     Effect.catchTags({
       ParseError: () => message.ack,

@@ -1,4 +1,4 @@
-import { Array, Effect, Option, Schema, pipe } from 'effect'
+import { Array, Effect, Option, ParseResult, Schema, pipe } from 'effect'
 
 import { ObservationSanitizedSchema } from '@news-research/ingestion-core/pipeline/sanitize/contracts/v1'
 import type {
@@ -49,7 +49,9 @@ function processMessage(message: MessageBatch.Message) {
 
 export type Program = Effect.Effect<
   void,
-  Error,
+  | ParseResult.ParseError
+  | Publisher.PublisherError
+  | StorageWriter.StorageWriteError,
   | JobContext
   | FactChecksSchema
   | StorageReader.StorageReader
@@ -97,8 +99,5 @@ export const Program: Program = withJobContextAnnotations(
     })
     const data = yield* encodeOutgoing(outgoing)
     yield* Publisher.publish(data)
-  }).pipe(
-    Effect.tapError(Effect.logError),
-    Effect.mapError(() => new Error('Program failed'))
-  )
+  })
 )

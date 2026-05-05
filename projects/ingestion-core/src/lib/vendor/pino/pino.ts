@@ -67,8 +67,7 @@ export const pinoLogger = flow(
       if (Array.isArray(message) && message.length > 1) {
         logger[level]({ ...metadata, ...message[1] }, message[0])
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        logger[level](metadata, message as any)
+        logger[level](metadata, String(message))
       }
     }).pipe(Logger.withSpanAnnotations)
   )
