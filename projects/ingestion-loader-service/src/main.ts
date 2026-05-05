@@ -41,6 +41,7 @@ function processMessage(message: MessageQueue.Message) {
     })
     yield* message.ack
   }).pipe(
+    Effect.tapErrorCause(Effect.logError),
     Effect.withSpan('processMessage'),
     Effect.catchTags({
       ParseError: () => message.ack,
@@ -54,6 +55,7 @@ const Program = Effect.gen(function* () {
 
   const handleMessages = messages.take.pipe(
     Effect.andThen(processMessage),
+    Effect.tapErrorCause(Effect.logError),
     Effect.forever
   )
 
