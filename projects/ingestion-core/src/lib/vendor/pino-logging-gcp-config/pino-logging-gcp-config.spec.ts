@@ -8,7 +8,7 @@ import * as GcpLoggingPinoConfig from './pino-logging-gcp-config'
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe('GcpLoggingPinoConfig', () => {
-  const LOG_PATH = `/workspaces/news-research/tmp/pino-logging-gcp-config-${Date.now()}.log`
+  const LOG_PATH = `tmp/pino-logging-gcp-config-${Date.now()}.log`
 
   const logger = Logger.addScoped(
     GcpLoggingPinoConfig.make.pipe(
