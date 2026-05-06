@@ -29,6 +29,7 @@ function processMessage(message: MessageQueue.Message) {
   return Effect.gen(function* () {
     const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
     const incoming = yield* decodeIncoming(message.data)
+    console.log(incoming.schema)
     yield* loadBatch({
       projectId,
       pointer: incoming.pointer,
