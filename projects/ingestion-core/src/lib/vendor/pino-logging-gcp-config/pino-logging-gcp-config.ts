@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Config, Effect } from 'effect'
 import { type LoggerOptions, levels } from 'pino'
 
@@ -18,20 +19,27 @@ export const make = Effect.gen(function* () {
     },
     { level }
   ) as LoggerOptions<string, boolean>
+  // console.log('config:', config)
   return {
     ...config,
+    messageKey: 'message',
     formatters: {
       ...config.formatters,
-      // patch the log formatter to convert the `cause` property to `err` for better compatibility with GCP Logging
+      // patch the log formatter to convert the `cause` property
+      // to `err` for better compatibility with GCP Logging
       log: (obj: Record<string, unknown>) => {
-        const { cause, ...rest } = obj
-        if (cause && typeof cause === 'object') {
+        let input = obj
+        if (config.formatters?.log) {
+          input = config.formatters.log(input)
+        }
+        const { cause, ...rest } = input
+        if (cause && cause instanceof Error) {
           return {
             ...rest,
             err: cause,
           }
         }
-        return rest
+        return input
       },
     },
   }

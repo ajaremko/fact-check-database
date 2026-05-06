@@ -68,7 +68,7 @@ describe('GcpLoggingPinoConfig', () => {
       await Effect.fail(
         new TestError({
           cause: new Error('Internal error'),
-          message: 'Application threw an error',
+          message: 'Something went wrong',
         })
       )
         .pipe(Effect.catchAllCause(Effect.logError))
@@ -85,10 +85,9 @@ describe('GcpLoggingPinoConfig', () => {
         .map((line) => JSON.parse(line))
 
       expect(lines[1].err.type).toBe('TestError')
-      expect(lines[1].err.message).toBe(
-        'Application threw an error: Internal error'
-      )
+      expect(lines[1].err.message).toBe('Something went wrong: Internal error')
       expect(lines[1].err.stack).toBeDefined()
+      expect(lines[1].message).toBe('TestError: Something went wrong')
     }
   )
 })

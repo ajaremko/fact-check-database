@@ -35,7 +35,6 @@ export const pretty = <E>(cause: Cause.Cause<E>) => {
       return null
     case 'Fail':
       if (cause.error instanceof Error) {
-        console.log(cause.error.name)
         return cause.error
       }
       return null
@@ -74,11 +73,13 @@ export const pinoLogger = flow(
         spansMap[span.label + '_ms'] = now - span.startTime
       }
 
+      const prettyCause = Cause.isEmpty(cause) ? undefined : pretty(cause)
+
       const metadata = {
         ...annotationsMap,
         ...spansMap,
         level: logLevel.label,
-        cause: Cause.isEmpty(cause) ? undefined : pretty(cause),
+        cause: prettyCause,
         fiber: FiberId.threadName(fiberId),
         span:
           allSpans.length > 0
@@ -86,8 +87,17 @@ export const pinoLogger = flow(
             : undefined,
       }
 
-      if (Array.isArray(message) && message.length > 1) {
-        logger[level]({ ...metadata, ...message[1] }, message[0])
+      if (Array.isArray(message)) {
+        if (message.length === 0) {
+          if (metadata.cause) {
+            logger[level](metadata, String(metadata.cause))
+          }
+          logger[level](metadata, String(message))
+        } else if (message.length > 1) {
+          logger[level]({ ...metadata, ...message[1] }, message[0])
+        } else {
+          logger[level](metadata, String(message))
+        }
       } else {
         logger[level](metadata, String(message))
       }
