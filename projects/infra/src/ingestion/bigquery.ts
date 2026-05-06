@@ -1,8 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import {} from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
-
 import { tag, ingestionLabels, gcpProject } from './config'
 import { provider } from './provider'
 
