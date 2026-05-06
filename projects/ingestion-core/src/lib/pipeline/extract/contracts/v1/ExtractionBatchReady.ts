@@ -8,12 +8,12 @@ const fields = {
   mode: Schema.String,
 }
 
-interface BigQueryTableSchemaFieldSchema
+export interface BigQueryTableSchemaFieldSchema
   extends Schema.Struct.Type<typeof fields> {
   readonly fields?: ReadonlyArray<BigQueryTableSchemaFieldSchema>
 }
 
-const BigQueryTableSchemaFieldSchema = Schema.Struct({
+export const BigQueryTableSchemaFieldSchema = Schema.Struct({
   ...fields,
   fields: Schema.optional(
     Schema.Array(
