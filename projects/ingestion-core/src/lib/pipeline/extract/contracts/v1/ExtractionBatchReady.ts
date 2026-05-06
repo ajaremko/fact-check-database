@@ -2,6 +2,33 @@ import { Schema } from 'effect'
 
 import { FilePointerSchema } from '../../../shared/contracts/v1'
 
+const fields = {
+  name: Schema.String,
+  type: Schema.String,
+  mode: Schema.String,
+}
+
+interface BigQueryTableSchemaFieldSchema
+  extends Schema.Struct.Type<typeof fields> {
+  readonly fields?: ReadonlyArray<BigQueryTableSchemaFieldSchema>
+}
+
+const BigQueryTableSchemaFieldSchema = Schema.Struct({
+  ...fields,
+  fields: Schema.optional(
+    Schema.Array(
+      Schema.suspend(
+        (): Schema.Schema<BigQueryTableSchemaFieldSchema> =>
+          BigQueryTableSchemaFieldSchema
+      )
+    )
+  ),
+})
+
+export const BigQueryTableSchemaSchema = Schema.Struct({
+  fields: Schema.Array(BigQueryTableSchemaFieldSchema),
+})
+
 /**
  * Schema for the event published by the ingestor per fetch attempt.
  *
@@ -23,13 +50,5 @@ export const ExtractionBatchReadySchema = Schema.Struct({
     Schema.Literal('NEWLINE_DELIMITED_JSON'),
     Schema.String
   ),
-  schema: Schema.Struct({
-    fields: Schema.Array(
-      Schema.Struct({
-        name: Schema.String,
-        type: Schema.String,
-        mode: Schema.String,
-      })
-    ),
-  }),
+  schema: BigQueryTableSchemaSchema,
 })
