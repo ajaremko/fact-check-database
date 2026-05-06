@@ -25,7 +25,7 @@ import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-
 import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
 
-import * as CloudStorageFactChecksSchema from '../adapters/CloudStorageFactChecksSchema'
+import * as CloudStorageFactChecksTableSchema from '../adapters/CloudStorageFactChecksTableSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 
@@ -65,7 +65,7 @@ export const main = Program.pipe(
   Effect.provide(CloudPubsubPublisher.layer),
   Effect.provide(CloudStorageStorageReader.layer),
   Effect.provide(CloudStorageStorageWriter.layer),
-  Effect.provide(CloudStorageFactChecksSchema.layer),
+  Effect.provide(CloudStorageFactChecksTableSchema.layer),
   Effect.provide(PubsubSubscriberClient.layer()),
   Effect.provide(PubsubClient.layer()),
   Effect.provide(StorageClient.layer()),

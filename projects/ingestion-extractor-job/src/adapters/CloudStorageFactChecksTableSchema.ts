@@ -21,6 +21,7 @@ export const make = Effect.gen(function* () {
   const uri = yield* Config.string('CLAIMS_SCHEMA_URI')
   const [buf] = yield* StorageBucket.downloadFile(uri)
   const fields = yield* decodeFields(buf)
+  console.log('FactChecksTableSchema', fields)
   return FactChecksTableSchema.of({ fields })
 })
 

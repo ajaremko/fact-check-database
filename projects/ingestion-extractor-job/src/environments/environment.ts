@@ -15,7 +15,7 @@ import {
   Publisher,
 } from '@news-research/ingestion-core/messaging'
 
-import * as FileSystemFactChecksSchema from '../adapters/FileSystemFactChecksSchema'
+import * as FileSystemFactChecksTableSchema from '../adapters/FileSystemFactChecksTableSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 import { PlatformError } from '@effect/platform/Error'
@@ -40,7 +40,7 @@ export const main = Program.pipe(
   Effect.provide(FileSystemStorageWriter.layer),
   Effect.provide(FileSystemMessageBatch.layer),
   Effect.provide(FileSystemPublisher.layer),
-  Effect.provide(FileSystemFactChecksSchema.layer),
+  Effect.provide(FileSystemFactChecksTableSchema.layer),
   Effect.provide(JobContext.layer),
   Effect.provide(NodeFileSystem.layer),
   Effect.provide(Logger.add(Logger.prettyLoggerDefault)),
