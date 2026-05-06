@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { BigQueryTableSchemaSchema } from './ExtractionBatchReady'
+import { BigQueryTableSchemaSchema } from './BigQueryTableSchema'
 
 describe('BigQueryTableSchemaSchema', () => {
   it('should decode a valid BigQuery table schema', () => {
