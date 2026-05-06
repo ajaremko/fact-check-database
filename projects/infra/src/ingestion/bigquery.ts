@@ -1,6 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
+import {} from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
+
 import { tag, ingestionLabels, gcpProject } from './config'
 import { provider } from './provider'
 
@@ -17,6 +19,9 @@ export const stagingDataset = new gcp.bigquery.Dataset(
 
 export const stagingDatasetId = stagingDataset.datasetId
 
+// Using STUCT instead of RECORD or X instead of INTEGER causes pulumi to redeploy table
+// on every update. Add this to list of problems/mitigations in documentation about
+// BigQuery and Pulumi.
 export const stagingFactChecksSchema = [
   { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
   { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
@@ -25,7 +30,7 @@ export const stagingFactChecksSchema = [
   { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
   {
     name: 'source',
-    type: 'STRUCT',
+    type: 'RECORD',
     mode: 'NULLABLE',
     fields: [
       { name: 'id', type: 'STRING', mode: 'REQUIRED' },
@@ -36,7 +41,7 @@ export const stagingFactChecksSchema = [
   },
   {
     name: 'fact_check',
-    type: 'STRUCT',
+    type: 'RECORD',
     mode: 'REQUIRED',
     fields: [
       { name: 'sha256', type: 'STRING', mode: 'NULLABLE' },
@@ -54,12 +59,12 @@ export const stagingFactChecksSchema = [
   },
   {
     name: 'http',
-    type: 'STRUCT',
+    type: 'RECORD',
     mode: 'REQUIRED',
     fields: [
       { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
       { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'status_code', type: 'INT64', mode: 'NULLABLE' },
+      { name: 'status_code', type: 'INTEGER', mode: 'NULLABLE' },
       { name: 'etag', type: 'STRING', mode: 'NULLABLE' },
       { name: 'content_type', type: 'STRING', mode: 'NULLABLE' },
       { name: 'last_modified', type: 'STRING', mode: 'NULLABLE' },
@@ -126,7 +131,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
       { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
       { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
       { name: 'extractor_version', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'http_status_code', type: 'INT64', mode: 'NULLABLE' },
+      { name: 'http_status_code', type: 'INTEGER', mode: 'NULLABLE' },
     ]),
     timePartitioning: {
       type: 'MONTH',

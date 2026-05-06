@@ -48,6 +48,7 @@ export const ingestorTopicLogSubscription = new gcp.pubsub.Subscription(
     cloudStorageConfig: {
       bucket: eventLogBucket.name,
       filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
+      filenamePrefix: 'ingestor-events/',
       maxMessages: 1000,
     },
     labels: ingestionLabels,
@@ -73,6 +74,28 @@ export const sanitizerTopic = new gcp.pubsub.Topic(
   }
 )
 
+export const sanitizerTopicLogSubscription = new gcp.pubsub.Subscription(
+  `${tag}-sanitizer-topic-log-subscription`,
+  {
+    name: 'sanitizer-topic-log-subscription',
+    topic: sanitizerTopic.name,
+    cloudStorageConfig: {
+      bucket: eventLogBucket.name,
+      filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
+      filenamePrefix: 'sanitizer-events/',
+      maxMessages: 1000,
+    },
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [
+      pubsubServiceAccountBucketReader,
+      pubsubServiceAccountObjectCreator,
+    ],
+    provider,
+  }
+)
+
 export const extractorTopic = new gcp.pubsub.Topic(
   `${tag}-extractor-topic`,
   {
@@ -81,6 +104,28 @@ export const extractorTopic = new gcp.pubsub.Topic(
   },
   {
     dependsOn: [pubsubService],
+    provider,
+  }
+)
+
+export const extractorTopicLogSubscription = new gcp.pubsub.Subscription(
+  `${tag}-extractor-topic-log-subscription`,
+  {
+    name: 'extractor-topic-log-subscription',
+    topic: extractorTopic.name,
+    cloudStorageConfig: {
+      bucket: eventLogBucket.name,
+      filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
+      filenamePrefix: 'extractor-events/',
+      maxMessages: 1000,
+    },
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [
+      pubsubServiceAccountBucketReader,
+      pubsubServiceAccountObjectCreator,
+    ],
     provider,
   }
 )

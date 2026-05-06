@@ -46,10 +46,19 @@ export const eventLogBucket = new gcp.storage.Bucket(
   `${tag}-event-log-bucket`,
   {
     location: gcpRegion,
-    name: `ingestor-event-log`,
+    name: 'ingestion-event-logs',
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
     labels: ingestionLabels,
+    lifecycleRules: [
+      {
+        action: { type: 'Delete' },
+        condition: {
+          matchesPrefixes: ['sanitizer-events/', 'extractor-events/'],
+          age: 7,
+        },
+      },
+    ],
   },
   {
     dependsOn: [storageService],
