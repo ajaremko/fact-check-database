@@ -91,8 +91,9 @@ export const pinoLogger = flow(
         if (message.length === 0) {
           if (metadata.cause) {
             logger[level](metadata, String(metadata.cause))
+          } else {
+            logger[level](metadata, String(message))
           }
-          logger[level](metadata, String(message))
         } else if (message.length > 1) {
           logger[level]({ ...metadata, ...message[1] }, message[0])
         } else {

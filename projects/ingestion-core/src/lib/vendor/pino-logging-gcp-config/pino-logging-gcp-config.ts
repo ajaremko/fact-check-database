@@ -19,7 +19,6 @@ export const make = Effect.gen(function* () {
     },
     { level }
   ) as LoggerOptions<string, boolean>
-  // console.log('config:', config)
   return {
     ...config,
     messageKey: 'message',
