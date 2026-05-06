@@ -16,7 +16,7 @@ import {
 import { Node } from '@news-research/ingestion-core/data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
-import { FactChecksSchema } from './FactChecksSchema'
+import { FactChecksTableSchema } from './FactChecksTableSchema'
 
 const decodeIncoming = pipe(
   ObservationSanitizedSchema,
@@ -53,7 +53,7 @@ export type Program = Effect.Effect<
   | Publisher.PublisherError
   | StorageWriter.StorageWriteError,
   | JobContext
-  | FactChecksSchema
+  | FactChecksTableSchema
   | StorageReader.StorageReader
   | MessageBatch.MessageBatch
   | Publisher.Publisher
@@ -89,7 +89,7 @@ export const Program: Program = withJobContextAnnotations(
     }
 
     // publish message
-    const schema = yield* FactChecksSchema
+    const schema = yield* FactChecksTableSchema
     const outgoing = yield* writeBatch({
       runId: job.runId,
       extracted,

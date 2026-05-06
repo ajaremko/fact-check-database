@@ -25,7 +25,7 @@ import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-
 import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
 
-import * as CloudStorageFactChecksSchema from '../adapters/cloud-storage/FactChecksSchema'
+import * as CloudStorageFactChecksSchema from '../adapters/CloudStorageFactChecksSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 

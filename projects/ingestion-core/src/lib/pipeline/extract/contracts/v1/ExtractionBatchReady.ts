@@ -25,9 +25,19 @@ export const BigQueryTableSchemaFieldSchema = Schema.Struct({
   ),
 })
 
+/**
+ * Confusingly but accurately named, this is an effect schema for a BigQuery table schema.
+ * Bigquery table schemas are JSON objects that describe the structure of a BigQuery table,
+ * and this effect schema is used to decode and validate those JSON objects.
+ * These data are included as metadata about the extracted table rows
+ */
 export const BigQueryTableSchemaSchema = Schema.Struct({
   fields: Schema.Array(BigQueryTableSchemaFieldSchema),
 })
+
+export type BigQueryTableSchema = Schema.Schema.Type<
+  typeof BigQueryTableSchemaSchema
+>
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

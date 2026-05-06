@@ -15,7 +15,7 @@ import {
   Publisher,
 } from '@news-research/ingestion-core/messaging'
 
-import * as FileSystemFactChecksSchema from '../adapters/filesystem/FactChecksSchema'
+import * as FileSystemFactChecksSchema from '../adapters/FileSystemFactChecksSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 import { PlatformError } from '@effect/platform/Error'
