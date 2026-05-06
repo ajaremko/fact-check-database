@@ -32,10 +32,9 @@ function processTarget(source: Source, index: number) {
     })
 
     const data = yield* encodeOutgoing(event)
-
     yield* Publisher.publish(data)
   }).pipe(
-    Effect.catchAllCause(Effect.logError),
+    Effect.tapErrorCause(Effect.logError),
     Effect.annotateLogs({
       source: source.name,
       url: source.url,

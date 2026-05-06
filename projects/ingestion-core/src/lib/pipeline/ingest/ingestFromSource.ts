@@ -65,6 +65,7 @@ export function ingestFromSource(args: {
     })
 
     if (result._tag === 'FetchFailure') {
+      yield* Effect.logWarning(`Fetch failed: ${result.error}`)
       // For a failed fetch, we won't have a body to archive,
       // so we can skip straight to creating an observation
       // with no pointer to a body
