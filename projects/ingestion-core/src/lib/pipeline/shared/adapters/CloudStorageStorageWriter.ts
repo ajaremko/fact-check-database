@@ -21,6 +21,7 @@ export const make = Effect.gen(function* () {
           (cause) =>
             new StorageWriter.StorageWriteError({
               cause,
+              message: 'Failed to write file to GCS',
               path: opts.path,
               bucket: bucket.name,
             })

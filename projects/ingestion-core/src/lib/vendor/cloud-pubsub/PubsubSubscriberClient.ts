@@ -62,6 +62,7 @@ export class PubsubSubscriberClientIOError extends Data.TaggedError(
   'PubsubSubscriberClientIOError'
 )<{
   readonly cause: unknown
+  readonly message: string
 }> {}
 
 export type AckId = google.pubsub.v1.IReceivedMessage['ackId']
@@ -75,7 +76,11 @@ export function pull(subscriptionId: string, maxMessages = 10) {
           subscription: subscriptionId,
           maxMessages,
         }),
-      catch: (cause) => new PubsubSubscriberClientIOError({ cause }),
+      catch: (cause) =>
+        new PubsubSubscriberClientIOError({
+          cause,
+          message: 'Failed to pull messages from subscription',
+        }),
     })
     return result
   })
@@ -90,7 +95,11 @@ export function acknowledge(subscriptionId: string, ackIds: string[]) {
           subscription: subscriptionId,
           ackIds,
         }),
-      catch: (cause) => new PubsubSubscriberClientIOError({ cause }),
+      catch: (cause) =>
+        new PubsubSubscriberClientIOError({
+          cause,
+          message: 'Failed to acknowledge messages',
+        }),
     })
   })
 }

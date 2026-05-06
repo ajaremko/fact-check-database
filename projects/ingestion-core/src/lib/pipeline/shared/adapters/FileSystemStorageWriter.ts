@@ -42,6 +42,7 @@ export const make = Effect.gen(function* () {
           (cause) =>
             new StorageWriter.StorageWriteError({
               cause,
+              message: 'Failed to write file to filesystem',
               path: opts.path,
               bucket: 'local',
             })

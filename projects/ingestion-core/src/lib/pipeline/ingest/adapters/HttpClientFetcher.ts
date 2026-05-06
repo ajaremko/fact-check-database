@@ -58,6 +58,7 @@ export const make = Effect.gen(function* () {
                 new Fetcher.FetcherError({
                   cause,
                   source,
+                  message: 'Failed to read error response body',
                 })
             )
           )
@@ -88,7 +89,12 @@ export const make = Effect.gen(function* () {
         const body = yield* response.arrayBuffer.pipe(
           Effect.map((buffer) => new Uint8Array(buffer)),
           Effect.mapError(
-            (cause) => new Fetcher.FetcherError({ cause, source })
+            (cause) =>
+              new Fetcher.FetcherError({
+                cause,
+                source,
+                message: 'Failed to read successful response body',
+              })
           )
         )
 

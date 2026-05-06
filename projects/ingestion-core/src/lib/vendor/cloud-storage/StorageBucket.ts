@@ -82,6 +82,7 @@ export class StorageBucketIOError extends Data.TaggedError(
   'StorageBucketIOError'
 )<{
   readonly cause: unknown
+  readonly message: string
 }> {}
 
 /**
@@ -102,7 +103,8 @@ export function writeFile(
     Effect.andThen(({ bucket }) =>
       Effect.tryPromise({
         try: () => bucket.file(name).save(data, options),
-        catch: (cause) => new StorageBucketIOError({ cause }),
+        catch: (cause) =>
+          new StorageBucketIOError({ cause, message: 'Failed to write file' }),
       })
     )
   )
@@ -130,7 +132,11 @@ export function readFileMetadata(
     Effect.andThen(({ bucket }) =>
       Effect.tryPromise({
         try: () => bucket.file(name).getMetadata(),
-        catch: (cause) => new StorageBucketIOError({ cause }),
+        catch: (cause) =>
+          new StorageBucketIOError({
+            cause,
+            message: 'Failed to read file metadata',
+          }),
       })
     )
   )
@@ -154,7 +160,11 @@ export function downloadFile(
     Effect.andThen(({ bucket }) =>
       Effect.tryPromise({
         try: () => bucket.file(name).download(),
-        catch: (cause) => new StorageBucketIOError({ cause }),
+        catch: (cause) =>
+          new StorageBucketIOError({
+            cause,
+            message: 'Failed to download file',
+          }),
       })
     )
   )

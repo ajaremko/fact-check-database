@@ -12,11 +12,15 @@ export const make = Effect.gen(function* () {
       Effect.gen(function* () {
         const id = yield* Clock.currentTimeMillis
         const path = `${outputDir}/${id}.json`
-        yield* fs
-          .writeFile(path, data)
-          .pipe(
-            Effect.mapError((cause) => new Publisher.PublisherError({ cause }))
+        yield* fs.writeFile(path, data).pipe(
+          Effect.mapError(
+            (cause) =>
+              new Publisher.PublisherError({
+                cause,
+                message: 'Failed to write message to file system',
+              })
           )
+        )
       }),
   })
 })

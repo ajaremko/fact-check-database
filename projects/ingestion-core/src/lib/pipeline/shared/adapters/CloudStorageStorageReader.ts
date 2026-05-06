@@ -14,6 +14,7 @@ export const make = Effect.gen(function* () {
           (cause) =>
             new StorageReader.StorageReadError({
               cause,
+              message: 'Failed to read file from GCS',
               path: pointer.object,
               bucket: pointer.bucket,
             })

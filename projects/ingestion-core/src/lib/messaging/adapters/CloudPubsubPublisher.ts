@@ -9,7 +9,13 @@ export const make = Effect.gen(function* () {
   return Publisher.Publisher.of({
     publish: (data) =>
       PubsubTopic.publishMessage({ data }).pipe(
-        Effect.mapError((cause) => new Publisher.PublisherError({ cause })),
+        Effect.mapError(
+          (cause) =>
+            new Publisher.PublisherError({
+              cause,
+              message: 'Failed to publish message',
+            })
+        ),
         Effect.provideService(PubsubTopic.PubsubTopic, { topic })
       ),
   })

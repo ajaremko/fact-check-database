@@ -2,6 +2,7 @@ import { Context, Data, Effect, Queue, Tracer } from 'effect'
 
 export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
   readonly cause: unknown
+  readonly message: string
 }> {}
 
 export interface Message {

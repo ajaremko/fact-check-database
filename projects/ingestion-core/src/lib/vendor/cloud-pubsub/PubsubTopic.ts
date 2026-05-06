@@ -53,6 +53,7 @@ export const layer = flow(make, Layer.effect(PubsubTopic))
  */
 export class PubsubTopicIOError extends Data.TaggedError('PubsubTopicIOError')<{
   readonly cause: unknown
+  readonly message: string
 }> {}
 
 /**
@@ -69,7 +70,11 @@ export function publishMessage(message: MessageOptions) {
     Effect.andThen(({ topic }) =>
       Effect.tryPromise({
         try: () => topic.publishMessage(message),
-        catch: (cause) => new PubsubTopicIOError({ cause }),
+        catch: (cause) =>
+          new PubsubTopicIOError({
+            cause,
+            message: 'Failed to publish message',
+          }),
       })
     )
   )

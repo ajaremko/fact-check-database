@@ -10,6 +10,7 @@ export function layer(storage: Record<string, string>) {
         : Effect.fail(
             new StorageReader.StorageReadError({
               cause: new Error(`Object not found: ${pointer.object}`),
+              message: 'Failed to read file from in-memory storage',
               path: pointer.object,
               bucket: pointer.bucket,
             })

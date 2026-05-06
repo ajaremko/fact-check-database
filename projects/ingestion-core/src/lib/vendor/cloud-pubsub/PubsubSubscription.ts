@@ -68,4 +68,5 @@ export class PubsubSubscriptionIOError extends Data.TaggedError(
   'PubsubSubscriptionIOError'
 )<{
   readonly cause: unknown
+  readonly message: string
 }> {}

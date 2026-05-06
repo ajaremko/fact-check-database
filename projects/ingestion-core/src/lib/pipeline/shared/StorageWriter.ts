@@ -6,6 +6,7 @@ export class StorageWriteError extends Data.TaggedError('StorageWriteError')<{
   readonly cause: unknown
   readonly path: string
   readonly bucket: string
+  readonly message: string
 }> {}
 
 export class StorageWriter extends Context.Tag('StorageWriter')<

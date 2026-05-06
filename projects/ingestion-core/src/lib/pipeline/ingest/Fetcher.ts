@@ -7,6 +7,7 @@ import { FetchResultSchema } from './FetchResult'
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown
   readonly source: Source
+  readonly message: string
 }> {}
 
 export class Fetcher extends Context.Tag('Fetcher')<

@@ -21,7 +21,13 @@ const acquire = Effect.gen(function* () {
 
   function errorListener(error: Error) {
     Effect.runFork(
-      Queue.offer(errors, new MessageQueue.MessageQueueError({ cause: error }))
+      Queue.offer(
+        errors,
+        new MessageQueue.MessageQueueError({
+          cause: error,
+          message: 'Pub/Sub subscription error',
+        })
+      )
     )
   }
 

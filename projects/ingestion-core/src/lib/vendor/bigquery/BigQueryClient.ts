@@ -27,6 +27,7 @@ export class BigQueryClientIOError extends Data.TaggedError(
   'BigQueryClientIOError'
 )<{
   readonly cause: unknown
+  readonly message: string
 }> {}
 
 type BigQueryOptionsConfig = {
@@ -66,7 +67,11 @@ export function createJob(options: JobOptions) {
     Effect.flatMap(({ client }) =>
       Effect.tryPromise({
         try: () => client.createJob(options),
-        catch: (cause) => new BigQueryClientIOError({ cause }),
+        catch: (cause) =>
+          new BigQueryClientIOError({
+            cause,
+            message: 'Failed to create BigQuery job',
+          }),
       })
     )
   )
@@ -78,6 +83,10 @@ export function awaitJob(job: Job) {
       new Promise<void>((resolve, reject) => {
         job.on('error', reject).on('complete', () => resolve())
       }),
-    catch: (cause) => new BigQueryClientIOError({ cause }),
+    catch: (cause) =>
+      new BigQueryClientIOError({
+        cause,
+        message: 'BigQuery job failed',
+      }),
   })
 }

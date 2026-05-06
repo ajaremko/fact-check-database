@@ -2,6 +2,7 @@ import { Context, Data, Effect, flow } from 'effect'
 
 export class PublisherError extends Data.TaggedError('PublisherError')<{
   readonly cause: unknown
+  readonly message: string
 }> {}
 
 export class Publisher extends Context.Tag('Publisher')<
