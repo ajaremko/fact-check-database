@@ -9,7 +9,7 @@ export function loadBatch(input: {
   pointer: FilePointer
   table: { dataset: string; table: string }
   sourceFormat: string
-  schema: { fields: readonly { name: string; type: string; mode: string }[] }
+  schema: object
 }): Effect.Effect<
   void,
   BigQueryClient.BigQueryClientIOError,
@@ -30,7 +30,7 @@ export function loadBatch(input: {
           },
           sourceUris: [gsUri],
           sourceFormat: input.sourceFormat,
-          schema: { fields: [...input.schema.fields] },
+          schema: input.schema,
           autodetect: true,
         },
       },

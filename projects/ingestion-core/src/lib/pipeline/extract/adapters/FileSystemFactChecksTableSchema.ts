@@ -1,9 +1,9 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { BigQueryTableSchemaSchema } from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
-import { Node } from '@news-research/ingestion-core/data'
+import { Node } from '../../../data'
 
+import { BigQueryTableSchemaSchema } from '../BigQueryTableSchema'
 import { FactChecksTableSchema } from '../FactChecksTableSchema'
 
 const decodeFields = pipe(
@@ -15,7 +15,7 @@ const decodeFields = pipe(
 
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
-  const path = yield* Config.string('CLAIMS_SCHEMA_PATH')
+  const path = yield* Config.string('FACT_CHECKS_TABLE_SCHEMA_PATH')
   const data = yield* fs.readFile(path)
   const fields = yield* decodeFields(data)
   return FactChecksTableSchema.of({ fields })

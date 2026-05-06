@@ -1,13 +1,10 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { ParseError } from 'effect/ParseResult'
 
-import {
-  StorageBucket,
-  StorageClient,
-} from '@news-research/ingestion-core/vendor/cloud-storage'
-import { BigQueryTableSchemaSchema } from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
-import { Node } from '@news-research/ingestion-core/data'
+import { StorageBucket, StorageClient } from '../../../vendor/cloud-storage'
+import { Node } from '../../../data'
 
+import { BigQueryTableSchemaSchema } from '../BigQueryTableSchema'
 import { FactChecksTableSchema } from '../FactChecksTableSchema'
 
 const decodeFields = pipe(
@@ -18,10 +15,9 @@ const decodeFields = pipe(
 )
 
 export const make = Effect.gen(function* () {
-  const uri = yield* Config.string('CLAIMS_SCHEMA_URI')
+  const uri = yield* Config.string('FACT_CHECKS_TABLE_SCHEMA_URI')
   const [buf] = yield* StorageBucket.downloadFile(uri)
   const fields = yield* decodeFields(buf)
-  console.log('FactChecksTableSchema', fields)
   return FactChecksTableSchema.of({ fields })
 })
 

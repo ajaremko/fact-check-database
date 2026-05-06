@@ -4,6 +4,7 @@ import { Node, Ndjson } from '../../data'
 
 import { StorageWriter } from '../shared'
 
+import * as FactChecksTableSchema from './FactChecksTableSchema'
 import {
   ExtractionBatchSchema,
   ExtractionBatchEventSchema,
@@ -24,9 +25,9 @@ export function writeBatch(input: {
   extracted: FactCheckRows
   extractedAt: number
   datasetId: string
-  schema: { fields: readonly { name: string; type: string; mode: string }[] }
 }) {
   return Effect.gen(function* () {
+    const schema = yield* FactChecksTableSchema.FactChecksTableSchema
     const data = yield* encodeFactChecks(input.extracted)
     const tableId = 'fact-checks'
     const pointer = yield* StorageWriter.writeFile({
@@ -41,7 +42,7 @@ export function writeBatch(input: {
         tableId,
         datasetId: input.datasetId,
       },
-      schema: input.schema,
+      schema,
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })

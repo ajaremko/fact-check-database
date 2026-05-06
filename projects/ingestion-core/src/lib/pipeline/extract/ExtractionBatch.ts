@@ -5,6 +5,7 @@ import { omitNullKeys } from '../../data'
 import { FilePointerSchema } from '../shared'
 
 import { ExtractionBatchReadySchema } from './contracts/v1'
+import { BigQueryTableSchemaSchema } from './BigQueryTableSchema'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -26,15 +27,7 @@ export const ExtractionBatchSchema = Schema.Struct({
     Schema.Literal('NEWLINE_DELIMITED_JSON'),
     Schema.String
   ),
-  schema: Schema.Struct({
-    fields: Schema.Array(
-      Schema.Struct({
-        name: Schema.String,
-        type: Schema.String,
-        mode: Schema.String,
-      })
-    ),
-  }),
+  schema: BigQueryTableSchemaSchema,
 })
 
 export const ExtractionBatchEventSchema = Schema.transformOrFail(
@@ -63,13 +56,7 @@ export const ExtractionBatchEventSchema = Schema.transformOrFail(
               table_id: input.table.tableId,
               dataset_id: input.table.datasetId,
             },
-            schema: {
-              fields: input.schema.fields.map((field) => ({
-                name: field.name,
-                type: field.type,
-                mode: field.mode,
-              })),
-            },
+            schema: input.schema,
           })
         )
       )

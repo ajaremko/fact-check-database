@@ -14,8 +14,8 @@ import {
   FileSystemMessageBatch,
   Publisher,
 } from '@news-research/ingestion-core/messaging'
+import { FileSystemFactChecksTableSchema } from '@news-research/ingestion-core/pipeline/extract'
 
-import * as FileSystemFactChecksTableSchema from '../adapters/FileSystemFactChecksTableSchema'
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
 import { PlatformError } from '@effect/platform/Error'
