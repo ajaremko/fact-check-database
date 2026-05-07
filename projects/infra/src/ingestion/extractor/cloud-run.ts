@@ -39,7 +39,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 value: assetsBucket.name,
               },
               {
-                name: 'CLAIMS_SCHEMA_URI',
+                name: 'FACT_CHECKS_TABLE_SCHEMA_URI',
                 value: stagingFactChecksSchemaObject.name,
               },
               {
