@@ -68,6 +68,7 @@ function extractVerdict(text?: string) {
 
 export const RssExtractor = makeExtractionStrategy({
   id: 'rss',
+  version: 1,
   canHandle: (source) => source.collection === 'rss',
   extractor: (input) =>
     Effect.gen(function* () {
@@ -106,9 +107,9 @@ export const RssExtractor = makeExtractionStrategy({
           verdict: values.verdict,
           normalizedVerdict: values.verdict,
           summary: values.summary,
-          publishedAt: values.publishedAt,
+          publishedAtRaw: values.publishedAt,
+          publishedAtNormalized: null,
           canonicalUrl: null,
-          extractorVersion: '1',
           extractedFrom: null,
         })
         extractedFactChecks.push(factCheck)

@@ -16,9 +16,10 @@ export const FactCheckSchema = Schema.Struct({
     Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
   ),
   summary: Schema.NullOr(Schema.String),
-  publishedAt: Schema.NullOr(Schema.String),
+  publishedAtRaw: Schema.NullOr(Schema.String),
+  publishedAtNormalized: Schema.NullOr(Schema.Date),
   canonicalUrl: Schema.NullOr(Schema.String),
-  extractorVersion: Schema.NullOr(Schema.String),
+
   extractedFrom: Schema.NullOr(Schema.String),
 })
 
@@ -34,6 +35,10 @@ export const FactCheckRowSchema = Schema.transformOrFail(
     extractedAt: NumberFromDate,
     fetchedAt: NumberFromDate,
     factCheck: FactCheckSchema,
+    extractor: Schema.Struct({
+      id: Schema.String,
+      version: Schema.Number,
+    }),
     http: Schema.Struct({
       contentSha256: Schema.String,
       status: Schema.Number,
@@ -60,6 +65,7 @@ export const FactCheckRowSchema = Schema.transformOrFail(
     encode: (input) =>
       ParseResult.succeed({
         content_lineage_id: input.id,
+        content_sha256: input.http.contentSha256,
         extracted_at: input.extractedAt,
         fetched_at: input.fetchedAt,
         ingestion_id: input.ingestionId,
@@ -77,13 +83,14 @@ export const FactCheckRowSchema = Schema.transformOrFail(
           claim: input.factCheck.claim,
           verdict: input.factCheck.verdict,
           summary: input.factCheck.summary,
-          published_at: input.factCheck.publishedAt,
+          published_at: input.factCheck.publishedAtRaw,
+          published_at_normalized: input.factCheck.publishedAtNormalized,
           canonical_url: input.factCheck.canonicalUrl,
-          extractor_version: input.factCheck.extractorVersion,
+          extractor_id: input.extractor.id,
+          extractor_version: input.extractor.version,
           extracted_from: input.factCheck.extractedFrom,
         }),
         http: omitNullKeys({
-          content_sha256: input.http.contentSha256,
           final_url: input.http.finalUrl,
           status_code: input.http.status,
           etag: input.http.etag,

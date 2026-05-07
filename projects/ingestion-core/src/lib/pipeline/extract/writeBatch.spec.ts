@@ -23,6 +23,10 @@ describe('writeBatch', () => {
               extractionId: 'run-001',
               extractedAt: 0,
               fetchedAt: 0,
+              extractor: {
+                id: 'extractor-id',
+                version: 1,
+              },
               factCheck: {
                 sha256:
                   '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
@@ -32,9 +36,11 @@ describe('writeBatch', () => {
                 link: 'https://example.com/fact-check-1',
                 normalizedVerdict: 'false',
                 summary: 'The claim is false.',
-                publishedAt: 'Wed, 01 Jan 2026 00:00:00 +0000',
+                publishedAtRaw: 'Wed, 01 Jan 2026 00:00:00 +0000',
+                publishedAtNormalized: new Date(
+                  'Wed, 01 Jan 2026 00:00:00 +0000'
+                ),
                 canonicalUrl: null,
-                extractorVersion: '1',
                 extractedFrom: null,
               },
               http: {
@@ -102,9 +108,14 @@ describe('writeBatch', () => {
                       mode: 'NULLABLE',
                     },
                     {
+                      name: 'extractor_id',
+                      type: 'STRING',
+                      mode: 'REQUIRED',
+                    },
+                    {
                       name: 'extractor_version',
                       type: 'STRING',
-                      mode: 'NULLABLE',
+                      mode: 'REQUIRED',
                     },
                     {
                       name: 'extracted_from',
@@ -183,9 +194,14 @@ describe('writeBatch', () => {
                     mode: 'NULLABLE',
                   },
                   {
+                    name: 'extractor_id',
+                    type: 'STRING',
+                    mode: 'REQUIRED',
+                  },
+                  {
                     name: 'extractor_version',
                     type: 'STRING',
-                    mode: 'NULLABLE',
+                    mode: 'REQUIRED',
                   },
                   { name: 'extracted_from', type: 'STRING', mode: 'NULLABLE' },
                 ],

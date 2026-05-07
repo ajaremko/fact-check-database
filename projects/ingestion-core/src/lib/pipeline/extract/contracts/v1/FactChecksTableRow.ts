@@ -3,6 +3,7 @@ import { SourceSchema } from '../../../shared/contracts/v1'
 
 export const FactChecksTableRowSchema = Schema.Struct({
   content_lineage_id: Schema.String,
+  content_sha256: Schema.String,
   extracted_at: Schema.Date,
   fetched_at: Schema.Date,
   ingestion_id: Schema.String,
@@ -18,11 +19,11 @@ export const FactChecksTableRowSchema = Schema.Struct({
     canonical_url: Schema.optional(Schema.String),
     language: Schema.optional(Schema.String),
     normalized_verdict: Schema.optional(Schema.String),
-    extractor_version: Schema.optional(Schema.String),
+    extractor_id: Schema.String,
+    extractor_version: Schema.Number,
     extracted_from: Schema.optional(Schema.String),
   }),
   http: Schema.Struct({
-    content_sha256: Schema.String,
     final_url: Schema.optional(Schema.String),
     status_code: Schema.optional(Schema.Number),
     etag: Schema.optional(Schema.String),

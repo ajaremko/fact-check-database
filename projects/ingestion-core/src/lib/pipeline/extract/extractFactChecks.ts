@@ -77,6 +77,10 @@ export function extractFactChecks(ctx: {
               extractedAt: ctx.extractedAt,
               ingestionId: observation.ingestionId,
               factCheck,
+              extractor: {
+                id: extractor.id,
+                version: extractor.version,
+              },
               http: {
                 contentSha256: content.sha256,
                 finalUrl: http.finalUrl,

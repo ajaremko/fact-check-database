@@ -6,6 +6,7 @@ import { FactCheck } from '../FactCheck'
 
 export interface ExtractionStrategy<E, R> {
   id: string
+  version: number
   canHandle: (source: { collection: string; name: string }) => boolean
   extractor: (input: {
     timestamp: number

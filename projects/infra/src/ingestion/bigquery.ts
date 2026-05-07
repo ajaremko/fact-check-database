@@ -22,6 +22,7 @@ export const stagingDatasetId = stagingDataset.datasetId
 // BigQuery and Pulumi.
 export const stagingFactChecksSchema = [
   { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
+  { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
   { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
   { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
   { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
@@ -51,7 +52,8 @@ export const stagingFactChecksSchema = [
       { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
       { name: 'language', type: 'STRING', mode: 'NULLABLE' },
       { name: 'normalized_verdict', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'extractor_version', type: 'STRING', mode: 'NULLABLE' },
+      { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
+      { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
       { name: 'extracted_from', type: 'STRING', mode: 'NULLABLE' },
     ],
   },
@@ -60,7 +62,6 @@ export const stagingFactChecksSchema = [
     type: 'RECORD',
     mode: 'REQUIRED',
     fields: [
-      { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
       { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
       { name: 'status_code', type: 'INTEGER', mode: 'NULLABLE' },
       { name: 'etag', type: 'STRING', mode: 'NULLABLE' },
@@ -160,31 +161,87 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             TO_HEX(SHA256(CONCAT(
               source.id,
               IFNULL(fact_check.canonical_url, source.url),
-              fact_check.sha256
+              IFNULL(fact_check.claim, '')
             ))) AS fact_check_id,
+            
             content_lineage_id,
             content_sha256,
+            
             source.id AS source_id,
             source.name AS source_name,
             source.collection,
+            
             source.url,
             http.final_url,
             fact_check.canonical_url,
+            
             fact_check.title,
             fact_check.claim,
             fact_check.summary,
+            
             fact_check.verdict AS verdict_raw,
             fact_check.normalized_verdict,
+            
             fact_check.language,
-            TIMESTAMP(fact_check.published_at) AS published_at,
+            
+            fact_check.published_at,
+            
             fetched_at,
             extracted_at,
+            
             fact_check.extractor_version,
+            
             http.status_code AS http_status_code
+            
           FROM \`${stagingTableRef}\`
           WHERE extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 6 HOUR)
         ) S
-        ON T.fact_check_id = S.fact_check_id`,
+        ON T.fact_check_id = S.fact_check_id
+        WHEN NOT MATCHED THEN
+        INSERT (
+          fact_check_id,
+          content_lineage_id,
+          content_sha256,
+          source_id,
+          source_name,
+          collection,
+          url,
+          final_url,
+          canonical_url,
+          title,
+          claim,
+          summary,
+          verdict_raw,
+          normalized_verdict,
+          language,
+          published_at,
+          fetched_at,
+          extracted_at,
+          extractor_version,
+          http_status_code
+        )
+        VALUES (
+          S.fact_check_id,
+          S.content_lineage_id,
+          S.content_sha256,
+          S.source_id,
+          S.source_name,
+          S.collection,
+          S.url,
+          S.final_url,
+          S.canonical_url,
+          S.title,
+          S.claim,
+          S.summary,
+          S.verdict_raw,
+          S.normalized_verdict,
+          S.language,
+          S.published_at,
+          S.fetched_at,
+          S.extracted_at,
+          S.extractor_version,
+          S.http_status_code
+        )`,
     },
   },
   { provider }

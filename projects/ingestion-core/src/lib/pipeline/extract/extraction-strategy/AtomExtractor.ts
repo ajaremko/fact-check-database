@@ -66,6 +66,7 @@ function extractVerdict(text?: string) {
 
 export const AtomExtractor = makeExtractionStrategy({
   id: 'atom',
+  version: 1,
   canHandle: (source) => source.collection === 'atom',
   extractor: (input) =>
     Effect.gen(function* () {
@@ -99,9 +100,9 @@ export const AtomExtractor = makeExtractionStrategy({
           verdict: values.verdict,
           normalizedVerdict: values.verdict,
           summary: values.summary,
-          publishedAt: values.publishedAt,
+          publishedAtRaw: values.publishedAt,
+          publishedAtNormalized: null,
           canonicalUrl: null,
-          extractorVersion: '1',
           extractedFrom: null,
         })
         extractedFactChecks.push(factCheck)

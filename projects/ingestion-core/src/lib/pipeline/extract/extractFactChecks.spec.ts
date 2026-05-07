@@ -4,6 +4,7 @@ import { Effect } from 'effect'
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../shared'
 
 import { extractFactChecks } from './extractFactChecks'
+import { version } from 'os'
 
 describe('extractFactChecks', () => {
   it.effect('when observation is safe, extracts array of claims', () =>
@@ -107,15 +108,19 @@ describe('extractFactChecks', () => {
         {
           extractedAt: 0,
           extractionId: 'run-1',
+          extractor: {
+            id: 'rss',
+            version: 1,
+          },
           factCheck: {
             canonicalUrl: null,
             claim:
               "Ron DeSantis - Florida redistricting: DeSantis overstates voters' shift from Democrats to Republicans",
             extractedFrom: null,
-            extractorVersion: '1',
             link: 'http://www.politifact.com/factchecks/2026/apr/29/ron-desantis/florida-redistricting-republican-democrat-majority/',
             normalizedVerdict: null,
-            publishedAt: 'Wed, 29 Apr 2026 16:20:04 +0000',
+            publishedAtRaw: 'Wed, 29 Apr 2026 16:20:04 +0000',
+            publishedAtNormalized: null,
             sha256:
               '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
             summary:
@@ -156,14 +161,18 @@ describe('extractFactChecks', () => {
         {
           extractedAt: 0,
           extractionId: 'run-1',
+          extractor: {
+            id: 'rss',
+            version: 1,
+          },
           factCheck: {
             canonicalUrl: null,
             claim: `Fact-checking claims about missing, dead scientists: Were they researching UFOs, nuclear weapons?`,
             extractedFrom: null,
-            extractorVersion: '1',
             link: 'http://www.politifact.com/article/2026/apr/28/missing-dead-scientists-nuclear-weapons-ufos/',
             normalizedVerdict: null,
-            publishedAt: 'Tue, 28 Apr 2026 22:38:37 +0000',
+            publishedAtRaw: 'Tue, 28 Apr 2026 22:38:37 +0000',
+            publishedAtNormalized: null,
             sha256:
               'b57bd898c37fb7c83370fd211b5cc39502722446a7b0df7e1be464ff0b180eb6',
             summary: 'Fact-checking claims about missing and dead scientists',
@@ -202,15 +211,19 @@ describe('extractFactChecks', () => {
         {
           extractedAt: 0,
           extractionId: 'run-1',
+          extractor: {
+            id: 'rss',
+            version: 1,
+          },
           factCheck: {
             canonicalUrl: null,
             claim:
               "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",
             extractedFrom: null,
-            extractorVersion: '1',
             link: 'http://www.politifact.com/article/2026/apr/27/Florida-drought-hurricane-season-active/',
             normalizedVerdict: null,
-            publishedAt: 'Mon, 27 Apr 2026 21:14:57 +0000',
+            publishedAtRaw: 'Mon, 27 Apr 2026 21:14:57 +0000',
+            publishedAtNormalized: null,
             sha256:
               '61aa2ee326e48ce2dace6aee2ba72ccf85d32d2030bfa68694d3d9d151121852',
             summary: "What Florida's drought means for hurricane season",
