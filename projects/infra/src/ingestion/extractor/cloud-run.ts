@@ -16,7 +16,6 @@ import {
   extractorTopicPublisher,
 } from './service-account'
 import { extractorSanitizerTopicSubscription } from './pubsub'
-import { stagingFactChecksSchemaObject } from './storage'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
   `${tag}-extractor-job`,
@@ -37,10 +36,6 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               {
                 name: 'ASSETS_BUCKET_NAME',
                 value: assetsBucket.name,
-              },
-              {
-                name: 'FACT_CHECKS_TABLE_SCHEMA_URI',
-                value: stagingFactChecksSchemaObject.name,
               },
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',

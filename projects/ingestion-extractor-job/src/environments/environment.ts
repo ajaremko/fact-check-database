@@ -14,7 +14,6 @@ import {
   FileSystemMessageBatch,
   Publisher,
 } from '@news-research/ingestion-core/messaging'
-import { FileSystemFactChecksTableSchema } from '@news-research/ingestion-core/pipeline/extract'
 
 import * as JobContext from '../JobContext'
 import { Program } from '../program'
@@ -40,7 +39,6 @@ export const main = Program.pipe(
   Effect.provide(FileSystemStorageWriter.layer),
   Effect.provide(FileSystemMessageBatch.layer),
   Effect.provide(FileSystemPublisher.layer),
-  Effect.provide(FileSystemFactChecksTableSchema.layer),
   Effect.provide(JobContext.layer),
   Effect.provide(NodeFileSystem.layer),
   Effect.provide(Logger.add(Logger.prettyLoggerDefault)),

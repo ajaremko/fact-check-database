@@ -1,3 +1,3 @@
 export * from './ExtractionBatchReady'
-export * from './FactChecksTableRow'
+export * from './FactChecksTable'
 export * from './StagingPath'

@@ -1,6 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
+import { FactChecksTableSchema } from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
+
 import { tag, ingestionLabels, gcpProject } from './config'
 import { provider } from './provider'
 
@@ -17,68 +19,13 @@ export const stagingDataset = new gcp.bigquery.Dataset(
 
 export const stagingDatasetId = stagingDataset.datasetId
 
-// Using STUCT instead of RECORD or X instead of INTEGER causes pulumi to redeploy table
-// on every update. Add this to list of problems/mitigations in documentation about
-// BigQuery and Pulumi.
-export const stagingFactChecksSchema = [
-  { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
-  { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
-  { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-  { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-  { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
-  { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
-  {
-    name: 'source',
-    type: 'RECORD',
-    mode: 'NULLABLE',
-    fields: [
-      { name: 'id', type: 'STRING', mode: 'REQUIRED' },
-      { name: 'collection', type: 'STRING', mode: 'REQUIRED' },
-      { name: 'name', type: 'STRING', mode: 'REQUIRED' },
-      { name: 'url', type: 'STRING', mode: 'REQUIRED' },
-    ],
-  },
-  {
-    name: 'fact_check',
-    type: 'RECORD',
-    mode: 'REQUIRED',
-    fields: [
-      { name: 'sha256', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'title', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'claim', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'verdict', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'published_at', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'language', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'normalized_verdict', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
-      { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
-      { name: 'extracted_from', type: 'STRING', mode: 'NULLABLE' },
-    ],
-  },
-  {
-    name: 'http',
-    type: 'RECORD',
-    mode: 'REQUIRED',
-    fields: [
-      { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'status_code', type: 'INTEGER', mode: 'NULLABLE' },
-      { name: 'etag', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'content_type', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'last_modified', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'headers', type: 'JSON', mode: 'NULLABLE' },
-    ],
-  },
-]
-
 export const stagingFactChecksTable = new gcp.bigquery.Table(
   `${tag}-staging-fact-checks-table`,
   {
     datasetId: stagingDataset.datasetId,
     tableId: 'fact-checks',
     deletionProtection: false,
-    schema: JSON.stringify(stagingFactChecksSchema),
+    schema: JSON.stringify(FactChecksTableSchema.fields),
     timePartitioning: {
       type: 'DAY',
       field: 'extracted_at',
@@ -123,10 +70,11 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
       { name: 'title', type: 'STRING', mode: 'NULLABLE' },
       { name: 'claim', type: 'STRING', mode: 'NULLABLE' },
       { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
+      { name: 'verdict', type: 'STRING', mode: 'NULLABLE' },
       { name: 'verdict_raw', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'normalized_verdict', type: 'STRING', mode: 'NULLABLE' },
       { name: 'language', type: 'STRING', mode: 'NULLABLE' },
       { name: 'published_at', type: 'TIMESTAMP', mode: 'NULLABLE' },
+      { name: 'published_at_raw', type: 'TIMESTAMP', mode: 'NULLABLE' },
       { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
       { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
       { name: 'extractor_version', type: 'STRING', mode: 'NULLABLE' },

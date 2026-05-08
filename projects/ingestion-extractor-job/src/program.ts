@@ -8,7 +8,6 @@ import type {
 import {
   extractFactChecks,
   writeBatch,
-  FactChecksTableSchema,
 } from '@news-research/ingestion-core/pipeline/extract'
 import {
   Publisher,
@@ -53,7 +52,6 @@ export type Program = Effect.Effect<
   | Publisher.PublisherError
   | StorageWriter.StorageWriteError,
   | JobContext
-  | FactChecksTableSchema.FactChecksTableSchema
   | StorageReader.StorageReader
   | MessageBatch.MessageBatch
   | Publisher.Publisher
