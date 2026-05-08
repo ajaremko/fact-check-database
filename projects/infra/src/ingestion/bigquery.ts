@@ -25,6 +25,8 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
     datasetId: stagingDataset.datasetId,
     tableId: 'fact-checks',
     deletionProtection: false,
+    // note: changes in FactChecksTableSchema fields may not be detected by pulumi
+    // needs further investigation
     schema: JSON.stringify(FactChecksTableSchema.fields),
     timePartitioning: {
       type: 'DAY',
@@ -122,8 +124,8 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             fetched_at,
             extracted_at,
             
-            fact_check.extractor_id,
-            fact_check.extractor_version,
+            extractor_id,
+            extractor_version,
             
             source.url,
             http.final_url,
