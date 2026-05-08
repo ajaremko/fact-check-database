@@ -1,11 +1,23 @@
-import { Config, ConfigError, Context, Data, Effect, flow, Layer } from 'effect'
+import {
+  Config,
+  ConfigError,
+  Context,
+  Data,
+  Effect,
+  flow,
+  Layer,
+  Stream,
+} from 'effect'
 import {
   Bucket,
   BucketOptions,
+  GetFilesOptions,
+  MoveOptions,
   SaveData,
   SaveOptions,
 } from '@google-cloud/storage'
 import { Response } from 'teeny-request'
+import { NodeStream } from '@effect/platform-node'
 
 import { StorageClient } from './StorageClient'
 
@@ -110,6 +122,22 @@ export function writeFile(
   )
 }
 
+export function moveFile(
+  name: string,
+  destination: string,
+  options?: MoveOptions
+): Effect.Effect<void, StorageBucketIOError, StorageBucket> {
+  return StorageBucket.pipe(
+    Effect.andThen(({ bucket }) =>
+      Effect.tryPromise({
+        try: () => bucket.file(name).move(destination, options),
+        catch: (cause) =>
+          new StorageBucketIOError({ cause, message: 'Failed to move file' }),
+      })
+    )
+  )
+}
+
 /**
  * Reads metadata for the object at `name` from the `StorageBucket` in context.
  *
@@ -166,6 +194,21 @@ export function downloadFile(
             message: 'Failed to download file',
           }),
       })
+    )
+  )
+}
+
+export function getFilesStream(options?: GetFilesOptions) {
+  return StorageBucket.pipe(
+    Effect.map(({ bucket }) =>
+      NodeStream.fromReadable(
+        () => bucket.getFilesStream(options),
+        (cause) =>
+          new StorageBucketIOError({
+            cause,
+            message: 'Failed to get file stream',
+          })
+      )
     )
   )
 }
