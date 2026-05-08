@@ -57,7 +57,7 @@ export const ExtractionBatchEventSchema = Schema.transformOrFail(
               table_id: input.table.tableId,
               dataset_id: input.table.datasetId,
             },
-            schema: FactChecksTableSchema.fields,
+            schema: FactChecksTableSchema,
           })
         )
       )

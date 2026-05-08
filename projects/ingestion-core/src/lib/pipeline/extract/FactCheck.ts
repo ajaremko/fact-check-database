@@ -8,19 +8,17 @@ import { NumberFromDate } from './NumberFromDate'
 
 export const FactCheckSchema = Schema.Struct({
   sha256: Schema.String,
+  canonicalUrl: Schema.NullOr(Schema.String),
   title: Schema.NullOr(Schema.String),
   claim: Schema.NullOr(Schema.String),
-  verdict: Schema.NullOr(Schema.String),
   link: Schema.NullOr(Schema.String),
-  normalizedVerdict: Schema.NullOr(
+  summary: Schema.NullOr(Schema.String),
+  verdictRaw: Schema.NullOr(Schema.String),
+  verdictNormalized: Schema.NullOr(
     Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
   ),
-  summary: Schema.NullOr(Schema.String),
   publishedAtRaw: Schema.NullOr(Schema.String),
-  publishedAtNormalized: Schema.NullOr(Schema.Date),
-  canonicalUrl: Schema.NullOr(Schema.String),
-
-  extractedFrom: Schema.NullOr(Schema.String),
+  publishedAtNormalized: Schema.NullOr(Schema.instanceOf(Date)),
 })
 
 export type FactCheck = Schema.Schema.Type<typeof FactCheckSchema>
@@ -71,6 +69,8 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         ingestion_id: input.ingestionId,
         content_hash: input.http.contentSha256,
         extraction_id: input.extractionId,
+        extractor_id: input.extractor.id,
+        extractor_version: input.extractor.version,
         source: {
           id: input.source.id,
           name: input.source.name,
@@ -79,16 +79,14 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         },
         fact_check: omitNullKeys({
           sha256: input.factCheck.sha256,
+          canonical_url: input.factCheck.canonicalUrl,
           title: input.factCheck.title,
           claim: input.factCheck.claim,
-          verdict: input.factCheck.verdict,
           summary: input.factCheck.summary,
-          published_at: input.factCheck.publishedAtRaw,
+          verdict_raw: input.factCheck.verdictRaw,
+          verdict_normalized: input.factCheck.verdictNormalized,
+          published_at_raw: input.factCheck.publishedAtRaw,
           published_at_normalized: input.factCheck.publishedAtNormalized,
-          canonical_url: input.factCheck.canonicalUrl,
-          extractor_id: input.extractor.id,
-          extractor_version: input.extractor.version,
-          extracted_from: input.factCheck.extractedFrom,
         }),
         http: omitNullKeys({
           final_url: input.http.finalUrl,

@@ -64,21 +64,21 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
       { name: 'source_id', type: 'STRING', mode: 'REQUIRED' },
       { name: 'source_name', type: 'STRING', mode: 'REQUIRED' },
       { name: 'collection', type: 'STRING', mode: 'REQUIRED' },
+      { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
+      { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
+      { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
+      { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
       { name: 'url', type: 'STRING', mode: 'REQUIRED' },
       { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
       { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
+      { name: 'language', type: 'STRING', mode: 'NULLABLE' },
       { name: 'title', type: 'STRING', mode: 'NULLABLE' },
       { name: 'claim', type: 'STRING', mode: 'NULLABLE' },
       { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
       { name: 'verdict', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'verdict_raw', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'language', type: 'STRING', mode: 'NULLABLE' },
+      { name: 'raw_verdict', type: 'STRING', mode: 'NULLABLE' },
       { name: 'published_at', type: 'TIMESTAMP', mode: 'NULLABLE' },
-      { name: 'published_at_raw', type: 'TIMESTAMP', mode: 'NULLABLE' },
-      { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-      { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-      { name: 'extractor_version', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'http_status_code', type: 'INTEGER', mode: 'NULLABLE' },
+      { name: 'raw_published_at', type: 'STRING', mode: 'NULLABLE' },
     ]),
     timePartitioning: {
       type: 'MONTH',
@@ -119,6 +119,12 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             source.name AS source_name,
             source.collection,
             
+            fetched_at,
+            extracted_at,
+            
+            fact_check.extractor_id,
+            fact_check.extractor_version,
+            
             source.url,
             http.final_url,
             fact_check.canonical_url,
@@ -127,19 +133,13 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             fact_check.claim,
             fact_check.summary,
             
-            fact_check.verdict AS verdict_raw,
-            fact_check.normalized_verdict,
+            fact_check.verdict_raw as raw_verdict,
+            fact_check.verdict_normalized as verdict,
             
             fact_check.language,
             
-            fact_check.published_at,
-            
-            fetched_at,
-            extracted_at,
-            
-            fact_check.extractor_version,
-            
-            http.status_code AS http_status_code
+            fact_check.published_at_raw as raw_published_at,
+            fact_check.published_at_normalized as published_at,
             
           FROM \`${stagingTableRef}\`
           WHERE extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 6 HOUR)
@@ -159,14 +159,14 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           title,
           claim,
           summary,
-          verdict_raw,
-          normalized_verdict,
+          raw_verdict,
+          verdict,
           language,
+          raw_published_at,
           published_at,
           fetched_at,
           extracted_at,
-          extractor_version,
-          http_status_code
+          extractor_version
         )
         VALUES (
           S.fact_check_id,
@@ -181,14 +181,14 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           S.title,
           S.claim,
           S.summary,
-          S.verdict_raw,
-          S.normalized_verdict,
+          S.raw_verdict,
+          S.verdict,
           S.language,
+          S.raw_published_at,
           S.published_at,
           S.fetched_at,
           S.extracted_at,
-          S.extractor_version,
-          S.http_status_code
+          S.extractor_version
         )`,
     },
   },

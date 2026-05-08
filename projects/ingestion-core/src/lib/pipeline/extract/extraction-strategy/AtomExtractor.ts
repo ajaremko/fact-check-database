@@ -97,13 +97,12 @@ export const AtomExtractor = makeExtractionStrategy({
               ? values.link
               : values.link?.href ?? null,
           title: values.title,
-          verdict: values.verdict,
-          normalizedVerdict: values.verdict,
+          verdictRaw: values.verdict,
+          verdictNormalized: values.verdict,
           summary: values.summary,
           publishedAtRaw: values.publishedAt,
           publishedAtNormalized: null,
           canonicalUrl: null,
-          extractedFrom: null,
         })
         extractedFactChecks.push(factCheck)
       }

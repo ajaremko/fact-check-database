@@ -32,16 +32,15 @@ describe('writeBatch', () => {
                   '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
                 title: 'A false claim about something',
                 claim: 'A false claim about something',
-                verdict: 'false',
+                verdictRaw: 'false',
                 link: 'https://example.com/fact-check-1',
-                normalizedVerdict: 'false',
+                verdictNormalized: 'false',
                 summary: 'The claim is false.',
                 publishedAtRaw: 'Wed, 01 Jan 2026 00:00:00 +0000',
                 publishedAtNormalized: new Date(
                   'Wed, 01 Jan 2026 00:00:00 +0000'
                 ),
                 canonicalUrl: null,
-                extractedFrom: null,
               },
               http: {
                 contentSha256:
@@ -75,7 +74,7 @@ describe('writeBatch', () => {
             dataset_id: 'research',
             table_id: 'fact-checks',
           },
-          schema: FactChecksTableSchema.fields,
+          schema: FactChecksTableSchema,
           pointer: {
             bucket: 'inmemory',
             object: 'fact-checks/run-001.ndjson',
