@@ -3,7 +3,7 @@ import { Effect } from 'effect'
 
 import { InMemoryStorageWriter } from '../shared'
 
-import * as FactChecksTableSchema from './FactChecksTableSchema'
+import { FactChecksTableSchema } from './contracts/v1'
 import { writeBatch } from './writeBatch'
 
 describe('writeBatch', () => {
@@ -63,89 +63,7 @@ describe('writeBatch', () => {
           ],
           extractedAt: 1_000,
           datasetId: 'research',
-        }).pipe(
-          Effect.provide(InMemoryStorageWriter.layer(storage)),
-          Effect.provideService(
-            FactChecksTableSchema.FactChecksTableSchema,
-            FactChecksTableSchema.FactChecksTableSchema.of({
-              fields: [
-                {
-                  name: 'content_lineage_id',
-                  type: 'STRING',
-                  mode: 'REQUIRED',
-                },
-                { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-                { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-                { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
-                { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
-                {
-                  name: 'source',
-                  type: 'RECORD',
-                  mode: 'NULLABLE',
-                  fields: [
-                    { name: 'id', type: 'STRING', mode: 'REQUIRED' },
-                    { name: 'collection', type: 'STRING', mode: 'REQUIRED' },
-                    { name: 'name', type: 'STRING', mode: 'REQUIRED' },
-                    { name: 'url', type: 'STRING', mode: 'REQUIRED' },
-                  ],
-                },
-                {
-                  name: 'fact_check',
-                  type: 'RECORD',
-                  mode: 'REQUIRED',
-                  fields: [
-                    { name: 'sha256', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'title', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'claim', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'verdict', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'published_at', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'language', type: 'STRING', mode: 'NULLABLE' },
-                    {
-                      name: 'normalized_verdict',
-                      type: 'STRING',
-                      mode: 'NULLABLE',
-                    },
-                    {
-                      name: 'extractor_id',
-                      type: 'STRING',
-                      mode: 'REQUIRED',
-                    },
-                    {
-                      name: 'extractor_version',
-                      type: 'STRING',
-                      mode: 'REQUIRED',
-                    },
-                    {
-                      name: 'extracted_from',
-                      type: 'STRING',
-                      mode: 'NULLABLE',
-                    },
-                  ],
-                },
-                {
-                  name: 'http',
-                  type: 'RECORD',
-                  mode: 'REQUIRED',
-                  fields: [
-                    {
-                      name: 'content_sha256',
-                      type: 'STRING',
-                      mode: 'REQUIRED',
-                    },
-                    { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'status_code', type: 'INTEGER', mode: 'NULLABLE' },
-                    { name: 'etag', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'content_type', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'last_modified', type: 'STRING', mode: 'NULLABLE' },
-                    { name: 'headers', type: 'JSON', mode: 'NULLABLE' },
-                  ],
-                },
-              ],
-            })
-          )
-        )
+        }).pipe(Effect.provide(InMemoryStorageWriter.layer(storage)))
 
         expect(storage['fact-checks/run-001.ndjson']).toBeDefined()
         expect(event).toStrictEqual({
@@ -157,71 +75,7 @@ describe('writeBatch', () => {
             dataset_id: 'research',
             table_id: 'fact-checks',
           },
-          schema: {
-            fields: [
-              { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
-              { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-              { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-              { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
-              { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
-              {
-                name: 'source',
-                type: 'RECORD',
-                mode: 'NULLABLE',
-                fields: [
-                  { name: 'id', type: 'STRING', mode: 'REQUIRED' },
-                  { name: 'collection', type: 'STRING', mode: 'REQUIRED' },
-                  { name: 'name', type: 'STRING', mode: 'REQUIRED' },
-                  { name: 'url', type: 'STRING', mode: 'REQUIRED' },
-                ],
-              },
-              {
-                name: 'fact_check',
-                type: 'RECORD',
-                mode: 'REQUIRED',
-                fields: [
-                  { name: 'sha256', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'title', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'claim', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'verdict', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'published_at', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'language', type: 'STRING', mode: 'NULLABLE' },
-                  {
-                    name: 'normalized_verdict',
-                    type: 'STRING',
-                    mode: 'NULLABLE',
-                  },
-                  {
-                    name: 'extractor_id',
-                    type: 'STRING',
-                    mode: 'REQUIRED',
-                  },
-                  {
-                    name: 'extractor_version',
-                    type: 'STRING',
-                    mode: 'REQUIRED',
-                  },
-                  { name: 'extracted_from', type: 'STRING', mode: 'NULLABLE' },
-                ],
-              },
-              {
-                name: 'http',
-                type: 'RECORD',
-                mode: 'REQUIRED',
-                fields: [
-                  { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
-                  { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'status_code', type: 'INTEGER', mode: 'NULLABLE' },
-                  { name: 'etag', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'content_type', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'last_modified', type: 'STRING', mode: 'NULLABLE' },
-                  { name: 'headers', type: 'JSON', mode: 'NULLABLE' },
-                ],
-              },
-            ],
-          },
+          schema: FactChecksTableSchema.fields,
           pointer: {
             bucket: 'inmemory',
             object: 'fact-checks/run-001.ndjson',
