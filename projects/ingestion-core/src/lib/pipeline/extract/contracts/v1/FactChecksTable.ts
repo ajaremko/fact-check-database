@@ -12,6 +12,8 @@ export const FactChecksTableSchema = {
     { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
     { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
+    { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
+    { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
     {
       name: 'source',
       type: 'RECORD',
@@ -28,8 +30,6 @@ export const FactChecksTableSchema = {
       type: 'RECORD',
       mode: 'REQUIRED',
       fields: [
-        { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
-        { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
         { name: 'sha256', type: 'STRING', mode: 'NULLABLE' },
         { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
         { name: 'language', type: 'STRING', mode: 'NULLABLE' },
