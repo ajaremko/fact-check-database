@@ -90,6 +90,24 @@
         "${workspaceFolder}/apps/loader/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug @news-research/gcs-data-transfer with Nx",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "@news-research/gcs-data-transfer"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9234"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/projects/gcs-data-transfer/dist/**/*.(m|c|)js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

@@ -20,6 +20,9 @@
     },
     {
       "path": "./projects/infra"
+    },
+    {
+      "path": "./projects/gcs-data-transfer"
     }
   ]
 }

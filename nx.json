@@ -111,7 +111,8 @@
           "ingestion-extractor-job",
           "ingestion-ingestor-job",
           "ingestion-loader-service",
-          "ingestion-sanitizer-service"
+          "ingestion-sanitizer-service",
+          "gcs-data-transfer"
         ],
         "projectsRelationship": "independent",
         "docker": {

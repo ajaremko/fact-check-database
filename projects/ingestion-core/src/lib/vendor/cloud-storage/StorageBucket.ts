@@ -15,6 +15,7 @@ import {
   MoveOptions,
   SaveData,
   SaveOptions,
+  MoveResponse,
 } from '@google-cloud/storage'
 import { Response } from 'teeny-request'
 import { NodeStream } from '@effect/platform-node'
@@ -126,7 +127,7 @@ export function moveFile(
   name: string,
   destination: string,
   options?: MoveOptions
-): Effect.Effect<void, StorageBucketIOError, StorageBucket> {
+): Effect.Effect<MoveResponse, StorageBucketIOError, StorageBucket> {
   return StorageBucket.pipe(
     Effect.andThen(({ bucket }) =>
       Effect.tryPromise({
@@ -198,7 +199,13 @@ export function downloadFile(
   )
 }
 
-export function getFilesStream(options?: GetFilesOptions) {
+export function getFilesStream(
+  options?: GetFilesOptions
+): Effect.Effect<
+  Stream.Stream<unknown, StorageBucketIOError, never>,
+  never,
+  StorageBucket
+> {
   return StorageBucket.pipe(
     Effect.map(({ bucket }) =>
       NodeStream.fromReadable(
