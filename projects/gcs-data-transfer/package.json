@@ -22,24 +22,17 @@
           "tsConfig": "projects/gcs-data-transfer/tsconfig.app.json",
           "assets": [
             "projects/gcs-data-transfer/src/assets"
-          ],
-          "esbuildOptions": {
-            "sourcemap": true,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
+          ]
         },
         "configurations": {
-          "development": {},
+          "development": {
+            "esbuildConfig": "projects/gcs-data-transfer/esbuild.config.js"
+          },
           "production": {
-            "generateLockfile": true,
-            "esbuildOptions": {
-              "sourcemap": false,
-              "outExtension": {
-                ".js": ".js"
-              }
-            }
+            "esbuildConfig": "projects/gcs-data-transfer/esbuild.config.js",
+            "bundle": true,
+            "thirdParty": true,
+            "generatePackageJson": false
           }
         }
       },
@@ -85,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@news-research/gcs-data-transfer:build",
+          "buildTarget": "gcs-data-transfer:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@news-research/gcs-data-transfer:build:development"
+            "buildTarget": "gcs-data-transfer:build:development"
           },
           "production": {
-            "buildTarget": "@news-research/gcs-data-transfer:build:production"
+            "buildTarget": "gcs-data-transfer:build:production"
           }
         }
       },
