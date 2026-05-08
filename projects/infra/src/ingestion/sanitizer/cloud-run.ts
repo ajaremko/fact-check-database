@@ -53,7 +53,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'SERVICE_NAME',
-              value: 'sanitizer-job',
+              value: 'sanitizer-service',
             },
             {
               name: 'SERVICE_VERSION',

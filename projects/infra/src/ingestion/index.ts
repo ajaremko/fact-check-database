@@ -16,3 +16,4 @@ export {
   curatedFactChecksTableId,
 } from './bigquery'
 export { loggingBucketConfigName } from './logging'
+export { pipelineDashboardId } from './monitoring'

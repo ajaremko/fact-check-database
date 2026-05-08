@@ -66,6 +66,21 @@ export const eventLogBucket = new gcp.storage.Bucket(
   }
 )
 
+export const deadletterBucket = new gcp.storage.Bucket(
+  `${tag}-deadletter-bucket`,
+  {
+    location: gcpRegion,
+    name: 'ingestion-deadletter-logs',
+    uniformBucketLevelAccess: true,
+    publicAccessPrevention: 'enforced',
+    labels: ingestionLabels,
+  },
+  {
+    dependsOn: [storageService],
+    provider,
+  }
+)
+
 export const dataflowBucket = new gcp.storage.Bucket(
   `${tag}-dataflow-bucket`,
   {

@@ -2,14 +2,20 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import {
+  deadletterRetentionDuration,
   ingestionLabels,
   gcpRegion,
   tag,
-  deadletterRetentionDuration,
 } from '../config'
+import {
+  extractorTopic,
+  pubsubServiceAccountEmail,
+  pubsubServiceAccountDeadletterBucketReader,
+  pubsubServiceAccountDeadletterObjectCreator,
+} from '../pubsub'
 import { provider } from '../provider'
 import { pubsubService } from '../services'
-import { extractorTopic } from '../pubsub'
+import { deadletterBucket } from '../storage'
 
 import { loaderService } from './cloud-run'
 
@@ -56,6 +62,16 @@ export const loaderExtractorDeadletterTopic = new gcp.pubsub.Topic(
   }
 )
 
+const pubsubServiceAccountDeadletterPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-pubsub-service-account-loader-extractor-deadletter-publisher`,
+  {
+    topic: loaderExtractorDeadletterTopic.name,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+  },
+  { provider }
+)
+
 export const loaderExtractorTopicSubscription = new gcp.pubsub.Subscription(
   `${tag}-loader-extractor-topic-subscription`,
   {
@@ -87,3 +103,39 @@ export const loaderExtractorTopicSubscription = new gcp.pubsub.Subscription(
     provider,
   }
 )
+
+const pubsubServiceAccountDeadletterSubscriber =
+  new gcp.pubsub.SubscriptionIAMMember(
+    `${tag}-pubsub-service-account-loader-extractor-dl-subscriber`,
+    {
+      subscription: loaderExtractorTopicSubscription.name,
+      role: 'roles/pubsub.subscriber',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider }
+  )
+
+export const loaderExtractorDeadletterTopicLogSubscription =
+  new gcp.pubsub.Subscription(
+    `${tag}-loader-extractor-deadletter-topic-log-subscription`,
+    {
+      name: 'loader-extractor-deadletter-topic-log-subscription',
+      topic: loaderExtractorDeadletterTopic.name,
+      cloudStorageConfig: {
+        bucket: deadletterBucket.name,
+        filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
+        filenamePrefix: 'loader/extractor-events/',
+        maxMessages: 1000,
+      },
+      labels: ingestionLabels,
+    },
+    {
+      dependsOn: [
+        pubsubServiceAccountDeadletterSubscriber,
+        pubsubServiceAccountDeadletterPublisher,
+        pubsubServiceAccountDeadletterBucketReader,
+        pubsubServiceAccountDeadletterObjectCreator,
+      ],
+      provider,
+    }
+  )

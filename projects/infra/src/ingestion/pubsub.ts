@@ -4,29 +4,55 @@ import * as pulumi from '@pulumi/pulumi'
 import { ingestionLabels, tag } from './config'
 import { pubsubService } from './services'
 import { provider } from './provider'
-import { eventLogBucket } from './storage'
+import { eventLogBucket, deadletterBucket } from './storage'
 
 const project = gcp.organizations.getProjectOutput({}, { provider })
 
-const pubsubServiceAccountBucketReader = new gcp.storage.BucketIAMMember(
-  `${tag}-pubsub-service-account-bucket-reader`,
-  {
-    bucket: eventLogBucket.name,
-    role: 'roles/storage.legacyBucketReader',
-    member: pulumi.interpolate`serviceAccount:service-${project.number}@gcp-sa-pubsub.iam.gserviceaccount.com`,
-  },
-  { provider, dependsOn: [pubsubService] }
-)
+export const pubsubServiceAccountEmail = pulumi.interpolate`service-${project.number}@gcp-sa-pubsub.iam.gserviceaccount.com`
 
-const pubsubServiceAccountObjectCreator = new gcp.storage.BucketIAMMember(
-  `${tag}-pubsub-service-account-object-creator`,
-  {
-    bucket: eventLogBucket.name,
-    role: 'roles/storage.objectCreator',
-    member: pulumi.interpolate`serviceAccount:service-${project.number}@gcp-sa-pubsub.iam.gserviceaccount.com`,
-  },
-  { provider, dependsOn: [pubsubService] }
-)
+const pubsubServiceAccountEventLogBucketReader =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-pubsub-sa-event-log-bucket-reader`,
+    {
+      bucket: eventLogBucket.name,
+      role: 'roles/storage.legacyBucketReader',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider, dependsOn: [pubsubService] }
+  )
+
+const pubsubServiceAccountEventLogObjectCreator =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-pubsub-sa-event-log-object-creator`,
+    {
+      bucket: eventLogBucket.name,
+      role: 'roles/storage.objectCreator',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider, dependsOn: [pubsubService] }
+  )
+
+export const pubsubServiceAccountDeadletterBucketReader =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-pubsub-sa-deadletter-bucket-reader`,
+    {
+      bucket: deadletterBucket.name,
+      role: 'roles/storage.legacyBucketReader',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider, dependsOn: [pubsubService] }
+  )
+
+export const pubsubServiceAccountDeadletterObjectCreator =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-pubsub-sa-deadletter-object-creator`,
+    {
+      bucket: deadletterBucket.name,
+      role: 'roles/storage.objectCreator',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider, dependsOn: [pubsubService] }
+  )
 
 export const ingestorTopic = new gcp.pubsub.Topic(
   `${tag}-ingestor-topic`,
@@ -55,8 +81,8 @@ export const ingestorTopicLogSubscription = new gcp.pubsub.Subscription(
   },
   {
     dependsOn: [
-      pubsubServiceAccountBucketReader,
-      pubsubServiceAccountObjectCreator,
+      pubsubServiceAccountEventLogBucketReader,
+      pubsubServiceAccountEventLogObjectCreator,
     ],
     provider,
   }
@@ -89,8 +115,8 @@ export const sanitizerTopicLogSubscription = new gcp.pubsub.Subscription(
   },
   {
     dependsOn: [
-      pubsubServiceAccountBucketReader,
-      pubsubServiceAccountObjectCreator,
+      pubsubServiceAccountEventLogBucketReader,
+      pubsubServiceAccountEventLogObjectCreator,
     ],
     provider,
   }
@@ -123,8 +149,8 @@ export const extractorTopicLogSubscription = new gcp.pubsub.Subscription(
   },
   {
     dependsOn: [
-      pubsubServiceAccountBucketReader,
-      pubsubServiceAccountObjectCreator,
+      pubsubServiceAccountEventLogBucketReader,
+      pubsubServiceAccountEventLogObjectCreator,
     ],
     provider,
   }

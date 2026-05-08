@@ -22,6 +22,23 @@
           }
         }
       },
+      "refresh": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pulumi refresh --stack={args.stack} --cwd={projectRoot}",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "configurations": {
+          "dev": {
+            "command": "pulumi refresh --stack=dev --cwd={projectRoot}"
+          },
+          "prod": {
+            "command": "pulumi refresh --stack=prod --cwd={projectRoot}"
+          }
+        }
+      },
       "preview": {
         "executor": "nx:run-commands",
         "options": {

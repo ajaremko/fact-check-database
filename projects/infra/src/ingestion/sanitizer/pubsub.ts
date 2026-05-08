@@ -2,21 +2,27 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import {
+  deadletterRetentionDuration,
   ingestionLabels,
   gcpRegion,
   tag,
-  deadletterRetentionDuration,
 } from '../config'
+import {
+  ingestorTopic,
+  pubsubServiceAccountDeadletterBucketReader,
+  pubsubServiceAccountDeadletterObjectCreator,
+  pubsubServiceAccountEmail,
+} from '../pubsub'
+import { deadletterBucket } from '../storage'
 import { provider } from '../provider'
 import { pubsubService } from '../services'
-import { ingestorTopic } from '../pubsub'
 
 import { sanitizerService } from './cloud-run'
 
 const invokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-sanitizer-invoker-sa`,
   {
-    accountId: `${tag}-sanitizer-invo-sa`,
+    accountId: `${tag}-sanitizer-invoker-sa`,
     displayName: 'Ingestion Sanitizer Invoker',
   },
   { provider }
@@ -34,7 +40,7 @@ const invokerCanRunJob = new gcp.cloudrunv2.ServiceIamMember(
 )
 
 const invokerCanAuthenticate = new gcp.serviceaccount.IAMMember(
-  `${tag}-sanitizer-token-creator`,
+  `${tag}-sanitizer-invoker-token-creator`,
   {
     serviceAccountId: invokerServiceAccount.name,
     role: 'roles/iam.serviceAccountTokenCreator',
@@ -47,6 +53,7 @@ export const sanitizerIngestorDeadletterTopic = new gcp.pubsub.Topic(
   `${tag}-sanitizer-ingestor-deadletter-topic`,
   {
     name: 'sanitizer-ingestor-deadletter-topic',
+    messageRetentionDuration: deadletterRetentionDuration,
     labels: ingestionLabels,
   },
   {
@@ -55,17 +62,14 @@ export const sanitizerIngestorDeadletterTopic = new gcp.pubsub.Topic(
   }
 )
 
-export const sanitizerDeadletterTopic = new gcp.pubsub.Topic(
-  `${tag}-sanitizer-deadletter-topic`,
+const pubsubServiceAccountDeadletterPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-pubsub-sa-sanitizer-ingestor-deadletter-publisher`,
   {
-    name: 'sanitizer-deadletter-topic',
-    labels: ingestionLabels,
-    messageRetentionDuration: deadletterRetentionDuration,
+    topic: sanitizerIngestorDeadletterTopic.name,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
   },
-  {
-    dependsOn: [pubsubService],
-    provider,
-  }
+  { provider }
 )
 
 export const sanitizerIngestorTopicSubscription = new gcp.pubsub.Subscription(
@@ -99,3 +103,39 @@ export const sanitizerIngestorTopicSubscription = new gcp.pubsub.Subscription(
     provider,
   }
 )
+
+const pubsubServiceAccountDeadletterSubscriber =
+  new gcp.pubsub.SubscriptionIAMMember(
+    `${tag}-pubsub-sa-sanitizer-ingestor-dl-subscriber`,
+    {
+      subscription: sanitizerIngestorTopicSubscription.name,
+      role: 'roles/pubsub.subscriber',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider }
+  )
+
+export const sanitizerIngestorDeadletterTopicLogSubscription =
+  new gcp.pubsub.Subscription(
+    `${tag}-sanitizer-ingestor-deadletter-topic-log-subscription`,
+    {
+      name: 'sanitizer-ingestor-deadletter-topic-log-subscription',
+      topic: sanitizerIngestorDeadletterTopic.name,
+      cloudStorageConfig: {
+        bucket: deadletterBucket.name,
+        filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
+        filenamePrefix: 'sanitizer/ingestor-events/',
+        maxMessages: 1000,
+      },
+      labels: ingestionLabels,
+    },
+    {
+      dependsOn: [
+        pubsubServiceAccountDeadletterBucketReader,
+        pubsubServiceAccountDeadletterObjectCreator,
+        pubsubServiceAccountDeadletterSubscriber,
+        pubsubServiceAccountDeadletterPublisher,
+      ],
+      provider,
+    }
+  )

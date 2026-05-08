@@ -44,7 +44,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'SERVICE_NAME',
-              value: 'loader-job',
+              value: 'loader-service',
             },
             {
               name: 'SERVICE_VERSION',
