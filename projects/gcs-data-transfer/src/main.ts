@@ -8,15 +8,19 @@ import {
   StorageBucket,
   StorageClient,
 } from '@news-research/ingestion-core/vendor/cloud-storage'
-// import { PubsubTopic } from '@news-research/ingestion-core/vendor/cloud-pubsub'
+import {
+  PubsubClient,
+  PubsubTopic,
+} from '@news-research/ingestion-core/vendor/cloud-pubsub'
 import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
 
 function processFile(file: StorageBucket.File) {
   return Effect.gen(function* () {
-    yield* Effect.logInfo(`Processing file: ${file.name}`)
-    // yield* PubsubTopic.publishMessage({ data: JSON.stringify(file) })
+    yield* Effect.logInfo(`Publishing data from file: ${file.name}`)
+    const [data] = yield* StorageBucket.downloadFile(file.name)
+    yield* PubsubTopic.publishMessage({ data })
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.withSpan('processMessage')
@@ -59,6 +63,8 @@ const otel = cloudRunInstanceId.pipe(
 const main = Program.pipe(
   Effect.provide(StorageBucket.layer(Config.string('GCS_BUCKET_NAME'))),
   Effect.provide(StorageClient.layer()),
+  Effect.provide(PubsubTopic.layer(Config.string('PUBSUB_TOPIC_NAME'))),
+  Effect.provide(PubsubClient.layer()),
   Effect.provide(
     Logger.addScoped(
       GcpLoggingPinoConfig.make.pipe(
