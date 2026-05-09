@@ -8,13 +8,15 @@ import {
   StorageBucket,
   StorageClient,
 } from '@news-research/ingestion-core/vendor/cloud-storage'
+// import { PubsubTopic } from '@news-research/ingestion-core/vendor/cloud-pubsub'
 import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
 
-function processFile(file: unknown) {
+function processFile(file: StorageBucket.File) {
   return Effect.gen(function* () {
-    yield* Effect.logInfo(`Processing file: ${typeof file} ${file}`)
+    yield* Effect.logInfo(`Processing file: ${file.name}`)
+    // yield* PubsubTopic.publishMessage({ data: JSON.stringify(file) })
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.withSpan('processMessage')

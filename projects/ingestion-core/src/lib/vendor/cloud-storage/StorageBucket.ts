@@ -9,6 +9,7 @@ import {
   Stream,
 } from 'effect'
 import {
+  File,
   Bucket,
   BucketOptions,
   GetFilesOptions,
@@ -16,11 +17,24 @@ import {
   SaveData,
   SaveOptions,
   MoveResponse,
+  GetFilesResponse,
 } from '@google-cloud/storage'
 import { Response } from 'teeny-request'
 import { NodeStream } from '@effect/platform-node'
 
 import { StorageClient } from './StorageClient'
+
+export type {
+  File,
+  Bucket,
+  BucketOptions,
+  GetFilesOptions,
+  MoveOptions,
+  SaveData,
+  SaveOptions,
+  MoveResponse,
+  GetFilesResponse,
+} from '@google-cloud/storage'
 
 /**
  * Provides a Google Cloud Storage `Bucket` for reading and writing objects.
@@ -199,10 +213,27 @@ export function downloadFile(
   )
 }
 
+export function getFiles(
+  options?: GetFilesOptions
+): Effect.Effect<GetFilesResponse, StorageBucketIOError, StorageBucket> {
+  return StorageBucket.pipe(
+    Effect.andThen(({ bucket }) =>
+      Effect.tryPromise({
+        try: () => bucket.getFiles(options),
+        catch: (cause) =>
+          new StorageBucketIOError({
+            cause,
+            message: 'Failed to list files',
+          }),
+      })
+    )
+  )
+}
+
 export function getFilesStream(
   options?: GetFilesOptions
 ): Effect.Effect<
-  Stream.Stream<unknown, StorageBucketIOError, never>,
+  Stream.Stream<File, StorageBucketIOError, never>,
   never,
   StorageBucket
 > {

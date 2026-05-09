@@ -5,8 +5,8 @@ import { deadletterBucket } from '../storage'
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
-import { stagingBucket } from '../storage'
 import { getAppImageUri } from '../getImageUrl'
+import { extractorTopic } from '../pubsub'
 
 import {
   dataTransferServiceAccount,
@@ -28,7 +28,7 @@ export const gcsDataTransferJob = new gcp.cloudrunv2.Job(
             image: getAppImageUri('projects-gcs-data-transfer', dockerTag),
             envs: [
               {
-                name: 'STORAGE_BUCKET_NAME',
+                name: 'GCS_BUCKET_NAME',
                 value: deadletterBucket.name,
               },
               {
@@ -37,7 +37,7 @@ export const gcsDataTransferJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: stagingBucket.name,
+                value: extractorTopic.name,
               },
               {
                 name: 'LOG_LEVEL',
