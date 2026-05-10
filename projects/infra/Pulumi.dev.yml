@@ -7,7 +7,7 @@ config:
   core:githubRepo: news-research
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:tag: dev-196
+  ingestion:tag: dev-197
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */4 * * *'
   ingestion:logLevel: debug
