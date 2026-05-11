@@ -12,7 +12,8 @@ export const StagingPathSchema = Schema.transformOrFail(
   Schema.String,
   Schema.Struct({
     version: Schema.Literal(1),
-    collectionName: Schema.String,
+    tableId: Schema.String,
+    datasetId: Schema.String,
     ext: Schema.String,
     date: NumberFromFormattedDate('yyyy-MM-dd'),
     extractionId: Schema.String,
@@ -22,7 +23,8 @@ export const StagingPathSchema = Schema.transformOrFail(
     encode: (input) => {
       const output = [
         `v${input.version}`,
-        input.collectionName,
+        `datasetId=${input.datasetId}`,
+        `tableId=${input.tableId}`,
         `date=${input.date}`,
         `${input.extractionId}.${input.ext}`,
       ].join('/')
@@ -43,3 +45,5 @@ export const StagingPathSchema = Schema.transformOrFail(
   description: `
     Schema for the GCS object path where extracted data is staged.`,
 })
+
+export type StagingPath = Schema.Schema.Type<typeof StagingPathSchema>

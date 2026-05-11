@@ -77,7 +77,7 @@ export const ObservationSchema = Schema.transformOrFail(
         http: input.http
           ? {
               finalUrl: input.http.final_url ?? null,
-              status: input.http.status ?? null,
+              status: input.http.status_code ?? null,
               contentType: input.http.content_type ?? null,
               etag: input.http.etag ?? null,
               lastModified: input.http.last_modified ?? null,

@@ -7,37 +7,44 @@ import { StorageWriter } from '../shared'
 import {
   ExtractionBatchSchema,
   ExtractionBatchEventSchema,
+  ExtractionBatchPathSchema,
 } from './ExtractionBatch'
-import { FactCheckRowSchema, FactCheckRows } from './FactCheck'
 
-const encodeFactChecks = pipe(
-  FactCheckRowSchema,
+const encodeNdjson = pipe(
+  Schema.Object,
   Ndjson.parseNdjson(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.encode
 )
 
 const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
+const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
 export function writeBatch(input: {
   runId: string
-  extracted: FactCheckRows
-  extractedAt: number
+  rows: object[]
+  timestamp: number
+  tableId: string
   datasetId: string
 }) {
   return Effect.gen(function* () {
-    const data = yield* encodeFactChecks(input.extracted)
-    const tableId = 'fact-checks'
+    const encodePath = yield* encodeExtractionBatchPath({
+      batchId: input.runId,
+      extractedAt: input.timestamp,
+      tableId: input.tableId,
+      datasetId: input.datasetId,
+    })
+    const data = yield* encodeNdjson(input.rows)
     const pointer = yield* StorageWriter.writeFile({
-      path: `${tableId}/${input.runId}.ndjson`,
+      path: encodePath,
       data,
       contentType: 'application/x-ndjson',
     })
     const batch = ExtractionBatchSchema.make({
       batchId: input.runId,
-      extractedAt: input.extractedAt,
+      extractedAt: input.timestamp,
       table: {
-        tableId,
+        tableId: input.tableId,
         datasetId: input.datasetId,
       },
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
@@ -45,7 +52,11 @@ export function writeBatch(input: {
     })
     return yield* encodeExtractionBatchEvent(batch)
   }).pipe(
-    Effect.annotateLogs({ rowCount: input.extracted.length }),
+    Effect.annotateLogs({
+      tableId: input.tableId,
+      datasetId: input.datasetId,
+      rows: input.rows.length,
+    }),
     Effect.withSpan('writeBatch')
   )
 }

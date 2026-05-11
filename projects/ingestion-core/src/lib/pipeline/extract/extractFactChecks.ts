@@ -4,7 +4,7 @@ import { Node, Yaml } from '../../data'
 
 import { FilePointer, StorageReader } from '../shared'
 
-import { FactCheckRow } from './FactCheck'
+import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
 import { ObservationSchema } from './Observation'
 import { extractors } from './extraction-strategy'
 
@@ -14,6 +14,8 @@ const decodeObservation = pipe(
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
+
+const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
 
 export function extractFactChecks(ctx: {
   extractionId: string
@@ -60,7 +62,7 @@ export function extractFactChecks(ctx: {
     }
 
     const responseData = yield* StorageReader.readFile(responsePointer)
-    return yield* extractor
+    const factChecks = yield* extractor
       .extractor({
         timestamp: ctx.extractedAt,
         record: observation,
@@ -104,6 +106,8 @@ export function extractFactChecks(ctx: {
         }),
         Effect.withSpan('extractor')
       )
+
+    return yield* encodeFactCheckRows(factChecks)
   }).pipe(
     Effect.annotateLogs({ extractionId: ctx.extractionId }),
     Effect.withSpan('extractRowsFromSanitized')

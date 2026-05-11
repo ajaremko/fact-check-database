@@ -36,6 +36,10 @@ export const gcsDataTransferJob = new gcp.cloudrunv2.Job(
                 value: 'loader/extractor-events/**/*',
               },
               {
+                name: 'GCS_DESTINATION_PATH',
+                value: 'processed/loader/extractor-events/',
+              },
+              {
                 name: 'PUBSUB_TOPIC_NAME',
                 value: extractorTopic.name,
               },

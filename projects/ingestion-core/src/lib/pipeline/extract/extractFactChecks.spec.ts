@@ -4,7 +4,6 @@ import { Effect } from 'effect'
 import { InMemoryStorageReader, InMemoryStorageWriter } from '../shared'
 
 import { extractFactChecks } from './extractFactChecks'
-import { version } from 'os'
 
 describe('extractFactChecks', () => {
   it.effect('when observation is safe, extracts array of claims', () =>
@@ -33,7 +32,7 @@ describe('extractFactChecks', () => {
           actions: []
           bytes_rewritten: false
           http:
-            status: 200
+            status_code: 200
             content_type: application/rss+xml; charset=utf-8
             last_modified: Wed, 29 Apr 2026 16:20:04 GMT
             headers:
@@ -106,35 +105,36 @@ describe('extractFactChecks', () => {
       )
       expect(result).toStrictEqual([
         {
-          extractedAt: 0,
-          extractionId: 'run-1',
-          extractor: {
-            id: 'rss',
-            version: 1,
+          content_lineage_id:
+            '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
+          content_sha256:
+            '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
+          extracted_at: '1970-01-01T00:00:00.000Z',
+          extraction_id: 'run-1',
+          extractor_id: 'rss',
+          extractor_version: 1,
+          fetched_at: '1970-01-01T00:00:00.000Z',
+          ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+          source: {
+            collection: 'rss',
+            id: 'politifact',
+            name: 'politifact.com',
+            url: 'https://www.politifact.com/rss/all/',
           },
-          factCheck: {
-            canonicalUrl: null,
+          fact_check: {
             claim:
               "Ron DeSantis - Florida redistricting: DeSantis overstates voters' shift from Democrats to Republicans",
             link: 'http://www.politifact.com/factchecks/2026/apr/29/ron-desantis/florida-redistricting-republican-democrat-majority/',
-            publishedAtRaw: 'Wed, 29 Apr 2026 16:20:04 +0000',
-            publishedAtNormalized: null,
+            published_at_raw: 'Wed, 29 Apr 2026 16:20:04 +0000',
             sha256:
               '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
             summary:
               'Since the 2020 census, Florida has "moved from a Democrat majority to a 1.5 million Republican advantage."',
             title:
               "Ron DeSantis - Florida redistricting: DeSantis overstates voters' shift from Democrats to Republicans",
-            verdictRaw: null,
-            verdictNormalized: null,
           },
-          fetchedAt: 0,
           http: {
-            contentSha256:
-              '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
-            contentType: 'application/rss+xml; charset=utf-8',
-            etag: null,
-            finalUrl: null,
+            content_type: 'application/rss+xml; charset=utf-8',
             headers: {
               'cache-control': 'public, max-age=3600',
               connection: 'keep-alive',
@@ -143,47 +143,32 @@ describe('extractFactChecks', () => {
               date: 'Wed, 29 Apr 2026 20:35:08 GMT',
               'last-modified': 'Wed, 29 Apr 2026 16:20:04 GMT',
             },
-            lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
-            status: 200,
-          },
-          id: '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
-          ingestionId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
-          observationId:
-            'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
-          source: {
-            collection: 'rss',
-            id: 'politifact',
-            name: 'politifact.com',
-            url: 'https://www.politifact.com/rss/all/',
+            last_modified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+            status_code: 200,
           },
         },
         {
-          extractedAt: 0,
-          extractionId: 'run-1',
-          extractor: {
-            id: 'rss',
-            version: 1,
-          },
-          factCheck: {
-            canonicalUrl: null,
+          content_lineage_id:
+            'b57bd898c37fb7c83370fd211b5cc39502722446a7b0df7e1be464ff0b180eb6',
+          content_sha256:
+            '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
+          extracted_at: '1970-01-01T00:00:00.000Z',
+          extraction_id: 'run-1',
+          extractor_id: 'rss',
+          extractor_version: 1,
+          fetched_at: '1970-01-01T00:00:00.000Z',
+          ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+          fact_check: {
             claim: `Fact-checking claims about missing, dead scientists: Were they researching UFOs, nuclear weapons?`,
             link: 'http://www.politifact.com/article/2026/apr/28/missing-dead-scientists-nuclear-weapons-ufos/',
-            publishedAtRaw: 'Tue, 28 Apr 2026 22:38:37 +0000',
-            publishedAtNormalized: null,
+            published_at_raw: 'Tue, 28 Apr 2026 22:38:37 +0000',
             sha256:
               'b57bd898c37fb7c83370fd211b5cc39502722446a7b0df7e1be464ff0b180eb6',
             summary: 'Fact-checking claims about missing and dead scientists',
             title: `Fact-checking claims about missing, dead scientists: Were they researching UFOs, nuclear weapons?`,
-            verdictRaw: null,
-            verdictNormalized: null,
           },
-          fetchedAt: 0,
           http: {
-            contentSha256:
-              '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
-            contentType: 'application/rss+xml; charset=utf-8',
-            etag: null,
-            finalUrl: null,
+            content_type: 'application/rss+xml; charset=utf-8',
             headers: {
               'cache-control': 'public, max-age=3600',
               connection: 'keep-alive',
@@ -192,13 +177,9 @@ describe('extractFactChecks', () => {
               date: 'Wed, 29 Apr 2026 20:35:08 GMT',
               'last-modified': 'Wed, 29 Apr 2026 16:20:04 GMT',
             },
-            lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
-            status: 200,
+            last_modified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+            status_code: 200,
           },
-          id: 'b57bd898c37fb7c83370fd211b5cc39502722446a7b0df7e1be464ff0b180eb6',
-          ingestionId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
-          observationId:
-            'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
           source: {
             collection: 'rss',
             id: 'politifact',
@@ -207,34 +188,35 @@ describe('extractFactChecks', () => {
           },
         },
         {
-          extractedAt: 0,
-          extractionId: 'run-1',
-          extractor: {
-            id: 'rss',
-            version: 1,
+          content_lineage_id:
+            '61aa2ee326e48ce2dace6aee2ba72ccf85d32d2030bfa68694d3d9d151121852',
+          content_sha256:
+            '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
+          ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+          extracted_at: '1970-01-01T00:00:00.000Z',
+          extraction_id: 'run-1',
+          extractor_id: 'rss',
+          extractor_version: 1,
+          fetched_at: '1970-01-01T00:00:00.000Z',
+          source: {
+            collection: 'rss',
+            id: 'politifact',
+            name: 'politifact.com',
+            url: 'https://www.politifact.com/rss/all/',
           },
-          factCheck: {
-            canonicalUrl: null,
+          fact_check: {
             claim:
               "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",
             link: 'http://www.politifact.com/article/2026/apr/27/Florida-drought-hurricane-season-active/',
-            publishedAtRaw: 'Mon, 27 Apr 2026 21:14:57 +0000',
-            publishedAtNormalized: null,
+            published_at_raw: 'Mon, 27 Apr 2026 21:14:57 +0000',
             sha256:
               '61aa2ee326e48ce2dace6aee2ba72ccf85d32d2030bfa68694d3d9d151121852',
             summary: "What Florida's drought means for hurricane season",
             title:
               "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",
-            verdictRaw: null,
-            verdictNormalized: null,
           },
-          fetchedAt: 0,
           http: {
-            contentSha256:
-              '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
-            contentType: 'application/rss+xml; charset=utf-8',
-            etag: null,
-            finalUrl: null,
+            content_type: 'application/rss+xml; charset=utf-8',
             headers: {
               'cache-control': 'public, max-age=3600',
               connection: 'keep-alive',
@@ -243,18 +225,8 @@ describe('extractFactChecks', () => {
               date: 'Wed, 29 Apr 2026 20:35:08 GMT',
               'last-modified': 'Wed, 29 Apr 2026 16:20:04 GMT',
             },
-            lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
-            status: 200,
-          },
-          id: '61aa2ee326e48ce2dace6aee2ba72ccf85d32d2030bfa68694d3d9d151121852',
-          ingestionId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
-          observationId:
-            'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
-          source: {
-            collection: 'rss',
-            id: 'politifact',
-            name: 'politifact.com',
-            url: 'https://www.politifact.com/rss/all/',
+            last_modified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+            status_code: 200,
           },
         },
       ])
@@ -288,7 +260,7 @@ describe('extractFactChecks', () => {
             - QUARANTINED_UNEXPECTED_CONTENT_TYPE
           bytes_rewritten: false
           http:
-            status: 403
+            status_code: 403
             content_type: text/html; charset=UTF-8
             headers:
               date: Wed, 29 Apr 2026 20:35:08 GMT
@@ -345,7 +317,7 @@ describe('extractFactChecks', () => {
             label: SAFE_PUBLIC
             actions: []
             http:
-              status: 200
+              status_code: 200
               content_type: application/rss+xml`,
         }
         const result = yield* extractFactChecks({

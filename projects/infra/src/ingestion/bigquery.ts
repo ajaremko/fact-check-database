@@ -168,7 +168,8 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           published_at,
           fetched_at,
           extracted_at,
-          extractor_version
+          extractor_version,
+          extractor_id
         )
         VALUES (
           S.fact_check_id,
@@ -190,7 +191,8 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           S.published_at,
           S.fetched_at,
           S.extracted_at,
-          S.extractor_version
+          S.extractor_version,
+          S.extractor_id
         )`,
     },
   },

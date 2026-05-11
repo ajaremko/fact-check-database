@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/sanitizer",
+  "name": "@news-research/ingestion-sanitizer-service",
   "version": "0.0.1",
   "private": true,
   "nx": {

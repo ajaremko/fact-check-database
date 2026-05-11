@@ -14,7 +14,7 @@ describe('writeBatch', () => {
         const storage: Record<string, string> = {}
         const event = yield* writeBatch({
           runId: 'run-001',
-          extracted: [
+          rows: [
             {
               id: '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
               observationId:
@@ -60,8 +60,9 @@ describe('writeBatch', () => {
               },
             },
           ],
-          extractedAt: 1_000,
+          timestamp: 1_000,
           datasetId: 'research',
+          tableId: 'fact-checks',
         }).pipe(Effect.provide(InMemoryStorageWriter.layer(storage)))
 
         expect(storage['fact-checks/run-001.ndjson']).toBeDefined()

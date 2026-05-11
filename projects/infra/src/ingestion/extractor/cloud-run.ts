@@ -59,7 +59,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'MAX_CONCURRENCY',
-                value: '10',
+                value: '1000',
               },
               {
                 name: 'PINO_LOG_LEVEL',

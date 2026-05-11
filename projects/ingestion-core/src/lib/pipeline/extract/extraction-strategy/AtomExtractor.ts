@@ -88,6 +88,7 @@ export const AtomExtractor = makeExtractionStrategy({
           summary: item.description ?? null,
           publishedAt: item.pubDate ?? null,
         }
+        console.log('values', values)
         const sha256 = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
         const factCheck = FactCheckSchema.make({
           sha256,

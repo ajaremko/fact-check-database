@@ -10,6 +10,11 @@ export default defineConfig(() => ({
     environment: 'node',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
+    fileParallelism: true,
+    poolOptions: {
+      threads: { execArgv: ['--inspect'] },
+      forks: { execArgv: ['--inspect'] },
+    },
     coverage: {
       reportsDirectory: './test-output/vitest/coverage',
       provider: 'v8' as const,

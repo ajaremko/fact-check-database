@@ -4,27 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @org/infra with Nx",
+      "name": "Debug ingestion-core with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@org/infra"],
-      "env": {
-        "NODE_OPTIONS": "--inspect=9229"
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**"],
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/projects/infra/dist/**/*.(m|c|)js",
-        "!**/node_modules/**"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug @news-research/ingestor with Nx",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@news-research/ingestor"],
+      "runtimeArgs": ["nx", "test", "ingestion-core"],
       "env": {
         "NODE_OPTIONS": "--inspect=9230"
       },
@@ -33,16 +15,34 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/ingestor/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/projects/ingestion-core/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @news-research/sanitizer with Nx",
+      "name": "Debug ingestion-ingestor-job with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@news-research/sanitizer"],
+      "runtimeArgs": ["nx", "serve", "ingestion-ingestor-job"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9230"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/projects/ingestion-ingestor-job/dist/**/*.(m|c|)js",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug ingestion-sanitizer-service with Nx",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "ingestion-sanitizer-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9231"
       },
@@ -51,16 +51,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/sanitizer/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/projects/ingestion-sanitizer-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @news-research/extractor with Nx",
+      "name": "Debug ingestion-extractor-job with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@news-research/extractor"],
+      "runtimeArgs": ["nx", "serve", "ingestion-extractor-job"],
       "env": {
         "NODE_OPTIONS": "--inspect=9232"
       },
@@ -69,16 +69,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/extractor/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/projects/ingestion-extractor-job/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @news-research/loader with Nx",
+      "name": "Debug ingestion-loader-job with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@news-research/loader"],
+      "runtimeArgs": ["nx", "serve", "ingestion-loader-job"],
       "env": {
         "NODE_OPTIONS": "--inspect=9233"
       },
@@ -87,14 +87,14 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/loader/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/projects/ingestion-loader-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @news-research/gcs-data-transfer with Nx",
+      "name": "Debug gcs-data-transfer with Nx",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["nx", "serve", "@news-research/gcs-data-transfer"],
       "env": {

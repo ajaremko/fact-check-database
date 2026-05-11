@@ -7,6 +7,7 @@ import { FilePointerSchema } from '../shared'
 import {
   ExtractionBatchReadySchema,
   FactChecksTableSchema,
+  StagingPathSchema,
 } from './contracts/v1'
 
 /**
@@ -30,6 +31,37 @@ export const ExtractionBatchSchema = Schema.Struct({
     Schema.String
   ),
 })
+
+export const ExtractionBatchPathSchema = Schema.transformOrFail(
+  StagingPathSchema,
+  Schema.Struct({
+    batchId: Schema.String,
+    extractedAt: Schema.Number,
+    tableId: Schema.String,
+    datasetId: Schema.String,
+  }),
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ExtractionBatchPath not implemented'
+        )
+      ),
+    encode: (input) => {
+      return ParseResult.succeed({
+        version: 1,
+        datasetId: input.datasetId,
+        tableId: input.tableId,
+        ext: '.batch.ndjson',
+        date: input.extractedAt,
+        extractionId: input.batchId,
+      })
+    },
+  }
+)
 
 export const ExtractionBatchEventSchema = Schema.transformOrFail(
   ExtractionBatchReadySchema,

@@ -83,6 +83,7 @@ export const FactCheckRowSchema = Schema.transformOrFail(
           title: input.factCheck.title,
           claim: input.factCheck.claim,
           summary: input.factCheck.summary,
+          link: input.factCheck.link,
           verdict_raw: input.factCheck.verdictRaw,
           verdict_normalized: input.factCheck.verdictNormalized,
           published_at_raw: input.factCheck.publishedAtRaw,

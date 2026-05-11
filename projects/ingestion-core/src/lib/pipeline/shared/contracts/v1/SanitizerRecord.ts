@@ -80,7 +80,7 @@ export const SanitizerRecordSchema = Schema.Struct({
     Schema.Struct({
       error: Schema.optional(Schema.String),
       final_url: Schema.optional(Schema.String),
-      status: Schema.Number,
+      status_code: Schema.Number,
       content_type: Schema.optional(Schema.String),
       etag: Schema.optional(Schema.String),
       last_modified: Schema.optional(Schema.String),
