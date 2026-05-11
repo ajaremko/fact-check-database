@@ -13,6 +13,7 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"],
+      "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
         "${workspaceFolder}/projects/ingestion-core/dist/**/*.(m|c|)js",

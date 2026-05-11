@@ -10,7 +10,7 @@ export default defineConfig(() => ({
     environment: 'node',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
-    fileParallelism: true,
+    fileParallelism: false,
     poolOptions: {
       threads: { execArgv: ['--inspect'] },
       forks: { execArgv: ['--inspect'] },

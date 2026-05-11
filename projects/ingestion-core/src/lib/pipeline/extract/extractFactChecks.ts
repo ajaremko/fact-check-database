@@ -107,7 +107,8 @@ export function extractFactChecks(ctx: {
         Effect.withSpan('extractor')
       )
 
-    return yield* encodeFactCheckRows(factChecks)
+    const rows = yield* encodeFactCheckRows(factChecks)
+    return rows
   }).pipe(
     Effect.annotateLogs({ extractionId: ctx.extractionId }),
     Effect.withSpan('extractRowsFromSanitized')

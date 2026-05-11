@@ -59,6 +59,7 @@ describe('FactCheckRowSchema', () => {
         claim: 'The claim being checked',
         verdict_normalized: 'false',
         verdict_raw: 'False',
+        link: 'https://example.com/link',
         summary: 'Summary of findings',
         published_at_raw: '2024-01-01',
         published_at_normalized: '2024-01-01T00:00:00.000Z',

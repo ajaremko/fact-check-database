@@ -47,3 +47,6 @@ Thumbs.db
 *.log
 *.env
 vitest.config.*.timestamp*
+.claude/worktrees
+.nx/polygraph
+.nx/self-healing

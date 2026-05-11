@@ -55,7 +55,7 @@ export const ExtractionBatchPathSchema = Schema.transformOrFail(
         version: 1,
         datasetId: input.datasetId,
         tableId: input.tableId,
-        ext: '.batch.ndjson',
+        ext: 'batch.ndjson',
         date: input.extractedAt,
         extractionId: input.batchId,
       })

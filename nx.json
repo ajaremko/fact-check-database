@@ -81,7 +81,10 @@
     },
     "@nx/vitest:test": {
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": ["default", "^production"],
+      "options": {
+        "sourceMaps": true
+      }
     },
     "test": {
       "dependsOn": ["^build"]
@@ -121,5 +124,6 @@
         }
       }
     }
-  }
+  },
+  "analytics": false
 }

@@ -65,7 +65,12 @@ describe('writeBatch', () => {
           tableId: 'fact-checks',
         }).pipe(Effect.provide(InMemoryStorageWriter.layer(storage)))
 
-        expect(storage['fact-checks/run-001.ndjson']).toBeDefined()
+        expect(
+          storage[
+            'v1/datasetId=research/tableId=fact-checks/date=1970-01-01/run-001.batch.ndjson'
+          ]
+        ).toBeDefined()
+
         expect(event).toStrictEqual({
           version: 1,
           extraction_batch_id: 'run-001',
@@ -78,7 +83,8 @@ describe('writeBatch', () => {
           schema: FactChecksTableSchema,
           pointer: {
             bucket: 'inmemory',
-            object: 'fact-checks/run-001.ndjson',
+            object:
+              'v1/datasetId=research/tableId=fact-checks/date=1970-01-01/run-001.batch.ndjson',
           },
         })
       })

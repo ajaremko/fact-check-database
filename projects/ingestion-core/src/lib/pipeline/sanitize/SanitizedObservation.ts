@@ -103,7 +103,7 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
       }
       if (input.http) {
         output.http = omitNullKeys({
-          status: input.http.status,
+          status_code: input.http.status,
           final_url: input.http.finalUrl,
           content_type: input.http.contentType,
           etag: input.http.etag,
