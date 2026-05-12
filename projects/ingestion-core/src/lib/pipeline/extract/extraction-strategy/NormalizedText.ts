@@ -1,9 +1,10 @@
 import { Schema } from 'effect'
 
+import { Unicode } from '../../../data'
+
 function normalizeText(text: string) {
   return text
-    .replace(/’/g, "'")
-    .replace(/[^\x20-\x7E]/g, '')
+    .normalize('NFC')
     .split(/\s+/)
     .map((line) => line.trim())
     .filter((line) => line !== '')
@@ -18,4 +19,4 @@ export const NormalizedTextSchema = Schema.transform(
     decode: normalizeText,
     encode: normalizeText,
   }
-)
+).pipe(Unicode.parseUnicode())
