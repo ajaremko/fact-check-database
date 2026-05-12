@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, Ndjson } from '../../data'
+import { Node, Ndjson } from '@news-research/ingestion-data'
 
 import { StorageWriter } from '../shared'
 

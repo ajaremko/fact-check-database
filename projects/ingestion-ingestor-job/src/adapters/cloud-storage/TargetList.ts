@@ -5,7 +5,7 @@ import {
   StorageBucket,
   StorageClient,
 } from '@news-research/ingestion-core/vendor/cloud-storage'
-import { Node, NodeCsv } from '@news-research/ingestion-core/data'
+import { Node, NodeCsv } from '@news-research/ingestion-data'
 
 import { SourceList, SourceSchema } from '../../TargetList'
 

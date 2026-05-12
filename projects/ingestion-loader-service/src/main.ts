@@ -13,7 +13,7 @@ import { ExtractionBatchReadySchema } from '@news-research/ingestion-core/pipeli
 import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
 import { StorageClient } from '@news-research/ingestion-core/vendor/cloud-storage'
 import { MessageQueue } from '@news-research/ingestion-core/messaging'
-import { Node } from '@news-research/ingestion-core/data'
+import { Node } from '@news-research/ingestion-data'
 import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
 import { loadBatch } from '@news-research/ingestion-core/pipeline/load'
 import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'

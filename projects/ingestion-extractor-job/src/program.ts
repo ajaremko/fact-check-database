@@ -13,7 +13,7 @@ import {
   Publisher,
   MessageBatch,
 } from '@news-research/ingestion-core/messaging'
-import { Node } from '@news-research/ingestion-core/data'
+import { Node } from '@news-research/ingestion-data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 

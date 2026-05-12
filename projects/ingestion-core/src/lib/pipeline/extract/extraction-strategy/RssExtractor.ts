@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from 'effect'
 
-import { Node, Xml } from '../../../data'
+import { Node, Xml } from '@news-research/ingestion-data'
 
 import { FactCheckSchema } from '../FactCheck'
 

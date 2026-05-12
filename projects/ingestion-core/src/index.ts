@@ -1,8 +1,6 @@
-export * as Data from './lib/data'
 export * as Messaging from './lib/messaging'
 export * as Shared from './lib/pipeline/shared'
 export * as Ingest from './lib/pipeline/ingest'
 export * as Sanitize from './lib/pipeline/sanitize'
 export * as Extract from './lib/pipeline/extract'
 export * as Load from './lib/pipeline/load'
-export * as Utils from './lib/data'

@@ -6,7 +6,7 @@ import {
 } from '@news-research/ingestion-core/pipeline/ingest'
 import type { StorageWriter } from '@news-research/ingestion-core/pipeline/shared'
 import { Publisher } from '@news-research/ingestion-core/messaging'
-import { Node } from '@news-research/ingestion-core/data'
+import { Node } from '@news-research/ingestion-data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { SourceList, Source } from './TargetList'

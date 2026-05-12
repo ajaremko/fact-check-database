@@ -1,6 +1,6 @@
 import { Array, Effect, pipe, Schema } from 'effect'
 
-import { Node, Yaml } from '../../data'
+import { Node, Yaml } from '@news-research/ingestion-data'
 
 import { FilePointer, StorageReader } from '../shared'
 

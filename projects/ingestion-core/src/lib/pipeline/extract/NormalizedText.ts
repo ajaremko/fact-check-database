@@ -1,6 +1,6 @@
 import { Brand, Schema } from 'effect'
 
-import { Unicode } from '../../data'
+import { Unicode } from '@news-research/ingestion-data'
 
 function normalizeText(maxLength: number) {
   return (text: string) =>

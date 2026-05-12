@@ -1,6 +1,6 @@
 import { Effect, Schema, flow, pipe } from 'effect'
 
-import { Node, omitNullKeys, Yaml } from '../../data'
+import { Node, omitNullKeys, Yaml } from '@news-research/ingestion-data'
 
 import {
   StorageWriter,

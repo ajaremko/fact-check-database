@@ -11,6 +11,9 @@
   "references": [
     {
       "path": "../ingestion-core/tsconfig.lib.json"
+    },
+    {
+      "path": "../ingestion-data/tsconfig.lib.json"
     }
   ]
 }

@@ -9,7 +9,7 @@ import { Config, Effect, Layer, Schema } from 'effect'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import { Node } from '../../data'
+import { Node } from '@news-research/ingestion-data'
 
 import * as MessageQueue from '../MessageQueue'
 
