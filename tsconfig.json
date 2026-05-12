@@ -23,6 +23,9 @@
     },
     {
       "path": "./projects/gcs-data-transfer"
+    },
+    {
+      "path": "./projects/ingestion-data"
     }
   ]
 }

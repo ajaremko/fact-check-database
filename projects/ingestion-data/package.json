@@ -1,0 +1,28 @@
+{
+  "name": "@news-research/ingestion-data",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0",
+    "effect": "^3.21.0",
+    "fast-xml-parser": "^5.5.11",
+    "tslib": "^2.3.0",
+    "unidecode": "^1.1.0",
+    "yaml": "^2.8.2"
+  },
+  "nx": {
+    "name": "ingestion-data"
+  }
+}
