@@ -1,23 +1,30 @@
 import { ParseResult, Schema } from 'effect'
 
-import { FactChecksTableRowSchema } from './contracts/v1'
-import { SourceSchema } from '../shared'
 import { omitNullKeys } from '../../data'
 
+import { SourceSchema } from '../shared'
+
+import { FactChecksTableRowSchema } from './contracts/v1'
 import { NumberFromDate } from './NumberFromDate'
+import {
+  NormalizedTextMediumSchema,
+  NormalizedTextTinySchema,
+  NormalizedTextXxlSchema,
+  NormalizedTextSmallSchema,
+} from './NormalizedText'
 
 export const FactCheckSchema = Schema.Struct({
   sha256: Schema.String,
   canonicalUrl: Schema.NullOr(Schema.String),
-  title: Schema.NullOr(Schema.String),
-  claim: Schema.NullOr(Schema.String),
+  title: Schema.NullOr(NormalizedTextMediumSchema),
+  claim: Schema.NullOr(NormalizedTextMediumSchema),
   link: Schema.NullOr(Schema.String),
-  summary: Schema.NullOr(Schema.String),
-  verdictRaw: Schema.NullOr(Schema.String),
+  summary: Schema.NullOr(NormalizedTextXxlSchema),
+  verdictRaw: Schema.NullOr(NormalizedTextSmallSchema),
   verdictNormalized: Schema.NullOr(
     Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
   ),
-  publishedAtRaw: Schema.NullOr(Schema.String),
+  publishedAtRaw: Schema.NullOr(NormalizedTextTinySchema),
   publishedAtNormalized: Schema.NullOr(Schema.instanceOf(Date)),
 })
 

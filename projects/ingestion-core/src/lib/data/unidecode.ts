@@ -31,7 +31,7 @@ import { ParseResult, Schema } from 'effect'
  * // → "aea)ace"
  */
 export function parseUnicode(sub?: string) {
-  return function <R>(schema: Schema.Schema<string, string, R>) {
+  return function <A extends string, R>(schema: Schema.Schema<A, string, R>) {
     return Schema.transformOrFail(Schema.String, schema, {
       strict: true,
       decode: (input, _, ast) =>

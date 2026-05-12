@@ -4,19 +4,18 @@ import { Node, Xml } from '../../../data'
 
 import { FactCheckSchema } from '../FactCheck'
 
-import { NormalizedTextSchema } from './NormalizedText'
 import { makeExtractionStrategy } from './ExtractionStrategy'
 
 const AtomEntrySchema = Schema.Struct({
   id: Schema.optional(Schema.String),
-  title: Schema.optional(NormalizedTextSchema),
-  verdict: Schema.optional(NormalizedTextSchema),
+  title: Schema.optional(FactCheckSchema.fields.title),
+  verdict: Schema.optional(FactCheckSchema.fields.verdictRaw),
   link: Schema.optional(
     Schema.Union(Schema.String, Schema.Struct({ href: Schema.String }))
   ),
-  description: Schema.optional(NormalizedTextSchema),
-  summary: Schema.optional(NormalizedTextSchema),
-  pubDate: Schema.optional(NormalizedTextSchema),
+  description: Schema.optional(FactCheckSchema.fields.summary),
+  summary: Schema.optional(FactCheckSchema.fields.summary),
+  pubDate: Schema.optional(FactCheckSchema.fields.publishedAtRaw),
 })
 
 const AtomDocumentSchema = Schema.Struct({
@@ -41,12 +40,6 @@ const decodeAtom = pipe(
   Schema.decode
 )
 
-function extractClaim(title?: string) {
-  if (!title) return null
-  // Basic normalization
-  return title.trim()
-}
-
 const VERDICT_PATTERNS = [
   { pattern: /false/i, value: 'false' },
   { pattern: /misleading/i, value: 'misleading' },
@@ -54,7 +47,7 @@ const VERDICT_PATTERNS = [
   { pattern: /exaggerat/i, value: 'exaggerated' },
 ] as const
 
-function extractVerdict(text?: string) {
+function extractVerdict<T extends string>(text?: T | null) {
   if (!text) return null
   for (const { pattern, value } of VERDICT_PATTERNS) {
     if (pattern.test(text)) {
@@ -83,12 +76,12 @@ export const AtomExtractor = makeExtractionStrategy({
         const values = {
           link: item.link,
           title: item.title ?? null,
-          claim: extractClaim(item.title),
-          verdict: extractVerdict(item.title),
+          claim: item.title ?? null,
+          verdict: item.verdict ?? null,
           summary: item.description ?? null,
           publishedAt: item.pubDate ?? null,
         }
-        console.log('values', values)
+
         const sha256 = yield* Node.sha256Hex(JSON.stringify(values), 'utf-8')
         const factCheck = FactCheckSchema.make({
           sha256,
@@ -99,7 +92,7 @@ export const AtomExtractor = makeExtractionStrategy({
               : values.link?.href ?? null,
           title: values.title,
           verdictRaw: values.verdict,
-          verdictNormalized: values.verdict,
+          verdictNormalized: extractVerdict(values.verdict),
           summary: values.summary,
           publishedAtRaw: values.publishedAt,
           publishedAtNormalized: null,

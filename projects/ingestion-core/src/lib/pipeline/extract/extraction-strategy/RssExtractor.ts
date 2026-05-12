@@ -4,16 +4,16 @@ import { Node, Xml } from '../../../data'
 
 import { FactCheckSchema } from '../FactCheck'
 
-import { NormalizedTextSchema } from './NormalizedText'
 import { makeExtractionStrategy } from './ExtractionStrategy'
 
 const RssItemSchema = Schema.Struct({
-  title: Schema.optional(NormalizedTextSchema),
+  title: Schema.optional(FactCheckSchema.fields.title),
   link: Schema.optional(
     Schema.Union(Schema.String, Schema.Struct({ href: Schema.String }))
   ),
-  description: Schema.optional(NormalizedTextSchema),
-  pubDate: Schema.optional(NormalizedTextSchema),
+  verdict: Schema.optional(FactCheckSchema.fields.verdictRaw),
+  description: Schema.optional(FactCheckSchema.fields.summary),
+  pubDate: Schema.optional(FactCheckSchema.fields.publishedAtRaw),
 }).annotations({ title: 'RssItem' })
 
 const RssDocumentSchema = Schema.Struct({
@@ -43,12 +43,6 @@ const decodeRss = pipe(
   Schema.decode
 )
 
-function extractClaim(title?: string) {
-  if (!title) return null
-  // Basic normalization
-  return title.trim()
-}
-
 const VERDICT_PATTERNS = [
   { pattern: /false/i, value: 'false' },
   { pattern: /misleading/i, value: 'misleading' },
@@ -56,7 +50,7 @@ const VERDICT_PATTERNS = [
   { pattern: /exaggerat/i, value: 'exaggerated' },
 ] as const
 
-function extractVerdict(text?: string) {
+function extractVerdict(text?: string | null) {
   if (!text) return null
   for (const { pattern, value } of VERDICT_PATTERNS) {
     if (pattern.test(text)) {
@@ -90,8 +84,8 @@ export const RssExtractor = makeExtractionStrategy({
         const values = {
           link: item.link,
           title: item.title ?? null,
-          claim: extractClaim(item.title),
-          verdict: extractVerdict(item.title),
+          claim: item.title ?? null,
+          verdict: item.verdict ?? null,
           summary: item.description ?? null,
           publishedAt: item.pubDate ?? null,
         }
@@ -105,7 +99,7 @@ export const RssExtractor = makeExtractionStrategy({
               : values.link?.href ?? null,
           title: values.title,
           verdictRaw: values.verdict,
-          verdictNormalized: values.verdict,
+          verdictNormalized: extractVerdict(values.verdict),
           summary: values.summary,
           publishedAtRaw: values.publishedAt,
           publishedAtNormalized: null,

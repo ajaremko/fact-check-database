@@ -5,7 +5,7 @@ import { FactCheckRowSchema } from './FactCheck'
 describe('FactCheckRowSchema', () => {
   it('encodes to bigquery row', () => {
     expect(
-      Schema.encodeSync(FactCheckRowSchema)({
+      Schema.encodeUnknownSync(FactCheckRowSchema)({
         id: 'lineage-id',
         observationId: 'obs-id',
         ingestionId: 'ing-id',
