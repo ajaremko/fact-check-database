@@ -1,6 +1,9 @@
 import { Config, ConfigError, Effect, Layer } from 'effect'
 
-import { StorageBucket, StorageClient } from '../../../vendor/cloud-storage'
+import {
+  StorageBucket,
+  StorageClient,
+} from '@news-research/ingestion-vendor/cloud-storage'
 
 import * as StorageWriter from '../StorageWriter'
 

@@ -16,14 +16,14 @@ import {
 import {
   PubsubSubscriberClient,
   PubsubClient,
-} from '@news-research/ingestion-core/vendor/cloud-pubsub'
+} from '@news-research/ingestion-vendor/cloud-pubsub'
 import {
   StorageClient,
   StorageBucket,
-} from '@news-research/ingestion-core/vendor/cloud-storage'
-import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
-import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
-import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
+} from '@news-research/ingestion-vendor/cloud-storage'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
+import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
 import * as JobContext from '../JobContext'
 import { Program } from '../program'

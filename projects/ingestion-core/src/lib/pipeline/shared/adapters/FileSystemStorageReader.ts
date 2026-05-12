@@ -1,5 +1,4 @@
 import { Effect, Layer } from 'effect'
-
 import { FileSystem } from '@effect/platform'
 
 import * as StorageReader from '../StorageReader'

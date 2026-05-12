@@ -19,7 +19,6 @@ import {
   MoveResponse,
   GetFilesResponse,
 } from '@google-cloud/storage'
-import { Response } from 'teeny-request'
 import { NodeStream } from '@effect/platform-node'
 
 import { StorageClient } from './StorageClient'
@@ -148,38 +147,6 @@ export function moveFile(
         try: () => bucket.file(name).move(destination, options),
         catch: (cause) =>
           new StorageBucketIOError({ cause, message: 'Failed to move file' }),
-      })
-    )
-  )
-}
-
-/**
- * Reads metadata for the object at `name` from the `StorageBucket` in context.
- *
- * Returns a tuple of `[metadata, response]`. The metadata object contains
- * GCS object attributes such as `contentType`, `size`, and `updated`.
- *
- * Any rejection from the underlying `file.getMetadata()` call is caught and wrapped as a `StorageBucketIOError`.
- *
- * @example
- * const [metadata] = yield* StorageBucket.readFileMetadata('path/to/file.json')
- */
-export function readFileMetadata(
-  name: string
-): Effect.Effect<
-  [Record<string, unknown>, Response<unknown>],
-  StorageBucketIOError,
-  StorageBucket
-> {
-  return StorageBucket.pipe(
-    Effect.andThen(({ bucket }) =>
-      Effect.tryPromise({
-        try: () => bucket.file(name).getMetadata(),
-        catch: (cause) =>
-          new StorageBucketIOError({
-            cause,
-            message: 'Failed to read file metadata',
-          }),
       })
     )
   )

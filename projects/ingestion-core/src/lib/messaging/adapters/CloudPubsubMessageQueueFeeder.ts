@@ -1,7 +1,10 @@
 import { Config, ConfigError, Effect, Layer, Queue } from 'effect'
 import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
-import { PubsubClient, PubsubSubscription } from '../../vendor/cloud-pubsub'
+import {
+  PubsubClient,
+  PubsubSubscription,
+} from '@news-research/ingestion-vendor/cloud-pubsub'
 
 import * as MessageQueue from '../MessageQueue'
 

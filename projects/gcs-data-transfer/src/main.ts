@@ -7,14 +7,14 @@ import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import {
   StorageBucket,
   StorageClient,
-} from '@news-research/ingestion-core/vendor/cloud-storage'
+} from '@news-research/ingestion-vendor/cloud-storage'
 import {
   PubsubClient,
   PubsubTopic,
-} from '@news-research/ingestion-core/vendor/cloud-pubsub'
-import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
-import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
-import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
+} from '@news-research/ingestion-vendor/cloud-pubsub'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
+import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
 const readJobContext = Effect.gen(function* () {
   const source = yield* Config.string('GCS_SOURCE_PATH')

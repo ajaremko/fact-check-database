@@ -1,5 +1,4 @@
 import { Config, Effect, Layer } from 'effect'
-
 import { FileSystem } from '@effect/platform'
 
 import * as StorageWriter from '../StorageWriter'

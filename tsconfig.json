@@ -26,6 +26,9 @@
     },
     {
       "path": "./projects/ingestion-data"
+    },
+    {
+      "path": "./projects/ingestion-vendor"
     }
   ]
 }

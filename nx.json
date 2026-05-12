@@ -62,7 +62,7 @@
           "targetName": "typecheck"
         }
       },
-      "exclude": ["projects/ingestion-data/*"]
+      "exclude": ["projects/ingestion-data/*", "projects/ingestion-vendor/*"]
     },
     {
       "plugin": "@nx/vitest",

@@ -4,9 +4,10 @@ import { ConfigProvider, Effect, Fiber, Layer } from 'effect'
 import { HttpClient, HttpClientRequest } from '@effect/platform'
 import { NodeHttpClient } from '@effect/platform-node'
 
+import * as MessageQueue from '../MessageQueue'
+
 import * as HttpServerMessageQueueFeeder from './HttpServerMessageQueueFeeder'
 import * as InmemoryMessageQueue from './InmemoryMessageQueue'
-import * as MessageQueue from '../MessageQueue'
 
 describe('HttpServerMessageQueueFeeder', () => {
   it.effect('server returns 201 when message is received and acked', () =>

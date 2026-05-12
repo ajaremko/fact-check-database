@@ -8,15 +8,15 @@ import {
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
 } from '@news-research/ingestion-core/messaging'
-import { BigQueryClient } from '@news-research/ingestion-core/vendor/bigquery'
+import { BigQueryClient } from '@news-research/ingestion-vendor/bigquery'
 import { ExtractionBatchReadySchema } from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
-import { GcpLoggingPinoConfig } from '@news-research/ingestion-core/vendor/pino-logging-gcp-config'
-import { StorageClient } from '@news-research/ingestion-core/vendor/cloud-storage'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import { StorageClient } from '@news-research/ingestion-vendor/cloud-storage'
 import { MessageQueue } from '@news-research/ingestion-core/messaging'
 import { Node } from '@news-research/ingestion-data'
-import { cloudRunInstanceId } from '@news-research/ingestion-core/vendor/cloud-run'
+import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { loadBatch } from '@news-research/ingestion-core/pipeline/load'
-import { pinoLogger } from '@news-research/ingestion-core/vendor/pino'
+import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
 const decodeIncoming = pipe(
   ExtractionBatchReadySchema,

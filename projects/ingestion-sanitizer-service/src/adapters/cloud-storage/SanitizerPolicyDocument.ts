@@ -11,7 +11,7 @@ import {
 import {
   StorageBucket,
   StorageClient,
-} from '@news-research/ingestion-core/vendor/cloud-storage'
+} from '@news-research/ingestion-vendor/cloud-storage'
 import { Yaml, Node } from '@news-research/ingestion-data'
 import { SanitizerPolicy } from '@news-research/ingestion-core/pipeline/sanitize'
 

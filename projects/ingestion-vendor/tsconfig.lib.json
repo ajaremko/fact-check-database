@@ -8,14 +8,7 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],
-  "references": [
-    {
-      "path": "../ingestion-data/tsconfig.lib.json"
-    },
-    {
-      "path": "../ingestion-vendor/tsconfig.lib.json"
-    }
-  ],
+  "references": [],
   "exclude": [
     "vite.config.ts",
     "vite.config.mts",

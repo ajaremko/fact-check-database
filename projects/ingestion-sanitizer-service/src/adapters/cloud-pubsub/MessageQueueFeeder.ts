@@ -4,7 +4,7 @@ import { Message as GcpsMessage } from '@google-cloud/pubsub'
 import {
   PubsubClient,
   PubsubSubscription,
-} from '@news-research/ingestion-core/vendor/cloud-pubsub'
+} from '@news-research/ingestion-vendor/cloud-pubsub'
 
 import { MessageQueue } from '@news-research/ingestion-core/messaging'
 

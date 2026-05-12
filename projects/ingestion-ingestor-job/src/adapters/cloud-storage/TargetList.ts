@@ -4,7 +4,7 @@ import { ParseError } from 'effect/ParseResult'
 import {
   StorageBucket,
   StorageClient,
-} from '@news-research/ingestion-core/vendor/cloud-storage'
+} from '@news-research/ingestion-vendor/cloud-storage'
 import { Node, NodeCsv } from '@news-research/ingestion-data'
 
 import { SourceList, SourceSchema } from '../../TargetList'
