@@ -96,6 +96,11 @@
           "prune"
         ]
       }
+    },
+    "release": {
+      "docker": {
+        "repositoryName": "ingestion-pipeline-data-transfer"
+      }
     }
   },
   "dependencies": {}
