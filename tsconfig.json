@@ -32,6 +32,9 @@
     },
     {
       "path": "./projects/ingestion-messaging"
+    },
+    {
+      "path": "./projects/ingestion-pipeline"
     }
   ]
 }

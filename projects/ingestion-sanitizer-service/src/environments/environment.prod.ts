@@ -6,7 +6,7 @@ import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
-} from '@news-research/ingestion-core/pipeline/shared'
+} from '@news-research/ingestion-pipeline/shared'
 import {
   CloudPubsubPublisher,
   HttpServerMessageQueueFeeder,

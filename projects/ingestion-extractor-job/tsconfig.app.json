@@ -16,7 +16,7 @@
       "path": "../ingestion-messaging/tsconfig.lib.json"
     },
     {
-      "path": "../ingestion-core/tsconfig.lib.json"
+      "path": "../ingestion-pipeline/tsconfig.lib.json"
     },
     {
       "path": "../ingestion-data/tsconfig.lib.json"

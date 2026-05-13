@@ -13,7 +13,7 @@ import {
   StorageClient,
 } from '@news-research/ingestion-vendor/cloud-storage'
 import { Yaml, Node } from '@news-research/ingestion-data'
-import { SanitizerPolicy } from '@news-research/ingestion-core/pipeline/sanitize'
+import { SanitizerPolicy } from '@news-research/ingestion-pipeline/sanitize'
 
 import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
 

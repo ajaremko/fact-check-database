@@ -1,0 +1,231 @@
+import { Schema, ParseResult } from 'effect'
+import { DeepMutable, Mutable } from 'effect/Types'
+
+import { omitNullKeys, omitNullableKeys } from '@news-research/ingestion-data'
+
+import {
+  ArchivePathSchema,
+  SanitizerRecordSchema,
+  SanitizerRecord,
+  SanitizerRecordMetadataSchema,
+} from '../shared/contracts/v1'
+import { FilePointerSchema, SourceSchema, TimestampSchema } from '../shared'
+
+import { ObservationSanitizedSchema } from './contracts/v1'
+import { PolicyDecisionSchema } from './PolicyDecision'
+
+export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
+  'SanitizedObservation'
+)({
+  observationId: Schema.String,
+  ingestionId: Schema.String,
+  fetchedAt: TimestampSchema,
+  sanitizedAt: TimestampSchema,
+  outcome: Schema.Struct({
+    decision: PolicyDecisionSchema,
+    sanitized: Schema.NullOr(
+      Schema.Struct({
+        object: Schema.String,
+        bucket: Schema.String,
+      })
+    ),
+  }),
+  source: SourceSchema,
+  http: Schema.NullOr(
+    Schema.Struct({
+      finalUrl: Schema.NullOr(Schema.String),
+      status: Schema.Number,
+      contentType: Schema.NullOr(Schema.String),
+      etag: Schema.NullOr(Schema.String),
+      lastModified: Schema.NullOr(Schema.String),
+      headers: Schema.Record({ key: Schema.String, value: Schema.String }),
+    })
+  ),
+  content: Schema.NullOr(
+    Schema.Struct({
+      sha256: Schema.String,
+      bytes: Schema.Number,
+    })
+  ),
+  error: Schema.NullOr(Schema.String),
+  input: Schema.Struct({
+    record: Schema.Struct({
+      object: Schema.String,
+      bucket: Schema.String,
+    }),
+    raw: Schema.NullOr(
+      Schema.Struct({
+        object: Schema.String,
+        bucket: Schema.String,
+      })
+    ),
+  }),
+}) {}
+
+export const SanitizedObservationSchema = Schema.transformOrFail(
+  SanitizerRecordSchema,
+  SanitizedObservation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding SanitizedObservation not implemented'
+        )
+      ),
+    encode: (input) => {
+      const output: DeepMutable<SanitizerRecord> = {
+        version: 1 as const,
+        kind: 'sanitized_record' as const,
+        content_lineage_id: input.observationId,
+        ingestion_batch_id: input.ingestionId,
+        fetched_at: input.fetchedAt,
+        sanitized_at: input.sanitizedAt,
+        source: {
+          id: input.source.id,
+          name: input.source.name,
+          url: input.source.url,
+          collection: input.source.collection,
+        },
+        input: {
+          record: input.input.record,
+        },
+        label: input.outcome.decision.label,
+        actions: input.outcome.decision.actions as Mutable<
+          typeof input.outcome.decision.actions
+        >,
+        bytes_rewritten: input.outcome.decision.rewriteBody,
+      }
+      if (input.outcome.decision.error) {
+        output.error = input.outcome.decision.error
+      }
+      if (input.http) {
+        output.http = omitNullKeys({
+          status_code: input.http.status,
+          final_url: input.http.finalUrl,
+          content_type: input.http.contentType,
+          etag: input.http.etag,
+          last_modified: input.http.lastModified,
+          headers: input.http.headers,
+        })
+      }
+      if (input.input.raw) {
+        output.input.raw = input.input.raw
+      }
+      if (input.content) {
+        if (input.outcome.sanitized) {
+          output.content = {
+            sha256: input.content.sha256,
+            bytes: input.content.bytes,
+            sanitized: input.outcome.sanitized,
+          }
+        } else if (input.input.raw) {
+          output.content = {
+            sha256: input.content.sha256,
+            bytes: input.content.bytes,
+            sanitized: input.input.raw,
+          }
+        }
+      }
+      return ParseResult.succeed(output)
+    },
+  }
+)
+
+export const SanitizedObservationMetaSchema = Schema.transformOrFail(
+  SanitizerRecordMetadataSchema,
+  SanitizedObservation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding SanitizedObservationMeta not implemented'
+        )
+      ),
+    encode: (input) =>
+      ParseResult.succeed({
+        url: input.source.url,
+        sourceName: input.source.name,
+        sourceCollection: input.source.collection,
+        fetchedAt: input.fetchedAt,
+        sanitizedAt: input.sanitizedAt,
+        observationId: input.observationId,
+        ingestionId: input.ingestionId,
+      }),
+  }
+)
+
+export const SanitizedObservationPathSchema = Schema.transformOrFail(
+  ArchivePathSchema,
+  SanitizedObservation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding SanitizedObservationPath not implemented'
+        )
+      ),
+    encode: (input) =>
+      ParseResult.succeed({
+        version: 1 as const,
+        collectionName: 'records',
+        ext: `sanitize.yml`,
+        sourceName: input.source.name,
+        date: input.fetchedAt,
+        ingestionId: input.ingestionId,
+        observationId: input.observationId,
+      }),
+  }
+)
+
+export const SanitizedObservationEventSchema = Schema.transformOrFail(
+  ObservationSanitizedSchema,
+  Schema.Struct({
+    observation: SanitizedObservation,
+    pointer: FilePointerSchema,
+  }),
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ObservationEvent not implemented'
+        )
+      ),
+    encode: (input) => {
+      return ParseResult.succeed(
+        ObservationSanitizedSchema.make(
+          omitNullableKeys({
+            version: 1,
+            content_lineage_id: input.observation.observationId,
+            ingestion_batch_id: input.observation.ingestionId,
+            fetched_at: input.observation.fetchedAt,
+            sanitized_at: input.observation.sanitizedAt,
+            source: {
+              id: input.observation.source.id,
+              name: input.observation.source.name,
+              url: input.observation.source.url,
+              collection: input.observation.source.collection,
+            },
+            error: input.observation.outcome.decision.error,
+            label: input.observation.outcome.decision.label,
+            actions: input.observation.outcome.decision.actions,
+            content_sha256: input.observation.content?.sha256,
+            content_bytes: input.observation.content?.bytes,
+            pointer: input.pointer,
+          })
+        )
+      )
+    },
+  }
+)

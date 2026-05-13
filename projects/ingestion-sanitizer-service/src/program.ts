@@ -4,10 +4,10 @@ import { Publisher, MessageQueue } from '@news-research/ingestion-messaging'
 import type {
   StorageWriter,
   StorageReader,
-} from '@news-research/ingestion-core/pipeline/shared'
-import { ObservationIngestedSchema } from '@news-research/ingestion-core/pipeline/ingest/contracts/v1'
+} from '@news-research/ingestion-pipeline/shared'
+import { ObservationIngestedSchema } from '@news-research/ingestion-pipeline/ingest/contracts/v1'
 import { Node } from '@news-research/ingestion-data'
-import { sanitizeObservation } from '@news-research/ingestion-core/pipeline/sanitize'
+import { sanitizeObservation } from '@news-research/ingestion-pipeline/sanitize'
 
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 

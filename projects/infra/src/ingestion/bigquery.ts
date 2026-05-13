@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { FactChecksTableSchema } from '@news-research/ingestion-core/pipeline/extract/contracts/v1'
+import { FactChecksTableSchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
 
 import { tag, ingestionLabels, gcpProject } from './config'
 import { provider } from './provider'

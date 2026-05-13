@@ -1,0 +1,32 @@
+{
+  "name": "@news-research/ingestion-pipeline",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*/index.d.ts",
+      "import": "./dist/*/index.js",
+      "default": "./dist/*/index.js"
+    }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "effect": "^3.21.0",
+    "@effect/platform": "^0.96.0",
+    "date-fns": "^4.1.0",
+    "@news-research/ingestion-data": "0.0.1",
+    "@news-research/ingestion-vendor": "0.0.1"
+  },
+  "nx": {
+    "name": "ingestion-pipeline"
+  }
+}

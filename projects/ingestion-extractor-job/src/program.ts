@@ -1,14 +1,14 @@
 import { Array, Effect, Option, ParseResult, Schema, pipe } from 'effect'
 
-import { ObservationSanitizedSchema } from '@news-research/ingestion-core/pipeline/sanitize/contracts/v1'
+import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
 import type {
   StorageWriter,
   StorageReader,
-} from '@news-research/ingestion-core/pipeline/shared'
+} from '@news-research/ingestion-pipeline/shared'
 import {
   extractFactChecks,
   writeBatch,
-} from '@news-research/ingestion-core/pipeline/extract'
+} from '@news-research/ingestion-pipeline/extract'
 import { Publisher, MessageBatch } from '@news-research/ingestion-messaging'
 import { Node } from '@news-research/ingestion-data'
 

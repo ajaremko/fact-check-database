@@ -4,25 +4,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug ingestion-core with Nx",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "test", "ingestion-core"],
-      "env": {
-        "NODE_OPTIONS": "--inspect=9230"
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**"],
-      "smartStep": true,
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/projects/ingestion-core/dist/**/*.(m|c|)js",
-        "!**/node_modules/**"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Debug ingestion-ingestor-job with Nx",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["nx", "serve", "ingestion-ingestor-job"],

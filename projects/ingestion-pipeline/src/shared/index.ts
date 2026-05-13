@@ -1,0 +1,12 @@
+export * as StorageReader from './StorageReader'
+export * as StorageWriter from './StorageWriter'
+export * from './FilePointer'
+export * from './Source'
+export * from './Timestamp'
+
+export * as CloudStorageStorageReader from './adapters/CloudStorageStorageReader'
+export * as CloudStorageStorageWriter from './adapters/CloudStorageStorageWriter'
+export * as FileSystemStorageReader from './adapters/FileSystemStorageReader'
+export * as FileSystemStorageWriter from './adapters/FileSystemStorageWriter'
+export * as InMemoryStorageReader from './adapters/InmemoryStorageReader'
+export * as InMemoryStorageWriter from './adapters/InmemoryStorageWriter'

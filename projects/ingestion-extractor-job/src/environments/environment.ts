@@ -8,7 +8,7 @@ import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
   StorageWriter,
-} from '@news-research/ingestion-core/pipeline/shared'
+} from '@news-research/ingestion-pipeline/shared'
 import {
   FileSystemPublisher,
   FileSystemMessageBatch,

@@ -7,7 +7,7 @@ import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
   StorageWriter,
-} from '@news-research/ingestion-core/pipeline/shared'
+} from '@news-research/ingestion-pipeline/shared'
 import {
   CloudPubsubMessageBatch,
   CloudPubsubPublisher,
