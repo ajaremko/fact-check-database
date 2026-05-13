@@ -109,7 +109,7 @@
     },
     "groups": {
       "ingestion": {
-        "projects": ["ingestion-data-transfer", "ingestion-pipeline-*"],
+        "projects": ["ingestion-pipeline-*"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",

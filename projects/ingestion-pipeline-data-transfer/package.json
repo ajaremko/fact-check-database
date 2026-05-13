@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "ingestion-data-transfer",
+    "name": "ingestion-pipeline-data-transfer",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,23 +13,23 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/ingestion-data-transfer/dist",
+          "outputPath": "projects/ingestion-pipeline-data-transfer/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/ingestion-data-transfer/src/main.ts",
-          "tsConfig": "projects/ingestion-data-transfer/tsconfig.app.json",
+          "main": "projects/ingestion-pipeline-data-transfer/src/main.ts",
+          "tsConfig": "projects/ingestion-pipeline-data-transfer/tsconfig.app.json",
           "assets": [
-            "projects/ingestion-data-transfer/src/assets"
+            "projects/ingestion-pipeline-data-transfer/src/assets"
           ]
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-data-transfer/esbuild.config.js"
+            "esbuildConfig": "projects/ingestion-pipeline-data-transfer/esbuild.config.js"
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-data-transfer/esbuild.config.js",
+            "esbuildConfig": "projects/ingestion-pipeline-data-transfer/esbuild.config.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-data-transfer/dist/package.json",
-          "{workspaceRoot}/projects/ingestion-data-transfer/dist/package-lock.json"
+          "{workspaceRoot}/projects/ingestion-pipeline-data-transfer/dist/package.json",
+          "{workspaceRoot}/projects/ingestion-pipeline-data-transfer/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-data-transfer/dist/workspace_modules"
+          "{workspaceRoot}/projects/ingestion-pipeline-data-transfer/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "ingestion-data-transfer:build",
+          "buildTarget": "ingestion-pipeline-data-transfer:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "ingestion-data-transfer:build:development"
+            "buildTarget": "ingestion-pipeline-data-transfer:build:development"
           },
           "production": {
-            "buildTarget": "ingestion-data-transfer:build:production"
+            "buildTarget": "ingestion-pipeline-data-transfer:build:production"
           }
         }
       },
