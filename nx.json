@@ -108,14 +108,8 @@
       }
     },
     "groups": {
-      "apps": {
-        "projects": [
-          "ingestion-extractor-job",
-          "ingestion-ingestor-job",
-          "ingestion-loader-service",
-          "ingestion-sanitizer-service",
-          "gcs-data-transfer"
-        ],
+      "ingestion": {
+        "projects": ["ingestion-data-transfer", "ingestion-pipeline-*"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",

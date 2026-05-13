@@ -9,3 +9,7 @@
 ### Scaffold a new node lib
 
 `nx g @nx/node:lib packages/cloud-storage --linter=eslint --unitTestRunner=none --publishable=false`
+
+### Move an existing project
+
+`nx generate @nx/workspace:move --projectName=ingestion-extractor-job --destination=projects/ingestion-pipeline-extractor --newProjectName=ingestion-pipeline- --no-interactive`

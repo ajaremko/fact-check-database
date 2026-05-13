@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "ingestion-ingestor-job",
+    "name": "ingestion-pipeline-ingestor",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,23 +13,23 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/ingestion-ingestor-job/dist",
+          "outputPath": "projects/ingestion-pipeline-ingestor/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/ingestion-ingestor-job/src/main.ts",
-          "tsConfig": "projects/ingestion-ingestor-job/tsconfig.app.json",
+          "main": "projects/ingestion-pipeline-ingestor/src/main.ts",
+          "tsConfig": "projects/ingestion-pipeline-ingestor/tsconfig.app.json",
           "assets": [
-            "projects/ingestion-ingestor-job/src/assets"
+            "projects/ingestion-pipeline-ingestor/src/assets"
           ]
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-ingestor-job/esbuild.config.js"
+            "esbuildConfig": "projects/ingestion-pipeline-ingestor/esbuild.config.js"
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-ingestor-job/esbuild.config.prod.js",
+            "esbuildConfig": "projects/ingestion-pipeline-ingestor/esbuild.config.prod.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-ingestor-job/dist/package.json",
-          "{workspaceRoot}/projects/ingestion-ingestor-job/dist/package-lock.json"
+          "{workspaceRoot}/projects/ingestion-pipeline-ingestor/dist/package.json",
+          "{workspaceRoot}/projects/ingestion-pipeline-ingestor/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-ingestor-job/dist/workspace_modules"
+          "{workspaceRoot}/projects/ingestion-pipeline-ingestor/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "ingestion-ingestor-job:build",
+          "buildTarget": "ingestion-pipeline-ingestor:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "ingestion-ingestor-job:build:development"
+            "buildTarget": "ingestion-pipeline-ingestor:build:development"
           },
           "production": {
-            "buildTarget": "ingestion-ingestor-job:build:production"
+            "buildTarget": "ingestion-pipeline-ingestor:build:production"
           }
         }
       },

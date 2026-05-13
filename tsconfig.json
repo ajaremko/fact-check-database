@@ -4,22 +4,7 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/ingestion-sanitizer-service"
-    },
-    {
-      "path": "./projects/ingestion-loader-service"
-    },
-    {
-      "path": "./projects/ingestion-extractor-job"
-    },
-    {
-      "path": "./projects/ingestion-ingestor-job"
-    },
-    {
       "path": "./projects/infra"
-    },
-    {
-      "path": "./projects/gcs-data-transfer"
     },
     {
       "path": "./projects/ingestion-data"
@@ -32,6 +17,21 @@
     },
     {
       "path": "./projects/ingestion-pipeline"
+    },
+    {
+      "path": "./projects/ingestion-pipeline-extractor"
+    },
+    {
+      "path": "./projects/ingestion-pipeline-sanitizer"
+    },
+    {
+      "path": "./projects/ingestion-pipeline-ingestor"
+    },
+    {
+      "path": "./projects/ingestion-pipeline-loader"
+    },
+    {
+      "path": "./projects/ingestion-data-transfer"
     }
   ]
 }

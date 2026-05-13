@@ -1,9 +1,9 @@
 {
-  "name": "@news-research/ingestion-sanitizer-service",
+  "name": "@news-research/gcs-data-transfer",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "ingestion-sanitizer-service",
+    "name": "ingestion-data-transfer",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,23 +13,23 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/ingestion-sanitizer-service/dist",
+          "outputPath": "projects/ingestion-data-transfer/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/ingestion-sanitizer-service/src/main.ts",
-          "tsConfig": "projects/ingestion-sanitizer-service/tsconfig.app.json",
+          "main": "projects/ingestion-data-transfer/src/main.ts",
+          "tsConfig": "projects/ingestion-data-transfer/tsconfig.app.json",
           "assets": [
-            "projects/ingestion-sanitizer-service/src/assets"
+            "projects/ingestion-data-transfer/src/assets"
           ]
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-sanitizer-service/esbuild.config.js"
+            "esbuildConfig": "projects/ingestion-data-transfer/esbuild.config.js"
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-sanitizer-service/esbuild.config.prod.js",
+            "esbuildConfig": "projects/ingestion-data-transfer/esbuild.config.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-sanitizer-service/dist/package.json",
-          "{workspaceRoot}/projects/ingestion-sanitizer-service/dist/package-lock.json"
+          "{workspaceRoot}/projects/ingestion-data-transfer/dist/package.json",
+          "{workspaceRoot}/projects/ingestion-data-transfer/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-sanitizer-service/dist/workspace_modules"
+          "{workspaceRoot}/projects/ingestion-data-transfer/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "ingestion-sanitizer-service:build",
+          "buildTarget": "ingestion-data-transfer:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "ingestion-sanitizer-service:build:development"
+            "buildTarget": "ingestion-data-transfer:build:development"
           },
           "production": {
-            "buildTarget": "ingestion-sanitizer-service:build:production"
+            "buildTarget": "ingestion-data-transfer:build:production"
           }
         }
       },

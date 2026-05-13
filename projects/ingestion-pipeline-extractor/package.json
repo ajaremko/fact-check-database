@@ -1,9 +1,9 @@
 {
-  "name": "@news-research/gcs-data-transfer",
+  "name": "@news-research/ingestion-extractor-job",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "gcs-data-transfer",
+    "name": "ingestion-pipeline-extractor",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,23 +13,23 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/gcs-data-transfer/dist",
+          "outputPath": "projects/ingestion-pipeline-extractor/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/gcs-data-transfer/src/main.ts",
-          "tsConfig": "projects/gcs-data-transfer/tsconfig.app.json",
+          "main": "projects/ingestion-pipeline-extractor/src/main.ts",
+          "tsConfig": "projects/ingestion-pipeline-extractor/tsconfig.app.json",
           "assets": [
-            "projects/gcs-data-transfer/src/assets"
+            "projects/ingestion-pipeline-extractor/src/assets"
           ]
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/gcs-data-transfer/esbuild.config.js"
+            "esbuildConfig": "projects/ingestion-pipeline-extractor/esbuild.config.js"
           },
           "production": {
-            "esbuildConfig": "projects/gcs-data-transfer/esbuild.config.js",
+            "esbuildConfig": "projects/ingestion-pipeline-extractor/esbuild.config.prod.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/gcs-data-transfer/dist/package.json",
-          "{workspaceRoot}/projects/gcs-data-transfer/dist/package-lock.json"
+          "{workspaceRoot}/projects/ingestion-pipeline-extractor/dist/package.json",
+          "{workspaceRoot}/projects/ingestion-pipeline-extractor/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/gcs-data-transfer/dist/workspace_modules"
+          "{workspaceRoot}/projects/ingestion-pipeline-extractor/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "gcs-data-transfer:build",
+          "buildTarget": "ingestion-pipeline-extractor:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "gcs-data-transfer:build:development"
+            "buildTarget": "ingestion-pipeline-extractor:build:development"
           },
           "production": {
-            "buildTarget": "gcs-data-transfer:build:production"
+            "buildTarget": "ingestion-pipeline-extractor:build:production"
           }
         }
       },
