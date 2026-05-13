@@ -16,9 +16,6 @@
       "path": "./projects/ingestion-ingestor-job"
     },
     {
-      "path": "./projects/ingestion-core"
-    },
-    {
       "path": "./projects/infra"
     },
     {

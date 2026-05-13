@@ -21,5 +21,8 @@
     "tslib": "^2.3.0",
     "@news-research/ingestion-vendor": "0.0.1",
     "@news-research/ingestion-data": "0.0.1"
+  },
+  "nx": {
+    "name": "ingestion-messaging"
   }
 }
