@@ -12,7 +12,7 @@ import {
   CloudPubsubMessageBatch,
   CloudPubsubPublisher,
   Publisher,
-} from '@news-research/ingestion-core/messaging'
+} from '@news-research/ingestion-messaging'
 import {
   PubsubSubscriberClient,
   PubsubClient,

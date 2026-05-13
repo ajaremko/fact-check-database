@@ -8,7 +8,7 @@ import {
   FileSystemStorageReader,
   FileSystemStorageWriter,
 } from '@news-research/ingestion-core/pipeline/shared'
-import { FileSystemPublisher } from '@news-research/ingestion-core/messaging'
+import { FileSystemPublisher } from '@news-research/ingestion-messaging'
 import { HttpClientFetcher } from '@news-research/ingestion-core/pipeline/ingest'
 
 import * as FileSystemTargetList from '../adapters/filesystem/TargetList'

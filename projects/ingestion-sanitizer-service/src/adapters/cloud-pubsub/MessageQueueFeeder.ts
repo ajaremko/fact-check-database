@@ -6,7 +6,7 @@ import {
   PubsubSubscription,
 } from '@news-research/ingestion-vendor/cloud-pubsub'
 
-import { MessageQueue } from '@news-research/ingestion-core/messaging'
+import { MessageQueue } from '@news-research/ingestion-messaging'
 
 const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription

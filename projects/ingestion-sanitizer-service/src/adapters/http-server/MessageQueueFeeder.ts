@@ -9,7 +9,7 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 import { Config, Effect, Layer, Schema, pipe } from 'effect'
 
-import { MessageQueue } from '@news-research/ingestion-core/messaging'
+import { MessageQueue } from '@news-research/ingestion-messaging'
 import { Node } from '@news-research/ingestion-data'
 
 const decodeMessage = Schema.decodeUnknown(

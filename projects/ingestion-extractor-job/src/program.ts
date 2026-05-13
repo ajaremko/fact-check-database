@@ -9,10 +9,7 @@ import {
   extractFactChecks,
   writeBatch,
 } from '@news-research/ingestion-core/pipeline/extract'
-import {
-  Publisher,
-  MessageBatch,
-} from '@news-research/ingestion-core/messaging'
+import { Publisher, MessageBatch } from '@news-research/ingestion-messaging'
 import { Node } from '@news-research/ingestion-data'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'

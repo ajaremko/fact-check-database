@@ -12,7 +12,7 @@ import {
   FileSystemPublisher,
   FileSystemMessageQueueFeeder,
   InMemoryMessageQueue,
-} from '@news-research/ingestion-core/messaging'
+} from '@news-research/ingestion-messaging'
 
 import * as FileSystemSanitizerPolicyDocument from '../adapters/filesystem/SanitizerPolicyDocument'
 import { Program } from '../program'

@@ -13,7 +13,7 @@ import {
   FileSystemPublisher,
   FileSystemMessageBatch,
   Publisher,
-} from '@news-research/ingestion-core/messaging'
+} from '@news-research/ingestion-messaging'
 
 import * as JobContext from '../JobContext'
 import { Program } from '../program'

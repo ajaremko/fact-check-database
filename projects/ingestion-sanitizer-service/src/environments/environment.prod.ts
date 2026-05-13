@@ -11,7 +11,7 @@ import {
   CloudPubsubPublisher,
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
-} from '@news-research/ingestion-core/messaging'
+} from '@news-research/ingestion-messaging'
 import { StorageClient } from '@news-research/ingestion-vendor/cloud-storage'
 import { PubsubClient } from '@news-research/ingestion-vendor/cloud-pubsub'
 import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'

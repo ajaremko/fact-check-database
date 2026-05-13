@@ -1,9 +1,6 @@
 import { Clock, Effect, pipe, Schema } from 'effect'
 
-import {
-  Publisher,
-  MessageQueue,
-} from '@news-research/ingestion-core/messaging'
+import { Publisher, MessageQueue } from '@news-research/ingestion-messaging'
 import type {
   StorageWriter,
   StorageReader,

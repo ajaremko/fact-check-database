@@ -1,7 +1,7 @@
 import { Config, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { MessageQueue } from '@news-research/ingestion-core/messaging'
+import { MessageQueue } from '@news-research/ingestion-messaging'
 
 const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem

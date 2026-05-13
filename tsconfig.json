@@ -29,6 +29,9 @@
     },
     {
       "path": "./projects/ingestion-vendor"
+    },
+    {
+      "path": "./projects/ingestion-messaging"
     }
   ]
 }

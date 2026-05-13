@@ -1,4 +1,3 @@
-export * as Messaging from './lib/messaging'
 export * as Shared from './lib/pipeline/shared'
 export * as Ingest from './lib/pipeline/ingest'
 export * as Sanitize from './lib/pipeline/sanitize'
