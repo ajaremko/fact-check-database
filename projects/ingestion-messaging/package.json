@@ -11,6 +11,46 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./adapters/CloudPubsubMessageBatch": {
+      "types": "./dist/adapters/CloudPubsubMessageBatch.d.ts",
+      "import": "./dist/adapters/CloudPubsubMessageBatch.js",
+      "default": "./dist/adapters/CloudPubsubMessageBatch.js"
+    },
+    "./adapters/CloudPubsubMessageQueueFeeder": {
+      "types": "./dist/adapters/CloudPubsubMessageQueueFeeder.d.ts",
+      "import": "./dist/adapters/CloudPubsubMessageQueueFeeder.js",
+      "default": "./dist/adapters/CloudPubsubMessageQueueFeeder.js"
+    },
+    "./adapters/CloudPubsubPublisher": {
+      "types": "./dist/adapters/CloudPubsubPublisher.d.ts",
+      "import": "./dist/adapters/CloudPubsubPublisher.js",
+      "default": "./dist/adapters/CloudPubsubPublisher.js"
+    },
+    "./adapters/FileSystemMessageBatch": {
+      "types": "./dist/adapters/FileSystemMessageBatch.d.ts",
+      "import": "./dist/adapters/FileSystemMessageBatch.js",
+      "default": "./dist/adapters/FileSystemMessageBatch.js"
+    },
+    "./adapters/FileSystemMessageQueueFeeder": {
+      "types": "./dist/adapters/FileSystemMessageQueueFeeder.d.ts",
+      "import": "./dist/adapters/FileSystemMessageQueueFeeder.js",
+      "default": "./dist/adapters/FileSystemMessageQueueFeeder.js"
+    },
+    "./adapters/FileSystemPublisher": {
+      "types": "./dist/adapters/FileSystemPublisher.d.ts",
+      "import": "./dist/adapters/FileSystemPublisher.js",
+      "default": "./dist/adapters/FileSystemPublisher.js"
+    },
+    "./adapters/HttpServerMessageQueueFeeder": {
+      "types": "./dist/adapters/HttpServerMessageQueueFeeder.d.ts",
+      "import": "./dist/adapters/HttpServerMessageQueueFeeder.js",
+      "default": "./dist/adapters/HttpServerMessageQueueFeeder.js"
+    },
+    "./adapters/InMemoryMessageQueue": {
+      "types": "./dist/adapters/InMemoryMessageQueue.d.ts",
+      "import": "./dist/adapters/InMemoryMessageQueue.js",
+      "default": "./dist/adapters/InMemoryMessageQueue.js"
     }
   },
   "dependencies": {

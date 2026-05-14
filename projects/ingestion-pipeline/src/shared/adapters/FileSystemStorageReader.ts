@@ -1,11 +1,11 @@
 import { Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import * as StorageReader from '../StorageReader'
+import { StorageReadError, StorageReader } from '../StorageReader'
 
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
-  return StorageReader.StorageReader.of({
+  return StorageReader.of({
     read: (pointer) =>
       Effect.gen(function* () {
         const data = yield* fs.readFile(pointer.object)
@@ -13,7 +13,7 @@ export const make = Effect.gen(function* () {
       }).pipe(
         Effect.mapError(
           (cause) =>
-            new StorageReader.StorageReadError({
+            new StorageReadError({
               cause,
               message: 'Failed to read file from filesystem',
               path: pointer.object,
@@ -24,4 +24,4 @@ export const make = Effect.gen(function* () {
   })
 })
 
-export const layer = Layer.effect(StorageReader.StorageReader, make)
+export const layer = Layer.effect(StorageReader, make)

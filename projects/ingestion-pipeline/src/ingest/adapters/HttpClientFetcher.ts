@@ -1,7 +1,7 @@
 import { Effect, Layer } from 'effect'
 import { HttpClient } from '@effect/platform'
 
-import { Node } from '@news-research/ingestion-data'
+import * as Node from '@news-research/ingestion-data/Node'
 
 import {
   Fetcher,

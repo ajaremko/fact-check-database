@@ -5,25 +5,21 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 
+import * as CloudPubsubMessageBatch from '@news-research/ingestion-messaging/adapters/CloudPubsubMessageBatch'
+import * as CloudPubsubPublisher from '@news-research/ingestion-messaging/adapters/CloudPubsubPublisher'
+import * as FileSystemPublisher from '@news-research/ingestion-messaging/adapters/FileSystemPublisher'
+import * as FileSystemMessageBatch from '@news-research/ingestion-messaging/adapters/FileSystemMessageBatch'
+import * as PubsubSubscriberClient from '@news-research/ingestion-vendor/cloud-pubsub/PubsubSubscriberClient'
+import * as PubsubClient from '@news-research/ingestion-vendor/cloud-pubsub/PubsubClient'
+import * as GcpLoggingPinoConfig from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
+import * as Node from '@news-research/ingestion-data/Node'
 import {
   CloudStorageStorageReader,
   CloudStorageStorageWriter,
   FileSystemStorageReader,
   FileSystemStorageWriter,
 } from '@news-research/ingestion-pipeline/shared'
-import {
-  CloudPubsubMessageBatch,
-  CloudPubsubPublisher,
-  FileSystemPublisher,
-  FileSystemMessageBatch,
-} from '@news-research/ingestion-messaging'
-import {
-  PubsubSubscriberClient,
-  PubsubClient,
-} from '@news-research/ingestion-vendor/cloud-pubsub'
-import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
-import { StorageClient } from '@news-research/ingestion-vendor/cloud-storage'
-import { Node } from '@news-research/ingestion-data'
 import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 

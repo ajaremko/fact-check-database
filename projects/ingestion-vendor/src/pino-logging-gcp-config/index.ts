@@ -1,1 +1,1 @@
-export * as GcpLoggingPinoConfig from './pino-logging-gcp-config'
+export * from './pino-logging-gcp-config'

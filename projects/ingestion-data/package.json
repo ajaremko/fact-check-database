@@ -11,6 +11,36 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./Csv": {
+      "types": "./dist/Csv.d.ts",
+      "import": "./dist/Csv.js",
+      "default": "./dist/Csv.js"
+    },
+    "./Ndjson": {
+      "types": "./dist/Ndjson.d.ts",
+      "import": "./dist/Ndjson.js",
+      "default": "./dist/Ndjson.js"
+    },
+    "./Node": {
+      "types": "./dist/Node.d.ts",
+      "import": "./dist/Node.js",
+      "default": "./dist/Node.js"
+    },
+    "./Unicode": {
+      "types": "./dist/Unicode.d.ts",
+      "import": "./dist/Unicode.js",
+      "default": "./dist/Unicode.js"
+    },
+    "./Xml": {
+      "types": "./dist/Xml.d.ts",
+      "import": "./dist/Xml.js",
+      "default": "./dist/Xml.js"
+    },
+    "./Yaml": {
+      "types": "./dist/Yaml.d.ts",
+      "import": "./dist/Yaml.js",
+      "default": "./dist/Yaml.js"
     }
   },
   "dependencies": {

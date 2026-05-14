@@ -1,5 +1,6 @@
 import { flow, Schema } from 'effect'
-import { parseJson } from './node'
+
+import * as Node from './Node'
 
 function split(separator: string) {
   return function <A, R>(schema: Schema.Schema<A, string, R>) {
@@ -12,5 +13,5 @@ function split(separator: string) {
 }
 
 export function parseNdjson(options?: Schema.ParseJsonOptions) {
-  return flow(parseJson(options), split('\n'))
+  return flow(Node.parseJson(options), split('\n'))
 }

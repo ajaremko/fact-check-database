@@ -1,45 +1,58 @@
 import { Schema, pipe } from 'effect'
 import { describe, it, expect } from 'vitest'
 
-import { parseXml } from './xml'
+import { parseYaml } from './Yaml'
 
-describe('parseXml', () => {
-  it('decodes XML into a typed object', () => {
+describe('parseYaml', () => {
+  it('decodes YAML into a typed object', () => {
     const decode = pipe(
       Schema.Struct({
         name: Schema.String,
         count: Schema.Number,
       }),
-      parseXml(),
+      parseYaml(),
       Schema.decodeSync
     )
     const result = decode(`
-      <name>example</name>
-      <count>42</count>
+      name: example
+      count: 42
     `)
     expect(result).toStrictEqual({ name: 'example', count: 42 })
   })
 
-  it('encodes a typed object into XML', () => {
+  it('decodes JSON into a typed object', () => {
+    const decode = pipe(
+      Schema.Struct({
+        name: Schema.String,
+        count: Schema.Number,
+      }),
+      parseYaml(),
+      Schema.decodeSync
+    )
+    const result = decode('{ "name": "example", "count": 42 }')
+    expect(result).toStrictEqual({ name: 'example', count: 42 })
+  })
+
+  it('encodes a typed object into YAML', () => {
     const encode = pipe(
       Schema.Struct({
         name: Schema.String,
         count: Schema.Number,
       }),
-      parseXml(),
+      parseYaml(),
       Schema.encodeSync
     )
     const result = encode({ name: 'example', count: 42 })
-    expect(result).toStrictEqual('<name>example</name><count>42</count>')
+    expect(result).toStrictEqual('name: example\ncount: 42\n')
   })
 
-  it('returns an error when decoding invalid XML', () => {
+  it('returns an error when decoding invalid YAML', () => {
     const decode = pipe(
       Schema.Struct({
         name: Schema.String,
         count: Schema.Number,
       }),
-      parseXml(),
+      parseYaml(),
       Schema.decodeSync
     )
     const result = () =>
@@ -56,7 +69,7 @@ describe('parseXml', () => {
         name: Schema.String,
         count: Schema.Number,
       }),
-      parseXml(),
+      parseYaml(),
       Schema.encodeUnknownSync
     )
     const result = () => encode({ name: 'example', count: 'not-a-number' })

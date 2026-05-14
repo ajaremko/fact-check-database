@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import { describe, it, expect } from 'vitest'
 
-import { parseUnicode } from './unidecode'
+import { parseUnicode } from './Unicode'
 
 describe('parseUnicode', () => {
   it('decodes UTF-8 strings into US-ASCII strings', () => {

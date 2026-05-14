@@ -1,21 +1,19 @@
 import { ConfigError, Effect, Layer } from 'effect'
 
-import {
-  StorageBucket,
-  StorageClient,
-} from '@news-research/ingestion-vendor/cloud-storage'
+import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
+import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
 
-import * as StorageReader from '../StorageReader'
+import { StorageReadError, StorageReader } from '../StorageReader'
 
 export const make = Effect.gen(function* () {
   const { client } = yield* StorageClient.StorageClient
-  return StorageReader.StorageReader.of({
+  return StorageReader.of({
     read: (pointer) =>
       StorageBucket.downloadFile(pointer.object).pipe(
         Effect.map(([data]) => new Uint8Array(data)),
         Effect.mapError(
           (cause) =>
-            new StorageReader.StorageReadError({
+            new StorageReadError({
               cause,
               message: 'Failed to read file from GCS',
               path: pointer.object,
@@ -31,7 +29,7 @@ export const make = Effect.gen(function* () {
 })
 
 export const layer: Layer.Layer<
-  StorageReader.StorageReader,
+  StorageReader,
   ConfigError.ConfigError,
   StorageClient.StorageClient
-> = Layer.effect(StorageReader.StorageReader, make)
+> = Layer.effect(StorageReader, make)

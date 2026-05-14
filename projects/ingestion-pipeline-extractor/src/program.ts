@@ -1,5 +1,6 @@
 import { Array, Context, Effect, Option, Schema, pipe } from 'effect'
 
+import * as Node from '@news-research/ingestion-data/Node'
 import {
   extractFactChecks,
   writeBatch,
@@ -10,7 +11,6 @@ import {
   publish,
 } from '@news-research/ingestion-messaging'
 import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
-import { Node } from '@news-research/ingestion-data'
 
 interface JobContext {
   runId: string

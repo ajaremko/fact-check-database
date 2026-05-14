@@ -7,10 +7,55 @@
   "types": "./dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
-    "./*": {
-      "types": "./dist/*/index.d.ts",
-      "import": "./dist/*/index.js",
-      "default": "./dist/*/index.js"
+    "./bigquery/BigQueryClient": {
+      "types": "./dist/bigquery/BigQueryClient.d.ts",
+      "import": "./dist/bigquery/BigQueryClient.js",
+      "default": "./dist/bigquery/BigQueryClient.js"
+    },
+    "./cloud-pubsub/PubsubClient": {
+      "types": "./dist/cloud-pubsub/PubsubClient.d.ts",
+      "import": "./dist/cloud-pubsub/PubsubClient.js",
+      "default": "./dist/cloud-pubsub/PubsubClient.js"
+    },
+    "./cloud-pubsub/PubsubSubscriberClient": {
+      "types": "./dist/cloud-pubsub/PubsubSubscriberClient.d.ts",
+      "import": "./dist/cloud-pubsub/PubsubSubscriberClient.js",
+      "default": "./dist/cloud-pubsub/PubsubSubscriberClient.js"
+    },
+    "./cloud-pubsub/PubsubSubscription": {
+      "types": "./dist/cloud-pubsub/PubsubSubscription.d.ts",
+      "import": "./dist/cloud-pubsub/PubsubSubscription.js",
+      "default": "./dist/cloud-pubsub/PubsubSubscription.js"
+    },
+    "./cloud-pubsub/PubsubTopic": {
+      "types": "./dist/cloud-pubsub/PubsubTopic.d.ts",
+      "import": "./dist/cloud-pubsub/PubsubTopic.js",
+      "default": "./dist/cloud-pubsub/PubsubTopic.js"
+    },
+    "./cloud-run": {
+      "types": "./dist/cloud-run/index.d.ts",
+      "import": "./dist/cloud-run/index.js",
+      "default": "./dist/cloud-run/index.js"
+    },
+    "./cloud-storage/StorageBucket": {
+      "types": "./dist/cloud-storage/StorageBucket.d.ts",
+      "import": "./dist/cloud-storage/StorageBucket.js",
+      "default": "./dist/cloud-storage/StorageBucket.js"
+    },
+    "./cloud-storage/StorageClient": {
+      "types": "./dist/cloud-storage/StorageClient.d.ts",
+      "import": "./dist/cloud-storage/StorageClient.js",
+      "default": "./dist/cloud-storage/StorageClient.js"
+    },
+    "./pino": {
+      "types": "./dist/pino/index.d.ts",
+      "import": "./dist/pino/index.js",
+      "default": "./dist/pino/index.js"
+    },
+    "./pino-logging-gcp-config": {
+      "types": "./dist/pino-logging-gcp-config/index.d.ts",
+      "import": "./dist/pino-logging-gcp-config/index.js",
+      "default": "./dist/pino-logging-gcp-config/index.js"
     }
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 import { Array, Config, Effect, Layer, Ref, Option } from 'effect'
 
-import { PubsubSubscriberClient } from '@news-research/ingestion-vendor/cloud-pubsub'
+import * as PubsubSubscriberClient from '@news-research/ingestion-vendor/cloud-pubsub/PubsubSubscriberClient'
 
 import { MessageBatch, BatchMessage } from '../MessageBatch'
 

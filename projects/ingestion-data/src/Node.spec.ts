@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import { describe, it, expect } from 'vitest'
 
-import { parseBufferEncoded } from './node'
+import { parseBufferEncoded } from './Node'
 
 describe('parseBufferEncoded', () => {
   it('decodes a base64 encoded string into a utf string', () => {

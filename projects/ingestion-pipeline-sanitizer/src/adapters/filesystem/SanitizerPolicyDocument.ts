@@ -1,8 +1,9 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
+import * as Node from '@news-research/ingestion-data/Node'
+import * as Yaml from '@news-research/ingestion-data/Yaml'
 import { SanitizerPolicy } from '@news-research/ingestion-pipeline/sanitize'
-import { Node, Yaml } from '@news-research/ingestion-data'
 
 import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
 

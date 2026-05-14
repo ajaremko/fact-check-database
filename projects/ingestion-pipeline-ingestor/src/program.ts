@@ -1,6 +1,6 @@
 import { Array, Clock, Effect, Option, pipe, Schema } from 'effect'
 
-import { Node } from '@news-research/ingestion-data'
+import * as Node from '@news-research/ingestion-data/Node'
 import { ingestFromSource } from '@news-research/ingestion-pipeline/ingest'
 import { publish } from '@news-research/ingestion-messaging'
 

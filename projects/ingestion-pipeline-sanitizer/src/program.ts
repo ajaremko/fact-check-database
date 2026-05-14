@@ -7,7 +7,7 @@ import {
   publish,
 } from '@news-research/ingestion-messaging'
 import { ObservationIngestedSchema } from '@news-research/ingestion-pipeline/ingest/contracts/v1'
-import { Node } from '@news-research/ingestion-data'
+import * as Node from '@news-research/ingestion-data/Node'
 import { sanitizeObservation } from '@news-research/ingestion-pipeline/sanitize'
 
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'

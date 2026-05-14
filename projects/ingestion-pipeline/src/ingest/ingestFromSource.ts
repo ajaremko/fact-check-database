@@ -1,6 +1,8 @@
 import { Effect, Schema, flow, pipe } from 'effect'
 
-import { Node, omitNullKeys, Yaml } from '@news-research/ingestion-data'
+import * as Node from '@news-research/ingestion-data/Node'
+import * as Yaml from '@news-research/ingestion-data/Yaml'
+import { omitNullKeys } from '@news-research/ingestion-data'
 
 import {
   SourceEncoded,

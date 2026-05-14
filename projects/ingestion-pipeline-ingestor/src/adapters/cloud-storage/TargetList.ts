@@ -5,13 +5,14 @@ import {
   StorageBucket,
   StorageClient,
 } from '@news-research/ingestion-vendor/cloud-storage'
-import { Node, NodeCsv } from '@news-research/ingestion-data'
+import * as Node from '@news-research/ingestion-data/Node'
+import * as Csv from '@news-research/ingestion-data/Csv'
 
 import { SourceList, SourceSchema } from '../../TargetList'
 
 const decodeSources = pipe(
   SourceSchema,
-  NodeCsv.parseCsv({
+  Csv.parseCsv({
     parse: {
       columns: true,
       skip_empty_lines: true,

@@ -4,15 +4,11 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeSdk } from '@effect/opentelemetry'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 
-import {
-  StorageBucket,
-  StorageClient,
-} from '@news-research/ingestion-vendor/cloud-storage'
-import {
-  PubsubClient,
-  PubsubTopic,
-} from '@news-research/ingestion-vendor/cloud-pubsub'
-import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
+import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
+import * as PubsubClient from '@news-research/ingestion-vendor/cloud-pubsub/PubsubClient'
+import * as PubsubTopic from '@news-research/ingestion-vendor/cloud-pubsub/PubsubTopic'
+import * as GcpLoggingPinoConfig from '@news-research/ingestion-vendor/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 

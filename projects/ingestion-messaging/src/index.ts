@@ -1,12 +1,3 @@
 export * from './MessageBatch'
 export * from './MessageQueue'
 export * from './Publisher'
-
-export * as CloudPubsubMessageBatch from './adapters/CloudPubsubMessageBatch'
-export * as CloudPubsubMessageQueueFeeder from './adapters/CloudPubsubMessageQueueFeeder'
-export * as CloudPubsubPublisher from './adapters/CloudPubsubPublisher'
-export * as FileSystemMessageBatch from './adapters/FileSystemMessageBatch'
-export * as FileSystemPublisher from './adapters/FileSystemPublisher'
-export * as FileSystemMessageQueueFeeder from './adapters/FileSystemMessageQueueFeeder'
-export * as HttpServerMessageQueueFeeder from './adapters/HttpServerMessageQueueFeeder'
-export * as InMemoryMessageQueue from './adapters/InmemoryMessageQueue'

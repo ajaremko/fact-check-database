@@ -1,15 +1,13 @@
 import { Config, ConfigError, Effect, Layer } from 'effect'
 
-import {
-  StorageBucket,
-  StorageClient,
-} from '@news-research/ingestion-vendor/cloud-storage'
+import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
+import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
 
-import * as StorageWriter from '../StorageWriter'
+import { StorageWriteError, StorageWriter } from '../StorageWriter'
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
-  return StorageWriter.StorageWriter.of({
+  return StorageWriter.of({
     write: (opts) =>
       StorageBucket.writeFile(opts.path, opts.data, {
         resumable: false,
@@ -22,7 +20,7 @@ export const make = Effect.gen(function* () {
         })),
         Effect.mapError(
           (cause) =>
-            new StorageWriter.StorageWriteError({
+            new StorageWriteError({
               cause,
               message: 'Failed to write file to GCS',
               path: opts.path,
@@ -35,9 +33,9 @@ export const make = Effect.gen(function* () {
 })
 
 export const layer: Layer.Layer<
-  StorageWriter.StorageWriter,
+  StorageWriter,
   ConfigError.ConfigError,
   StorageClient.StorageClient
-> = Layer.effect(StorageWriter.StorageWriter, make).pipe(
+> = Layer.effect(StorageWriter, make).pipe(
   Layer.provide(StorageBucket.layer(Config.string('STORAGE_BUCKET_NAME')))
 )

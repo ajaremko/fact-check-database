@@ -8,11 +8,12 @@ import {
   Schema,
 } from 'effect'
 
+import * as Node from '@news-research/ingestion-data/Node'
+import * as Yaml from '@news-research/ingestion-data/Yaml'
 import {
   StorageBucket,
   StorageClient,
 } from '@news-research/ingestion-vendor/cloud-storage'
-import { Yaml, Node } from '@news-research/ingestion-data'
 import { SanitizerPolicy } from '@news-research/ingestion-pipeline/sanitize'
 
 import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
