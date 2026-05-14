@@ -26,10 +26,9 @@
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-pipeline-extractor/esbuild.config.js"
+            "minify": false
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-pipeline-extractor/esbuild.config.prod.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false

@@ -1,10 +1,6 @@
-import { Array, Effect, Option, ParseResult, Schema, pipe } from 'effect'
+import { Array, Context, Effect, Option, Schema, pipe } from 'effect'
 
 import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
-import type {
-  StorageWriter,
-  StorageReader,
-} from '@news-research/ingestion-pipeline/shared'
 import {
   extractFactChecks,
   writeBatch,
@@ -12,7 +8,14 @@ import {
 import { Publisher, MessageBatch } from '@news-research/ingestion-messaging'
 import { Node } from '@news-research/ingestion-data'
 
-import { JobContext, withJobContextAnnotations } from './JobContext'
+interface JobContext {
+  runId: string
+  concurrency: number
+  startedAt: number
+  datasetId: string
+}
+
+export const JobContext = Context.GenericTag<JobContext>('JobContext')
 
 const decodeIncoming = pipe(
   ObservationSanitizedSchema,
@@ -43,55 +46,41 @@ function processMessage(message: MessageBatch.Message) {
   }).pipe(Effect.withSpan('processMessage'))
 }
 
-export type Program = Effect.Effect<
-  void,
-  | ParseResult.ParseError
-  | Publisher.PublisherError
-  | StorageWriter.StorageWriteError,
-  | JobContext
-  | StorageReader.StorageReader
-  | MessageBatch.MessageBatch
-  | Publisher.Publisher
-  | StorageWriter.StorageWriter
->
+export const Program = Effect.gen(function* () {
+  const job = yield* JobContext
+  const messages = yield* MessageBatch.MessageBatch
 
-export const Program: Program = withJobContextAnnotations(
-  Effect.gen(function* () {
-    const job = yield* JobContext
-    const messages = yield* MessageBatch.MessageBatch
-
-    // process all messages with configured concurrency
-    yield* Effect.logDebug(`Processing ${messages.length} messages`)
-    const tasks = Array.map(messages, processMessage)
-    const results = yield* Effect.all(tasks, {
-      concurrency: job.concurrency,
-      mode: 'either', // 'either' ensures all tasks are attempted
-    })
-
-    // log success rate
-    const successes = Array.filterMap(results, Option.getRight)
-    yield* Effect.logDebug(
-      `Processed ${successes.length} of ${messages.length} messages`
-    )
-
-    // write rows to storage, exit if no fact checks were extracted
-    const rows = Array.flatten(successes)
-    if (rows.length === 0) {
-      yield* Effect.logWarning(
-        'No fact checks extracted to be written to storage'
-      )
-      return
-    }
-
-    // publish message
-    const outgoing = yield* writeBatch({
-      runId: job.runId,
-      rows,
-      timestamp: job.startedAt,
-      datasetId: job.datasetId,
-      tableId: 'fact_checks',
-    })
-    const data = yield* encodeOutgoing(outgoing)
-    yield* Publisher.publish(data)
+  // process all messages with configured concurrency
+  yield* Effect.logDebug(`Processing ${messages.length} messages`)
+  const tasks = Array.map(messages, processMessage)
+  const results = yield* Effect.all(tasks, {
+    concurrency: job.concurrency,
+    mode: 'either', // 'either' ensures all tasks are attempted
   })
-)
+
+  // log success rate
+  const successes = Array.filterMap(results, Option.getRight)
+  yield* Effect.logDebug(
+    `Processed ${successes.length} of ${messages.length} messages`
+  )
+
+  // write rows to storage, exit if no fact checks were extracted
+  const rows = Array.flatten(successes)
+  if (rows.length === 0) {
+    yield* Effect.logWarning(
+      'No fact checks extracted to be written to storage'
+    )
+    return
+  }
+
+  // publish message
+  const outgoing = yield* writeBatch({
+    runId: job.runId,
+    rows,
+    timestamp: job.startedAt,
+    datasetId: job.datasetId,
+    tableId: 'fact_checks',
+  })
+  const data = yield* encodeOutgoing(outgoing)
+  yield* Publisher.publish(data)
+})

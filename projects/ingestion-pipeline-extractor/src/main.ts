@@ -1,5 +1,162 @@
-import { NodeRuntime } from '@effect/platform-node'
+import { Config, Effect, Logger, Layer, Schema, Clock } from 'effect'
+import { NodeRuntime, NodeFileSystem } from '@effect/platform-node'
+import { NodeSdk } from '@effect/opentelemetry'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 
-import { main } from './environments/environment'
+import {
+  CloudStorageStorageReader,
+  CloudStorageStorageWriter,
+  FileSystemStorageReader,
+  FileSystemStorageWriter,
+} from '@news-research/ingestion-pipeline/shared'
+import {
+  CloudPubsubMessageBatch,
+  CloudPubsubPublisher,
+  FileSystemPublisher,
+  FileSystemMessageBatch,
+} from '@news-research/ingestion-messaging'
+import {
+  PubsubSubscriberClient,
+  PubsubClient,
+} from '@news-research/ingestion-vendor/cloud-pubsub'
+import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import { StorageClient } from '@news-research/ingestion-vendor/cloud-storage'
+import { Node } from '@news-research/ingestion-data'
+import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
+import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
-NodeRuntime.runMain(main, { disablePrettyLogger: true })
+import { Program, JobContext } from './program'
+
+const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')
+
+const storage = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const storageMode = yield* Config.withDefault(StorageModeConfig, 'gcp')
+    if (storageMode === 'filesystem') {
+      return Layer.empty.pipe(
+        Layer.merge(FileSystemStorageReader.layer),
+        Layer.merge(FileSystemStorageWriter.layer),
+        Layer.provide(NodeFileSystem.layer)
+      )
+    }
+    return Layer.empty.pipe(
+      Layer.merge(CloudStorageStorageReader.layer),
+      Layer.merge(CloudStorageStorageWriter.layer),
+      Layer.provide(StorageClient.layer())
+    )
+  })
+)
+
+const MessagingModeConfig = Config.literal(
+  'gcp',
+  'filesystem'
+)('MESSAGING_MODE')
+
+const messaging = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const messagingMode = yield* Config.withDefault(MessagingModeConfig, 'gcp')
+    if (messagingMode === 'filesystem') {
+      return Layer.empty.pipe(
+        Layer.merge(FileSystemMessageBatch.layer),
+        Layer.merge(FileSystemPublisher.layer),
+        Layer.provide(NodeFileSystem.layer)
+      )
+    }
+    return Layer.empty.pipe(
+      Layer.merge(CloudPubsubMessageBatch.layer),
+      Layer.merge(CloudPubsubPublisher.layer),
+      Layer.provide(PubsubSubscriberClient.layer()),
+      Layer.provide(PubsubClient.layer())
+    )
+  }).pipe(
+    // necessary to merge layer error types correctly
+    Effect.map(Layer.mergeAll)
+  )
+)
+
+const LoggingModeConfig = Config.literal('gcp', 'console')('LOGGING_MODE')
+
+const logger = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const loggingMode = yield* Config.withDefault(LoggingModeConfig, 'gcp')
+
+    if (loggingMode === 'console') {
+      return Layer.empty.pipe(
+        Layer.merge(Logger.add(Logger.prettyLoggerDefault)),
+        Layer.merge(Logger.remove(Logger.defaultLogger))
+      )
+    }
+
+    const gcpLogger = GcpLoggingPinoConfig.make.pipe(
+      Effect.andThen((config) => pinoLogger(config))
+    )
+
+    return Layer.empty.pipe(
+      Layer.merge(Logger.addScoped(gcpLogger)),
+      Layer.merge(Logger.remove(Logger.defaultLogger))
+    )
+  })
+)
+
+const OtelModeConfig = Config.literal('gcp', 'local')('OTEL_MODE')
+const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME')
+
+const otel = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const otelMode = yield* Config.withDefault(OtelModeConfig, 'gcp')
+    const serviceName = yield* Config.withDefault(
+      OtelServiceNameConfig,
+      'extractor'
+    )
+
+    if (otelMode === 'local') {
+      return NodeSdk.layer(() => ({
+        resource: { serviceName },
+        spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
+      }))
+    }
+
+    const instanceId = yield* cloudRunInstanceId
+
+    return NodeSdk.layer(() => ({
+      resource: {
+        serviceName,
+        attributes: {
+          'service.instance.id': instanceId,
+        },
+      },
+      spanProcessor: new BatchSpanProcessor(
+        new TraceExporter({
+          resourceFilter: /^service\./,
+        })
+      ),
+    }))
+  })
+)
+
+const MaxConcurrencyConfig = Schema.Config(
+  'MAX_CONCURRENCY',
+  Schema.NumberFromString.pipe(Schema.nonNegative(), Schema.int())
+)
+
+const job = Layer.effect(
+  JobContext,
+  Effect.gen(function* () {
+    const startedAt = yield* Clock.currentTimeMillis
+    const runId = yield* Node.generateUUID()
+    const concurrency = yield* Config.withDefault(MaxConcurrencyConfig, 10)
+    const datasetId = yield* Config.string('BIGQUERY_DATASET')
+    return { runId, concurrency, startedAt, datasetId }
+  })
+)
+
+Program.pipe(
+  Effect.provide(storage),
+  Effect.provide(messaging),
+  Effect.provide(logger),
+  Effect.provide(otel),
+  Effect.provide(job),
+  NodeRuntime.runMain({ disablePrettyLogger: true })
+)
