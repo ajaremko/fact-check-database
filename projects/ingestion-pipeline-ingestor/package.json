@@ -22,14 +22,14 @@
           "tsConfig": "projects/ingestion-pipeline-ingestor/tsconfig.app.json",
           "assets": [
             "projects/ingestion-pipeline-ingestor/src/assets"
-          ]
+          ],
+          "esbuildConfig": "projects/ingestion-pipeline-ingestor/esbuild.config.js"
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-pipeline-ingestor/esbuild.config.js"
+            "minify": false
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-pipeline-ingestor/esbuild.config.prod.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false

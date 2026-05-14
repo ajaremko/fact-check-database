@@ -56,7 +56,7 @@ export function ingestFromSource(args: {
   return Effect.gen(function* () {
     const ctx = decodeContext(args)
 
-    yield* Effect.logDebug('Fetching data from source target')
+    yield* Effect.logTrace('Fetching data from source target')
     const result = yield* fetch(ctx.source, ctx.timestamp)
 
     // Derive a stable observation ID from fetch result
@@ -81,7 +81,7 @@ export function ingestFromSource(args: {
       })
 
       // Encode to a record of the failed attempt, without a pointer
-      yield* Effect.logDebug('Writing fetch failure record')
+      yield* Effect.logTrace('Writing fetch failure record')
       const recordPath = yield* encodeObservationPath(observation)
       const recordData = yield* encodeObservation(observation)
       const recordMeta = yield* encodeObservationMetadata(observation)
@@ -114,7 +114,7 @@ export function ingestFromSource(args: {
     })
 
     // Write the raw response body to the archive
-    yield* Effect.logDebug('Writing raw response body')
+    yield* Effect.logTrace('Writing raw response body')
     const bodyPath = yield* encodeFetchedBodyPath(fetchedBody)
 
     // write the body to storage
@@ -139,7 +139,7 @@ export function ingestFromSource(args: {
 
     // Write a record of the successful attempt, including a
     // pointer to the archived body
-    yield* Effect.logDebug('Writing fetch success record')
+    yield* Effect.logTrace('Writing fetch success record')
     const recordPath = yield* encodeObservationPath(observation)
     const recordData = yield* encodeObservation(observation)
     const recordMeta = yield* encodeObservationMetadata(observation)

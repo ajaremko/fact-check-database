@@ -1,17 +1,28 @@
-import { Effect } from 'effect'
+import { Data, Effect } from 'effect'
 
-export const cloudRunInstanceId = Effect.tryPromise(async (signal) => {
-  const response = await fetch(
+export class CloudRunInstanceError extends Data.TaggedError(
+  'CloudRunInstanceError'
+)<{
+  readonly cause: unknown
+  readonly message: string
+}> {}
+
+async function fetchMetadata(signal: AbortSignal) {
+  const resp = await fetch(
     'http://metadata.google.internal/computeMetadata/v1/instance/id',
     {
       headers: { 'Metadata-Flavor': 'Google' },
       signal,
     }
   )
+  return await resp.text()
+}
 
-  if (response.ok) {
-    return await response.text()
-  }
-
-  throw new Error('Metadata server not available')
+export const cloudRunInstanceId = Effect.tryPromise({
+  try: fetchMetadata,
+  catch: (cause) =>
+    new CloudRunInstanceError({
+      cause,
+      message: 'Failed to fetch Cloud Run instance ID from metadata server',
+    }),
 })

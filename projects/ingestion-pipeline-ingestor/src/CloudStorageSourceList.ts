@@ -1,14 +1,12 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { ParseError } from 'effect/ParseResult'
 
-import {
-  StorageBucket,
-  StorageClient,
-} from '@news-research/ingestion-vendor/cloud-storage'
+import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
+import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Csv from '@news-research/ingestion-data/Csv'
 
-import { SourceList, SourceSchema } from '../../TargetList'
+import { SourceList, SourceSchema } from './SourceList'
 
 const decodeSources = pipe(
   SourceSchema,

@@ -17,6 +17,16 @@
       "import": "./dist/ingest/Fetcher.js",
       "default": "./dist/ingest/Fetcher.js"
     },
+    "./ingest/adapters/HttpClientFetcher": {
+      "types": "./dist/ingest/adapters/HttpClientFetcher.d.ts",
+      "import": "./dist/ingest/adapters/HttpClientFetcher.js",
+      "default": "./dist/ingest/adapters/HttpClientFetcher.js"
+    },
+    "./ingest/adapters/InMemoryFetcher": {
+      "types": "./dist/ingest/adapters/InMemoryFetcher.d.ts",
+      "import": "./dist/ingest/adapters/InMemoryFetcher.js",
+      "default": "./dist/ingest/adapters/InMemoryFetcher.js"
+    },
     "./shared/StorageWriter": {
       "types": "./dist/shared/StorageWriter.d.ts",
       "import": "./dist/shared/StorageWriter.js",
