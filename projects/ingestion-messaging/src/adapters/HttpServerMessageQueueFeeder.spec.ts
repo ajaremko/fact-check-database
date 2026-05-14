@@ -7,7 +7,7 @@ import { NodeHttpClient } from '@effect/platform-node'
 import { MessageQueue } from '../MessageQueue'
 
 import * as HttpServerMessageQueueFeeder from './HttpServerMessageQueueFeeder'
-import * as InmemoryMessageQueue from './InmemoryMessageQueue'
+import * as InMemoryMessageQueue from './InMemoryMessageQueue'
 
 describe('HttpServerMessageQueueFeeder', () => {
   it.effect('server returns 201 when message is received and acked', () =>
@@ -38,7 +38,7 @@ describe('HttpServerMessageQueueFeeder', () => {
 
       expect(response.status).toBe(201)
     }).pipe(
-      Effect.provide(InmemoryMessageQueue.layer),
+      Effect.provide(InMemoryMessageQueue.layer),
       Effect.provide(NodeHttpClient.layer),
       Effect.withConfigProvider(
         ConfigProvider.fromMap(new Map([['PORT', '3000']]))
@@ -73,7 +73,7 @@ describe('HttpServerMessageQueueFeeder', () => {
 
       expect(response.status).toBe(400)
     }).pipe(
-      Effect.provide(InmemoryMessageQueue.layer),
+      Effect.provide(InMemoryMessageQueue.layer),
       Effect.provide(NodeHttpClient.layer),
       Effect.withConfigProvider(
         ConfigProvider.fromMap(new Map([['PORT', '3000']]))
@@ -111,7 +111,7 @@ describe('HttpServerMessageQueueFeeder', () => {
       expect(span?._tag).toStrictEqual('Span')
       expect(span?.name).toStrictEqual('/test')
     }).pipe(
-      Effect.provide(InmemoryMessageQueue.layer),
+      Effect.provide(InMemoryMessageQueue.layer),
       Effect.provide(NodeHttpClient.layer),
       Effect.withConfigProvider(
         ConfigProvider.fromMap(new Map([['PORT', '3000']]))

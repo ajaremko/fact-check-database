@@ -1,10 +1,10 @@
 import { Effect, Queue, Layer } from 'effect'
 
-import * as MessageQueue from '../MessageQueue'
+import { MessageQueue, QueueMessage, MessageQueueError } from '../MessageQueue'
 
 const acquire = Effect.gen(function* () {
-  const messages = yield* Queue.unbounded<MessageQueue.QueueMessage>()
-  const errors = yield* Queue.unbounded<MessageQueue.MessageQueueError>()
+  const messages = yield* Queue.unbounded<QueueMessage>()
+  const errors = yield* Queue.unbounded<MessageQueueError>()
   return { messages, errors }
 })
 
@@ -16,9 +16,7 @@ function release(resource: Effect.Effect.Success<typeof acquire>) {
 }
 
 const make = Effect.acquireRelease(acquire, release).pipe(
-  Effect.map(({ messages, errors }) =>
-    MessageQueue.MessageQueue.of({ messages, errors })
-  )
+  Effect.map(({ messages, errors }) => MessageQueue.of({ messages, errors }))
 )
 
-export const layer = Layer.scoped(MessageQueue.MessageQueue, make)
+export const layer = Layer.scoped(MessageQueue, make)
