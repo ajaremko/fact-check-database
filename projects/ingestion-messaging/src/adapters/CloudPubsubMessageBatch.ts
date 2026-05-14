@@ -2,7 +2,7 @@ import { Array, Config, Effect, Layer, Ref, Option } from 'effect'
 
 import { PubsubSubscriberClient } from '@news-research/ingestion-vendor/cloud-pubsub'
 
-import * as MessageBatch from '../MessageBatch'
+import { MessageBatch, BatchMessage } from '../MessageBatch'
 
 function acquire(subscriptionId: string, maxMessages: number) {
   return Effect.gen(function* () {
@@ -14,7 +14,7 @@ function acquire(subscriptionId: string, maxMessages: number) {
     const receivedMessages = response.receivedMessages ?? []
     const messages = Array.filterMap(
       receivedMessages,
-      ({ message, ackId }): Option.Option<MessageBatch.Message> => {
+      ({ message, ackId }): Option.Option<BatchMessage> => {
         if (!message || !ackId || !message.data) {
           return Option.none()
         }
@@ -57,7 +57,7 @@ const make = Effect.gen(function* () {
     acquire(subscriptionId, maxMessages),
     release(subscriptionId)
   )
-  return MessageBatch.MessageBatch.of(messages)
+  return MessageBatch.of(messages)
 })
 
-export const layer = Layer.scoped(MessageBatch.MessageBatch, make)
+export const layer = Layer.scoped(MessageBatch, make)

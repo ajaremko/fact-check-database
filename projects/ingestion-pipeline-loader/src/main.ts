@@ -7,12 +7,14 @@ import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import {
   HttpServerMessageQueueFeeder,
   InMemoryMessageQueue,
+  QueueMessage,
+  takeError,
+  takeMessage,
 } from '@news-research/ingestion-messaging'
 import { BigQueryClient } from '@news-research/ingestion-vendor/bigquery'
 import { ExtractionBatchReadySchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
 import { GcpLoggingPinoConfig } from '@news-research/ingestion-vendor/pino-logging-gcp-config'
 import { StorageClient } from '@news-research/ingestion-vendor/cloud-storage'
-import { MessageQueue } from '@news-research/ingestion-messaging'
 import { Node } from '@news-research/ingestion-data'
 import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { loadBatch } from '@news-research/ingestion-pipeline/load'
@@ -25,7 +27,7 @@ const decodeIncoming = pipe(
   Schema.decode
 )
 
-function processMessage(message: MessageQueue.Message) {
+function processMessage(message: QueueMessage) {
   return Effect.gen(function* () {
     const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
     const incoming = yield* decodeIncoming(message.data)
@@ -51,15 +53,13 @@ function processMessage(message: MessageQueue.Message) {
 }
 
 const Program = Effect.gen(function* () {
-  const { messages, errors } = yield* MessageQueue.MessageQueue
-
-  const handleMessages = messages.take.pipe(
+  const handleMessages = takeMessage.pipe(
     Effect.andThen(processMessage),
     Effect.tapErrorCause(Effect.logError),
     Effect.forever
   )
 
-  const handleErrors = errors.take.pipe(
+  const handleErrors = takeError.pipe(
     Effect.andThen(Effect.fail),
     Effect.tapErrorCause(Effect.logError)
   )

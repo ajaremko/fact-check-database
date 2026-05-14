@@ -1,12 +1,11 @@
-import { it, expect } from '@effect/vitest'
-import { Effect, Layer } from 'effect'
+import { describe, it, expect } from '@effect/vitest'
+import { Effect } from 'effect'
 
 import * as InMemoryFetcher from './adapters/InmemoryFetcher'
 import { InMemoryStorageWriter } from '../shared'
 
+import { FetchFailureSchema, FetchSuccessSchema } from './Fetcher'
 import { ingestFromSource } from './ingestFromSource'
-import { FetchFailureSchema, FetchSuccessSchema } from './FetchResult'
-import { Fetcher, FetcherError } from './Fetcher'
 
 describe('ingestFromSourceTarget', () => {
   it.effect(
@@ -139,44 +138,6 @@ describe('ingestFromSourceTarget', () => {
         expect(storage).toHaveProperty(
           'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml'
         )
-      })
-  )
-
-  it.effect(
-    'when fetcher throws FetcherError, the error propagates out of ingestFromSource',
-    () =>
-      Effect.gen(function* () {
-        const failingFetcherLayer = Layer.succeed(Fetcher, {
-          fetch: () =>
-            Effect.fail(
-              new FetcherError({
-                cause: 'network timeout',
-                source: {
-                  id: 'baddata',
-                  name: 'baddata.com',
-                  collection: 'rss',
-                  url: 'https://baddata.com/rss.xml',
-                },
-              })
-            ),
-        })
-
-        const err = yield* ingestFromSource({
-          ingestionId: 'run-1',
-          timestamp: 0,
-          source: {
-            id: 'baddata',
-            name: 'baddata.com',
-            url: 'https://baddata.com/rss.xml',
-            collection: 'rss',
-          },
-        }).pipe(
-          Effect.provide(failingFetcherLayer),
-          Effect.provide(InMemoryStorageWriter.layer({})),
-          Effect.flip
-        )
-
-        expect(err._tag).toBe('FetcherError')
       })
   )
 

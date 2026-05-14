@@ -1,8 +1,6 @@
-export * as MessageBatch from './MessageBatch'
-export * as MessageQueue from './MessageQueue'
-export { type Message, MessageQueueError } from './MessageQueue'
-export * as Publisher from './Publisher'
-export { PublisherError } from './Publisher'
+export * from './MessageBatch'
+export * from './MessageQueue'
+export * from './Publisher'
 
 export * as CloudPubsubMessageBatch from './adapters/CloudPubsubMessageBatch'
 export * as CloudPubsubMessageQueueFeeder from './adapters/CloudPubsubMessageQueueFeeder'

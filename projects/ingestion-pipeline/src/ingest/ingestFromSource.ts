@@ -3,14 +3,13 @@ import { Effect, Schema, flow, pipe } from 'effect'
 import { Node, omitNullKeys, Yaml } from '@news-research/ingestion-data'
 
 import {
-  StorageWriter,
   SourceEncoded,
   TimestampEncoded,
   TimestampSchema,
   SourceSchema,
+  writeFile,
 } from '../shared'
 
-import * as Fetcher from './Fetcher'
 import {
   Observation,
   ObservationSchema,
@@ -20,6 +19,7 @@ import {
 } from './Observation'
 import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
 import { ObservationIdSchema } from './ObservationId'
+import { fetch } from './Fetcher'
 
 const encodeObservation = pipe(
   ObservationSchema,
@@ -55,7 +55,7 @@ export function ingestFromSource(args: {
     const ctx = decodeContext(args)
 
     yield* Effect.logDebug('Fetching data from source target')
-    const result = yield* Fetcher.fetch(ctx.source, ctx.timestamp)
+    const result = yield* fetch(ctx.source, ctx.timestamp)
 
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId({
@@ -85,7 +85,7 @@ export function ingestFromSource(args: {
       const recordMeta = yield* encodeObservationMetadata(observation)
 
       // write the record to storage
-      const recordPointer = yield* StorageWriter.writeFile({
+      const recordPointer = yield* writeFile({
         path: recordPath,
         data: recordData,
         meta: recordMeta,
@@ -116,7 +116,7 @@ export function ingestFromSource(args: {
     const bodyPath = yield* encodeFetchedBodyPath(fetchedBody)
 
     // write the body to storage
-    const bodyPointer = yield* StorageWriter.writeFile(
+    const bodyPointer = yield* writeFile(
       omitNullKeys({
         path: bodyPath,
         data: fetchedBody.body,
@@ -143,7 +143,7 @@ export function ingestFromSource(args: {
     const recordMeta = yield* encodeObservationMetadata(observation)
 
     // write the record to storage
-    const recordPointer = yield* StorageWriter.writeFile({
+    const recordPointer = yield* writeFile({
       path: recordPath,
       data: recordData,
       meta: recordMeta,

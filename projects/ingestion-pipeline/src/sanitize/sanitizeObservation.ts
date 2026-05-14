@@ -3,12 +3,12 @@ import { Effect, pipe, Schema } from 'effect'
 import { Node, Yaml } from '@news-research/ingestion-data'
 
 import {
-  StorageReader,
-  StorageWriter,
   FilePointer,
   TimestampEncoded,
   FilePointerSchema,
   TimestampSchema,
+  readFile,
+  writeFile,
 } from '../shared'
 
 import {
@@ -63,7 +63,7 @@ export function sanitizeObservation(args: {
     const ctx = decodeArgs(args)
 
     yield* Effect.logDebug(`Reading record for observation`)
-    const inputRecordData = yield* StorageReader.readFile(ctx.pointer)
+    const inputRecordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(inputRecordData)
 
     yield* Effect.logDebug(`Evaluating policy for observation`)
@@ -100,7 +100,7 @@ export function sanitizeObservation(args: {
       sanitizedObservation
     )
     // write the record to storage
-    const recordPointer = yield* StorageWriter.writeFile({
+    const recordPointer = yield* writeFile({
       path: recordPath,
       data: recordData,
       meta: recordMetadata,

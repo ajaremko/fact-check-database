@@ -2,7 +2,7 @@ import { Array, Effect, pipe, Schema } from 'effect'
 
 import { Node, Yaml } from '@news-research/ingestion-data'
 
-import { FilePointer, StorageReader } from '../shared'
+import { FilePointer, readFile } from '../shared'
 
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
 import { ObservationSchema } from './Observation'
@@ -24,7 +24,7 @@ export function extractFactChecks(ctx: {
   extractedAt: number
 }) {
   return Effect.gen(function* () {
-    const recordData = yield* StorageReader.readFile(ctx.pointer)
+    const recordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(recordData)
     const { content, http } = observation
     if (!http || !content || !observation.shouldExtract) {
@@ -61,7 +61,7 @@ export function extractFactChecks(ctx: {
       return []
     }
 
-    const responseData = yield* StorageReader.readFile(responsePointer)
+    const responseData = yield* readFile(responsePointer)
     const factChecks = yield* extractor
       .extractor({
         timestamp: ctx.extractedAt,

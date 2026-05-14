@@ -1,11 +1,9 @@
 import { Effect, Layer } from 'effect'
 
-import * as Fetcher from '../Fetcher'
-
-type FetchResult = Effect.Effect.Success<ReturnType<typeof Fetcher.fetch>>
+import { Fetcher, FetchResult } from '../Fetcher'
 
 export function layer(result: FetchResult) {
-  return Layer.succeed(Fetcher.Fetcher, {
+  return Layer.succeed(Fetcher, {
     fetch: () => Effect.succeed(result),
   })
 }

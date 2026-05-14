@@ -5,7 +5,7 @@ export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
   readonly message: string
 }> {}
 
-export interface Message {
+export interface QueueMessage {
   readonly data: Buffer
   readonly ack: Effect.Effect<void>
   readonly nack: Effect.Effect<void>
@@ -15,7 +15,15 @@ export interface Message {
 export class MessageQueue extends Context.Tag('MessageQueue')<
   MessageQueue,
   {
-    readonly messages: Queue.Queue<Message>
+    readonly messages: Queue.Queue<QueueMessage>
     readonly errors: Queue.Queue<MessageQueueError>
   }
 >() {}
+
+export const takeMessage = MessageQueue.pipe(
+  Effect.flatMap(({ messages }) => messages.take)
+)
+
+export const takeError = MessageQueue.pipe(
+  Effect.flatMap(({ errors }) => errors.take)
+)

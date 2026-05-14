@@ -11,7 +11,7 @@ import { createServer } from 'node:http'
 
 import { Node } from '@news-research/ingestion-data'
 
-import * as MessageQueue from '../MessageQueue'
+import { MessageQueue } from '../MessageQueue'
 
 const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({
@@ -25,7 +25,7 @@ const decodeMessage = Schema.decodeUnknown(
 
 function process(id: string, data: Buffer) {
   return Effect.gen(function* () {
-    const { messages } = yield* MessageQueue.MessageQueue
+    const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
     return yield* Effect.asyncEffect<
       HttpServerResponse.HttpServerResponse,

@@ -4,7 +4,7 @@ import { ContentLineageIdSchema } from '../shared/contracts/v1'
 
 import { SourceSchema, TimestampSchema } from '../shared'
 
-import { FetchResultSchema } from './FetchResult'
+import { FetchResultSchema } from './Fetcher'
 
 export const ObservationIdSchema = Schema.transformOrFail(
   ContentLineageIdSchema,

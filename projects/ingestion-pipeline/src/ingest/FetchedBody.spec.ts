@@ -1,5 +1,6 @@
-import { expect } from '@effect/vitest'
+import { describe, it } from 'vitest'
 import { Schema } from 'effect'
+import { expect } from '@effect/vitest'
 
 import { FetchedBodyPathSchema } from './FetchedBody'
 

@@ -6,11 +6,11 @@ import {
   PubsubSubscription,
 } from '@news-research/ingestion-vendor/cloud-pubsub'
 
-import * as MessageQueue from '../MessageQueue'
+import { MessageQueue, MessageQueueError } from '../MessageQueue'
 
 const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
-  const { messages, errors } = yield* MessageQueue.MessageQueue
+  const { messages, errors } = yield* MessageQueue
 
   function messageListener(message: GcpsMessage) {
     Effect.runFork(
@@ -26,7 +26,7 @@ const acquire = Effect.gen(function* () {
     Effect.runFork(
       Queue.offer(
         errors,
-        new MessageQueue.MessageQueueError({
+        new MessageQueueError({
           cause: error,
           message: 'Pub/Sub subscription error',
         })
@@ -58,5 +58,5 @@ const subscription = PubsubSubscription.layer(
 export const layer: Layer.Layer<
   never,
   ConfigError.ConfigError,
-  PubsubClient.PubsubClient | MessageQueue.MessageQueue
+  PubsubClient.PubsubClient | MessageQueue
 > = Layer.effectDiscard(Effect.scoped(make)).pipe(Layer.provide(subscription))

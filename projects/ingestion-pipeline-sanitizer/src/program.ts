@@ -1,10 +1,11 @@
 import { Clock, Effect, pipe, Schema } from 'effect'
 
-import { Publisher, MessageQueue } from '@news-research/ingestion-messaging'
-import type {
-  StorageWriter,
-  StorageReader,
-} from '@news-research/ingestion-pipeline/shared'
+import {
+  takeMessage,
+  takeError,
+  QueueMessage,
+  publish,
+} from '@news-research/ingestion-messaging'
 import { ObservationIngestedSchema } from '@news-research/ingestion-pipeline/ingest/contracts/v1'
 import { Node } from '@news-research/ingestion-data'
 import { sanitizeObservation } from '@news-research/ingestion-pipeline/sanitize'
@@ -25,7 +26,7 @@ const encodeOutgoing = pipe(
   Schema.encode
 )
 
-function processMessage(message: MessageQueue.Message) {
+function processMessage(message: QueueMessage) {
   const effect = Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
     const incoming = yield* decodeIncoming(message.data)
@@ -39,7 +40,7 @@ function processMessage(message: MessageQueue.Message) {
     })
 
     const data = yield* encodeOutgoing(event)
-    yield* Publisher.publish(data)
+    yield* publish(data)
 
     yield* message.ack
   }).pipe(
@@ -57,25 +58,13 @@ function processMessage(message: MessageQueue.Message) {
   return effect
 }
 
-export type Program = Effect.Effect<
-  void,
-  never,
-  | SanitizerPolicyConfig
-  | StorageReader.StorageReader
-  | StorageWriter.StorageWriter
-  | Publisher.Publisher
-  | MessageQueue.MessageQueue
->
-
-export const Program: Program = Effect.gen(function* () {
-  const { messages, errors } = yield* MessageQueue.MessageQueue
-
-  const handleMessages = messages.take.pipe(
+export const Program = Effect.gen(function* () {
+  const handleMessages = takeMessage.pipe(
     Effect.andThen(processMessage),
     Effect.forever
   )
 
-  const handleErrors = errors.take.pipe(
+  const handleErrors = takeError.pipe(
     Effect.tap(Effect.logError),
     Effect.andThen((err) => Effect.die(err.cause))
   )

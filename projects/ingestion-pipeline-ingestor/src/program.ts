@@ -1,12 +1,8 @@
 import { Array, Clock, Effect, Option, pipe, Schema } from 'effect'
 
-import {
-  Fetcher,
-  ingestFromSource,
-} from '@news-research/ingestion-pipeline/ingest'
-import type { StorageWriter } from '@news-research/ingestion-pipeline/shared'
-import { Publisher } from '@news-research/ingestion-messaging'
 import { Node } from '@news-research/ingestion-data'
+import { ingestFromSource } from '@news-research/ingestion-pipeline/ingest'
+import { publish } from '@news-research/ingestion-messaging'
 
 import { JobContext, withJobContextAnnotations } from './JobContext'
 import { SourceList, Source } from './TargetList'
@@ -32,7 +28,7 @@ function processTarget(source: Source, index: number) {
     })
 
     const data = yield* encodeOutgoing(event)
-    yield* Publisher.publish(data)
+    yield* publish(data)
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.annotateLogs({
@@ -44,17 +40,7 @@ function processTarget(source: Source, index: number) {
   )
 }
 
-export type Program = Effect.Effect<
-  void,
-  Error,
-  | JobContext
-  | SourceList
-  | Publisher.Publisher
-  | StorageWriter.StorageWriter
-  | Fetcher.Fetcher
->
-
-export const Program: Program = withJobContextAnnotations(
+export const Program = withJobContextAnnotations(
   Effect.gen(function* () {
     const job = yield* JobContext
     const { sources } = yield* SourceList

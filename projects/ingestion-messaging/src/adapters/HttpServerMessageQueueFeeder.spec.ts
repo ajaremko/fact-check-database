@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { it, expect } from '@effect/vitest'
+import { describe, it, expect } from '@effect/vitest'
 import { ConfigProvider, Effect, Fiber, Layer } from 'effect'
 import { HttpClient, HttpClientRequest } from '@effect/platform'
 import { NodeHttpClient } from '@effect/platform-node'
 
-import * as MessageQueue from '../MessageQueue'
+import { MessageQueue } from '../MessageQueue'
 
 import * as HttpServerMessageQueueFeeder from './HttpServerMessageQueueFeeder'
 import * as InmemoryMessageQueue from './InmemoryMessageQueue'
@@ -29,7 +29,7 @@ describe('HttpServerMessageQueueFeeder', () => {
         Effect.fork
       )
 
-      const { messages } = yield* MessageQueue.MessageQueue
+      const { messages } = yield* MessageQueue
       const message = yield* messages.take
       yield* message.ack
 
@@ -64,7 +64,7 @@ describe('HttpServerMessageQueueFeeder', () => {
         Effect.fork
       )
 
-      const { messages } = yield* MessageQueue.MessageQueue
+      const { messages } = yield* MessageQueue
       const message = yield* messages.take
       yield* message.nack
 
@@ -99,7 +99,7 @@ describe('HttpServerMessageQueueFeeder', () => {
         Effect.fork
       )
 
-      const { messages } = yield* MessageQueue.MessageQueue
+      const { messages } = yield* MessageQueue
       const message = yield* messages.take
       yield* message.ack
 

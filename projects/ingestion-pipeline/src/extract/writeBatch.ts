@@ -2,7 +2,7 @@ import { Effect, pipe, Schema } from 'effect'
 
 import { Node, Ndjson } from '@news-research/ingestion-data'
 
-import { StorageWriter } from '../shared'
+import { writeFile } from '../shared'
 
 import {
   ExtractionBatchSchema,
@@ -35,7 +35,7 @@ export function writeBatch(input: {
       datasetId: input.datasetId,
     })
     const data = yield* encodeNdjson(input.rows)
-    const pointer = yield* StorageWriter.writeFile({
+    const pointer = yield* writeFile({
       path: encodePath,
       data,
       contentType: 'application/x-ndjson',

@@ -1,5 +1,6 @@
-import { expect } from '@effect/vitest'
+import { describe, it } from 'vitest'
 import { Schema } from 'effect'
+import { expect } from '@effect/vitest'
 
 import {
   ObservationSchema,
@@ -7,7 +8,7 @@ import {
   ObservationPathSchema,
   ObservationEventSchema,
 } from './Observation'
-import { FetchSuccessSchema, FetchFailureSchema } from './FetchResult'
+import { FetchSuccessSchema, FetchFailureSchema } from './Fetcher'
 
 const source = {
   id: 'politifact',

@@ -1,11 +1,11 @@
 import { Config, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import * as MessageQueue from '../MessageQueue'
+import { MessageQueue } from '../MessageQueue'
 
 function process(id: string, data: Buffer) {
   return Effect.gen(function* () {
-    const { messages } = yield* MessageQueue.MessageQueue
+    const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
     yield* Effect.asyncEffect<void, void, never, never, never, never>(
       (resume) =>

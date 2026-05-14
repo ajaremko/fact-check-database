@@ -1,11 +1,15 @@
 import { Array, Context, Effect, Option, Schema, pipe } from 'effect'
 
-import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
 import {
   extractFactChecks,
   writeBatch,
 } from '@news-research/ingestion-pipeline/extract'
-import { Publisher, MessageBatch } from '@news-research/ingestion-messaging'
+import {
+  MessageBatch,
+  BatchMessage,
+  publish,
+} from '@news-research/ingestion-messaging'
+import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
 import { Node } from '@news-research/ingestion-data'
 
 interface JobContext {
@@ -31,7 +35,7 @@ const encodeOutgoing = pipe(
   Schema.encode
 )
 
-function processMessage(message: MessageBatch.Message) {
+function processMessage(message: BatchMessage) {
   return Effect.gen(function* () {
     const incoming = yield* decodeIncoming(message.data)
     const job = yield* JobContext
@@ -48,7 +52,7 @@ function processMessage(message: MessageBatch.Message) {
 
 export const Program = Effect.gen(function* () {
   const job = yield* JobContext
-  const messages = yield* MessageBatch.MessageBatch
+  const messages = yield* MessageBatch
 
   // process all messages with configured concurrency
   yield* Effect.logDebug(`Processing ${messages.length} messages`)
@@ -82,5 +86,5 @@ export const Program = Effect.gen(function* () {
     tableId: 'fact_checks',
   })
   const data = yield* encodeOutgoing(outgoing)
-  yield* Publisher.publish(data)
+  yield* publish(data)
 })

@@ -3,8 +3,12 @@ import { HttpClient } from '@effect/platform'
 
 import { Node } from '@news-research/ingestion-data'
 
-import * as Fetcher from '../Fetcher'
-import { FetchSuccessSchema, FetchFailureSchema } from '../FetchResult'
+import {
+  Fetcher,
+  FetcherError,
+  FetchSuccessSchema,
+  FetchFailureSchema,
+} from '../Fetcher'
 
 function pickHeaders(names: string[]) {
   return function (headers: Record<string, string>) {
@@ -31,7 +35,7 @@ export const make = Effect.gen(function* () {
     'Accept-Language': 'en-US,en;q=0.9',
     Connection: 'keep-alive',
   }
-  return Fetcher.Fetcher.of({
+  return Fetcher.of({
     fetch: (source) =>
       Effect.gen(function* () {
         // Make the HTTP request using the client
@@ -55,7 +59,7 @@ export const make = Effect.gen(function* () {
             Effect.map((buffer) => new Uint8Array(buffer)),
             Effect.mapError(
               (cause) =>
-                new Fetcher.FetcherError({
+                new FetcherError({
                   cause,
                   source,
                   message: 'Failed to read error response body',
@@ -90,7 +94,7 @@ export const make = Effect.gen(function* () {
           Effect.map((buffer) => new Uint8Array(buffer)),
           Effect.mapError(
             (cause) =>
-              new Fetcher.FetcherError({
+              new FetcherError({
                 cause,
                 source,
                 message: 'Failed to read successful response body',
@@ -121,4 +125,4 @@ export const make = Effect.gen(function* () {
   })
 })
 
-export const layer = Layer.effect(Fetcher.Fetcher, make)
+export const layer = Layer.effect(Fetcher, make)

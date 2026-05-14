@@ -3,7 +3,7 @@ import { Effect, Queue, Layer } from 'effect'
 import * as MessageQueue from '../MessageQueue'
 
 const acquire = Effect.gen(function* () {
-  const messages = yield* Queue.unbounded<MessageQueue.Message>()
+  const messages = yield* Queue.unbounded<MessageQueue.QueueMessage>()
   const errors = yield* Queue.unbounded<MessageQueue.MessageQueueError>()
   return { messages, errors }
 })

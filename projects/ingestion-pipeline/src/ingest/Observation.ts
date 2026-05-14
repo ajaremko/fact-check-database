@@ -10,7 +10,7 @@ import {
 
 import { SourceSchema, FilePointerSchema, TimestampSchema } from '../shared'
 
-import { FetchResultSchema } from './FetchResult'
+import { FetchResultSchema } from './Fetcher'
 import { ObservationIngestedSchema } from './contracts/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
