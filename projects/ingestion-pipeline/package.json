@@ -12,6 +12,16 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./ingest": {
+      "types": "./dist/ingest/index.d.ts",
+      "import": "./dist/ingest/index.js",
+      "default": "./dist/ingest/index.js"
+    },
+    "./ingest/contracts/*": {
+      "types": "./dist/ingest/contracts/*/index.d.ts",
+      "import": "./dist/ingest/contracts/*/index.js",
+      "default": "./dist/ingest/contracts/*/index.js"
+    },
     "./ingest/Fetcher": {
       "types": "./dist/ingest/Fetcher.d.ts",
       "import": "./dist/ingest/Fetcher.js",
@@ -27,6 +37,46 @@
       "import": "./dist/ingest/adapters/InMemoryFetcher.js",
       "default": "./dist/ingest/adapters/InMemoryFetcher.js"
     },
+    "./sanitize": {
+      "types": "./dist/sanitize/index.d.ts",
+      "import": "./dist/sanitize/index.js",
+      "default": "./dist/sanitize/index.js"
+    },
+    "./sanitize/contracts/*": {
+      "types": "./dist/sanitize/contracts/*/index.d.ts",
+      "import": "./dist/sanitize/contracts/*/index.js",
+      "default": "./dist/sanitize/contracts/*/index.js"
+    },
+    "./extract": {
+      "types": "./dist/extract/index.d.ts",
+      "import": "./dist/extract/index.js",
+      "default": "./dist/extract/index.js"
+    },
+    "./extract/contracts/*": {
+      "types": "./dist/extract/contracts/*/index.d.ts",
+      "import": "./dist/extract/contracts/*/index.js",
+      "default": "./dist/extract/contracts/*/index.js"
+    },
+    "./load": {
+      "types": "./dist/load/index.d.ts",
+      "import": "./dist/load/index.js",
+      "default": "./dist/load/index.js"
+    },
+    "./load/contracts/*": {
+      "types": "./dist/load/contracts/*/index.d.ts",
+      "import": "./dist/load/contracts/*/index.js",
+      "default": "./dist/load/contracts/*/index.js"
+    },
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
+    },
+    "./shared/contracts/*": {
+      "types": "./dist/shared/contracts/*/index.d.ts",
+      "import": "./dist/shared/contracts/*/index.js",
+      "default": "./dist/shared/contracts/*/index.js"
+    },
     "./shared/StorageWriter": {
       "types": "./dist/shared/StorageWriter.d.ts",
       "import": "./dist/shared/StorageWriter.js",
@@ -37,10 +87,35 @@
       "import": "./dist/shared/StorageReader.js",
       "default": "./dist/shared/StorageReader.js"
     },
-    "./*": {
-      "types": "./dist/*/index.d.ts",
-      "import": "./dist/*/index.js",
-      "default": "./dist/*/index.js"
+    "./shared/adapters/CloudStorageStorageReader": {
+      "types": "./dist/shared/adapters/CloudStorageStorageReader.d.ts",
+      "import": "./dist/shared/adapters/CloudStorageStorageReader.js",
+      "default": "./dist/shared/adapters/CloudStorageStorageReader.js"
+    },
+    "./shared/adapters/CloudStorageStorageWriter": {
+      "types": "./dist/shared/adapters/CloudStorageStorageWriter.d.ts",
+      "import": "./dist/shared/adapters/CloudStorageStorageWriter.js",
+      "default": "./dist/shared/adapters/CloudStorageStorageWriter.js"
+    },
+    "./shared/adapters/FileSystemStorageReader": {
+      "types": "./dist/shared/adapters/FileSystemStorageReader.d.ts",
+      "import": "./dist/shared/adapters/FileSystemStorageReader.js",
+      "default": "./dist/shared/adapters/FileSystemStorageReader.js"
+    },
+    "./shared/adapters/FileSystemStorageWriter": {
+      "types": "./dist/shared/adapters/FileSystemStorageWriter.d.ts",
+      "import": "./dist/shared/adapters/FileSystemStorageWriter.js",
+      "default": "./dist/shared/adapters/FileSystemStorageWriter.js"
+    },
+    "./shared/adapters/InMemoryStorageReader": {
+      "types": "./dist/shared/adapters/InMemoryStorageReader.d.ts",
+      "import": "./dist/shared/adapters/InMemoryStorageReader.js",
+      "default": "./dist/shared/adapters/InMemoryStorageReader.js"
+    },
+    "./shared/adapters/InMemoryStorageWriter": {
+      "types": "./dist/shared/adapters/InMemoryStorageWriter.d.ts",
+      "import": "./dist/shared/adapters/InMemoryStorageWriter.js",
+      "default": "./dist/shared/adapters/InMemoryStorageWriter.js"
     }
   },
   "dependencies": {

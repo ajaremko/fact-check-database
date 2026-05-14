@@ -10,13 +10,11 @@ import {
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
-import {
-  StorageBucket,
-  StorageClient,
-} from '@news-research/ingestion-vendor/cloud-storage'
+import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
+import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
 import { SanitizerPolicy } from '@news-research/ingestion-pipeline/sanitize'
 
-import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
+import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 
 const decodeSources = pipe(
   SanitizerPolicy,

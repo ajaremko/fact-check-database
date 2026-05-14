@@ -1,8 +1,8 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import * as InMemoryFetcher from './adapters/InmemoryFetcher'
-import { InMemoryStorageWriter } from '../shared'
+import * as InMemoryFetcher from './adapters/InMemoryFetcher'
+import * as InMemoryStorageWriter from '../shared/adapters/InmemoryStorageWriter'
 
 import { FetchFailureSchema, FetchSuccessSchema } from './Fetcher'
 import { ingestFromSource } from './ingestFromSource'

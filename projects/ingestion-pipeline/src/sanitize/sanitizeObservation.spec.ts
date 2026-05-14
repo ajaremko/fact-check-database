@@ -1,7 +1,8 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { InMemoryStorageReader, InMemoryStorageWriter } from '../shared'
+import * as InMemoryStorageWriter from '../shared/adapters/InmemoryStorageWriter'
+import * as InMemoryStorageReader from '../shared/adapters/InmemoryStorageReader'
 
 import { sanitizeObservation } from './sanitizeObservation'
 

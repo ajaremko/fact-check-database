@@ -5,7 +5,7 @@ import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
 import { SanitizerPolicy } from '@news-research/ingestion-pipeline/sanitize'
 
-import { SanitizerPolicyConfig } from '../../SanitizerPolicyConfig'
+import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 
 const decodePolicy = pipe(
   SanitizerPolicy,

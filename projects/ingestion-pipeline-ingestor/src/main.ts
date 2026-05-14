@@ -16,10 +16,8 @@ import * as PubsubClient from '@news-research/ingestion-vendor/cloud-pubsub/Pubs
 import * as GcpLoggingPinoConfig from '@news-research/ingestion-vendor/pino-logging-gcp-config'
 import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
 import * as Node from '@news-research/ingestion-data/Node'
-import {
-  CloudStorageStorageWriter,
-  FileSystemStorageWriter,
-} from '@news-research/ingestion-pipeline/shared'
+import * as CloudStorageStorageWriter from '@news-research/ingestion-pipeline/shared/adapters/CloudStorageStorageWriter'
+import * as FileSystemStorageWriter from '@news-research/ingestion-pipeline/shared/adapters/FileSystemStorageWriter'
 import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
