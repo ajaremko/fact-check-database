@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { FactChecksTableSchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
 
-import { tag, ingestionLabels, gcpProject } from './config'
+import { deletionProtection, tag, ingestionLabels, gcpProject } from './config'
 import { provider } from './provider'
 
 export const stagingDataset = new gcp.bigquery.Dataset(
@@ -24,7 +24,7 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
   {
     datasetId: stagingDataset.datasetId,
     tableId: 'fact-checks',
-    deletionProtection: false,
+    deletionProtection,
     // note: changes in FactChecksTableSchema fields may not be detected by pulumi
     // needs further investigation
     schema: JSON.stringify(FactChecksTableSchema.fields),
@@ -58,7 +58,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
   {
     datasetId: curatedDataset.datasetId,
     tableId: 'fact-checks',
-    deletionProtection: false,
+    deletionProtection,
     schema: JSON.stringify([
       { name: 'fact_check_id', type: 'STRING', mode: 'REQUIRED' },
       { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
@@ -217,7 +217,7 @@ export const martsFactChecksTable = new gcp.bigquery.Table(
   {
     datasetId: martsDataset.datasetId,
     tableId: 'fact_checks',
-    deletionProtection: false,
+    deletionProtection,
     view: {
       useLegacySql: false,
       query: pulumi.interpolate`

@@ -13,3 +13,4 @@ config:
   ingestion:logLevel: debug
   ingestion:logRetentionDays: 1
   ingestion:deadletterRetentionDays: 1
+  ingestion:deletionProtection: false

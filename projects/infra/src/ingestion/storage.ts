@@ -11,6 +11,7 @@ export const assetsBucket = new gcp.storage.Bucket(
     name: `ingestor-assets`,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
+
     forceDestroy: true,
     labels: ingestionLabels,
   },

@@ -12,9 +12,13 @@ export const ingestorSchedule = ingestionConfig.require('ingestorSchedule')
 export const extractorSchedule = ingestionConfig.require('extractorSchedule')
 export const logLevel = ingestionConfig.require('logLevel')
 export const logRetention = ingestionConfig.requireNumber('logRetentionDays')
+export const deletionProtection =
+  ingestionConfig.getBoolean('deletionProtection') ?? true
+
 const deadletterRetention = ingestionConfig.requireNumber(
   'deadletterRetentionDays'
 )
+
 export const deadletterRetentionDuration = `${
   deadletterRetention * 24 * 60 * 60
 }s` // Convert days to seconds

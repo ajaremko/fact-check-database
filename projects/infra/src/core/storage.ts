@@ -42,6 +42,7 @@ export const rawArchiveBucket = new gcp.storage.Bucket(
   },
   {
     dependsOn: [storageServiceAccountKmsBinding],
+    retainOnDelete: true,
     provider,
   }
 )
