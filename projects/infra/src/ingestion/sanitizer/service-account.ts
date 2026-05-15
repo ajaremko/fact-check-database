@@ -1,11 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { rawArchiveBucketName } from '../../core'
-
+import { assetsBucket, rawArchiveBucket } from '../storage'
 import { tag } from '../config'
 import { provider } from '../provider'
-import { assetsBucket } from '../storage'
 import { sanitizerTopic } from '../pubsub'
 
 export const sanitizerServiceAccount = new gcp.serviceaccount.Account(
@@ -30,7 +28,7 @@ export const sanitizerAssetBucketViewer = new gcp.storage.BucketIAMMember(
 export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   `${tag}-sanitizer-raw-archive-bucket-admin`,
   {
-    bucket: rawArchiveBucketName,
+    bucket: rawArchiveBucket.name,
     role: 'roles/storage.objectAdmin',
     member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
   },

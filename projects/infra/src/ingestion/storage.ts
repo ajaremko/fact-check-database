@@ -1,22 +1,76 @@
 import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
 
-import { gcpRegion, ingestionLabels, tag } from './config'
+import {
+  gcpRegion,
+  ingestionLabels,
+  tag,
+  retainStorageOnDelete,
+  forceDestroyStorage,
+  gcpProject,
+  deadletterRetentionDays,
+  eventLogRetentionDays,
+  batchRetentionDays,
+} from './config'
 import { storageService } from './services'
 import { provider } from './provider'
+
+import { gcsArchiveKeyId } from '../core'
+
+const storageServiceAccount = gcp.storage.getProjectServiceAccountOutput(
+  {
+    project: gcpProject,
+  },
+  {
+    dependsOn: [storageService],
+    provider,
+  }
+)
+
+/**
+ * Allow storage service account to use the KMS key for encryption/decryption
+ */
+export const storageServiceAccountKmsBinding = new gcp.kms.CryptoKeyIAMMember(
+  `${tag}-gcs-sa-kms-binding`,
+  {
+    cryptoKeyId: gcsArchiveKeyId,
+    role: 'roles/cloudkms.cryptoKeyEncrypterDecrypter',
+    member: pulumi.interpolate`serviceAccount:${storageServiceAccount.emailAddress}`,
+  },
+  { provider }
+)
+
+export const rawArchiveBucket = new gcp.storage.Bucket(
+  `${tag}-raw-archive-bucket`,
+  {
+    location: gcpRegion,
+    uniformBucketLevelAccess: true,
+    publicAccessPrevention: 'enforced',
+    labels: ingestionLabels,
+    forceDestroy: true,
+    encryption: {
+      defaultKmsKeyName: gcsArchiveKeyId,
+    },
+  },
+  {
+    dependsOn: [storageServiceAccountKmsBinding],
+    retainOnDelete: true,
+    provider,
+  }
+)
 
 export const assetsBucket = new gcp.storage.Bucket(
   `${tag}-assets-bucket`,
   {
     location: gcpRegion,
-    name: `ingestor-assets`,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
-
-    forceDestroy: true,
+    forceDestroy: forceDestroyStorage,
     labels: ingestionLabels,
   },
   {
     dependsOn: [storageService],
+    retainOnDelete: retainStorageOnDelete,
     provider,
   }
 )
@@ -25,20 +79,22 @@ export const stagingBucket = new gcp.storage.Bucket(
   `${tag}-staging-bucket`,
   {
     location: gcpRegion,
-    name: `ingestor-staging`,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
-    forceDestroy: true,
     labels: ingestionLabels,
-    lifecycleRules: [
-      {
-        action: { type: 'Delete' },
-        condition: { age: 2 },
-      },
-    ],
+    forceDestroy: forceDestroyStorage,
+    lifecycleRules: batchRetentionDays
+      ? [
+          {
+            action: { type: 'Delete' },
+            condition: { age: batchRetentionDays },
+          },
+        ]
+      : undefined,
   },
   {
     dependsOn: [storageService],
+    retainOnDelete: retainStorageOnDelete,
     provider,
   }
 )
@@ -47,59 +103,25 @@ export const eventLogBucket = new gcp.storage.Bucket(
   `${tag}-event-log-bucket`,
   {
     location: gcpRegion,
-    name: 'ingestion-event-logs',
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
     labels: ingestionLabels,
-    lifecycleRules: [
-      {
-        action: { type: 'Delete' },
-        condition: {
-          matchesPrefixes: ['sanitizer-events/', 'extractor-events/'],
-          age: 7,
-        },
-      },
-    ],
+    forceDestroy: forceDestroyStorage,
+    lifecycleRules: eventLogRetentionDays
+      ? [
+          {
+            action: { type: 'Delete' },
+            condition: {
+              matchesPrefixes: ['sanitizer-events/', 'extractor-events/'],
+              age: eventLogRetentionDays,
+            },
+          },
+        ]
+      : undefined,
   },
   {
     dependsOn: [storageService],
-    provider,
-  }
-)
-
-export const deadletterBucket = new gcp.storage.Bucket(
-  `${tag}-deadletter-bucket`,
-  {
-    location: gcpRegion,
-    name: 'ingestion-deadletter-logs',
-    uniformBucketLevelAccess: true,
-    publicAccessPrevention: 'enforced',
-    labels: ingestionLabels,
-  },
-  {
-    dependsOn: [storageService],
-    provider,
-  }
-)
-
-export const dataflowBucket = new gcp.storage.Bucket(
-  `${tag}-dataflow-bucket`,
-  {
-    location: gcpRegion,
-    name: 'ingestion-dataflow-tmp',
-    uniformBucketLevelAccess: true,
-    publicAccessPrevention: 'enforced',
-    forceDestroy: true,
-    labels: ingestionLabels,
-    lifecycleRules: [
-      {
-        action: { type: 'Delete' },
-        condition: { age: 1 },
-      },
-    ],
-  },
-  {
-    dependsOn: [storageService],
+    retainOnDelete: retainStorageOnDelete,
     provider,
   }
 )

@@ -1,8 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject, gcpRegion } from './config'
+import { gcpProject, gcpRegion, tag } from './config'
 
-export const provider = new gcp.Provider('ingestion', {
+export const provider = new gcp.Provider(tag, {
   project: gcpProject,
   region: gcpRegion,
 })

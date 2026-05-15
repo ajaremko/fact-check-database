@@ -1,10 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
+import { stagingDatasetId } from '../../analysis'
+
 import { gcpProject, tag } from '../config'
 import { provider } from '../provider'
 import { stagingBucket } from '../storage'
-import { stagingDataset } from '../bigquery'
 
 export const loaderServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-loader-sa`,
@@ -28,7 +29,7 @@ export const loaderStagingBucketViewer = new gcp.storage.BucketIAMMember(
 export const loaderBigQueryDataEditor = new gcp.bigquery.DatasetIamMember(
   `${tag}-loader-bigquery-data-editor`,
   {
-    datasetId: stagingDataset.datasetId,
+    datasetId: stagingDatasetId,
     role: 'roles/bigquery.dataEditor',
     member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
     project: gcpProject,

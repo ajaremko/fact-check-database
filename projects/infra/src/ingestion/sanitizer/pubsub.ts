@@ -2,18 +2,12 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import {
-  deadletterRetentionDuration,
-  ingestionLabels,
-  gcpRegion,
-  tag,
-} from '../config'
-import {
-  ingestorTopic,
+  deadletterBucket,
   pubsubServiceAccountDeadletterBucketReader,
   pubsubServiceAccountDeadletterObjectCreator,
-  pubsubServiceAccountEmail,
-} from '../pubsub'
-import { deadletterBucket } from '../storage'
+} from '../deadletter'
+import { ingestionLabels, gcpRegion, tag } from '../config'
+import { ingestorTopic, pubsubServiceAccountEmail } from '../pubsub'
 import { provider } from '../provider'
 import { pubsubService } from '../services'
 
@@ -53,7 +47,6 @@ export const sanitizerIngestorDeadletterTopic = new gcp.pubsub.Topic(
   `${tag}-sanitizer-ingestor-deadletter-topic`,
   {
     name: 'sanitizer-ingestor-deadletter-topic',
-    messageRetentionDuration: deadletterRetentionDuration,
     labels: ingestionLabels,
   },
   {

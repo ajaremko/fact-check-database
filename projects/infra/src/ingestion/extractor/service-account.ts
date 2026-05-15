@@ -1,14 +1,12 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { rawArchiveBucketName } from '../../core'
-
 import { gcpProject, tag } from '../config'
-import { assetsBucket, stagingBucket } from '../storage'
+import { assetsBucket, stagingBucket, rawArchiveBucket } from '../storage'
 import { provider } from '../provider'
 import { extractorTopic } from '../pubsub'
 
-import { extractorSanitizerTopicSubscription } from './pubsub'
+import { extractorSubscription } from './messaging'
 
 export const extractorServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-extractor-sa`,
@@ -22,7 +20,7 @@ export const extractorServiceAccount = new gcp.serviceaccount.Account(
 export const extractorRawArchiveBucketViewer = new gcp.storage.BucketIAMMember(
   `${tag}-extractor-raw-archive-bucket-viewer`,
   {
-    bucket: rawArchiveBucketName,
+    bucket: rawArchiveBucket.name,
     role: 'roles/storage.objectViewer',
     member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
   },
@@ -53,7 +51,7 @@ export const extractorSanitizerTopicSubscriber =
   new gcp.pubsub.SubscriptionIAMMember(
     `${tag}-extractor-sanitizer-topic-subscriber`,
     {
-      subscription: extractorSanitizerTopicSubscription.name,
+      subscription: extractorSubscription.name,
       role: 'roles/pubsub.subscriber',
       member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
     },

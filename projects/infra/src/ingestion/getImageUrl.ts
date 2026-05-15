@@ -8,7 +8,7 @@ import { provider } from './provider'
 // If an image is specified in config, use that. Otherwise, fall back to a public sample image.
 export function getAppImageUri(app: string, tag?: string) {
   if (!tag) {
-    console.warn('No image tag specified in config, using public sample image.')
+    console.warn(`No tag specified for ${app}, using public sample image.`)
     return pulumi.output('gcr.io/google-samples/hello-app:1.0')
   }
 

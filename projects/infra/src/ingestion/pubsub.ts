@@ -4,7 +4,7 @@ import * as pulumi from '@pulumi/pulumi'
 import { ingestionLabels, tag } from './config'
 import { pubsubService } from './services'
 import { provider } from './provider'
-import { eventLogBucket, deadletterBucket } from './storage'
+import { eventLogBucket } from './storage'
 
 const project = gcp.organizations.getProjectOutput({}, { provider })
 
@@ -26,28 +26,6 @@ const pubsubServiceAccountEventLogObjectCreator =
     `${tag}-pubsub-sa-event-log-object-creator`,
     {
       bucket: eventLogBucket.name,
-      role: 'roles/storage.objectCreator',
-      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
-    },
-    { provider, dependsOn: [pubsubService] }
-  )
-
-export const pubsubServiceAccountDeadletterBucketReader =
-  new gcp.storage.BucketIAMMember(
-    `${tag}-pubsub-sa-deadletter-bucket-reader`,
-    {
-      bucket: deadletterBucket.name,
-      role: 'roles/storage.legacyBucketReader',
-      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
-    },
-    { provider, dependsOn: [pubsubService] }
-  )
-
-export const pubsubServiceAccountDeadletterObjectCreator =
-  new gcp.storage.BucketIAMMember(
-    `${tag}-pubsub-sa-deadletter-object-creator`,
-    {
-      bucket: deadletterBucket.name,
       role: 'roles/storage.objectCreator',
       member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },

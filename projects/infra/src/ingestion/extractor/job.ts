@@ -6,7 +6,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../provider'
 import { extractorTopic } from '../pubsub'
 import { getAppImageUri } from '../getImageUrl'
-import { stagingDataset } from '../bigquery'
+import { stagingDatasetId } from '../../analysis'
 
 import {
   extractorServiceAccount,
@@ -15,7 +15,7 @@ import {
   extractorStagingBucketCreator,
   extractorTopicPublisher,
 } from './service-account'
-import { extractorSanitizerTopicSubscription } from './pubsub'
+import { extractorSubscription } from './messaging'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
   `${tag}-extractor-job`,
@@ -36,7 +36,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',
-                value: extractorSanitizerTopicSubscription.id,
+                value: extractorSubscription.id,
               },
               {
                 name: 'MESSAGE_BATCH_SIZE',
@@ -52,7 +52,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'BIGQUERY_DATASET',
-                value: stagingDataset.datasetId,
+                value: stagingDatasetId,
               },
               {
                 name: 'MAX_CONCURRENCY',

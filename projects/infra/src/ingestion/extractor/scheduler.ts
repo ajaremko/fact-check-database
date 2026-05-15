@@ -5,7 +5,7 @@ import { gcpRegion, gcpProject, extractorSchedule, tag } from '../config'
 import { cloudSchedulerService } from '../services'
 import { provider } from '../provider'
 
-import { extractorJob } from './cloud-run'
+import { extractorJob } from './job'
 
 const invokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-extractor-scheduler-sa`,

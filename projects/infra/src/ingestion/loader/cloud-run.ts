@@ -1,11 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 
-import { rawArchiveBucketName } from '../../core'
+import { gcpProject as analysisGcpProject } from '../../analysis'
 
-import { gcpRegion, dockerTag, tag, logLevel, gcpProject } from '../config'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../provider'
-import { stagingBucket } from '../storage'
+import { stagingBucket, rawArchiveBucket } from '../storage'
 import { getAppImageUri } from '../getImageUrl'
 
 import {
@@ -28,7 +28,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
           envs: [
             {
               name: 'STORAGE_BUCKET_NAME',
-              value: rawArchiveBucketName,
+              value: rawArchiveBucket.name,
             },
             {
               name: 'STAGING_BUCKET_NAME',
@@ -52,7 +52,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'GOOGLE_CLOUD_PROJECT',
-              value: gcpProject,
+              value: analysisGcpProject,
             },
           ],
         },

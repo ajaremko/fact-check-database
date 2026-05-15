@@ -1,16 +1,25 @@
 config:
   core:project: news-research-dev
   core:region: us-central1
-  core:kmsLocation: us
-  core:archiveLocation: US
+  core:kmsLocation: us-central1
   core:githubOrg: ajaremko
   core:githubRepo: news-research
+  core:workloadIdentityPoolId: shared-identity-pool-05
+
+  analysis:project: news-research-dev
+  analysis:region: us-central1
+  analysis:tableDeletionProtection: false
+  analysis:retainDatasetsOnDelete: false
+
   ingestion:project: news-research-dev
   ingestion:region: us-central1
-  ingestion:tag: dev-206
+  ingestion:archiveLocation: US
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */4 * * *'
   ingestion:logLevel: debug
   ingestion:logRetentionDays: 1
-  ingestion:deadletterRetentionDays: 1
-  ingestion:deletionProtection: false
+  ingestion:batchRetentionDays: 2
+  ingestion:eventLogRetentionDays: 7
+  ingestion:deadletterRetentionDays: 7
+  ingestion:forceDestroyStorage: true
+  ingestion:retainStorageOnDelete: true

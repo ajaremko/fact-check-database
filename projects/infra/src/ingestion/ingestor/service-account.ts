@@ -1,11 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { rawArchiveBucketName } from '../../core'
-
+import { assetsBucket, rawArchiveBucket } from '../storage'
 import { tag, gcpProject } from '../config'
 import { provider } from '../provider'
-import { assetsBucket } from '../storage'
 import { ingestorTopic } from '../pubsub'
 
 export const ingestorServiceAccount = new gcp.serviceaccount.Account(
@@ -30,7 +28,7 @@ export const ingestorAssetBucketViewer = new gcp.storage.BucketIAMMember(
 export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
   `${tag}-ingestor-raw-archive-bucket-creator`,
   {
-    bucket: rawArchiveBucketName,
+    bucket: rawArchiveBucket.name,
     role: 'roles/storage.objectCreator',
     member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
   },

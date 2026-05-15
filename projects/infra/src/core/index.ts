@@ -14,7 +14,10 @@ export const observationsTopicId = observationsTopic.id
 
 import { bigQueryKey, gcsArchiveKey } from './kms'
 
+export const bigQueryKeyId = bigQueryKey.id
 export const bigQueryKeyName = bigQueryKey.name
+
+export const gcsArchiveKeyId = gcsArchiveKey.id
 export const gcsArchiveKeyName = gcsArchiveKey.name
 
 import { artifactRegistry } from './artifact-registry'
@@ -29,9 +32,5 @@ export const artifactRegistryBaseUri = artifactRegistryUri.apply(
 )
 
 export { artifactRegistry } from './artifact-registry'
-
-import { rawArchiveBucket } from './storage'
-
-export const rawArchiveBucketName = rawArchiveBucket.name
 
 export { gcpProject, coreLabels } from './config'

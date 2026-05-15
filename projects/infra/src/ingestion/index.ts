@@ -1,4 +1,4 @@
-export { gcsDataTransferJob } from './data-transfer/cloud-run'
+export { dataTransferJob as gcsDataTransferJob } from './data-transfer/job'
 export { ingestorJobName, ingestorJobSchedulerName } from './ingestor'
 export {
   sanitizerWorkerName,
@@ -10,11 +10,5 @@ export {
   loaderServiceName,
 } from './loader'
 export { gcpProject, ingestionLabels } from './config'
-export {
-  stagingDatasetId,
-  stagingFactChecksTableId,
-  curatedDatasetId,
-  curatedFactChecksTableId,
-} from './bigquery'
 export { loggingBucketConfigName } from './logging'
 export { pipelineDashboardId } from './monitoring'

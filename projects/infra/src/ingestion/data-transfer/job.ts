@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { deadletterBucket } from '../storage'
+import { deadletterBucket } from '../deadletter'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
@@ -14,8 +14,8 @@ import {
   dataTransferStorageAdmin,
 } from './service-account'
 
-export const gcsDataTransferJob = new gcp.cloudrunv2.Job(
-  `${tag}-gcs-data-transfer-job`,
+export const dataTransferJob = new gcp.cloudrunv2.Job(
+  `${tag}-data-transfer-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -56,7 +56,7 @@ export const gcsDataTransferJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'SERVICE_NAME',
-                value: 'gcs-data-transfer-job',
+                value: 'data-transfer-job',
               },
               {
                 name: 'SERVICE_VERSION',

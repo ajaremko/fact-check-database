@@ -1,7 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { stagingBucket, eventLogBucket, deadletterBucket } from './storage'
+import { stagingBucket, eventLogBucket } from './storage'
+import { deadletterBucket } from './deadletter'
 import { tag } from './config'
 import { provider } from './provider'
 
