@@ -205,11 +205,18 @@ Contracts are defined per pipeline stage and include records, events and storage
 
 **Contracts are versioned.** Backwards compatibilitiy between different versions of contracts should be maintained until it is certain all pipeline data has been migrated to their latest versions. Contract schemas include a `version` field whenever possible to definatively discriminate between versions.
 
-## Related Documentation
+## Module Documentation
 
-| Document            | Purpose                                                                      | Status        |
-| ------------------- | ---------------------------------------------------------------------------- | ------------- |
-| `docs/ingest.md`    | Target configuration, ingestor record construction, content lineage identity | to be written |
-| `docs/sanitize.md`  | Policy configuration, sanitizer record construction, policy document format  | to be written |
-| `docs/extract.md`   | Staging facts table schema, extraction strategies, extractor interface       | to be written |
-| `docs/contracts.md` | Record schemas, event schemas, cloud storage archive layout                  | to be written |
+| Document                                 | Purpose                                                                      |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
+| [`docs/ingest.md`](./docs/ingest.md)     | Target configuration, ingestor record construction, content lineage identity |
+| [`docs/sanitize.md`](./docs/sanitize.md) | Policy configuration, sanitizer record construction, policy document format  |
+| [`docs/extract.md`](./docs/extract.md)   | Staging facts table schema, extraction strategies, extractor interface       |
+| [`docs/shared.md`](./docs/shared.md)     | Common interfaces and contracts                                              |
+
+## Related Apps
+
+- [`@news-research/ingestion-pipeline-ingestor`](../ingestion-pipeline-ingestor/README.md)
+- [`@news-research/ingestion-pipeline-sanitizer`](../ingestion-pipeline-sanitizer/README.md)
+- [`@news-research/ingestion-pipeline-extractor`](../ingestion-pipeline-extractor/README.md)
+- [`@news-research/ingestion-pipeline-loader`](../ingestion-pipeline-loader/README.md)
