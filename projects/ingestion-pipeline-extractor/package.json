@@ -22,7 +22,8 @@
           "tsConfig": "projects/ingestion-pipeline-extractor/tsconfig.app.json",
           "assets": [
             "projects/ingestion-pipeline-extractor/src/assets"
-          ]
+          ],
+          "esbuildConfig": "projects/ingestion-pipeline-extractor/esbuild.config.js"
         },
         "configurations": {
           "development": {
