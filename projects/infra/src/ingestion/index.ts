@@ -1,4 +1,4 @@
-export { gcsDataTransferJob } from './gcs-data-transfer/cloud-run'
+export { gcsDataTransferJob } from './data-transfer/cloud-run'
 export { ingestorJobName, ingestorJobSchedulerName } from './ingestor'
 export {
   sanitizerWorkerName,

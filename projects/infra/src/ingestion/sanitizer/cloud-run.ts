@@ -26,10 +26,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
       serviceAccount: sanitizerServiceAccount.email,
       containers: [
         {
-          image: getAppImageUri(
-            'projects-ingestion-sanitizer-service',
-            dockerTag
-          ),
+          image: getAppImageUri('ingestion-pipeline-sanitizer', dockerTag),
           envs: [
             {
               name: 'ASSETS_BUCKET_NAME',

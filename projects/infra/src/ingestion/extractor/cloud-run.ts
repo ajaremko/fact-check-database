@@ -28,10 +28,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
         serviceAccount: extractorServiceAccount.email,
         containers: [
           {
-            image: getAppImageUri(
-              'projects-ingestion-extractor-job',
-              dockerTag
-            ),
+            image: getAppImageUri('ingestion-pipeline-extractor', dockerTag),
             envs: [
               {
                 name: 'ASSETS_BUCKET_NAME',

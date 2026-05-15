@@ -25,7 +25,10 @@ export const gcsDataTransferJob = new gcp.cloudrunv2.Job(
         serviceAccount: dataTransferServiceAccount.email,
         containers: [
           {
-            image: getAppImageUri('projects-gcs-data-transfer', dockerTag),
+            image: getAppImageUri(
+              'ingestion-pipeline-data-transfer',
+              dockerTag
+            ),
             envs: [
               {
                 name: 'GCS_BUCKET_NAME',
