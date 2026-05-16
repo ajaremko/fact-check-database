@@ -1,0 +1,91 @@
+import * as gcp from '@pulumi/gcp'
+
+import { stagingDatasetId } from '../../../analysis'
+
+import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
+import { stagingBucketName } from '../../staging'
+import { assetsBucketName } from '../../assets'
+import { cloudRunService } from '../../services'
+import { provider } from '../../project'
+import { getImageUrl } from '../getImageUrl'
+
+import {
+  extractorServiceAccount,
+  extractorRawArchiveBucketViewer,
+  extractorSanitizerTopicSubscriber,
+  extractorStagingBucketCreator,
+  extractorTopicPublisher,
+} from './service-account'
+import { extractorTopic } from './topic'
+import { extractorSubscription } from './subscription'
+
+export const extractorJob = new gcp.cloudrunv2.Job(
+  `${tag}-extractor-job`,
+  {
+    location: gcpRegion,
+    deletionProtection: false,
+    template: {
+      template: {
+        maxRetries: 0,
+        serviceAccount: extractorServiceAccount.email,
+        containers: [
+          {
+            image: getImageUrl('ingestion-pipeline-extractor', dockerTag),
+            envs: [
+              {
+                name: 'ASSETS_BUCKET_NAME',
+                value: assetsBucketName,
+              },
+              {
+                name: 'PUBSUB_SUBSCRIPTION_ID',
+                value: extractorSubscription.id,
+              },
+              {
+                name: 'MESSAGE_BATCH_SIZE',
+                value: '1000',
+              },
+              {
+                name: 'PUBSUB_TOPIC_NAME',
+                value: extractorTopic.name,
+              },
+              {
+                name: 'STORAGE_BUCKET_NAME',
+                value: stagingBucketName,
+              },
+              {
+                name: 'BIGQUERY_DATASET',
+                value: stagingDatasetId,
+              },
+              {
+                name: 'MAX_CONCURRENCY',
+                value: '1000',
+              },
+              {
+                name: 'PINO_LOG_LEVEL',
+                value: logLevel,
+              },
+              {
+                name: 'SERVICE_NAME',
+                value: 'extractor-job',
+              },
+              {
+                name: 'SERVICE_VERSION',
+                value: dockerTag,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  {
+    dependsOn: [
+      cloudRunService,
+      extractorRawArchiveBucketViewer,
+      extractorStagingBucketCreator,
+      extractorSanitizerTopicSubscriber,
+      extractorTopicPublisher,
+    ],
+    provider,
+  }
+)

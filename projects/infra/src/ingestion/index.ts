@@ -1,14 +1,11 @@
-export { dataTransferJob as gcsDataTransferJob } from './data-transfer/job'
-export { ingestorJobName, ingestorJobSchedulerName } from './ingestor'
-export {
-  sanitizerWorkerName,
-  sanitizerIngestorTopicSubscriptionName,
-} from './sanitizer'
-export { extractorJobName, extractorJobSchedulerName } from './extractor'
-export {
-  loaderExtractorTopicSubscriptionName,
-  loaderServiceName,
-} from './loader'
-export { gcpProject, ingestionLabels } from './config'
-export { loggingBucketConfigName } from './logging'
-export { pipelineDashboardId } from './monitoring'
+export * from './archive'
+export * from './assets'
+export * from './data-transfer'
+export * from './pipeline'
+import { loggingBucketConfig } from './logging'
+
+export const loggingBucketConfigName = loggingBucketConfig.name
+
+import { pipelineDashboard } from './monitoring'
+
+export const pipelineDashboardId = pipelineDashboard.id

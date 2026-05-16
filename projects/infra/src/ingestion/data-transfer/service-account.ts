@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, tag } from '../config'
-import { provider } from '../provider'
+import { provider } from '../project'
 
 export const dataTransferServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-gcs-data-transfer-sa`,

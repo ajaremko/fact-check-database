@@ -1,0 +1,17 @@
+import {
+  deadletterBucket,
+  pubsubServiceAccountDeadletterBucketReader,
+  pubsubServiceAccountDeadletterObjectCreator,
+} from './deadletter-log'
+import { archiveBucket } from './archive'
+import { eventLogBucket } from './event-log'
+
+export const deadletterBucketName = deadletterBucket.name
+
+export const deadletterPermissionBindings = [
+  pubsubServiceAccountDeadletterBucketReader,
+  pubsubServiceAccountDeadletterObjectCreator,
+]
+
+export const archiveBucketName = archiveBucket.name
+export const eventLogBucketName = eventLogBucket.name

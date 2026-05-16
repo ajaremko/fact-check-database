@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
 import { gcpProject, logRetention, tag } from './config'
-import { provider } from './provider'
+import { provider } from './project'
 
 export const loggingBucketConfig = new gcp.logging.ProjectBucketConfig(
   `${tag}-logging-bucket-config`,
@@ -15,5 +15,3 @@ export const loggingBucketConfig = new gcp.logging.ProjectBucketConfig(
     provider,
   }
 )
-
-export const loggingBucketConfigName = loggingBucketConfig.name

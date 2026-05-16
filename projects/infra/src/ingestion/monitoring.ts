@@ -1,14 +1,23 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { stagingBucket, eventLogBucket } from './storage'
-import { deadletterBucket } from './deadletter'
+import {
+  archiveBucketName,
+  eventLogBucketName,
+  deadletterBucketName,
+} from './archive'
+import { stagingBucketName } from './staging'
 import { tag } from './config'
-import { provider } from './provider'
+import { provider } from './project'
 
 const pipelineDashboardJson = pulumi
-  .all([stagingBucket.name, eventLogBucket.name, deadletterBucket.name])
-  .apply(([stagingBucketName, eventLogBucketName, deadletterBucketName]) =>
+  .all([
+    stagingBucketName,
+    archiveBucketName,
+    eventLogBucketName,
+    deadletterBucketName,
+  ])
+  .apply(([stagingBucketName, _, eventLogBucketName, deadletterBucketName]) =>
     JSON.stringify({
       displayName: 'Pipeline Dashboard',
       dashboardFilters: [],
@@ -203,5 +212,3 @@ export const pipelineDashboard = new gcp.monitoring.Dashboard(
     provider,
   }
 )
-
-export const pipelineDashboardId = pipelineDashboard.id

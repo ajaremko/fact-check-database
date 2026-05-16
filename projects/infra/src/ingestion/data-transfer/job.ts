@@ -1,12 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 
-import { deadletterBucket } from '../deadletter'
-
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
-import { provider } from '../provider'
-import { getAppImageUri } from '../getImageUrl'
-import { extractorTopic } from '../pubsub'
+import { deadletterBucketName } from '../archive'
+import { provider } from '../project'
+import { getImageUrl } from '../pipeline/getImageUrl'
+import { extractorTopicName } from '../pipeline'
 
 import {
   dataTransferServiceAccount,
@@ -25,14 +24,11 @@ export const dataTransferJob = new gcp.cloudrunv2.Job(
         serviceAccount: dataTransferServiceAccount.email,
         containers: [
           {
-            image: getAppImageUri(
-              'ingestion-pipeline-data-transfer',
-              dockerTag
-            ),
+            image: getImageUrl('ingestion-pipeline-data-transfer', dockerTag),
             envs: [
               {
                 name: 'GCS_BUCKET_NAME',
-                value: deadletterBucket.name,
+                value: deadletterBucketName,
               },
               {
                 name: 'GCS_SOURCE_PATH',
@@ -44,7 +40,7 @@ export const dataTransferJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: extractorTopic.name,
+                value: extractorTopicName,
               },
               {
                 name: 'LOG_LEVEL',
