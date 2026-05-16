@@ -31,7 +31,7 @@
       "path": "./projects/ingestion-pipeline-loader"
     },
     {
-      "path": "./projects/ingestion-pipeline-data-transfer"
+      "path": "./projects/ingestion-replay"
     }
   ]
 }
