@@ -24,7 +24,7 @@ export const dataTransferJob = new gcp.cloudrunv2.Job(
         serviceAccount: dataTransferServiceAccount.email,
         containers: [
           {
-            image: getImageUrl('ingestion-pipeline-data-transfer', dockerTag),
+            image: getImageUrl('ingestion-replay', dockerTag),
             envs: [
               {
                 name: 'GCS_BUCKET_NAME',

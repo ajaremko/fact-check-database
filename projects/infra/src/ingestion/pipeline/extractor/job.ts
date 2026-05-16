@@ -65,6 +65,10 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 value: logLevel,
               },
               {
+                name: 'LOGGING_LEVEL',
+                value: logLevel,
+              },
+              {
                 name: 'SERVICE_NAME',
                 value: 'extractor-job',
               },

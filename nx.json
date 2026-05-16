@@ -97,16 +97,8 @@
       }
     },
     "groups": {
-      "ingestion-pipeline": {
-        "projects": ["ingestion-pipeline-*"],
-        "projectsRelationship": "independent",
-        "docker": {
-          "registryUrl": "${DOCKER_REGISTRY}",
-          "skipVersionActions": true
-        }
-      },
       "ingestion": {
-        "projects": ["ingestion-replay"],
+        "projects": ["ingestion-pipeline-*", "ingestion-replay"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",
