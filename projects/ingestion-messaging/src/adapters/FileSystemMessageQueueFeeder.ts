@@ -3,7 +3,7 @@ import { FileSystem } from '@effect/platform'
 
 import { MessageQueue } from '../MessageQueue'
 
-function process(id: string, data: Buffer) {
+function process(data: Buffer) {
   return Effect.gen(function* () {
     const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
@@ -22,7 +22,7 @@ function process(id: string, data: Buffer) {
           })
         )
     )
-  }).pipe(Effect.withSpan(id), Effect.annotateLogs({ messageId: id }))
+  })
 }
 
 const make = Effect.gen(function* () {
@@ -36,7 +36,10 @@ const make = Effect.gen(function* () {
     const path = `${inputDir}/${file}`
     yield* Effect.logTrace(`Processing message: ${path}`)
     const data = yield* fs.readFile(path)
-    yield* process(path, Buffer.from(data))
+    yield* process(Buffer.from(data)).pipe(
+      Effect.withSpan('processMessage'),
+      Effect.annotateLogs({ 'message.path': path })
+    )
   }
 })
 

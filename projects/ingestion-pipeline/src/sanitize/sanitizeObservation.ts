@@ -113,5 +113,11 @@ export function sanitizeObservation(args: {
       observation: sanitizedObservation,
       pointer: recordPointer,
     })
-  }).pipe(Effect.withSpan('sanitizeObservation'))
+  }).pipe(
+    Effect.annotateLogs({
+      'pointer.bucket': args.pointer.bucket,
+      'pointer.object': args.pointer.object,
+    }),
+    Effect.withSpan('sanitizeObservation')
+  )
 }

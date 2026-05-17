@@ -195,7 +195,23 @@ const job = Layer.effect(
   })
 )
 
-Program.pipe(
+function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
+  return Effect.gen(function* () {
+    const ctx = yield* JobContext
+    yield* Effect.logInfo(`Starting job with runId: ${ctx.runId}`)
+    return yield* self.pipe(
+      Effect.withSpan(ctx.runId),
+      Effect.annotateLogs({
+        'job.runId': ctx.runId,
+        'job.concurrency': ctx.concurrency,
+        'job.startedAt': ctx.startedAt,
+        'job.successThreshold': ctx.successThreshold,
+      })
+    )
+  })
+}
+
+withJobAnnotations(Program).pipe(
   Effect.provide(fetcher),
   Effect.provide(sourceList),
   Effect.provide(storage),

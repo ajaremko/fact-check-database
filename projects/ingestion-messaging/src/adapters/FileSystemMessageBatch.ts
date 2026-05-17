@@ -6,7 +6,7 @@ import { MessageBatch, BatchMessage } from '../MessageBatch'
 const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
 
-  yield* Effect.logTrace(`Processing messages in directory: ${inputDir}`)
+  yield* Effect.logTrace(`Creating message batch from directory: ${inputDir}`)
   const fs = yield* FileSystem.FileSystem
   const contents = yield* fs.readDirectory(inputDir)
   const messages: BatchMessage[] = []
@@ -14,10 +14,16 @@ const make = Effect.gen(function* () {
   for (const file of contents) {
     const path = `${inputDir}/${file}`
     const data = yield* fs.readFile(path)
-    yield* Effect.logTrace(`Processing message: ${path}`)
+    yield* Effect.logTrace(`Adding ${path} to batch`)
+    const span = yield* Effect.makeSpan(path)
+    const annotations = {
+      'message.path': path,
+    }
     messages.push({
       ack: Effect.void,
       data: Buffer.from(data),
+      annotations,
+      span,
     })
   }
 

@@ -29,6 +29,7 @@ const storage = Layer.unwrapEffect(
   Effect.gen(function* () {
     const storageMode = yield* Config.withDefault(StorageModeConfig, 'gcp')
     if (storageMode === 'filesystem') {
+      yield* Effect.logDebug('Using filesystem storage')
       return Layer.empty.pipe(
         Layer.merge(FileSystemStorageReader.layer),
         Layer.merge(FileSystemStorageWriter.layer),
@@ -52,6 +53,7 @@ const messaging = Layer.unwrapEffect(
   Effect.gen(function* () {
     const messagingMode = yield* Config.withDefault(MessagingModeConfig, 'gcp')
     if (messagingMode === 'filesystem') {
+      yield* Effect.logDebug('Using filesystem messaging')
       return Layer.empty.pipe(
         Layer.merge(FileSystemMessageBatch.layer),
         Layer.merge(FileSystemPublisher.layer),
@@ -106,6 +108,7 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
+      yield* Effect.logDebug('Using local OpenTelemetry configuration')
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -114,6 +117,7 @@ const otel = Layer.unwrapEffect(
 
     const instanceId = yield* cloudRunInstanceId
 
+    yield* Effect.logDebug('Using gcp OpenTelemetry configuration')
     return NodeSdk.layer(() => ({
       resource: {
         serviceName,
@@ -146,7 +150,23 @@ const job = Layer.effect(
   })
 )
 
-Program.pipe(
+function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
+  return Effect.gen(function* () {
+    const ctx = yield* JobContext
+    yield* Effect.logInfo(`Starting job with runId: ${ctx.runId}`)
+    return yield* self.pipe(
+      Effect.withSpan(ctx.runId),
+      Effect.annotateLogs({
+        'job.runId': ctx.runId,
+        'job.concurrency': ctx.concurrency,
+        'job.startedAt': ctx.startedAt,
+        'job.datasetId': ctx.datasetId,
+      })
+    )
+  })
+}
+
+withJobAnnotations(Program).pipe(
   Effect.provide(storage),
   Effect.provide(messaging),
   Effect.provide(logger),

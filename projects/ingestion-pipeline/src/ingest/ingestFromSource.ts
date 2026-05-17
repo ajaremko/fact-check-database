@@ -161,9 +161,10 @@ export function ingestFromSource(args: {
     })
   }).pipe(
     Effect.annotateLogs({
-      source: args.source.name,
-      url: args.source.url,
-      collection: args.source.collection,
+      'source.id': args.source.id,
+      'source.name': args.source.name,
+      'source.url': args.source.url,
+      'source.collection': args.source.collection,
     }),
     Effect.withSpan('ingestFromSourceTarget')
   )

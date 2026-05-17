@@ -6,24 +6,35 @@ import { MessageBatch, BatchMessage } from '../MessageBatch'
 
 function acquire(subscriptionId: string, maxMessages: number) {
   return Effect.gen(function* () {
+    yield* Effect.logTrace(
+      `Acquiring message batch of size ${maxMessages} from pubsub subscription: ${subscriptionId}`
+    )
     const ackIds = yield* Ref.make<Set<string>>(new Set())
     const [response] = yield* PubsubSubscriberClient.pull(
       subscriptionId,
       maxMessages
     )
     const receivedMessages = response.receivedMessages ?? []
-    const messages = Array.filterMap(
+    const messages = yield* Effect.forEach(
       receivedMessages,
-      ({ message, ackId }): Option.Option<BatchMessage> => {
-        if (!message || !ackId || !message.data) {
-          return Option.none()
-        }
-        return Option.some({
-          data: Buffer.from(message.data),
-          ack: Ref.update(ackIds, (ids) => new Set(ids).add(ackId)),
+      ({ message, ackId }) =>
+        Effect.gen(function* () {
+          if (!message || !ackId || !message.data) {
+            return Option.none()
+          }
+          const span = yield* Effect.makeSpan(`processMessage`)
+          const annotations = {
+            'message.id': message.messageId,
+          }
+          return Option.some<BatchMessage>({
+            data: Buffer.from(message.data),
+            ack: Ref.update(ackIds, (ids) => new Set(ids).add(ackId)),
+            annotations,
+            span,
+          })
         })
-      }
-    )
+    ).pipe(Effect.map(Array.getSomes))
+
     return { messages, ackIds }
   })
 }
@@ -34,12 +45,16 @@ function release(subscriptionId: string) {
   return function (resource: Resource) {
     return Effect.gen(function* () {
       const ackIds = yield* Ref.get(resource.ackIds)
+      yield* Effect.logTrace(
+        `Releasing message batch and acknowledging ${ackIds.size} messages from pubsub subscription: ${subscriptionId}`
+      )
       if (ackIds.size === 0) {
         yield* Effect.logWarning(
-          'Closing message batch with no messages to acknowledge'
+          'Releasing message batch with no messages to acknowledge'
         )
         return
       }
+
       yield* Effect.orDie(
         PubsubSubscriberClient.acknowledge(
           subscriptionId,

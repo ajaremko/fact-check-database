@@ -28,10 +28,9 @@ export function extractFactChecks(ctx: {
     const recordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(recordData)
     const { content, http } = observation
+
     if (!http || !content || !observation.shouldExtract) {
-      yield* Effect.logInfo(
-        `Skipping extraction for observation ${ctx.observationId}`
-      )
+      yield* Effect.logInfo(`Skipping extraction for observation`)
       return []
     }
 
@@ -44,23 +43,23 @@ export function extractFactChecks(ctx: {
 
     if (!extractor) {
       yield* Effect.logWarning(
-        `No extractor available for collection ${observation.source.collection} for observation ${ctx.observationId}, skipping extraction`
+        `No extractor available for observation, skipping extraction`
       )
       return []
     }
-
-    yield* Effect.logInfo(
-      `Extracting fact checks for observation ${ctx.observationId} from sanitized record`
-    )
 
     const responsePointer = observation.sanitized ?? observation.raw
 
     if (!responsePointer) {
       yield* Effect.logWarning(
-        `No pointer available for observation ${ctx.observationId}, skipping extraction`
+        `No pointer available for observation, skipping extraction`
       )
       return []
     }
+
+    yield* Effect.logInfo(
+      `Extracting fact checks for observation from sanitized record`
+    )
 
     const responseData = yield* readFile(responsePointer)
     const factChecks = yield* extractor
@@ -100,10 +99,12 @@ export function extractFactChecks(ctx: {
         Effect.tapError(Effect.logWarning),
         Effect.catchAll(() => Effect.succeed([])),
         Effect.annotateLogs({
-          observationId: ctx.observationId,
-          collection: observation.source.collection,
-          name: observation.source.name,
-          extractorId: extractor.id,
+          'source.collection': observation.source.collection,
+          'source.name': observation.source.name,
+          'source.url': observation.source.url,
+          'source.id': observation.source.id,
+          'extractor.id': extractor.id,
+          'extractor.version': extractor.version,
         }),
         Effect.withSpan('extractor')
       )
@@ -111,7 +112,11 @@ export function extractFactChecks(ctx: {
     const rows = yield* encodeFactCheckRows(factChecks)
     return rows
   }).pipe(
-    Effect.annotateLogs({ extractionId: ctx.extractionId }),
-    Effect.withSpan('extractRowsFromSanitized')
+    Effect.withSpan('extractRowsFromSanitized'),
+    Effect.annotateLogs({
+      'observation.id': ctx.observationId,
+      'pointer.bucket': ctx.pointer.bucket,
+      'pointer.object': ctx.pointer.object,
+    })
   )
 }

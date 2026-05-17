@@ -7,6 +7,7 @@ import { Publisher, PublisherError } from '../Publisher'
 
 export const make = Effect.gen(function* () {
   const { topic } = yield* PubsubTopic.PubsubTopic
+  yield* Effect.logTrace(`Creating pubsub publisher for topic: ${topic.name}`)
   return Publisher.of({
     publish: (data) =>
       PubsubTopic.publishMessage({ data }).pipe(

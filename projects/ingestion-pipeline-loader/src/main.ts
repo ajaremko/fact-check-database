@@ -83,20 +83,21 @@ const otel = Layer.unwrapEffect(
   })
 )
 
-const server = Layer.empty.pipe(
-  Layer.merge(
-    Layer.scopedDiscard(
-      Layer.launch(
-        HttpServerMessageQueueFeeder.layer('/extractor-topic-messages')
-      )
+function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
+  return Effect.gen(function* () {
+    yield* Effect.logDebug('Using http server message queue feeder')
+    const server = HttpServerMessageQueueFeeder.layer(
+      '/extractor-topic-messages'
     )
-  ),
-  Layer.provideMerge(InMemoryMessageQueue.layer)
-)
+    return yield* Effect.all([self, Layer.launch(server)], {
+      concurrency: 'unbounded',
+    })
+  })
+}
 
-Program.pipe(
+withMessageQueueFeeder(Program).pipe(
   Effect.provide(BigQueryClient.layer()),
-  Effect.provide(server),
+  Effect.provide(InMemoryMessageQueue.layer),
   Effect.provide(otel),
   Effect.provide(logger),
   withMinimumLogLevel,

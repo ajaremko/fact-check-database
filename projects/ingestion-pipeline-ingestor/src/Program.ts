@@ -40,9 +40,7 @@ function processTarget(source: Source, index: number) {
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.annotateLogs({
-      source: source.name,
-      url: source.url,
-      collection: source.collection,
+      'source.index': index,
     }),
     Effect.withSpan('processTarget')
   )

@@ -16,6 +16,7 @@ import { MessageQueue } from '../MessageQueue'
 const decodeMessage = Schema.decodeUnknown(
   Schema.Struct({
     message: Schema.Struct({
+      messageId: Schema.String,
       data: Schema.String.pipe(
         Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' })
       ),
@@ -23,7 +24,7 @@ const decodeMessage = Schema.decodeUnknown(
   })
 )
 
-function process(url: string, data: Buffer) {
+function process(data: Buffer) {
   return Effect.gen(function* () {
     const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
@@ -42,7 +43,14 @@ function process(url: string, data: Buffer) {
         messages.offer({
           data,
           ack: Effect.sync(() =>
-            resume(HttpServerResponse.json({}, { status: 201 }))
+            resume(
+              HttpServerResponse.json(
+                {
+                  message: 'Message processed',
+                },
+                { status: 201 }
+              )
+            )
           ),
           nack: Effect.sync(() =>
             resume(
@@ -50,7 +58,7 @@ function process(url: string, data: Buffer) {
                 {
                   message: 'Failed to process message, please retry',
                 },
-                { status: 400 }
+                { status: 500 }
               )
             )
           ),
@@ -59,7 +67,7 @@ function process(url: string, data: Buffer) {
         })
       )
     )
-  }).pipe(Effect.withSpan(url), Effect.annotateLogs({ url }))
+  })
 }
 
 export function layer(path: HttpRouter.PathInput) {
@@ -71,11 +79,37 @@ export function layer(path: HttpRouter.PathInput) {
         const body = yield* req.json
         const { message } = yield* decodeMessage(body)
         const data = Buffer.from(message.data, 'utf-8')
-        return yield* process(req.url, data)
+        return yield* process(data).pipe(
+          Effect.withSpan('processHttpRequest'),
+          Effect.annotateLogs({
+            'request.url': req.url,
+            'request.method': req.method,
+            'message.id': message.messageId,
+          })
+        )
       }).pipe(
         Effect.catchTags({
-          ParseError: () => HttpServerResponse.json({}, { status: 400 }),
-          RequestError: () => HttpServerResponse.json({}, { status: 400 }),
+          NoSuchElementException: () =>
+            HttpServerResponse.json(
+              {
+                message: 'Missing required field in request body',
+              },
+              { status: 400 }
+            ),
+          ParseError: () =>
+            HttpServerResponse.json(
+              {
+                message: 'Invalid request body',
+              },
+              { status: 400 }
+            ),
+          RequestError: () =>
+            HttpServerResponse.json(
+              {
+                message: 'Request error',
+              },
+              { status: 400 }
+            ),
         }),
         Effect.withSpan('HttpServerMessageQueueFeeder', { root: true })
       )

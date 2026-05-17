@@ -36,7 +36,7 @@ const encodeOutgoing = pipe(
 )
 
 function processMessage(message: BatchMessage) {
-  return Effect.gen(function* () {
+  let effect = Effect.gen(function* () {
     const incoming = yield* decodeIncoming(message.data)
     const job = yield* JobContext
     const rows = yield* extractFactChecks({
@@ -48,6 +48,16 @@ function processMessage(message: BatchMessage) {
     yield* message.ack
     return rows
   }).pipe(Effect.withSpan('processMessage'))
+
+  if (message.annotations) {
+    effect = Effect.annotateLogs(effect, message.annotations)
+  }
+
+  if (message.span) {
+    effect = Effect.withParentSpan(effect, message.span)
+  }
+
+  return effect
 }
 
 export const Program = Effect.gen(function* () {
