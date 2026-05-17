@@ -71,8 +71,8 @@ export const Program = Effect.gen(function* () {
   )
 
   const handleErrors = takeError.pipe(
-    Effect.tap(Effect.logError),
-    Effect.andThen((err) => Effect.die(err.cause))
+    Effect.andThen(Effect.fail),
+    Effect.tapErrorCause(Effect.logError)
   )
 
   yield* Effect.logDebug('Listening for messages...')
