@@ -188,7 +188,7 @@ function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
     }
     yield* Effect.logInfo('Using http server message queue feeder')
     const server = HttpServerMessageQueueFeeder.layer(
-      '/extractor-topic-messages'
+      '/ingestor-topic-messages'
     )
     return yield* Effect.all([self, Layer.launch(server)], {
       concurrency: 'unbounded',
