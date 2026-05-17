@@ -1,4 +1,4 @@
-import { Config, Effect, Logger, Layer, Schema, Clock } from 'effect'
+import { Config, Effect, Logger, Layer, Schema, Clock, LogLevel } from 'effect'
 import { NodeRuntime, NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
@@ -21,7 +21,7 @@ import * as FileSystemStorageReader from '@news-research/ingestion-pipeline/shar
 import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
-import { Program, JobContext } from './program'
+import { Program, JobContext } from './Program'
 
 const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')
 
@@ -73,7 +73,13 @@ const messaging = Layer.unwrapEffect(
 )
 
 const LoggingModeConfig = Config.literal('gcp', 'console')('LOGGING_MODE')
+const LoggingLevelConfig = Config.logLevel('LOGGING_LEVEL')
 
+function withMinimumLogLevel<A, E, R>(self: Effect.Effect<A, E, R>) {
+  return Config.withDefault(LoggingLevelConfig, LogLevel.Info).pipe(
+    Effect.andThen((level) => Logger.withMinimumLogLevel(self, level))
+  )
+}
 const logger = Layer.unwrapEffect(
   Effect.gen(function* () {
     const loggingMode = yield* Config.withDefault(LoggingModeConfig, 'gcp')
@@ -108,7 +114,7 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
-      yield* Effect.logDebug('Using local OpenTelemetry configuration')
+      yield* Effect.logDebug('Using local otel configuration')
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -117,7 +123,7 @@ const otel = Layer.unwrapEffect(
 
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp OpenTelemetry configuration')
+    yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
         serviceName,
@@ -155,7 +161,7 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
     const ctx = yield* JobContext
     yield* Effect.logInfo(`Starting job with runId: ${ctx.runId}`)
     return yield* self.pipe(
-      Effect.withSpan(ctx.runId),
+      Effect.withSpan('jobRun'),
       Effect.annotateLogs({
         'job.runId': ctx.runId,
         'job.concurrency': ctx.concurrency,
@@ -166,11 +172,13 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   })
 }
 
-withJobAnnotations(Program).pipe(
+Program.pipe(
   Effect.provide(storage),
   Effect.provide(messaging),
-  Effect.provide(logger),
   Effect.provide(otel),
+  withJobAnnotations,
+  Effect.provide(logger),
   Effect.provide(job),
+  withMinimumLogLevel,
   NodeRuntime.runMain({ disablePrettyLogger: true })
 )

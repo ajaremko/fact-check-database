@@ -145,7 +145,7 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
-      yield* Effect.logDebug('Using local OpenTelemetry configuration')
+      yield* Effect.logDebug('Using local otel configuration')
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -154,7 +154,7 @@ const otel = Layer.unwrapEffect(
 
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp OpenTelemetry configuration')
+    yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
         serviceName,
@@ -200,7 +200,7 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
     const ctx = yield* JobContext
     yield* Effect.logInfo(`Starting job with runId: ${ctx.runId}`)
     return yield* self.pipe(
-      Effect.withSpan(ctx.runId),
+      Effect.withSpan('jobRun'),
       Effect.annotateLogs({
         'job.runId': ctx.runId,
         'job.concurrency': ctx.concurrency,
@@ -211,14 +211,15 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   })
 }
 
-withJobAnnotations(Program).pipe(
+Program.pipe(
   Effect.provide(fetcher),
   Effect.provide(sourceList),
   Effect.provide(storage),
   Effect.provide(messaging),
   Effect.provide(otel),
-  Effect.provide(job),
+  withJobAnnotations,
   Effect.provide(logger),
+  Effect.provide(job),
   withMinimumLogLevel,
   NodeRuntime.runMain({ disablePrettyLogger: true })
 )

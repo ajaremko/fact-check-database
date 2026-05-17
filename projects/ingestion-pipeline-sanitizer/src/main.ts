@@ -115,7 +115,7 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
-      yield* Effect.logDebug('Using local OpenTelemetry configuration')
+      yield* Effect.logDebug('Using local otel configuration')
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -124,7 +124,7 @@ const otel = Layer.unwrapEffect(
 
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp OpenTelemetry configuration')
+    yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
         serviceName,

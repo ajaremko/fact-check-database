@@ -20,8 +20,9 @@ const decodeSources = pipe(
 )
 
 export const make = Effect.gen(function* () {
-  const fs = yield* FileSystem.FileSystem
   const sourcesPath = yield* Config.string('TARGET_LIST_PATH')
+  yield* Effect.logTrace(`Creating source list from ${sourcesPath}`)
+  const fs = yield* FileSystem.FileSystem
   const sourcesData = yield* fs.readFile(sourcesPath)
   const sources = yield* decodeSources(sourcesData)
 

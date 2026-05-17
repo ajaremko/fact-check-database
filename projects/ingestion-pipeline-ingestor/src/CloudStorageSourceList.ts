@@ -23,6 +23,7 @@ const decodeSources = pipe(
 
 export const make = Effect.gen(function* () {
   const uri = yield* Config.string('TARGET_LIST_URI')
+  yield* Effect.logTrace(`Creating source list from ${uri}`)
   const [buf] = yield* StorageBucket.downloadFile(uri)
   const sources = yield* decodeSources(buf)
   return SourceList.of({ sources })
