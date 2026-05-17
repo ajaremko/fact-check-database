@@ -22,6 +22,7 @@ function make(topicName: Config.Config<string>, config?: TopicOptionsConfig) {
   return Effect.gen(function* () {
     const { client } = yield* PubsubClient
     const name = yield* topicName
+    yield* Effect.logTrace(`Accessing pubsub topic ${name}`)
     if (config) {
       const options = yield* Config.all(config)
       const topic = client.topic(name, options)

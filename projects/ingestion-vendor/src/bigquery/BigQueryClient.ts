@@ -36,6 +36,7 @@ type BigQueryOptionsConfig = {
 
 function make(config?: BigQueryOptionsConfig) {
   return Effect.gen(function* () {
+    yield* Effect.logTrace('Creating bq client')
     if (config) {
       const options = yield* Config.all(config)
       const client = new BigQuery(options)

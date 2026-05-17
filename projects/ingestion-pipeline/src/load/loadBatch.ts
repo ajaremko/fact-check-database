@@ -38,10 +38,10 @@ export function loadBatch(input: {
     yield* BigQueryClient.awaitJob(job)
   }).pipe(
     Effect.annotateLogs({
-      tableId: input.table.table,
-      datasetId: input.table.dataset,
-      bucket: input.pointer.bucket,
-      object: input.pointer.object,
+      'batch.tableId': input.table.table,
+      'batch.datasetId': input.table.dataset,
+      'batch.bucket': input.pointer.bucket,
+      'batch.object': input.pointer.object,
     }),
     Effect.withSpan('loadBatch')
   )

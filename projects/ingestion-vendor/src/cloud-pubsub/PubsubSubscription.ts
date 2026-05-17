@@ -30,6 +30,7 @@ function make(
   const acquire = Effect.gen(function* () {
     const { client } = yield* PubsubClient
     const name = yield* subscriptionName
+    yield* Effect.logTrace(`Acquiring pubsub subscription ${name}`)
     if (config) {
       const options = yield* Config.all(config)
       const subscription = client.subscription(name, options)
@@ -40,9 +41,9 @@ function make(
   })
 
   function release(resource: Effect.Effect.Success<typeof acquire>) {
-    return Effect.sync(() => {
-      resource.subscription.close()
-    })
+    return Effect.logTrace('Creating pubsub client').pipe(
+      Effect.andThen(Effect.promise(() => resource.subscription.close()))
+    )
   }
 
   return Effect.acquireRelease(acquire, release)

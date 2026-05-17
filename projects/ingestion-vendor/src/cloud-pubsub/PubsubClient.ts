@@ -21,6 +21,7 @@ type PubsubOptionsConfig = {
 
 function make(config?: PubsubOptionsConfig) {
   return Effect.gen(function* () {
+    yield* Effect.logTrace('Creating pubsub client')
     if (config) {
       const options = yield* Config.all(config)
       const client = new PubSub(options)

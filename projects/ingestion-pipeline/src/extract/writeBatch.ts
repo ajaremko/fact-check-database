@@ -54,9 +54,9 @@ export function writeBatch(input: {
     return yield* encodeExtractionBatchEvent(batch)
   }).pipe(
     Effect.annotateLogs({
-      tableId: input.tableId,
-      datasetId: input.datasetId,
-      rows: input.rows.length,
+      'batch.tableId': input.tableId,
+      'batch.datasetId': input.datasetId,
+      'batch.rows': input.rows.length,
     }),
     Effect.withSpan('writeBatch')
   )
