@@ -16,6 +16,8 @@ const decodePolicy = pipe(
 
 export const make = Effect.gen(function* () {
   const path = yield* Config.string('SANITIZER_POLICY_PATH')
+
+  yield* Effect.logTrace(`Reading sanitizer policy from path: ${path}`)
   const fs = yield* FileSystem.FileSystem
   const buf = yield* fs.readFile(path)
   const policy = yield* decodePolicy(buf)

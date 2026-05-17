@@ -63,13 +63,14 @@ export function sanitizeObservation(args: {
   return Effect.gen(function* () {
     const ctx = decodeArgs(args)
 
-    yield* Effect.logDebug(`Reading record for observation`)
+    yield* Effect.logDebug(`Reading observation from pointer`)
     const inputRecordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(inputRecordData)
 
     yield* Effect.logDebug(`Evaluating policy for observation`)
     const decision = evaluatePolicy(ctx.policy, observation)
 
+    yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({
       observationId: observation.observationId,
       ingestionId: observation.ingestionId,

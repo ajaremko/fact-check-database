@@ -5,6 +5,7 @@ import { StorageReadError, StorageReader } from '../StorageReader'
 
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
+  yield* Effect.logTrace(`Creating filesystem reader`)
   return StorageReader.of({
     read: (pointer) =>
       Effect.gen(function* () {

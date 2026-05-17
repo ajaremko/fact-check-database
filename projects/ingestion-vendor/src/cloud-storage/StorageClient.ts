@@ -21,6 +21,7 @@ type StorageOptionsConfig = {
 
 function make(config?: StorageOptionsConfig) {
   return Effect.gen(function* () {
+    yield* Effect.logTrace(`Creating Google Cloud Storage client`)
     if (config) {
       const options = yield* Config.all(config)
       const client = new Storage(options)

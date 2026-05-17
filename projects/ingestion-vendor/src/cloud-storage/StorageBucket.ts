@@ -52,6 +52,7 @@ type StorageOptionsConfig = {
 export function make(bucketName: string, config?: BucketOptions) {
   return Effect.gen(function* () {
     const { client } = yield* StorageClient
+    yield* Effect.logTrace(`Accessing gcs bucket: ${bucketName}`)
     if (config) {
       const bucket = client.bucket(bucketName, config)
       return { bucket }
@@ -67,6 +68,7 @@ function makeConfig(
 ) {
   return Effect.gen(function* () {
     const { client } = yield* StorageClient
+    yield* Effect.logTrace(`Accessing gcs bucket: ${bucketName}`)
     const name = yield* bucketName
     if (config) {
       const options = yield* Config.all(config)

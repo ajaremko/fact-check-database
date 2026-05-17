@@ -7,6 +7,7 @@ import { StorageReadError, StorageReader } from '../StorageReader'
 
 export const make = Effect.gen(function* () {
   const { client } = yield* StorageClient.StorageClient
+  yield* Effect.logTrace('Creating gcs reader')
   return StorageReader.of({
     read: (pointer) =>
       StorageBucket.downloadFile(pointer.object).pipe(

@@ -5,7 +5,7 @@ import {
   HttpServerResponse,
   HttpBody,
 } from '@effect/platform'
-import { Config, Effect, Layer, Schema } from 'effect'
+import { Config, Effect, Layer, Record, Schema } from 'effect'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
@@ -23,10 +23,13 @@ const decodeMessage = Schema.decodeUnknown(
   })
 )
 
-function process(id: string, data: Buffer) {
+function process(url: string, data: Buffer) {
   return Effect.gen(function* () {
     const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
+    const annotations = yield* Effect.logAnnotations.pipe(
+      Effect.map(Record.fromEntries)
+    )
     return yield* Effect.asyncEffect<
       HttpServerResponse.HttpServerResponse,
       HttpBody.HttpBodyError,
@@ -52,10 +55,11 @@ function process(id: string, data: Buffer) {
             )
           ),
           span,
+          annotations,
         })
       )
     )
-  }).pipe(Effect.withSpan(id))
+  }).pipe(Effect.withSpan(url), Effect.annotateLogs({ url }))
 }
 
 export function layer(path: HttpRouter.PathInput) {

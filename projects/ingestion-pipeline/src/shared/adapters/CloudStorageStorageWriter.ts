@@ -7,6 +7,7 @@ import { StorageWriteError, StorageWriter } from '../StorageWriter'
 
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
+  yield* Effect.logTrace(`Creating gcs writer for bucket: ${bucket.name}`)
   return StorageWriter.of({
     write: (opts) =>
       StorageBucket.writeFile(opts.path, opts.data, {

@@ -17,8 +17,12 @@ function replaceExtension(filePath: string, suffix: string): string {
 }
 
 export const make = Effect.gen(function* () {
-  const fs = yield* FileSystem.FileSystem
   const outputDir = yield* Config.string('STORAGE_OUTPUT_DIR')
+
+  yield* Effect.logTrace(
+    `Creating filesystem writer with output directory: ${outputDir}`
+  )
+  const fs = yield* FileSystem.FileSystem
 
   return StorageWriter.of({
     write: (opts) =>

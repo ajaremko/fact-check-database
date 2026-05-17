@@ -27,7 +27,7 @@ const encodeOutgoing = pipe(
 )
 
 function processMessage(message: QueueMessage) {
-  const effect = Effect.gen(function* () {
+  let effect = Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
     const incoming = yield* decodeIncoming(message.data)
     const timestamp = yield* Clock.currentTimeMillis
@@ -52,9 +52,15 @@ function processMessage(message: QueueMessage) {
       StorageWriteError: () => message.nack,
     })
   )
-  if (message.span) {
-    return Effect.withParentSpan(effect, message.span)
+
+  if (message.annotations) {
+    effect = Effect.annotateLogs(effect, message.annotations)
   }
+
+  if (message.span) {
+    effect = Effect.withParentSpan(effect, message.span)
+  }
+
   return effect
 }
 
