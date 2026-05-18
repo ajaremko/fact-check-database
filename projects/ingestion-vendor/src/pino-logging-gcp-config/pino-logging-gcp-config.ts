@@ -9,7 +9,7 @@ const PinoLogLevel = Config.literal(...Object.values(levels.labels))
 export const make = Effect.gen(function* () {
   const service = yield* Config.string('SERVICE_NAME')
   const version = yield* Config.string('SERVICE_VERSION')
-  const level = yield* PinoLogLevel('PINO_LOG_LEVEL')
+  const level = yield* PinoLogLevel('LOGGING_LEVEL')
   yield* Effect.logTrace(`Creating pino logging config with level ${level}`)
   const config = createGcpLoggingPinoConfig(
     {
