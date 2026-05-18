@@ -18,7 +18,7 @@ import {
 } from './service-account'
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
-  `${tag}-ingestor-job`,
+  `${tag}-pipeline-ingestor-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -64,7 +64,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'SERVICE_NAME',
-                value: 'ingestor-job',
+                value: 'pipeline-ingestor-job',
               },
               {
                 name: 'SERVICE_VERSION',

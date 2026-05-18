@@ -1,5 +1,6 @@
 export {
-  gcpProject,
+  coreGcpProject,
+  coreGcpRegion,
   gcsArchiveKeyName,
   githubActionIdentityPoolProviderName,
   githubActionServiceAccountEmail,
@@ -7,6 +8,8 @@ export {
   artifactRegistryBaseUri,
 } from './core'
 
+export * from './analysis'
 export * from './ingestion'
+export * from './research'
 
 export { stackName } from './config'

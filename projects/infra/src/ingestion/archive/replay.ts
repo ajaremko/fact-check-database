@@ -1,27 +1,51 @@
 import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
 
-import { gcpRegion, dockerTag, tag, logLevel } from '../config'
+import { gcpProject, gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
 import { deadletterBucketName } from '../archive'
 import { provider } from '../project'
 import { getImageUrl } from '../pipeline/getImageUrl'
 import { extractorTopicName } from '../pipeline'
 
-import {
-  dataTransferServiceAccount,
-  dataTransferPubsubPublisher,
-  dataTransferStorageAdmin,
-} from './service-account'
+export const replayServiceAccount = new gcp.serviceaccount.Account(
+  `${tag}-archive-replay-sa`,
+  {
+    accountId: `${tag}-archive-replay-sa`,
+    displayName: 'Archive Replay Service Account',
+  },
+  { provider }
+)
 
-export const dataTransferJob = new gcp.cloudrunv2.Job(
-  `${tag}-data-transfer-job`,
+export const replayStorageAdmin = new gcp.projects.IAMMember(
+  `${tag}-archive-replay-storage-admin`,
+  {
+    role: 'roles/storage.admin',
+    member: pulumi.interpolate`serviceAccount:${replayServiceAccount.email}`,
+    project: gcpProject,
+  },
+  { provider }
+)
+
+export const replayPubsubPublisher = new gcp.projects.IAMMember(
+  `${tag}-archive-replay-pubsub-publisher`,
+  {
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${replayServiceAccount.email}`,
+    project: gcpProject,
+  },
+  { provider }
+)
+
+export const replayJob = new gcp.cloudrunv2.Job(
+  `${tag}-archive-replay-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
     template: {
       template: {
         maxRetries: 0,
-        serviceAccount: dataTransferServiceAccount.email,
+        serviceAccount: replayServiceAccount.email,
         containers: [
           {
             image: getImageUrl('ingestion-replay', dockerTag),
@@ -52,7 +76,7 @@ export const dataTransferJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'SERVICE_NAME',
-                value: 'data-transfer-job',
+                value: 'archive-replay-job',
               },
               {
                 name: 'SERVICE_VERSION',
@@ -65,11 +89,7 @@ export const dataTransferJob = new gcp.cloudrunv2.Job(
     },
   },
   {
-    dependsOn: [
-      cloudRunService,
-      dataTransferPubsubPublisher,
-      dataTransferStorageAdmin,
-    ],
+    dependsOn: [cloudRunService, replayPubsubPublisher, replayStorageAdmin],
     provider,
   }
 )

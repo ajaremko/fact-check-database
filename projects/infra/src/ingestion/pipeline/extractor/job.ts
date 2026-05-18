@@ -20,7 +20,7 @@ import { extractorTopic } from './topic'
 import { extractorSubscription } from './subscription'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
-  `${tag}-extractor-job`,
+  `${tag}-pipeline-extractor-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -70,7 +70,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'SERVICE_NAME',
-                value: 'extractor-job',
+                value: 'pipeline-extractor-job',
               },
               {
                 name: 'SERVICE_VERSION',

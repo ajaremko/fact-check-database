@@ -14,7 +14,7 @@ config:
   ingestion:project: news-research-dev
   ingestion:region: us-central1
   ingestion:archiveLocation: US
-  ingestion:tag: dev-212
+  ingestion:tag: dev-214
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */4 * * *'
   ingestion:logLevel: debug
@@ -24,3 +24,6 @@ config:
   ingestion:deadletterRetentionDays: 7
   ingestion:forceDestroyStorage: true
   ingestion:retainStorageOnDelete: true
+
+  research:project: news-research-dev
+  research:region: us-central1

@@ -62,12 +62,12 @@ describe('writeBatch', () => {
           ],
           timestamp: 1_000,
           datasetId: 'research',
-          tableId: 'fact-checks',
+          tableId: 'fact_checks',
         }).pipe(Effect.provide(InMemoryStorageWriter.layer(storage)))
 
         expect(
           storage[
-            'v1/datasetId=research/tableId=fact-checks/date=1970-01-01/run-001.batch.ndjson'
+            'v1/datasetId=research/tableId=fact_checks/date=1970-01-01/run-001.batch.ndjson'
           ]
         ).toBeDefined()
 
@@ -78,13 +78,13 @@ describe('writeBatch', () => {
           source_format: 'NEWLINE_DELIMITED_JSON',
           table: {
             dataset_id: 'research',
-            table_id: 'fact-checks',
+            table_id: 'fact_checks',
           },
           schema: FactChecksTableSchema,
           pointer: {
             bucket: 'inmemory',
             object:
-              'v1/datasetId=research/tableId=fact-checks/date=1970-01-01/run-001.batch.ndjson',
+              'v1/datasetId=research/tableId=fact_checks/date=1970-01-01/run-001.batch.ndjson',
           },
         })
       })

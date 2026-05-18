@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject as analysisGcpProject } from '../../../analysis'
+import { analysisGcpProject } from '../../../analysis'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
 import { cloudRunService } from '../../services'
@@ -17,7 +17,7 @@ import {
 } from './service-account'
 
 export const loaderService = new gcp.cloudrunv2.Service(
-  `${tag}-loader-service`,
+  `${tag}-pipeline-loader-service`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -49,7 +49,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'SERVICE_NAME',
-              value: 'loader-service',
+              value: 'pipeline-loader-service',
             },
             {
               name: 'SERVICE_VERSION',

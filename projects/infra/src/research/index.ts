@@ -1,2 +1,5 @@
 export { martsDatasetId, martsFactChecksTableId } from './marts'
-export { gcpProject, gcpRegion } from './config'
+export {
+  gcpProject as researchGcpProject,
+  gcpRegion as researchGcpRegion,
+} from './config'

@@ -1,10 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
+import { curatedTableRef } from '../../analysis'
+
 import { tableDeletionProtection, tag } from '../config'
 import { provider } from '../provider'
-
-import { curatedTableRef } from '../curated'
 
 export const martsDataset = new gcp.bigquery.Dataset(
   `${tag}-marts-dataset`,

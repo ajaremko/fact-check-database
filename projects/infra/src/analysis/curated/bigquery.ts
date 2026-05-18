@@ -18,7 +18,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
   `${tag}-curated-fact-checks-table`,
   {
     datasetId: curatedDataset.datasetId,
-    tableId: 'fact-checks',
+    tableId: 'fact_checks',
     deletionProtection: tableDeletionProtection,
     schema: JSON.stringify([
       { name: 'fact_check_id', type: 'STRING', mode: 'REQUIRED' },

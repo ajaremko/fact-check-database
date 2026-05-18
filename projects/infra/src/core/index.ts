@@ -33,4 +33,7 @@ export const artifactRegistryBaseUri = artifactRegistryUri.apply(
 
 export { artifactRegistry } from './artifact-registry'
 
-export { gcpProject, coreLabels } from './config'
+export {
+  gcpProject as coreGcpProject,
+  gcpRegion as coreGcpRegion,
+} from './config'

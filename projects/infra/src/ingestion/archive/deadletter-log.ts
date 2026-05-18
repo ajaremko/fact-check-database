@@ -5,6 +5,7 @@ import {
   forceDestroyStorage,
   gcpRegion,
   retainStorageOnDelete,
+  deadletterSoftDeleteDays,
 } from '../config'
 import { ingestionLabels, tag } from '../config'
 import { storageService } from '../services'
@@ -18,6 +19,11 @@ export const deadletterBucket = new gcp.storage.Bucket(
     publicAccessPrevention: 'enforced',
     forceDestroy: forceDestroyStorage,
     labels: ingestionLabels,
+    softDeletePolicy: deadletterSoftDeleteDays
+      ? {
+          retentionDurationSeconds: deadletterSoftDeleteDays * 24 * 60 * 60,
+        }
+      : undefined,
     lifecycleRules: deadletterRetentionDays
       ? [
           {

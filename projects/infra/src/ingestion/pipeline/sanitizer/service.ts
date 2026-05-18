@@ -17,7 +17,7 @@ import {
 } from './service-account'
 
 export const sanitizerService = new gcp.cloudrunv2.Service(
-  `${tag}-sanitizer-service`,
+  `${tag}-pipeline-sanitizer-service`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -53,7 +53,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'SERVICE_NAME',
-              value: 'sanitizer-service',
+              value: 'pipeline-sanitizer-service',
             },
             {
               name: 'SERVICE_VERSION',

@@ -20,7 +20,7 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
   `${tag}-staging-fact-checks-table`,
   {
     datasetId: stagingDataset.datasetId,
-    tableId: 'fact-checks',
+    tableId: 'fact_checks',
     deletionProtection: tableDeletionProtection,
     // note: changes in FactChecksTableSchema fields may not be detected by pulumi
     // needs further investigation
