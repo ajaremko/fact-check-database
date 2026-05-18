@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-ingestor-job",
+  "name": "@news-research/ingestion-pipeline-ingestor",
   "version": "0.0.1",
   "private": true,
   "nx": {

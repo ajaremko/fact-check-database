@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-loader-service",
+  "name": "@news-research/ingestion-pipeline-loader",
   "version": "0.0.1",
   "private": true,
   "nx": {
