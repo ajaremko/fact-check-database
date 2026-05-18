@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises'
+import { describe, expect, it } from 'vitest'
 import { ConfigProvider, Data, Effect, Logger } from 'effect'
 
 import { pinoLogger } from '../pino'
@@ -29,7 +30,7 @@ describe('GcpLoggingPinoConfig', () => {
           new Map([
             ['SERVICE_NAME', 'test-service'],
             ['SERVICE_VERSION', '1'],
-            ['PINO_LOG_LEVEL', 'trace'],
+            ['LOGGING_LEVEL', 'trace'],
           ])
         )
       )
@@ -70,9 +71,11 @@ describe('GcpLoggingPinoConfig', () => {
           cause: new Error('Internal error'),
           message: 'Something went wrong',
         })
+      ).pipe(
+        Effect.catchAllCause(Effect.logError),
+        Effect.provide(logger),
+        Effect.runPromise
       )
-        .pipe(Effect.catchAllCause(Effect.logError))
-        .pipe(Effect.provide(logger), Effect.runPromise)
 
       await delay(2000)
 
