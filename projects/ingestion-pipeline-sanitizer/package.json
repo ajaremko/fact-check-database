@@ -99,11 +99,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "ingestion-pipeline-sanitizer",
-        "buildArgs": {
-          "SERVICE_NAME": "ingestion-pipeline-sanitizer",
-          "SERVICE_VERSION": "{env.BUILD_NUMBER}"
-        }
+        "repositoryName": "ingestion-pipeline-sanitizer"
       }
     }
   },

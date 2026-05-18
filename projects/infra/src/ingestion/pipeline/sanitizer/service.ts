@@ -44,20 +44,8 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
               value: archiveBucketName,
             },
             {
-              name: 'PINO_LOG_LEVEL',
-              value: logLevel,
-            },
-            {
               name: 'LOGGING_LEVEL',
               value: logLevel,
-            },
-            {
-              name: 'SERVICE_NAME',
-              value: 'pipeline-sanitizer-service',
-            },
-            {
-              name: 'SERVICE_VERSION',
-              value: dockerTag,
             },
           ],
         },

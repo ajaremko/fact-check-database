@@ -37,7 +37,29 @@
       "plugin": "@nx/docker",
       "options": {
         "buildTarget": {
-          "name": "docker:build"
+          "name": "docker:build",
+          "configurations": {
+            "publish": {
+              "args": [
+                "--tag",
+                "{env.DOCKER_REGISTRY}/{projectName}:latest",
+                "--tag",
+                "{env.DOCKER_REGISTRY}/{projectName}:{commitSha}",
+                "--cache-from",
+                "type=gha",
+                "--build-arg",
+                "SERVICE_NAME={projectName}",
+                "--build-arg",
+                "SERVICE_VERSION={env.BUILD_NUMBER}",
+                "--cache-to",
+                "type=gha,mode=max",
+                "--push"
+              ],
+              "env": {
+                "DOCKER_BUILDKIT": "1"
+              }
+            }
+          }
         },
         "runTarget": {
           "name": "docker:run"
