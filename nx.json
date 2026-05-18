@@ -39,14 +39,7 @@
         "buildTarget": {
           "name": "docker:build",
           "configurations": {
-            "production": {
-              "args": [
-                "--build-arg",
-                "SERVICE_NAME={projectName}",
-                "--build-arg",
-                "SERVICE_VERSION=${BUILD_NUMBER}"
-              ]
-            }
+            "production": {}
           }
         },
         "runTarget": {
