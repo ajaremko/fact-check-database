@@ -94,26 +94,7 @@
         "dependsOn": [
           "build",
           "prune"
-        ],
-        "configurations": {
-          "production": {
-            "args": [
-              "--build-arg",
-              "SERVICE_NAME={projectName}",
-              "--build-arg",
-              "SERVICE_VERSION=${BUILD_NUMBER}",
-              "--tag",
-              "${DOCKER_REGISTRY}/{projectName}:latest",
-              "--tag",
-              "${DOCKER_REGISTRY}/{projectName}:{commitSha}",
-              "--cache-from",
-              "type=gha",
-              "--cache-to",
-              "type=gha,mode=max",
-              "--push"
-            ]
-          }
-        }
+        ]
       }
     },
     "release": {
