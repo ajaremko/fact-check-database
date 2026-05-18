@@ -100,7 +100,10 @@
     "release": {
       "docker": {
         "repositoryName": "ingestion-pipeline-sanitizer",
-        "args": "--build-arg APP_VERSION=2.0.0"
+        "buildArgs": {
+          "SERVICE_NAME": "ingestion-pipeline-sanitizer",
+          "SERVICE_VERSION": "{env.BUILD_NUMBER}"
+        }
       }
     }
   },
