@@ -38,28 +38,21 @@
       "options": {
         "buildTarget": {
           "name": "docker:build",
-          "configurations": {
-            "publish": {
-              "args": [
-                "--tag",
-                "{env.DOCKER_REGISTRY}/{projectName}:latest",
-                "--tag",
-                "{env.DOCKER_REGISTRY}/{projectName}:{commitSha}",
-                "--cache-from",
-                "type=gha",
-                "--build-arg",
-                "SERVICE_NAME={projectName}",
-                "--build-arg",
-                "SERVICE_VERSION={env.BUILD_NUMBER}",
-                "--cache-to",
-                "type=gha,mode=max",
-                "--push"
-              ],
-              "env": {
-                "DOCKER_BUILDKIT": "1"
-              }
-            }
-          }
+          "args": [
+            "--build-arg",
+            "SERVICE_NAME={projectName}",
+            "--build-arg",
+            "SERVICE_VERSION={env.BUILD_NUMBER}",
+            "--tag",
+            "{env.DOCKER_REGISTRY}/{projectName}:latest",
+            "--tag",
+            "{env.DOCKER_REGISTRY}/{projectName}:{commitSha}",
+            "--cache-from",
+            "type=gha",
+            "--cache-to",
+            "type=gha,mode=max",
+            "--push"
+          ]
         },
         "runTarget": {
           "name": "docker:run"
