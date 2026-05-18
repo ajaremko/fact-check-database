@@ -44,12 +44,7 @@
                 "--build-arg",
                 "SERVICE_NAME={projectName}",
                 "--build-arg",
-                "SERVICE_VERSION=${BUILD_NUMBER}",
-                "--cache-from",
-                "type=gha",
-                "--cache-to",
-                "type=gha,mode=max",
-                "--push"
+                "SERVICE_VERSION=${BUILD_NUMBER}"
               ]
             }
           }
