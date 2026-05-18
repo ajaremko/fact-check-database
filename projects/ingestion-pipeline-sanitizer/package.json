@@ -99,7 +99,8 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "ingestion-pipeline-sanitizer"
+        "repositoryName": "ingestion-pipeline-sanitizer",
+        "args": "--build-arg APP_VERSION=2.0.0"
       }
     }
   },
