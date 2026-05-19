@@ -45,7 +45,7 @@
             "SERVICE_VERSION=development"
           ],
           "configurations": {
-            "release": {
+            "publish": {
               "args": [
                 "--build-arg",
                 "SERVICE_NAME={projectName}",
