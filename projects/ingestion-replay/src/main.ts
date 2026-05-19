@@ -1,4 +1,13 @@
-import { Config, Context, Effect, Layer, Logger, Stream } from 'effect'
+import {
+  Clock,
+  Config,
+  Context,
+  Effect,
+  Layer,
+  Logger,
+  LogLevel,
+  Stream,
+} from 'effect'
 import { NodeRuntime } from '@effect/platform-node'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeSdk } from '@effect/opentelemetry'
@@ -9,26 +18,20 @@ import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/St
 import * as PubsubClient from '@news-research/ingestion-vendor/cloud-pubsub/PubsubClient'
 import * as PubsubTopic from '@news-research/ingestion-vendor/cloud-pubsub/PubsubTopic'
 import * as GcpLoggingPinoConfig from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import * as Node from '@news-research/ingestion-data/Node'
 import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
 import { pinoLogger } from '@news-research/ingestion-vendor/pino'
 
-const readJobContext = Effect.gen(function* () {
-  const source = yield* Config.string('GCS_SOURCE_PATH')
-  const destination = yield* Config.withDefault(
-    Config.string('GCS_DESTINATION_PATH'),
-    null
-  )
-  const bucketName = yield* Config.string('GCS_BUCKET_NAME')
-  const topicName = yield* Config.string('PUBSUB_TOPIC_NAME')
-  return { source, destination, bucketName, topicName }
-})
+interface JobContext {
+  runId: string
+  startedAt: number
+  source: string
+  destination: string | null
+  bucketName: string
+  topicName: string
+}
 
-type JobContextShape = Effect.Effect.Success<typeof readJobContext>
-
-class JobContext extends Context.Tag('JobContext')<
-  JobContext,
-  JobContextShape
->() {}
+const JobContext = Context.GenericTag<JobContext>('JobContext')
 
 function processFile(file: StorageBucket.File) {
   return Effect.gen(function* () {
@@ -69,6 +72,15 @@ const Program = Effect.gen(function* () {
   yield* files.pipe(Stream.mapEffect(processFile), Stream.runDrain)
 })
 
+const gcpLogger = GcpLoggingPinoConfig.make.pipe(
+  Effect.andThen((config) => pinoLogger(config))
+)
+
+const logger = Layer.empty.pipe(
+  Layer.merge(Logger.addScoped(gcpLogger)),
+  Layer.merge(Logger.remove(Logger.defaultLogger))
+)
+
 const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
   Config.orElse(() => Config.string('SERVICE_NAME'))
 )
@@ -78,7 +90,6 @@ const otel = Layer.unwrapEffect(
     const serviceName = yield* OtelServiceNameConfig
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
         serviceName,
@@ -95,21 +106,57 @@ const otel = Layer.unwrapEffect(
   })
 )
 
-const main = Program.pipe(
+const LoggingLevelConfig = Config.logLevel('LOGGING_LEVEL')
+
+function withMinimumLogLevel<A, E, R>(self: Effect.Effect<A, E, R>) {
+  return Config.withDefault(LoggingLevelConfig, LogLevel.Info).pipe(
+    Effect.andThen((level) => Logger.withMinimumLogLevel(self, level))
+  )
+}
+
+const job = Layer.effect(
+  JobContext,
+  Effect.gen(function* () {
+    const startedAt = yield* Clock.currentTimeMillis
+    const runId = yield* Node.generateUUID()
+    const source = yield* Config.string('GCS_SOURCE_PATH')
+    const destination = yield* Config.withDefault(
+      Config.string('GCS_DESTINATION_PATH'),
+      null
+    )
+    const bucketName = yield* Config.string('GCS_BUCKET_NAME')
+    const topicName = yield* Config.string('PUBSUB_TOPIC_NAME')
+    return { runId, startedAt, source, destination, bucketName, topicName }
+  })
+)
+
+function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
+  return Effect.gen(function* () {
+    const ctx = yield* JobContext
+    yield* Effect.logInfo(`Starting job with runId: ${ctx.runId}`)
+    return yield* self.pipe(
+      Effect.withSpan('jobRun'),
+      Effect.annotateLogs({
+        'job.runId': ctx.runId,
+        'job.startedAt': ctx.startedAt,
+        'job.source': ctx.source,
+        'job.destination': ctx.destination ?? 'none',
+        'job.bucketName': ctx.bucketName,
+        'job.topicName': ctx.topicName,
+      })
+    )
+  })
+}
+
+Program.pipe(
   Effect.provide(StorageBucket.layer(Config.string('GCS_BUCKET_NAME'))),
   Effect.provide(StorageClient.layer()),
   Effect.provide(PubsubTopic.layer(Config.string('PUBSUB_TOPIC_NAME'))),
   Effect.provide(PubsubClient.layer()),
-  Effect.provideServiceEffect(JobContext, readJobContext),
-  Effect.provide(
-    Logger.addScoped(
-      GcpLoggingPinoConfig.make.pipe(
-        Effect.andThen((config) => pinoLogger(config))
-      )
-    )
-  ),
-  Effect.provide(Logger.remove(Logger.defaultLogger)),
-  Effect.provide(otel)
+  Effect.provide(otel),
+  withJobAnnotations,
+  Effect.provide(logger),
+  Effect.provide(job),
+  withMinimumLogLevel,
+  NodeRuntime.runMain({ disablePrettyLogger: true })
 )
-
-NodeRuntime.runMain(main, { disablePrettyLogger: true })
