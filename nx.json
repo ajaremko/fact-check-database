@@ -41,18 +41,18 @@
           "args": [
             "--build-arg",
             "SERVICE_NAME={projectName}",
-            "--tag",
-            "{imageRef}:latest"
+            "--build-arg",
+            "SERVICE_VERSION=development"
           ],
-          "skipDefaultTag": true,
           "configurations": {
             "production": {
               "args": [
                 "--build-arg",
                 "SERVICE_NAME={projectName}",
                 "--build-arg",
-                "SERVICE_VERSION=${BUILD_NUMBER}",
-                "--push"
+                "SERVICE_VERSION={env.BUILD_NUMBER}",
+                "--tag",
+                "${DOCKER_REGISTRY}/{projectName}:{env.BUILD_NUMBER}"
               ]
             }
           }
