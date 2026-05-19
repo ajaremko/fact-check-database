@@ -45,7 +45,7 @@
             "SERVICE_VERSION=development"
           ],
           "configurations": {
-            "publish": {
+            "production": {
               "args": [
                 "--build-arg",
                 "SERVICE_NAME={projectName}",
@@ -110,7 +110,8 @@
       "versionSchemes": {
         "production": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}-{shortCommitSha}",
         "dev": "dev-{env.BUILD_NUMBER}"
-      }
+      },
+      "preVersionCommand": "npx nx run-many --target=docker:build --configuration=production"
     },
     "groups": {
       "ingestion": {
