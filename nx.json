@@ -42,7 +42,8 @@
             "--build-arg",
             "SERVICE_NAME={projectName}",
             "--tag",
-            "{imageRef}:latest"
+            "{imageRef}:latest",
+            "--push"
           ],
           "skipDefaultTag": true,
           "configurations": {
@@ -57,7 +58,8 @@
                 "--tag",
                 "{imageRef}:${BUILD_NUMBER}",
                 "--tag",
-                "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}"
+                "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
+                "--push"
               ]
             }
           }
