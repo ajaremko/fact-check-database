@@ -60,6 +60,21 @@
                 "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
                 "--push"
               ]
+            },
+            "production": {
+              "args": [
+                "--build-arg",
+                "SERVICE_NAME={projectName}",
+                "--build-arg",
+                "SERVICE_VERSION=${BUILD_NUMBER}",
+                "--tag",
+                "{imageRef}:latest",
+                "--tag",
+                "{imageRef}:${BUILD_NUMBER}",
+                "--tag",
+                "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
+                "--push"
+              ]
             }
           }
         },
@@ -118,7 +133,8 @@
       "versionSchemes": {
         "production": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}-{shortCommitSha}",
         "dev": "dev-{env.BUILD_NUMBER}"
-      }
+      },
+      "preVersionCommand": "npx nx run-many --target=docker:build --configuration=production"
     },
     "groups": {
       "ingestion": {
