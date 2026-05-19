@@ -50,9 +50,7 @@
                 "--build-arg",
                 "SERVICE_NAME={projectName}",
                 "--build-arg",
-                "SERVICE_VERSION={env.BUILD_NUMBER}",
-                "--tag",
-                "{env.DOCKER_REGISTRY}/{imageRef}:{env.BUILD_NUMBER}"
+                "SERVICE_VERSION={env.BUILD_NUMBER}"
               ]
             }
           }
