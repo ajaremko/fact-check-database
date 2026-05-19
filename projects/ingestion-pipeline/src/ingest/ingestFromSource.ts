@@ -1,4 +1,5 @@
-import { Effect, Schema, flow, pipe } from 'effect'
+import { Effect, Schema, Metric, flow, pipe, MetricBoundaries } from 'effect'
+import { StatusCodes } from 'http-status-codes'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -48,6 +49,23 @@ const decodeContext = Schema.decodeUnknownSync(
   })
 )
 
+const requestCounter = Metric.counter('ingestFromSource.requests', {
+  description: 'Counts the number of requests made to all sources',
+})
+
+const statusCodes = Object.values(StatusCodes).filter(
+  (code): code is number => typeof code === 'number'
+)
+
+const requestResponseCodes = Metric.histogram(
+  'ingestFromSource.responseCodes',
+  MetricBoundaries.fromIterable(statusCodes)
+)
+
+const fetchFailures = Metric.counter('ingestFromSource.fetchFailures', {
+  description: 'Counts the number of failed fetches',
+})
+
 export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
     ingestionId: string
@@ -58,6 +76,8 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     yield* Effect.logTrace('Fetching data from source target')
     const result = yield* fetch(ctx.source, ctx.timestamp)
+    // Increment the request counter for monitoring
+    yield* Metric.increment(requestCounter)
 
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId({
@@ -67,7 +87,9 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     })
 
     if (result._tag === 'FetchFailure') {
+      // Record the failure for monitoring purposes
       yield* Effect.logWarning(`Fetch failed: ${result.error}`)
+      yield* Metric.increment(fetchFailures)
       // For a failed fetch, we won't have a body to archive,
       // so we can skip straight to creating an observation
       // with no pointer to a body
@@ -102,6 +124,10 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
         pointer: recordPointer,
       })
     }
+
+    // Record the response code for both successes and failures to
+    // allow monitoring of source health
+    yield* requestResponseCodes(Effect.succeed(result.status))
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
