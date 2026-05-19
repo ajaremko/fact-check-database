@@ -52,7 +52,7 @@
                 "--build-arg",
                 "SERVICE_VERSION={env.BUILD_NUMBER}",
                 "--tag",
-                "${DOCKER_REGISTRY}/{projectName}:{env.BUILD_NUMBER}"
+                "{env.DOCKER_REGISTRY}/{projectName}:{env.BUILD_NUMBER}"
               ]
             }
           }
