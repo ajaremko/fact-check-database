@@ -75,6 +75,8 @@ jobs:
         run: |
           # Configure docker auth for Artifact Registry
           gcloud auth configure-docker ${{ steps.bootstrap.outputs.artifact_registry_base_uri }}
+          echo "DOCKER_REGISTRY=${{ steps.bootstrap.outputs.artifact_registry_base_uri }}" 
+          echo "BUILD_NUMBER=${{ steps.buildnumber.outputs.build_number }}" 
 
           # Configure git identity for nx release
           git config --global user.name "GitHub Actions"
