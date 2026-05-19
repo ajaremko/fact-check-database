@@ -6,6 +6,7 @@ import {
   HttpBody,
 } from '@effect/platform'
 import { Config, Effect, Layer, Record, Schema } from 'effect'
+import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
@@ -48,7 +49,7 @@ function process(data: Buffer) {
                 {
                   message: 'Message processed',
                 },
-                { status: 201 }
+                { status: StatusCodes.CREATED }
               )
             )
           ),
@@ -58,7 +59,7 @@ function process(data: Buffer) {
                 {
                   message: 'Failed to process message, please retry',
                 },
-                { status: 500 }
+                { status: StatusCodes.INTERNAL_SERVER_ERROR }
               )
             )
           ),
@@ -94,21 +95,21 @@ export function layer(path: HttpRouter.PathInput) {
               {
                 message: 'Missing required field in request body',
               },
-              { status: 400 }
+              { status: StatusCodes.BAD_REQUEST }
             ),
           ParseError: () =>
             HttpServerResponse.json(
               {
                 message: 'Invalid request body',
               },
-              { status: 400 }
+              { status: StatusCodes.BAD_REQUEST }
             ),
           RequestError: () =>
             HttpServerResponse.json(
               {
                 message: 'Request error',
               },
-              { status: 400 }
+              { status: StatusCodes.BAD_REQUEST }
             ),
         }),
         Effect.withSpan('HttpServerMessageQueueFeeder', { root: true })

@@ -54,6 +54,7 @@
     "date-fns": "^4.1.0",
     "effect": "^3.21.0",
     "fast-xml-parser": "^5.5.11",
+    "http-status-codes": "^2.3.0",
     "pino": "^10.3.1",
     "unidecode": "^1.1.0",
     "yaml": "^2.8.2"
