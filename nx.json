@@ -38,7 +38,7 @@
       "options": {
         "buildTarget": {
           "name": "docker:build",
-          "args": ["--tag", "{projectName}:latest"],
+          "args": ["--tag", "{imageRef}:latest"],
           "skipDefaultTag": true,
           "configurations": {
             "publish": {
