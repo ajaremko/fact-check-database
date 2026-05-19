@@ -107,8 +107,7 @@
       "versionSchemes": {
         "production": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}-{shortCommitSha}",
         "dev": "dev-{env.BUILD_NUMBER}"
-      },
-      "preVersionCommand": "nx run-many -t docker:build:production"
+      }
     },
     "groups": {
       "ingestion": {
