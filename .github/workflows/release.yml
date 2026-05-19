@@ -71,12 +71,10 @@ jobs:
       - name: Build and release Docker images
         env:
           BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
-          DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_base_uri }}
+          DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
         run: |
           # Configure docker auth for Artifact Registry
           gcloud auth configure-docker ${{ steps.bootstrap.outputs.artifact_registry_base_uri }}
-          echo "DOCKER_REGISTRY=${{ steps.bootstrap.outputs.artifact_registry_base_uri }}" 
-          echo "BUILD_NUMBER=${{ steps.buildnumber.outputs.build_number }}" 
 
           # Configure git identity for nx release
           git config --global user.name "GitHub Actions"
