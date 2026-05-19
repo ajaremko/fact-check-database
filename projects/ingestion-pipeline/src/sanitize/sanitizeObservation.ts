@@ -55,12 +55,12 @@ const decodeArgs = Schema.decodeSync(
   })
 )
 
-export function sanitizeObservation(args: {
-  policy: SanitizerPolicy
-  pointer: FilePointer
-  timestamp: TimestampEncoded
-}) {
-  return Effect.gen(function* () {
+export const sanitizeObservation = Effect.fn('sanitizeObservation')(
+  function* (args: {
+    policy: SanitizerPolicy
+    pointer: FilePointer
+    timestamp: TimestampEncoded
+  }) {
     const ctx = decodeArgs(args)
 
     yield* Effect.logDebug(`Reading observation from pointer`)
@@ -113,11 +113,12 @@ export function sanitizeObservation(args: {
       observation: sanitizedObservation,
       pointer: recordPointer,
     })
-  }).pipe(
-    Effect.annotateLogs({
-      'pointer.bucket': args.pointer.bucket,
-      'pointer.object': args.pointer.object,
-    }),
-    Effect.withSpan('sanitizeObservation')
-  )
-}
+  },
+  (effect, args) =>
+    effect.pipe(
+      Effect.annotateLogs({
+        'pointer.bucket': args.pointer.bucket,
+        'pointer.object': args.pointer.object,
+      })
+    )
+)

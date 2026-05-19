@@ -21,14 +21,14 @@ const encodeNdjson = pipe(
 const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
-export function writeBatch(input: {
-  runId: string
-  rows: object[]
-  timestamp: number
-  tableId: string
-  datasetId: string
-}) {
-  return Effect.gen(function* () {
+export const writeBatch = Effect.fn('writeBatch')(
+  function* (input: {
+    runId: string
+    rows: object[]
+    timestamp: number
+    tableId: string
+    datasetId: string
+  }) {
     const encodePath = yield* encodeExtractionBatchPath({
       batchId: input.runId,
       extractedAt: input.timestamp,
@@ -52,12 +52,13 @@ export function writeBatch(input: {
       pointer,
     })
     return yield* encodeExtractionBatchEvent(batch)
-  }).pipe(
-    Effect.annotateLogs({
-      'batch.tableId': input.tableId,
-      'batch.datasetId': input.datasetId,
-      'batch.rows': input.rows.length,
-    }),
-    Effect.withSpan('writeBatch')
-  )
-}
+  },
+  (effect, input) =>
+    effect.pipe(
+      Effect.annotateLogs({
+        'batch.tableId': input.tableId,
+        'batch.datasetId': input.datasetId,
+        'batch.rows': input.rows.length,
+      })
+    )
+)

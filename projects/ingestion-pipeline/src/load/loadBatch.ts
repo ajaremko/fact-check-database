@@ -4,18 +4,14 @@ import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQue
 
 import { FilePointer } from '../shared'
 
-export function loadBatch(input: {
-  projectId: string
-  pointer: FilePointer
-  table: { dataset: string; table: string }
-  sourceFormat: string
-  schema: object
-}): Effect.Effect<
-  void,
-  BigQueryClient.BigQueryClientIOError,
-  BigQueryClient.BigQueryClient
-> {
-  return Effect.gen(function* () {
+export const loadBatch = Effect.fn('loadBatch')(
+  function* (input: {
+    projectId: string
+    pointer: FilePointer
+    table: { dataset: string; table: string }
+    sourceFormat: string
+    schema: object
+  }) {
     yield* Effect.logInfo('Loading data from GCS object into BigQuery table')
     const gsUri = `gs://${input.pointer.bucket}/${input.pointer.object}`
     const [job] = yield* BigQueryClient.createJob({
@@ -36,13 +32,15 @@ export function loadBatch(input: {
       },
     })
     yield* BigQueryClient.awaitJob(job)
-  }).pipe(
-    Effect.annotateLogs({
-      'batch.tableId': input.table.table,
-      'batch.datasetId': input.table.dataset,
-      'batch.bucket': input.pointer.bucket,
-      'batch.object': input.pointer.object,
-    }),
-    Effect.withSpan('loadBatch')
-  )
-}
+  },
+  (effect, input) =>
+    effect.pipe(
+      Effect.annotateLogs({
+        'batch.tableId': input.table.table,
+        'batch.datasetId': input.table.dataset,
+        'batch.bucket': input.pointer.bucket,
+        'batch.object': input.pointer.object,
+      }),
+      Effect.withSpan('loadBatch')
+    )
+)

@@ -48,12 +48,12 @@ const decodeContext = Schema.decodeUnknownSync(
   })
 )
 
-export function ingestFromSource(args: {
-  ingestionId: string
-  timestamp: TimestampEncoded
-  source: SourceEncoded
-}) {
-  return Effect.gen(function* () {
+export const ingestFromSource = Effect.fn('ingestFromSource')(
+  function* (args: {
+    ingestionId: string
+    timestamp: TimestampEncoded
+    source: SourceEncoded
+  }) {
     const ctx = decodeContext(args)
 
     yield* Effect.logTrace('Fetching data from source target')
@@ -159,13 +159,14 @@ export function ingestFromSource(args: {
       observation,
       pointer: recordPointer,
     })
-  }).pipe(
-    Effect.annotateLogs({
-      'source.id': args.source.id,
-      'source.name': args.source.name,
-      'source.url': args.source.url,
-      'source.collection': args.source.collection,
-    }),
-    Effect.withSpan('ingestFromSourceTarget')
-  )
-}
+  },
+  (effect, args) =>
+    effect.pipe(
+      Effect.annotateLogs({
+        'source.id': args.source.id,
+        'source.name': args.source.name,
+        'source.url': args.source.url,
+        'source.collection': args.source.collection,
+      })
+    )
+)

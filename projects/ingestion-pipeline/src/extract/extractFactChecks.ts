@@ -18,13 +18,13 @@ const decodeObservation = pipe(
 
 const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
 
-export function extractFactChecks(ctx: {
-  extractionId: string
-  observationId: string
-  pointer: FilePointer
-  extractedAt: number
-}) {
-  return Effect.gen(function* () {
+export const extractFactChecks = Effect.fn('extractFactChecks')(
+  function* (ctx: {
+    extractionId: string
+    observationId: string
+    pointer: FilePointer
+    extractedAt: number
+  }) {
     const recordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(recordData)
     const { content, http } = observation
@@ -111,12 +111,14 @@ export function extractFactChecks(ctx: {
 
     const rows = yield* encodeFactCheckRows(factChecks)
     return rows
-  }).pipe(
-    Effect.withSpan('extractRowsFromSanitized'),
-    Effect.annotateLogs({
-      'observation.id': ctx.observationId,
-      'pointer.bucket': ctx.pointer.bucket,
-      'pointer.object': ctx.pointer.object,
-    })
-  )
-}
+  },
+  (effect, ctx) =>
+    effect.pipe(
+      Effect.withSpan('extractRowsFromSanitized'),
+      Effect.annotateLogs({
+        'observation.id': ctx.observationId,
+        'pointer.bucket': ctx.pointer.bucket,
+        'pointer.object': ctx.pointer.object,
+      })
+    )
+)
