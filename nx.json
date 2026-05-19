@@ -44,7 +44,11 @@
             "publish": {
               "args": [
                 "--build-arg",
-                "BUILD_DATE={currentDate|YYYY-MM-DD}",
+                "SERVICE_NAME={projectName}",
+                "--build-arg",
+                "SERVICE_VERSION=${BUILD_NUMBER}",
+                "--tag",
+                "{imageRef}:${BUILD_NUMBER}",
                 "--tag",
                 "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}"
               ]
