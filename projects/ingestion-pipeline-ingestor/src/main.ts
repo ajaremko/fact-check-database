@@ -6,8 +6,11 @@ import {
 } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
-import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
+import { TraceExporter as CloudTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { MetricExporter as CloudMonitoringExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 
 import * as HttpClientFetcher from '@news-research/ingestion-pipeline/ingest/adapters/HttpClientFetcher'
 import * as CloudPubsubPublisher from '@news-research/ingestion-messaging/adapters/CloudPubsubPublisher'
@@ -148,6 +151,10 @@ const otel = Layer.unwrapEffect(
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
+        metricReader: new PeriodicExportingMetricReader({
+          exporter: new OTLPMetricExporter(),
+          exportIntervalMillis: 5000,
+        }),
       }))
     }
 
@@ -162,10 +169,14 @@ const otel = Layer.unwrapEffect(
         },
       },
       spanProcessor: new BatchSpanProcessor(
-        new TraceExporter({
+        new CloudTraceExporter({
           resourceFilter: /^service\./,
         })
       ),
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: new CloudMonitoringExporter(),
+        exportIntervalMillis: 5000,
+      }),
     }))
   })
 )

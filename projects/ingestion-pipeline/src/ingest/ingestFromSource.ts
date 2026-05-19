@@ -1,5 +1,5 @@
-import { Effect, Schema, Metric, flow, pipe, MetricBoundaries } from 'effect'
-import { StatusCodes } from 'http-status-codes'
+import { Effect, Schema, Metric, flow, pipe } from 'effect'
+// import { StatusCodes } from 'http-status-codes'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -53,13 +53,13 @@ const requestCounter = Metric.counter('ingestFromSource.requests', {
   description: 'Counts the number of requests made to all sources',
 })
 
-const statusCodes = Object.values(StatusCodes).filter(
-  (code): code is number => typeof code === 'number'
-)
+// const statusCodes = Object.values(StatusCodes).filter(
+//   (code): code is number => typeof code === 'number'
+// )
 
-const requestResponseCodes = Metric.histogram(
+const requestResponseCodes = Metric.counter(
   'ingestFromSource.responseCodes',
-  MetricBoundaries.fromIterable(statusCodes)
+  {}
 )
 
 const fetchFailures = Metric.counter('ingestFromSource.fetchFailures', {
