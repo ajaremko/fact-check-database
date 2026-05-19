@@ -68,11 +68,11 @@
                 "--build-arg",
                 "SERVICE_VERSION=${BUILD_NUMBER}",
                 "--tag",
-                "{imageRef}:latest",
+                "${DOCKER_REGISTRY}/{imageRef}:latest",
                 "--tag",
-                "{imageRef}:${BUILD_NUMBER}",
+                "${DOCKER_REGISTRY}/{imageRef}:${BUILD_NUMBER}",
                 "--tag",
-                "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
+                "${DOCKER_REGISTRY}/{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
                 "--push"
               ]
             }
