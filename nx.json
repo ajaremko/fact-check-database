@@ -38,7 +38,12 @@
       "options": {
         "buildTarget": {
           "name": "docker:build",
-          "args": ["--tag", "{imageRef}:latest"],
+          "args": [
+            "--build-arg",
+            "SERVICE_NAME={projectName}",
+            "--tag",
+            "{imageRef}:latest"
+          ],
           "skipDefaultTag": true,
           "configurations": {
             "publish": {
@@ -47,6 +52,8 @@
                 "SERVICE_NAME={projectName}",
                 "--build-arg",
                 "SERVICE_VERSION=${BUILD_NUMBER}",
+                "--tag",
+                "{imageRef}:latest",
                 "--tag",
                 "{imageRef}:${BUILD_NUMBER}",
                 "--tag",
