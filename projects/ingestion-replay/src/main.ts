@@ -69,11 +69,19 @@ const Program = Effect.gen(function* () {
   yield* files.pipe(Stream.mapEffect(processFile), Stream.runDrain)
 })
 
-const otel = cloudRunInstanceId.pipe(
-  Effect.map((instanceId) =>
-    NodeSdk.layer(() => ({
+const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
+  Config.orElse(() => Config.string('SERVICE_NAME'))
+)
+
+const otel = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const serviceName = yield* OtelServiceNameConfig
+    const instanceId = yield* cloudRunInstanceId
+
+    yield* Effect.logDebug('Using gcp otel configuration')
+    return NodeSdk.layer(() => ({
       resource: {
-        serviceName: 'loader',
+        serviceName,
         attributes: {
           'service.instance.id': instanceId,
         },
@@ -84,8 +92,7 @@ const otel = cloudRunInstanceId.pipe(
         })
       ),
     }))
-  ),
-  Layer.unwrapEffect
+  })
 )
 
 const main = Program.pipe(

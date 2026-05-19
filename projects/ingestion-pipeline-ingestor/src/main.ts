@@ -134,15 +134,14 @@ const logger = Layer.unwrapEffect(
 )
 
 const OtelModeConfig = Config.literal('gcp', 'local')('OTEL_MODE')
-const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME')
+const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
+  Config.orElse(() => Config.string('SERVICE_NAME'))
+)
 
 const otel = Layer.unwrapEffect(
   Effect.gen(function* () {
     const otelMode = yield* Config.withDefault(OtelModeConfig, 'gcp')
-    const serviceName = yield* Config.withDefault(
-      OtelServiceNameConfig,
-      'extractor'
-    )
+    const serviceName = yield* OtelServiceNameConfig
 
     if (otelMode === 'local') {
       yield* Effect.logDebug('Using local otel configuration')

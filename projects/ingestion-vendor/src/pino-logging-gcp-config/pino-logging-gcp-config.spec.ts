@@ -58,9 +58,14 @@ describe('GcpLoggingPinoConfig', () => {
       .filter((line) => line !== '')
       .map((line) => JSON.parse(line))
 
+    console.log(lines)
+
     expect(lines[0].message).toBe('Test log message')
-    expect(typeof lines[0].timestamp.seconds === 'number').toBe(true)
-    expect(typeof lines[0].timestamp.nanos === 'number').toBe(true)
+    expect(lines[0].serviceContext.service).toBe('test-service')
+    expect(lines[0].serviceContext.version).toBe('1')
+    expect(typeof lines[0]['logging.googleapis.com/insertId']).toBe('string')
+    expect(typeof lines[0].timestamp.seconds).toBe('number')
+    expect(typeof lines[0].timestamp.nanos).toBe('number')
   })
 
   it.sequential(
