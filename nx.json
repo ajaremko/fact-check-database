@@ -38,8 +38,18 @@
       "options": {
         "buildTarget": {
           "name": "docker:build",
+          "args": ["--tag", "{projectName}:latest"],
+          "skipDefaultTag": true,
           "configurations": {
-            "production": {}
+            "publish": {
+              "args": [
+                "--tag",
+                "${DOCKER_REGISTRY}/{projectName}:latest",
+                "--tag",
+                "${DOCKER_REGISTRY}/{projectName}:{commitSha}",
+                "--push"
+              ]
+            }
           }
         },
         "runTarget": {
