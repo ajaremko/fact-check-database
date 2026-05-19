@@ -38,16 +38,15 @@
       "options": {
         "buildTarget": {
           "name": "docker:build",
-          "args": ["--tag", "{repositoryName}:latest"],
+          "args": ["--tag", "{projectName}:latest"],
           "skipDefaultTag": true,
           "configurations": {
             "publish": {
               "args": [
+                "--build-arg",
+                "BUILD_DATE={currentDate|YYYY-MM-DD}",
                 "--tag",
-                "${DOCKER_REGISTRY}/{repositoryName}:latest",
-                "--tag",
-                "${DOCKER_REGISTRY}/{repositoryName}:{commitSha}",
-                "--push"
+                "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}"
               ]
             }
           }
