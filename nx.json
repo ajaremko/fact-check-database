@@ -42,8 +42,7 @@
             "--build-arg",
             "SERVICE_NAME={projectName}",
             "--tag",
-            "{imageRef}:latest",
-            "--push"
+            "{imageRef}:latest"
           ],
           "skipDefaultTag": true,
           "configurations": {
