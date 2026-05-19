@@ -36,24 +36,8 @@ export const loaderService = new gcp.cloudrunv2.Service(
               value: stagingBucketName,
             },
             {
-              name: 'LOG_LEVEL',
-              value: 'error',
-            },
-            {
-              name: 'PINO_LOG_LEVEL',
-              value: logLevel,
-            },
-            {
               name: 'LOGGING_LEVEL',
               value: logLevel,
-            },
-            {
-              name: 'SERVICE_NAME',
-              value: 'pipeline-loader-service',
-            },
-            {
-              name: 'SERVICE_VERSION',
-              value: dockerTag,
             },
             {
               name: 'GOOGLE_CLOUD_PROJECT',

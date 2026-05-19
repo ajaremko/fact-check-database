@@ -55,20 +55,8 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
                 value: '0.8',
               },
               {
-                name: 'PINO_LOG_LEVEL',
-                value: logLevel,
-              },
-              {
                 name: 'LOGGING_LEVEL',
                 value: logLevel,
-              },
-              {
-                name: 'SERVICE_NAME',
-                value: 'pipeline-ingestor-job',
-              },
-              {
-                name: 'SERVICE_VERSION',
-                value: dockerTag,
               },
             ],
           },

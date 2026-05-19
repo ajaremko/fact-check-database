@@ -41,10 +41,6 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 value: extractorSubscription.id,
               },
               {
-                name: 'MESSAGE_BATCH_SIZE',
-                value: '1000',
-              },
-              {
                 name: 'PUBSUB_TOPIC_NAME',
                 value: extractorTopic.name,
               },
@@ -57,24 +53,16 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 value: stagingDatasetId,
               },
               {
-                name: 'MAX_CONCURRENCY',
+                name: 'MESSAGE_BATCH_SIZE',
                 value: '1000',
               },
               {
-                name: 'PINO_LOG_LEVEL',
-                value: logLevel,
+                name: 'MAX_CONCURRENCY',
+                value: '10',
               },
               {
                 name: 'LOGGING_LEVEL',
                 value: logLevel,
-              },
-              {
-                name: 'SERVICE_NAME',
-                value: 'pipeline-extractor-job',
-              },
-              {
-                name: 'SERVICE_VERSION',
-                value: dockerTag,
               },
             ],
           },
