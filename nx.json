@@ -38,15 +38,15 @@
       "options": {
         "buildTarget": {
           "name": "docker:build",
-          "args": ["--tag", "{projectName}:latest"],
+          "args": ["--tag", "{repositoryName}:latest"],
           "skipDefaultTag": true,
           "configurations": {
             "publish": {
               "args": [
                 "--tag",
-                "${DOCKER_REGISTRY}/{projectName}:latest",
+                "${DOCKER_REGISTRY}/{repositoryName}:latest",
                 "--tag",
-                "${DOCKER_REGISTRY}/{projectName}:{commitSha}",
+                "${DOCKER_REGISTRY}/{repositoryName}:{commitSha}",
                 "--push"
               ]
             }
