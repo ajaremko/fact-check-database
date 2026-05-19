@@ -46,33 +46,12 @@
           ],
           "skipDefaultTag": true,
           "configurations": {
-            "publish": {
-              "args": [
-                "--build-arg",
-                "SERVICE_NAME={projectName}",
-                "--build-arg",
-                "SERVICE_VERSION=${BUILD_NUMBER}",
-                "--tag",
-                "{imageRef}:latest",
-                "--tag",
-                "{imageRef}:${BUILD_NUMBER}",
-                "--tag",
-                "{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
-                "--push"
-              ]
-            },
             "production": {
               "args": [
                 "--build-arg",
                 "SERVICE_NAME={projectName}",
                 "--build-arg",
                 "SERVICE_VERSION=${BUILD_NUMBER}",
-                "--tag",
-                "${DOCKER_REGISTRY}/{imageRef}:latest",
-                "--tag",
-                "${DOCKER_REGISTRY}/{imageRef}:${BUILD_NUMBER}",
-                "--tag",
-                "${DOCKER_REGISTRY}/{imageRef}:{currentDate|YYMMDD}.{shortCommitSha}",
                 "--push"
               ]
             }
