@@ -5,7 +5,7 @@ import { loggingBucketConfig } from './logging'
 
 export const loggingBucketConfigName = loggingBucketConfig.name
 
-import { pipelineDashboard } from './monitoring'
+import { pipelineDashboard } from './dashboard'
 
 export const pipelineDashboardId = pipelineDashboard.id
 
