@@ -11,6 +11,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
+import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as HttpClientFetcher from '@news-research/ingestion-pipeline/ingest/adapters/HttpClientFetcher'
 import * as CloudPubsubPublisher from '@news-research/ingestion-messaging/adapters/CloudPubsubPublisher'
@@ -158,13 +159,18 @@ const otel = Layer.unwrapEffect(
       }))
     }
 
+    const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
+    console.log('Detected otel resource:', resource)
+    console.log('Detected cloud run instance ID:', instanceId)
 
     yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
+        ...resource,
         serviceName,
         attributes: {
+          ...resource.attributes,
           'service.instance.id': instanceId,
         },
       },
