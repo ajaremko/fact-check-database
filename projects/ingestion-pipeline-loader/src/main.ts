@@ -2,7 +2,10 @@ import { Config, Effect, Logger, Layer, LogLevel } from 'effect'
 import { NodeRuntime } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
+import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
+import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as HttpServerMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/HttpServerMessageQueueFeeder'
 import * as InMemoryMessageQueue from '@news-research/ingestion-messaging/adapters/InMemoryMessageQueue'
@@ -37,20 +40,28 @@ const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
 const otel = Layer.unwrapEffect(
   Effect.gen(function* () {
     const serviceName = yield* OtelServiceNameConfig
+
+    const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
     return NodeSdk.layer(() => ({
       resource: {
+        ...resource,
         serviceName,
         attributes: {
+          ...resource.attributes,
           'service.instance.id': instanceId,
         },
       },
       spanProcessor: new BatchSpanProcessor(
-        new TraceExporter({
+        new CloudTraceTraceExporter({
           resourceFilter: /^service\./,
         })
       ),
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: new CloudMonitoringMetricExporter(),
+        exportIntervalMillis: 10000,
+      }),
     }))
   })
 )

@@ -161,8 +161,6 @@ const otel = Layer.unwrapEffect(
 
     const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
-    console.log('Detected otel resource:', resource)
-    console.log('Detected cloud run instance ID:', instanceId)
 
     yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({

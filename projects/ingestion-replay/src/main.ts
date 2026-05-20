@@ -10,8 +10,11 @@ import {
 } from 'effect'
 import { NodeRuntime } from '@effect/platform-node'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSdk } from '@effect/opentelemetry'
-import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
+import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
 import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
@@ -88,20 +91,28 @@ const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
 const otel = Layer.unwrapEffect(
   Effect.gen(function* () {
     const serviceName = yield* OtelServiceNameConfig
+
+    const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
     return NodeSdk.layer(() => ({
       resource: {
+        ...resource,
         serviceName,
         attributes: {
+          ...resource.attributes,
           'service.instance.id': instanceId,
         },
       },
       spanProcessor: new BatchSpanProcessor(
-        new TraceExporter({
+        new CloudTraceTraceExporter({
           resourceFilter: /^service\./,
         })
       ),
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: new CloudMonitoringMetricExporter(),
+        exportIntervalMillis: 10000,
+      }),
     }))
   })
 )

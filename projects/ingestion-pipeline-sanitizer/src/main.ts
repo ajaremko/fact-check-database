@@ -2,8 +2,11 @@ import { Config, Effect, Logger, Layer, LogLevel } from 'effect'
 import { NodeRuntime, NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
-import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
+import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as HttpServerMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/HttpServerMessageQueueFeeder'
 import * as FilesystemMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/FileSystemMessageQueueFeeder'
@@ -121,21 +124,28 @@ const otel = Layer.unwrapEffect(
       }))
     }
 
+    const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
     yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
+        ...resource,
         serviceName,
         attributes: {
+          ...resource.attributes,
           'service.instance.id': instanceId,
         },
       },
       spanProcessor: new BatchSpanProcessor(
-        new TraceExporter({
+        new CloudTraceTraceExporter({
           resourceFilter: /^service\./,
         })
       ),
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: new CloudMonitoringMetricExporter(),
+        exportIntervalMillis: 10000,
+      }),
     }))
   })
 )
