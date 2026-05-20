@@ -16,3 +16,15 @@ import {
 export const ingestorJobSchedulerName = ingestorJobScheduler.name
 export const ingestorInvokerServiceAccountEmail =
   ingestorInvokerServiceAccount.email
+
+import {
+  ingestorRequestFailuresMetric,
+  ingestorResponseCodeFrequencyMetric,
+  ingestorRequestsMetric,
+} from './metrics'
+
+export const ingestorRequestsMetricName = ingestorRequestsMetric.name
+export const ingestorRequestFailuresMetricName =
+  ingestorRequestFailuresMetric.name
+export const ingestorResponseCodeFrequencyMetricName =
+  ingestorResponseCodeFrequencyMetric.name

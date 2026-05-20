@@ -4,7 +4,7 @@ import * as pulumi from '@pulumi/pulumi'
 import { assetsBucketName } from '../../assets'
 import { provider } from '../../project'
 import { archiveBucketName } from '../../archive'
-import { tag } from '../../config'
+import { gcpProject, tag } from '../../config'
 
 import { sanitizerTopic } from './topic'
 
@@ -42,6 +42,36 @@ export const sanitizerTopicPublisher = new gcp.pubsub.TopicIAMMember(
   {
     topic: sanitizerTopic.name,
     role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const cloudtraceAgent = new gcp.projects.IAMMember(
+  `${tag}-sanitizer-trace-agent`,
+  {
+    project: gcpProject,
+    role: 'roles/cloudtrace.agent',
+    member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const telemetryTracesWriter = new gcp.projects.IAMMember(
+  `${tag}-sanitizer-telemetry-traces-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/telemetry.tracesWriter',
+    member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const monitoringMetricWriter = new gcp.projects.IAMMember(
+  `${tag}-sanitizer-monitoring-metric-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/monitoring.metricWriter',
     member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
   },
   { provider }

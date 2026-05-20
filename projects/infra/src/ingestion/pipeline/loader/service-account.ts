@@ -46,3 +46,33 @@ export const loaderBigQueryJobUser = new gcp.projects.IAMMember(
   },
   { provider }
 )
+
+export const cloudtraceAgent = new gcp.projects.IAMMember(
+  `${tag}-loader-trace-agent`,
+  {
+    project: gcpProject,
+    role: 'roles/cloudtrace.agent',
+    member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const telemetryTracesWriter = new gcp.projects.IAMMember(
+  `${tag}-loader-telemetry-traces-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/telemetry.tracesWriter',
+    member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
+  },
+  { provider }
+)
+
+export const monitoringMetricWriter = new gcp.projects.IAMMember(
+  `${tag}-loader-monitoring-metric-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/monitoring.metricWriter',
+    member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
+  },
+  { provider }
+)

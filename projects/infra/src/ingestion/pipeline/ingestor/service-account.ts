@@ -66,3 +66,13 @@ export const telemetryTracesWriter = new gcp.projects.IAMMember(
   },
   { provider }
 )
+
+export const monitoringMetricWriter = new gcp.projects.IAMMember(
+  `${tag}-ingestor-monitoring-metric-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/monitoring.metricWriter',
+    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
+  },
+  { provider }
+)

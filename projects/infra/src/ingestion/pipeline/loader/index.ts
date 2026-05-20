@@ -15,3 +15,7 @@ export const loaderInvokerServiceAccountEmail =
 import { loaderService } from './service'
 
 export const loaderServiceName = loaderService.name
+
+import { loaderBatchesLoadedMetric } from './metrics'
+
+export const loaderBatchesLoadedMetricName = loaderBatchesLoadedMetric.name

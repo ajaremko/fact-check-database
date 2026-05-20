@@ -14,7 +14,7 @@ config:
   ingestion:project: news-research-dev
   ingestion:region: us-central1
   ingestion:archiveLocation: US
-  ingestion:tag: dev-245
+  ingestion:tag: dev-251
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
   ingestion:logLevel: debug

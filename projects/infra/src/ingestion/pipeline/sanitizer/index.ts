@@ -22,3 +22,8 @@ export const sanitizerServiceName = sanitizerService.name
 import { sanitizerServiceAccount } from './service-account'
 
 export const sanitizerServiceAccountEmail = sanitizerServiceAccount.email
+
+import { sanitizerDecisionLabelMetric } from './metrics'
+
+export const sanitizerDecisionLabelMetricName =
+  sanitizerDecisionLabelMetric.name
