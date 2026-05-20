@@ -111,7 +111,7 @@ const otel = Layer.unwrapEffect(
       ),
       metricReader: new PeriodicExportingMetricReader({
         exporter: new CloudMonitoringMetricExporter(),
-        exportIntervalMillis: 10000,
+        exportIntervalMillis: 1 * 60 * 1000,
       }),
     }))
   })

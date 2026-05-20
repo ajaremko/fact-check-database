@@ -4,9 +4,10 @@ import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
-import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
+// import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as HttpServerMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/HttpServerMessageQueueFeeder'
 import * as FilesystemMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/FileSystemMessageQueueFeeder'
@@ -121,19 +122,23 @@ const otel = Layer.unwrapEffect(
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
+        metricReader: new PeriodicExportingMetricReader({
+          exporter: new OTLPMetricExporter(),
+          exportIntervalMillis: 1 * 60 * 1000,
+        }),
       }))
     }
 
-    const resource = new GcpDetectorSync().detect()
+    // const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
     yield* Effect.logDebug('Using gcp otel configuration')
     return NodeSdk.layer(() => ({
       resource: {
-        ...resource,
+        // ...resource,
         serviceName,
         attributes: {
-          ...resource.attributes,
+          // ...resource.attributes,
           'service.instance.id': instanceId,
         },
       },
@@ -144,7 +149,7 @@ const otel = Layer.unwrapEffect(
       ),
       metricReader: new PeriodicExportingMetricReader({
         exporter: new CloudMonitoringMetricExporter(),
-        exportIntervalMillis: 10000,
+        exportIntervalMillis: 1 * 60 * 1000,
       }),
     }))
   })

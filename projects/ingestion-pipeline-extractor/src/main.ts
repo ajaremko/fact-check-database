@@ -123,7 +123,7 @@ const otel = Layer.unwrapEffect(
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
         metricReader: new PeriodicExportingMetricReader({
           exporter: new OTLPMetricExporter(),
-          exportIntervalMillis: 5000,
+          exportIntervalMillis: 1 * 60 * 1000,
         }),
       }))
     }
@@ -148,7 +148,7 @@ const otel = Layer.unwrapEffect(
       ),
       metricReader: new PeriodicExportingMetricReader({
         exporter: new CloudMonitoringMetricExporter(),
-        exportIntervalMillis: 10000,
+        exportIntervalMillis: 1 * 60 * 1000,
       }),
     }))
   })
