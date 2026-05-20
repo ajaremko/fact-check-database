@@ -53,15 +53,15 @@ const requestCounter = Metric.counter('ingestion.pipeline.ingest.requests', {
   description: 'Counts the number of requests made to all sources',
 })
 
-const requestResponseCodeFrequency = Metric.frequency(
-  'ingestion.pipeline.ingest.responseStatusCodes'
-)
-
 const requestFailureCounter = Metric.counter(
   'ingestion.pipeline.ingest.requestFailures',
   {
     description: 'Counts the number of failed requests',
   }
+)
+
+const requestResponseCodeFrequency = Metric.frequency(
+  'ingestion.pipeline.ingest.responseStatusCodes'
 )
 
 export const ingestFromSource = Effect.fn('ingestFromSource')(
@@ -187,6 +187,12 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
   (effect, args) =>
     effect.pipe(
       Effect.annotateLogs({
+        'source.id': args.source.id,
+        'source.name': args.source.name,
+        'source.url': args.source.url,
+        'source.collection': args.source.collection,
+      }),
+      Effect.tagMetrics({
         'source.id': args.source.id,
         'source.name': args.source.name,
         'source.url': args.source.url,

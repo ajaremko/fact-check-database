@@ -55,9 +55,7 @@ const decodeArgs = Schema.decodeSync(
   })
 )
 
-const decisionLabelFrequency = Metric.frequency(
-  'ingestion.pipeline.sanitize.decisionLabels'
-)
+const decisionLabelFrequency = Metric.frequency('sanitize_decision_labels')
 
 export const sanitizeObservation = Effect.fn('sanitizeObservation')(
   function* (args: {

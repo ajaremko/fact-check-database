@@ -37,6 +37,9 @@ const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
   Config.orElse(() => Config.string('SERVICE_NAME'))
 )
 const OtelExportIntervalConfig = Config.integer('OTEL_METRIC_EXPORT_INTERVAL')
+const OtelCloudMonitoringPrefixConfig = Config.string(
+  'OTEL_CLOUD_MONITORING_PREFIX'
+)
 
 const otel = Layer.unwrapEffect(
   Effect.gen(function* () {
@@ -44,6 +47,11 @@ const otel = Layer.unwrapEffect(
     const exportIntervalMillis = yield* Config.withDefault(
       OtelExportIntervalConfig,
       1 * 60 * 1000
+    )
+
+    const prefix = yield* Config.withDefault(
+      OtelCloudMonitoringPrefixConfig,
+      'custom.googleapis.com/pipeline/'
     )
 
     const resource = new GcpDetectorSync().detect()
@@ -64,7 +72,9 @@ const otel = Layer.unwrapEffect(
         })
       ),
       metricReader: new PeriodicExportingMetricReader({
-        exporter: new CloudMonitoringMetricExporter(),
+        exporter: new CloudMonitoringMetricExporter({
+          prefix,
+        }),
         exportIntervalMillis,
       }),
     }))

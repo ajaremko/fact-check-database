@@ -19,7 +19,7 @@ const decodeObservation = pipe(
 const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
 
 const extractedFactCheckRowsCounter = Metric.counter(
-  'ingestion.pipeline.extract.extractedFactCheckRows',
+  'extracted_fact_check_rows',
   {
     description: 'Counts the number of fact check rows extracted',
   }

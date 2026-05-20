@@ -4,12 +4,9 @@ import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQue
 
 import { FilePointer } from '../shared'
 
-const batchesLoadedCounter = Metric.counter(
-  'ingestion.pipeline.load.batchesLoaded',
-  {
-    description: 'Counts the number of batches loaded into BigQuery',
-  }
-)
+const batchesLoadedCounter = Metric.counter('loaded_batches', {
+  description: 'Counts the number of batches loaded into BigQuery',
+})
 
 export const loadBatch = Effect.fn('loadBatch')(
   function* (input: {
@@ -48,6 +45,10 @@ export const loadBatch = Effect.fn('loadBatch')(
         'batch.datasetId': input.table.dataset,
         'batch.bucket': input.pointer.bucket,
         'batch.object': input.pointer.object,
+      }),
+      Effect.tagMetrics({
+        'batch.tableId': input.table.table,
+        'batch.datasetId': input.table.dataset,
       }),
       Effect.withSpan('loadBatch')
     )
