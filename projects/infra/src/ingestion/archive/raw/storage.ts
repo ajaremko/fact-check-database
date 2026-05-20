@@ -1,19 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcsArchiveKeyId } from '../../core'
+import { gcsArchiveKeyId } from '../../../core'
 
-import {
-  gcpRegion,
-  ingestionLabels,
-  tag,
-  gcpProject,
-  retainStorageOnDelete,
-  forceDestroyStorage,
-  eventLogRetentionDays,
-} from '../config'
-import { storageService } from '../services'
-import { provider } from '../project'
+import { gcpRegion, ingestionLabels, tag, gcpProject } from '../../config'
+import { storageService } from '../../services'
+import { provider } from '../../project'
 
 const storageServiceAccount = gcp.storage.getProjectServiceAccountOutput(
   {

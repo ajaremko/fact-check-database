@@ -6,10 +6,10 @@ import {
   gcpRegion,
   retainStorageOnDelete,
   deadletterSoftDeleteDays,
-} from '../config'
-import { ingestionLabels, tag } from '../config'
-import { storageService } from '../services'
-import { provider } from '../project'
+} from '../../config'
+import { ingestionLabels, tag } from '../../config'
+import { storageService } from '../../services'
+import { provider } from '../../project'
 
 export const deadletterBucket = new gcp.storage.Bucket(
   `${tag}-deadletter-bucket`,

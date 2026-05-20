@@ -1,0 +1,164 @@
+import * as pulumi from '@pulumi/pulumi'
+
+// import {
+//   extractorBatchesWrittenCounterMetricName,
+//   extractorFactCheckRowCounterMetricName,
+//   extractorRowsPerBatchHistogramMetricName,
+// } from './extractor'
+import {
+  ingestorRequestCounterMetricName,
+  ingestorRequestFailureCounterMetricName,
+  ingestorResponseCodeFrequencyMetricName,
+} from './ingestor'
+// import { loaderBatchesLoadedCounterMetricName } from './loader'
+// import { sanitizerDecisionLabelFrequencyMetricName } from './sanitizer'
+import { stagingBucketName } from './staging'
+
+const totalHttpRequestsWidget = ingestorRequestCounterMetricName.apply(
+  (name) => ({
+    title: 'Total HTTP Requests',
+    id: '',
+    scorecard: {
+      breakdowns: [],
+      dimensions: [],
+      measures: [],
+      sparkChartView: {
+        sparkChartType: 'SPARK_LINE',
+      },
+      thresholds: [],
+      timeSeriesQuery: {
+        outputFullDuration: true,
+        timeSeriesFilter: {
+          aggregation: {
+            alignmentPeriod: '60s',
+            crossSeriesReducer: 'REDUCE_SUM',
+            groupByFields: [],
+            perSeriesAligner: 'ALIGN_MEAN',
+          },
+          filter: `
+            metric.type="${name}" 
+            resource.type="generic_task"`,
+        },
+        unitOverride: '',
+      },
+    },
+  })
+)
+
+const interval = '[${__interval}]'
+
+const percentFailedRequestsWidget = pulumi
+  .all({
+    failureCounterMetricName: ingestorRequestFailureCounterMetricName,
+    counterMetricName: ingestorRequestCounterMetricName,
+  })
+  .apply(({ failureCounterMetricName, counterMetricName }) => ({
+    title: 'Percent Failed Requests',
+    scorecard: {
+      sparkChartView: {
+        minAlignmentPeriod: '60s',
+        sparkChartType: 'SPARK_LINE',
+      },
+      thresholds: [
+        {
+          color: 'YELLOW',
+          direction: 'ABOVE',
+          targetAxis: 'Y1',
+          value: 0,
+        },
+      ],
+      timeSeriesQuery: {
+        outputFullDuration: true,
+        prometheusQuery: `
+          sum(avg_over_time({"__name__"="${failureCounterMetricName}","monitored_resource"="generic_task"}${interval}))
+          /
+          sum(avg_over_time({"__name__"="${counterMetricName}","monitored_resource"="generic_task"}${interval}))
+          * 100`,
+      },
+    },
+  }))
+
+const httpResponseStatusesWidget =
+  ingestorResponseCodeFrequencyMetricName.apply((name) => ({
+    title: 'HTTP Response Statuses',
+    xyChart: {
+      chartOptions: {
+        displayHorizontal: false,
+        mode: 'COLOR',
+      },
+      dataSets: [
+        {
+          minAlignmentPeriod: '60s',
+          plotType: 'LINE',
+          targetAxis: 'Y1',
+          timeSeriesQuery: {
+            timeSeriesFilter: {
+              aggregation: {
+                alignmentPeriod: '60s',
+                groupByFields: [],
+                perSeriesAligner: 'ALIGN_RATE',
+              },
+              filter: `
+                metric.type="${name}" 
+                resource.type="generic_task"`,
+            },
+          },
+        },
+      ],
+      thresholds: [],
+      yAxis: {
+        scale: 'LINEAR',
+      },
+    },
+  }))
+
+const stagingSizeWidget = stagingBucketName.apply((name) => ({
+  title: 'Staging Storage Total Bytes',
+  id: '',
+  scorecard: {
+    breakdowns: [],
+    dimensions: [],
+    measures: [],
+    sparkChartView: {
+      sparkChartType: 'SPARK_LINE',
+    },
+    thresholds: [],
+    timeSeriesQuery: {
+      outputFullDuration: false,
+      timeSeriesFilter: {
+        aggregation: {
+          alignmentPeriod: '60s',
+          crossSeriesReducer: 'REDUCE_SUM',
+          groupByFields: [],
+          perSeriesAligner: 'ALIGN_MEAN',
+        },
+        filter: `
+          metric.type="storage.googleapis.com/storage/v2/total_bytes" 
+          resource.type="gcs_bucket" 
+          resource.label."bucket_name"="${name}"`,
+      },
+      unitOverride: '',
+    },
+  },
+}))
+
+export const pipelineWidgets = pulumi
+  .all<object>([
+    totalHttpRequestsWidget,
+    percentFailedRequestsWidget,
+    httpResponseStatusesWidget,
+    stagingSizeWidget,
+  ])
+  .apply(
+    ([
+      totalHttpRequests,
+      percentFailedRequests,
+      httpResponseStatuses,
+      stagingSize,
+    ]) => ({
+      totalHttpRequests,
+      percentFailedRequests,
+      httpResponseStatuses,
+      stagingSize,
+    })
+  )

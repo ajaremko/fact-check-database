@@ -16,6 +16,7 @@ import { loaderService } from './service'
 
 export const loaderServiceName = loaderService.name
 
-import { loaderBatchesLoadedMetric } from './metrics'
+import { loaderBatchesLoadedCounterMetric } from './metrics'
 
-export const loaderBatchesLoadedMetricName = loaderBatchesLoadedMetric.name
+export const loaderBatchesLoadedCounterMetricName =
+  loaderBatchesLoadedCounterMetric.name

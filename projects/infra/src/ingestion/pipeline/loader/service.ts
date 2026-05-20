@@ -5,7 +5,7 @@ import { analysisGcpProject } from '../../../analysis'
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
 import { cloudRunService } from '../../services'
 import { provider } from '../../project'
-import { stagingBucketName } from '../../staging'
+import { stagingBucketName } from '../staging'
 import { archiveBucketName } from '../../archive'
 import { getImageUrl } from '../getImageUrl'
 

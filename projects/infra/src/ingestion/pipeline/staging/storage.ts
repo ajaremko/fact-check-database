@@ -6,27 +6,24 @@ import {
   tag,
   retainStorageOnDelete,
   forceDestroyStorage,
-  eventLogRetentionDays,
-} from '../config'
-import { storageService } from '../services'
-import { provider } from '../project'
+  batchRetentionDays,
+} from '../../config'
+import { storageService } from '../../services'
+import { provider } from '../../project'
 
-export const eventLogBucket = new gcp.storage.Bucket(
-  `${tag}-event-log-bucket`,
+export const stagingBucket = new gcp.storage.Bucket(
+  `${tag}-staging-bucket`,
   {
     location: gcpRegion,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
     labels: ingestionLabels,
     forceDestroy: forceDestroyStorage,
-    lifecycleRules: eventLogRetentionDays
+    lifecycleRules: batchRetentionDays
       ? [
           {
             action: { type: 'Delete' },
-            condition: {
-              matchesPrefixes: ['sanitizer-events/', 'extractor-events/'],
-              age: eventLogRetentionDays,
-            },
+            condition: { age: batchRetentionDays },
           },
         ]
       : undefined,

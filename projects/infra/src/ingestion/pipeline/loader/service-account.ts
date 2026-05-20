@@ -5,7 +5,7 @@ import { stagingDatasetId } from '../../../analysis'
 
 import { gcpProject, tag } from '../../config'
 import { provider } from '../../project'
-import { stagingBucketName } from '../../staging'
+import { stagingBucketName } from '../staging'
 
 export const loaderServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-loader-sa`,

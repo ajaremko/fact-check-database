@@ -26,7 +26,7 @@ const labels = [
   },
 ]
 
-export const ingestorRequestsMetric = new gcp.monitoring.MetricDescriptor(
+export const ingestorRequestCounterMetric = new gcp.monitoring.MetricDescriptor(
   `${tag}-pipeline-ingestor-requests`,
   {
     type: 'custom.googleapis.com/pipeline/ingest_http_requests',
@@ -39,7 +39,7 @@ export const ingestorRequestsMetric = new gcp.monitoring.MetricDescriptor(
   { provider }
 )
 
-export const ingestorRequestFailuresMetric =
+export const ingestorRequestFailureCounterMetric =
   new gcp.monitoring.MetricDescriptor(
     `${tag}-pipeline-ingestor-request-failures`,
     {

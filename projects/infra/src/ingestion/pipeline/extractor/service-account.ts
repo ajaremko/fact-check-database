@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, tag } from '../../config'
 import { archiveBucketName } from '../../archive'
-import { stagingBucketName } from '../../staging'
+import { stagingBucketName } from '../staging'
 import { provider } from '../../project'
 
 import { extractorSubscription } from './subscription'

@@ -22,13 +22,14 @@ import { extractorJob } from './job'
 export const extractorJobName = extractorJob.name
 
 import {
-  extractorBatchesWrittenMetric,
-  extractorFactCheckRowsMetric,
-  extractorRowsPerBatchMetric,
+  extractorBatchesWrittenCounterMetric,
+  extractorFactCheckRowCounterMetric,
+  extractorRowsPerBatchHistogramMetric,
 } from './metrics'
 
-export const extractorFactCheckRowsMetricName =
-  extractorFactCheckRowsMetric.name
-export const extractorBatchesWrittenMetricName =
-  extractorBatchesWrittenMetric.name
-export const extractorRowsPerBatchMetricName = extractorRowsPerBatchMetric.name
+export const extractorFactCheckRowCounterMetricName =
+  extractorFactCheckRowCounterMetric.name
+export const extractorBatchesWrittenCounterMetricName =
+  extractorBatchesWrittenCounterMetric.name
+export const extractorRowsPerBatchHistogramMetricName =
+  extractorRowsPerBatchHistogramMetric.name
