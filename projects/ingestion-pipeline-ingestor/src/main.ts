@@ -9,8 +9,8 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
-import { TraceExporter as CloudTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
-import { MetricExporter as CloudMonitoringExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
+import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
+import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 
 import * as HttpClientFetcher from '@news-research/ingestion-pipeline/ingest/adapters/HttpClientFetcher'
 import * as CloudPubsubPublisher from '@news-research/ingestion-messaging/adapters/CloudPubsubPublisher'
@@ -169,13 +169,13 @@ const otel = Layer.unwrapEffect(
         },
       },
       spanProcessor: new BatchSpanProcessor(
-        new CloudTraceExporter({
+        new CloudTraceTraceExporter({
           resourceFilter: /^service\./,
         })
       ),
       metricReader: new PeriodicExportingMetricReader({
-        exporter: new CloudMonitoringExporter(),
-        exportIntervalMillis: 5000,
+        exporter: new CloudMonitoringMetricExporter(),
+        exportIntervalMillis: 10000,
       }),
     }))
   })

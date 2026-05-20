@@ -49,22 +49,27 @@ const decodeContext = Schema.decodeUnknownSync(
   })
 )
 
-const requestCounter = Metric.counter('ingestFromSource.requests', {
-  description: 'Counts the number of requests made to all sources',
-})
+const requestCounter = Metric.counter(
+  'ingestion.pipeline.ingest.fetchRequests',
+  {
+    description: 'Counts the number of requests made to all sources',
+  }
+)
 
 // const statusCodes = Object.values(StatusCodes).filter(
 //   (code): code is number => typeof code === 'number'
 // )
 
-const requestResponseCodes = Metric.counter(
-  'ingestFromSource.responseCodes',
-  {}
-)
+// const requestResponseCodes = Metric.counter(
+//   'ingestion.pipeline.ingest.fetchFailures'
+// )
 
-const fetchFailures = Metric.counter('ingestFromSource.fetchFailures', {
-  description: 'Counts the number of failed fetches',
-})
+const fetchFailures = Metric.counter(
+  'ingestion.pipeline.ingest.fetchFailures',
+  {
+    description: 'Counts the number of failed fetches',
+  }
+)
 
 export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
@@ -127,7 +132,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Record the response code for both successes and failures to
     // allow monitoring of source health
-    yield* requestResponseCodes(Effect.succeed(result.status))
+    // yield* requestResponseCodes(Effect.succeed(result.status))
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
