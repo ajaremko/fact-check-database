@@ -41,6 +41,8 @@ function processFile(file: StorageBucket.File) {
     yield* Effect.logInfo(`Publishing data from file: ${file.name}`)
     const [data] = yield* StorageBucket.downloadFile(file.name)
     yield* PubsubTopic.publishMessage({ data })
+    console.log(`----- ${file.name} -----`)
+    console.log(data.toString())
 
     const ctx = yield* JobContext
     if (ctx.destination) {
