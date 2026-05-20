@@ -36,10 +36,15 @@ const logger = Layer.empty.pipe(
 const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
   Config.orElse(() => Config.string('SERVICE_NAME'))
 )
+const OtelExportIntervalConfig = Config.integer('OTEL_METRIC_EXPORT_INTERVAL')
 
 const otel = Layer.unwrapEffect(
   Effect.gen(function* () {
     const serviceName = yield* OtelServiceNameConfig
+    const exportIntervalMillis = yield* Config.withDefault(
+      OtelExportIntervalConfig,
+      1 * 60 * 1000
+    )
 
     const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
@@ -60,7 +65,7 @@ const otel = Layer.unwrapEffect(
       ),
       metricReader: new PeriodicExportingMetricReader({
         exporter: new CloudMonitoringMetricExporter(),
-        exportIntervalMillis: 1 * 60 * 1000,
+        exportIntervalMillis,
       }),
     }))
   })

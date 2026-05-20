@@ -141,11 +141,16 @@ const OtelModeConfig = Config.literal('gcp', 'local')('OTEL_MODE')
 const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
   Config.orElse(() => Config.string('SERVICE_NAME'))
 )
+const OtelExportIntervalConfig = Config.integer('OTEL_METRIC_EXPORT_INTERVAL')
 
 const otel = Layer.unwrapEffect(
   Effect.gen(function* () {
     const otelMode = yield* Config.withDefault(OtelModeConfig, 'gcp')
     const serviceName = yield* OtelServiceNameConfig
+    const exportIntervalMillis = yield* Config.withDefault(
+      OtelExportIntervalConfig,
+      1 * 60 * 1000
+    )
 
     if (otelMode === 'local') {
       yield* Effect.logDebug('Using local otel configuration')
@@ -154,7 +159,7 @@ const otel = Layer.unwrapEffect(
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
         metricReader: new PeriodicExportingMetricReader({
           exporter: new OTLPMetricExporter(),
-          exportIntervalMillis: 1 * 60 * 1000,
+          exportIntervalMillis,
         }),
       }))
     }
@@ -179,7 +184,7 @@ const otel = Layer.unwrapEffect(
       ),
       metricReader: new PeriodicExportingMetricReader({
         exporter: new CloudMonitoringMetricExporter(),
-        exportIntervalMillis: 1 * 60 * 1000,
+        exportIntervalMillis,
       }),
     }))
   })
