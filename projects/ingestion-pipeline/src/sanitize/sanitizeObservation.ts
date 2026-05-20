@@ -1,4 +1,4 @@
-import { Effect, pipe, Schema } from 'effect'
+import { Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -55,6 +55,10 @@ const decodeArgs = Schema.decodeSync(
   })
 )
 
+const decisionLabelFrequency = Metric.frequency(
+  'ingestion.pipeline.sanitize.decisionLabels'
+)
+
 export const sanitizeObservation = Effect.fn('sanitizeObservation')(
   function* (args: {
     policy: SanitizerPolicy
@@ -69,6 +73,8 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
 
     yield* Effect.logDebug(`Evaluating policy for observation`)
     const decision = evaluatePolicy(ctx.policy, observation)
+
+    yield* decisionLabelFrequency(Effect.succeed(decision.label))
 
     yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({

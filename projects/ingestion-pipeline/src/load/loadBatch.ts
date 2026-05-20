@@ -1,8 +1,15 @@
-import { Effect } from 'effect'
+import { Effect, Metric } from 'effect'
 
 import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQueryClient'
 
 import { FilePointer } from '../shared'
+
+const batchesLoadedCounter = Metric.counter(
+  'ingestion.pipeline.load.batchesLoaded',
+  {
+    description: 'Counts the number of batches loaded into BigQuery',
+  }
+)
 
 export const loadBatch = Effect.fn('loadBatch')(
   function* (input: {
@@ -32,6 +39,7 @@ export const loadBatch = Effect.fn('loadBatch')(
       },
     })
     yield* BigQueryClient.awaitJob(job)
+    yield* Metric.increment(batchesLoadedCounter)
   },
   (effect, input) =>
     effect.pipe(

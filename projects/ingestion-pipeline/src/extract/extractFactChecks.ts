@@ -1,4 +1,4 @@
-import { Array, Effect, pipe, Schema } from 'effect'
+import { Array, Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -17,6 +17,13 @@ const decodeObservation = pipe(
 )
 
 const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
+
+const extractedFactCheckRowsCounter = Metric.counter(
+  'ingestion.pipeline.extract.extractedFactCheckRows',
+  {
+    description: 'Counts the number of fact check rows extracted',
+  }
+)
 
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
@@ -110,6 +117,8 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
       )
 
     const rows = yield* encodeFactCheckRows(factChecks)
+    yield* Metric.incrementBy(extractedFactCheckRowsCounter, rows.length)
+
     return rows
   },
   (effect, ctx) =>

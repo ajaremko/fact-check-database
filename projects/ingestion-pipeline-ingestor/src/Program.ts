@@ -1,13 +1,4 @@
-import {
-  Array,
-  Clock,
-  Context,
-  Effect,
-  Metric,
-  Option,
-  pipe,
-  Schema,
-} from 'effect'
+import { Array, Clock, Context, Effect, Option, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import { ingestFromSource } from '@news-research/ingestion-pipeline/ingest'
@@ -31,19 +22,10 @@ const encodeOutgoing = pipe(
   Schema.encode
 )
 
-const requestCounter = Metric.counter(
-  'ingestion.pipeline.ingestor.fetchRequests',
-  {
-    description: 'Counts the number of requests made to all sources',
-  }
-)
-
 function processTarget(source: Source, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
     const timestamp = yield* Clock.currentTimeMillis
-
-    yield* Metric.increment(requestCounter)
 
     // ingest from target and publish event
     yield* Effect.logDebug(`Processing target ${index + 1}`)

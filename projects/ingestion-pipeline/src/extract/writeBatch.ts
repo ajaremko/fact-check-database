@@ -1,4 +1,4 @@
-import { Effect, pipe, Schema } from 'effect'
+import { Effect, Metric, MetricBoundaries, pipe, Schema } from 'effect'
 
 import * as Ndjson from '@news-research/ingestion-data/Ndjson'
 import * as Node from '@news-research/ingestion-data/Node'
@@ -21,6 +21,18 @@ const encodeNdjson = pipe(
 const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
+const batchesWrittenCounter = Metric.counter(
+  'ingestion.pipeline.extract.batchesWritten',
+  {
+    description: 'Counts the number of extraction batches written',
+  }
+)
+
+const rowsPerBatchHistogram = Metric.histogram(
+  'ingestion.pipeline.extract.rowsPerBatch',
+  MetricBoundaries.exponential({ start: 1, factor: 2, count: 20 })
+)
+
 export const writeBatch = Effect.fn('writeBatch')(
   function* (input: {
     runId: string
@@ -41,6 +53,7 @@ export const writeBatch = Effect.fn('writeBatch')(
       data,
       contentType: 'application/x-ndjson',
     })
+
     const batch = ExtractionBatchSchema.make({
       batchId: input.runId,
       extractedAt: input.timestamp,
@@ -51,6 +64,10 @@ export const writeBatch = Effect.fn('writeBatch')(
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })
+
+    yield* Metric.increment(batchesWrittenCounter)
+    yield* rowsPerBatchHistogram(Effect.succeed(input.rows.length))
+
     return yield* encodeExtractionBatchEvent(batch)
   },
   (effect, input) =>

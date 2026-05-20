@@ -53,11 +53,11 @@ const requestCounter = Metric.counter('ingestion.pipeline.ingest.requests', {
   description: 'Counts the number of requests made to all sources',
 })
 
-const requestResponseCodes = Metric.frequency(
+const requestResponseCodeFrequency = Metric.frequency(
   'ingestion.pipeline.ingest.responseStatusCodes'
 )
 
-const fetchFailures = Metric.counter(
+const requestFailureCounter = Metric.counter(
   'ingestion.pipeline.ingest.requestFailures',
   {
     description: 'Counts the number of failed requests',
@@ -87,7 +87,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     if (result._tag === 'FetchFailure') {
       // Record the failure for monitoring purposes
       yield* Effect.logWarning(`Fetch failed: ${result.error}`)
-      yield* Metric.increment(fetchFailures)
+      yield* Metric.increment(requestFailureCounter)
       // For a failed fetch, we won't have a body to archive,
       // so we can skip straight to creating an observation
       // with no pointer to a body
@@ -125,7 +125,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Record the response code for both successes and failures to
     // allow monitoring of source health
-    yield* requestResponseCodes(Effect.succeed(String(result.status)))
+    yield* requestResponseCodeFrequency(Effect.succeed(String(result.status)))
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
