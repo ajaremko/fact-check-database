@@ -51,7 +51,7 @@ const otel = Layer.unwrapEffect(
 
     const prefix = yield* Config.withDefault(
       OtelCloudMonitoringPrefixConfig,
-      'custom.googleapis.com/pipeline/'
+      'custom.googleapis.com/pipeline'
     )
 
     const resource = new GcpDetectorSync().detect()
