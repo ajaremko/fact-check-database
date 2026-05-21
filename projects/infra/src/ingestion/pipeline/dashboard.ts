@@ -1,16 +1,15 @@
 import * as pulumi from '@pulumi/pulumi'
 
-// import {
-//   extractorBatchesWrittenCounterMetricName,
-//   extractorFactCheckRowCounterMetricName,
-//   extractorRowsPerBatchHistogramMetricName,
-// } from './extractor'
+import {
+  extractorFactCheckRowCounterMetricType,
+  extractorBatchesWrittenCounterMetricType,
+} from './extractor'
 import {
   ingestorRequestCounterMetricType,
   ingestorRequestFailureCounterMetricType,
   ingestorResponseCodeFrequencyMetricType,
 } from './ingestor'
-// import { loaderBatchesLoadedCounterMetricName } from './loader'
+import { loaderBatchesLoadedCounterMetricType } from './loader'
 // import { sanitizerDecisionLabelFrequencyMetricName } from './sanitizer'
 import { stagingBucketName } from './staging'
 
@@ -136,12 +135,70 @@ const stagingSizeWidget = stagingBucketName.apply((name) => ({
   },
 }))
 
+const extractorBatchesWrittenWidget =
+  extractorBatchesWrittenCounterMetricType.apply((type) => ({
+    title: 'Extraction Batches Written',
+    id: '',
+    scorecard: {
+      breakdowns: [],
+      dimensions: [],
+      measures: [],
+      sparkChartView: {
+        sparkChartType: 'SPARK_LINE',
+      },
+      thresholds: [],
+      timeSeriesQuery: {
+        outputFullDuration: true,
+        timeSeriesFilter: {
+          aggregation: {
+            alignmentPeriod: '60s',
+            crossSeriesReducer: 'REDUCE_SUM',
+            groupByFields: [],
+            perSeriesAligner: 'ALIGN_MEAN',
+          },
+          filter: `metric.type="${type}" resource.type="generic_task"`,
+        },
+        unitOverride: '',
+      },
+    },
+  }))
+
+const extractorFactCheckRowsWidget =
+  extractorFactCheckRowCounterMetricType.apply((type) => ({
+    title: 'Fact Check Rows Extracted',
+    id: '',
+    scorecard: {
+      breakdowns: [],
+      dimensions: [],
+      measures: [],
+      sparkChartView: {
+        sparkChartType: 'SPARK_LINE',
+      },
+      thresholds: [],
+      timeSeriesQuery: {
+        outputFullDuration: true,
+        timeSeriesFilter: {
+          aggregation: {
+            alignmentPeriod: '60s',
+            crossSeriesReducer: 'REDUCE_SUM',
+            groupByFields: [],
+            perSeriesAligner: 'ALIGN_MEAN',
+          },
+          filter: `metric.type="${type}" resource.type="generic_task"`,
+        },
+        unitOverride: '',
+      },
+    },
+  }))
+
 export const pipelineWidgets = pulumi
   .all<object>([
     totalHttpRequestsWidget,
     percentFailedRequestsWidget,
     httpResponseStatusesWidget,
     stagingSizeWidget,
+    extractorBatchesWrittenWidget,
+    extractorFactCheckRowsWidget,
   ])
   .apply(
     ([
@@ -149,10 +206,14 @@ export const pipelineWidgets = pulumi
       percentFailedRequests,
       httpResponseStatuses,
       stagingSize,
+      batchesWritten,
+      factCheckRows,
     ]) => ({
       totalHttpRequests,
       percentFailedRequests,
       httpResponseStatuses,
       stagingSize,
+      batchesWritten,
+      factCheckRows,
     })
   )

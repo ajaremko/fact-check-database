@@ -23,7 +23,12 @@ import { sanitizerServiceAccount } from './service-account'
 
 export const sanitizerServiceAccountEmail = sanitizerServiceAccount.email
 
-import { sanitizerDecisionLabelFrequencyMetric } from './metrics'
+import {
+  sanitizerRecordsCounterMetric,
+  sanitizerDecisionLabelFrequencyMetric,
+} from './metrics'
 
+export const sanitizerRecordsCounterMetricType =
+  sanitizerRecordsCounterMetric.type
 export const sanitizerDecisionLabelFrequencyMetricType =
   sanitizerDecisionLabelFrequencyMetric.type

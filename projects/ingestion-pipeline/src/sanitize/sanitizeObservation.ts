@@ -57,6 +57,8 @@ const decodeArgs = Schema.decodeSync(
 
 const decisionLabelFrequency = Metric.frequency('sanitize_decision_labels')
 
+const recordsSanitizedCounter = Metric.counter('sanitize_records_sanitized')
+
 export const sanitizeObservation = Effect.fn('sanitizeObservation')(
   function* (args: {
     policy: SanitizerPolicy
@@ -73,6 +75,7 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
     const decision = evaluatePolicy(ctx.policy, observation)
 
     yield* decisionLabelFrequency(Effect.succeed(decision.label))
+    yield* Metric.increment(recordsSanitizedCounter)
 
     yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({

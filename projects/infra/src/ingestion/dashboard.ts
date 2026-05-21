@@ -81,6 +81,12 @@ const pipelineDashboardJson = pulumi
           widget: archive.eventLogSize,
         },
         {
+          xPos: 44,
+          height: 8,
+          width: 11,
+          widget: pipeline.batchesWritten,
+        },
+        {
           yPos: 8,
           height: 8,
           width: 22,
