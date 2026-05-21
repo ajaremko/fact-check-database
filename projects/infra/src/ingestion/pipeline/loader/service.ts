@@ -43,6 +43,10 @@ export const loaderService = new gcp.cloudrunv2.Service(
               name: 'GOOGLE_CLOUD_PROJECT',
               value: analysisGcpProject,
             },
+            {
+              name: 'OTEL_CLOUD_MONITORING_PREFIX',
+              value: 'workload.googleapis.com/pipeline/',
+            },
           ],
         },
       ],

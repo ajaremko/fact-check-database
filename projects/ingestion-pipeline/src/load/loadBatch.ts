@@ -4,7 +4,7 @@ import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQue
 
 import { FilePointer } from '../shared'
 
-const batchesLoadedCounter = Metric.counter('loaded_batches', {
+const batchesLoadedCounter = Metric.counter('pipeline/loaded_batches', {
   description: 'Counts the number of batches loaded into BigQuery',
 })
 

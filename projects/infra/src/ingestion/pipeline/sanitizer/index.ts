@@ -25,5 +25,5 @@ export const sanitizerServiceAccountEmail = sanitizerServiceAccount.email
 
 import { sanitizerDecisionLabelFrequencyMetric } from './metrics'
 
-export const sanitizerDecisionLabelFrequencyMetricName =
-  sanitizerDecisionLabelFrequencyMetric.name
+export const sanitizerDecisionLabelFrequencyMetricType =
+  sanitizerDecisionLabelFrequencyMetric.type

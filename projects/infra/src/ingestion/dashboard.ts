@@ -1,8 +1,8 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { archiveWidgets } from './archive'
-import { pipelineWidgets } from './pipeline'
+import { archiveWidgets } from './archive/dashboard'
+import { pipelineWidgets } from './pipeline/dashboard'
 import { tag } from './config'
 import { provider } from './project'
 
@@ -33,9 +33,7 @@ const unackedMessagesWidget = {
               groupByFields: [],
               perSeriesAligner: 'ALIGN_MEAN',
             },
-            filter: `
-              metric.type="pubsub.googleapis.com/subscription/num_undelivered_messages" 
-              resource.type="pubsub_subscription"`,
+            filter: `metric.type="pubsub.googleapis.com/subscription/num_undelivered_messages" resource.type="pubsub_subscription"`,
           },
           unitOverride: '',
         },
@@ -52,7 +50,7 @@ const unackedMessagesWidget = {
 const pipelineDashboardJson = pulumi
   .all([archiveWidgets, pipelineWidgets])
   .apply(([archive, pipeline]) => ({
-    displayName: 'Ingestion Dashboard',
+    displayName: 'Ingestion Dashboard (Pulumi)',
     dashboardFilters: [],
     description: 'Ingestion pipeline and operations monitoring',
     labels: {},
@@ -115,10 +113,6 @@ const pipelineDashboardJson = pulumi
 
 export const pipelineDashboard = new gcp.monitoring.Dashboard(
   `${tag}-pipeline-dashboard`,
-  {
-    dashboardJson: pipelineDashboardJson,
-  },
-  {
-    provider,
-  }
+  { dashboardJson: pipelineDashboardJson },
+  { provider }
 )

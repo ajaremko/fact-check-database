@@ -20,14 +20,10 @@ const archiveSizeWidget = archiveBucketName.apply((name) => ({
       timeSeriesFilter: {
         aggregation: {
           alignmentPeriod: '60s',
-          crossSeriesReducer: 'REDUCE_SUM',
           groupByFields: [],
           perSeriesAligner: 'ALIGN_MEAN',
         },
-        filter: `
-          metric.type="storage.googleapis.com/storage/v2/total_bytes" 
-          resource.type="gcs_bucket" 
-          resource.label."bucket_name"="${name}"`,
+        filter: `metric.type="storage.googleapis.com/storage/v2/total_bytes" resource.type="gcs_bucket" resource.label."bucket_name"="${name}"`,
       },
       unitOverride: '',
     },
@@ -58,7 +54,6 @@ const deadletterSizeWidget = deadletterBucketName.apply((name) => ({
       timeSeriesFilter: {
         aggregation: {
           alignmentPeriod: '60s',
-          crossSeriesReducer: 'REDUCE_SUM',
           groupByFields: [],
           perSeriesAligner: 'ALIGN_MEAN',
         },
@@ -85,7 +80,6 @@ const eventLogSizeWidget = eventLogBucketName.apply((name) => ({
       timeSeriesFilter: {
         aggregation: {
           alignmentPeriod: '60s',
-          crossSeriesReducer: 'REDUCE_SUM',
           groupByFields: [],
           perSeriesAligner: 'ALIGN_MEAN',
         },

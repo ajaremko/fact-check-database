@@ -6,16 +6,16 @@ import * as pulumi from '@pulumi/pulumi'
 //   extractorRowsPerBatchHistogramMetricName,
 // } from './extractor'
 import {
-  ingestorRequestCounterMetricName,
-  ingestorRequestFailureCounterMetricName,
-  ingestorResponseCodeFrequencyMetricName,
+  ingestorRequestCounterMetricType,
+  ingestorRequestFailureCounterMetricType,
+  ingestorResponseCodeFrequencyMetricType,
 } from './ingestor'
 // import { loaderBatchesLoadedCounterMetricName } from './loader'
 // import { sanitizerDecisionLabelFrequencyMetricName } from './sanitizer'
 import { stagingBucketName } from './staging'
 
-const totalHttpRequestsWidget = ingestorRequestCounterMetricName.apply(
-  (name) => ({
+const totalHttpRequestsWidget = ingestorRequestCounterMetricType.apply(
+  (type) => ({
     title: 'Total HTTP Requests',
     id: '',
     scorecard: {
@@ -35,9 +35,7 @@ const totalHttpRequestsWidget = ingestorRequestCounterMetricName.apply(
             groupByFields: [],
             perSeriesAligner: 'ALIGN_MEAN',
           },
-          filter: `
-            metric.type="${name}" 
-            resource.type="generic_task"`,
+          filter: `metric.type="${type}" resource.type="generic_task"`,
         },
         unitOverride: '',
       },
@@ -48,11 +46,11 @@ const totalHttpRequestsWidget = ingestorRequestCounterMetricName.apply(
 const interval = '[${__interval}]'
 
 const percentFailedRequestsWidget = pulumi
-  .all({
-    failureCounterMetricName: ingestorRequestFailureCounterMetricName,
-    counterMetricName: ingestorRequestCounterMetricName,
-  })
-  .apply(({ failureCounterMetricName, counterMetricName }) => ({
+  .all([
+    ingestorRequestFailureCounterMetricType,
+    ingestorRequestCounterMetricType,
+  ])
+  .apply(([failureCounter, counter]) => ({
     title: 'Percent Failed Requests',
     scorecard: {
       sparkChartView: {
@@ -70,16 +68,16 @@ const percentFailedRequestsWidget = pulumi
       timeSeriesQuery: {
         outputFullDuration: true,
         prometheusQuery: `
-          sum(avg_over_time({"__name__"="${failureCounterMetricName}","monitored_resource"="generic_task"}${interval}))
+          sum(avg_over_time({"__name__"="${failureCounter}","monitored_resource"="generic_task"}${interval}))
           /
-          sum(avg_over_time({"__name__"="${counterMetricName}","monitored_resource"="generic_task"}${interval}))
+          sum(avg_over_time({"__name__"="${counter}","monitored_resource"="generic_task"}${interval}))
           * 100`,
       },
     },
   }))
 
 const httpResponseStatusesWidget =
-  ingestorResponseCodeFrequencyMetricName.apply((name) => ({
+  ingestorResponseCodeFrequencyMetricType.apply((type) => ({
     title: 'HTTP Response Statuses',
     xyChart: {
       chartOptions: {
@@ -89,18 +87,17 @@ const httpResponseStatusesWidget =
       dataSets: [
         {
           minAlignmentPeriod: '60s',
-          plotType: 'LINE',
+          plotType: 'HEATMAP',
           targetAxis: 'Y1',
           timeSeriesQuery: {
             timeSeriesFilter: {
               aggregation: {
                 alignmentPeriod: '60s',
+                crossSeriesReducer: 'REDUCE_SUM',
                 groupByFields: [],
-                perSeriesAligner: 'ALIGN_RATE',
+                perSeriesAligner: 'ALIGN_SUM',
               },
-              filter: `
-                metric.type="${name}" 
-                resource.type="generic_task"`,
+              filter: `metric.type="${type}" resource.type="generic_task"`,
             },
           },
         },
@@ -132,10 +129,7 @@ const stagingSizeWidget = stagingBucketName.apply((name) => ({
           groupByFields: [],
           perSeriesAligner: 'ALIGN_MEAN',
         },
-        filter: `
-          metric.type="storage.googleapis.com/storage/v2/total_bytes" 
-          resource.type="gcs_bucket" 
-          resource.label."bucket_name"="${name}"`,
+        filter: `metric.type="storage.googleapis.com/storage/v2/total_bytes" resource.type="gcs_bucket" resource.label."bucket_name"="${name}"`,
       },
       unitOverride: '',
     },

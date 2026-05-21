@@ -7,7 +7,7 @@ export const loaderBatchesLoadedCounterMetric =
   new gcp.monitoring.MetricDescriptor(
     `${tag}-pipeline-loader-batches-loaded`,
     {
-      type: 'custom.googleapis.com/pipeline/loaded_batches',
+      type: 'workload.googleapis.com/pipeline/loaded_batches',
       description: 'Number of batches loaded into BigQuery',
       displayName: 'Loaded Batches count',
       metricKind: 'GAUGE',

@@ -27,9 +27,9 @@ import {
   extractorRowsPerBatchHistogramMetric,
 } from './metrics'
 
-export const extractorFactCheckRowCounterMetricName =
-  extractorFactCheckRowCounterMetric.name
-export const extractorBatchesWrittenCounterMetricName =
-  extractorBatchesWrittenCounterMetric.name
-export const extractorRowsPerBatchHistogramMetricName =
-  extractorRowsPerBatchHistogramMetric.name
+export const extractorFactCheckRowCounterMetricType =
+  extractorFactCheckRowCounterMetric.type
+export const extractorBatchesWrittenCounterMetricType =
+  extractorBatchesWrittenCounterMetric.type
+export const extractorRowsPerBatchHistogramMetricType =
+  extractorRowsPerBatchHistogramMetric.type

@@ -29,7 +29,7 @@ const labels = [
 export const ingestorRequestCounterMetric = new gcp.monitoring.MetricDescriptor(
   `${tag}-pipeline-ingestor-requests`,
   {
-    type: 'custom.googleapis.com/pipeline/ingest_http_requests',
+    type: 'workload.googleapis.com/pipeline/ingest_http_requests',
     description: 'Number of HTTP GET requests made by the ingestor',
     displayName: 'Ingestor Requests count',
     metricKind: 'GAUGE',
@@ -43,7 +43,7 @@ export const ingestorRequestFailureCounterMetric =
   new gcp.monitoring.MetricDescriptor(
     `${tag}-pipeline-ingestor-request-failures`,
     {
-      type: 'custom.googleapis.com/pipeline/ingest_http_request_failures',
+      type: 'workload.googleapis.com/pipeline/ingest_http_request_failures',
       description:
         'Number of HTTP GET requests made by the ingestor that resulted in client failure',
       displayName: 'Ingestor request failures count',
@@ -54,11 +54,11 @@ export const ingestorRequestFailureCounterMetric =
     { provider }
   )
 
-export const ingestorResponseCodeFrequencyMetric =
+export const ingestorResponseStatusFrequencyMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-ingestor-response-code-frequency`,
+    `${tag}-pipeline-ingestor-response-status-frequency`,
     {
-      type: 'custom.googleapis.com/pipeline/ingest_http_response_code_frequency',
+      type: 'workload.googleapis.com/pipeline/ingest_http_response_statuses',
       description: 'Frequency of HTTP response codes returned by the ingestor',
       displayName: 'Ingestor response code frequency',
       metricKind: 'GAUGE',

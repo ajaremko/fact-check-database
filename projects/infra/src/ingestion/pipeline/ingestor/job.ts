@@ -58,6 +58,10 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
                 name: 'LOGGING_LEVEL',
                 value: logLevel,
               },
+              {
+                name: 'OTEL_CLOUD_MONITORING_PREFIX',
+                value: 'workload.googleapis.com/pipeline/',
+              },
             ],
           },
         ],

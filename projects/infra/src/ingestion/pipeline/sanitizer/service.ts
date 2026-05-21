@@ -47,6 +47,10 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
               name: 'LOGGING_LEVEL',
               value: logLevel,
             },
+            {
+              name: 'OTEL_CLOUD_MONITORING_PREFIX',
+              value: 'workload.googleapis.com/pipeline/',
+            },
           ],
         },
       ],
