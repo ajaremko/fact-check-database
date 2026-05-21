@@ -49,19 +49,16 @@ const decodeContext = Schema.decodeUnknownSync(
   })
 )
 
-const requestCounter = Metric.counter('pipeline/ingest_http_requests', {
+const requestCounter = Metric.counter('ingest_http_requests', {
   description: 'Counts the number of requests made to all sources',
 })
 
-const requestFailureCounter = Metric.counter(
-  'pipeline/ingest_http_request_failures',
-  {
-    description: 'Counts the number of failed requests',
-  }
-)
+const requestFailureCounter = Metric.counter('ingest_http_request_failures', {
+  description: 'Counts the number of failed requests',
+})
 
 const requestResponseStatusFrequency = Metric.frequency(
-  'pipeline/ingest_http_response_statuses'
+  'ingest_http_response_statuses'
 )
 
 export const ingestFromSource = Effect.fn('ingestFromSource')(

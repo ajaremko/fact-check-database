@@ -21,15 +21,12 @@ const encodeNdjson = pipe(
 const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
-const batchesWrittenCounter = Metric.counter(
-  'pipeline/extracted_batches_written',
-  {
-    description: 'Counts the number of extraction batches written',
-  }
-)
+const batchesWrittenCounter = Metric.counter('extracted_batches_written', {
+  description: 'Counts the number of extraction batches written',
+})
 
 const rowsPerBatchHistogram = Metric.histogram(
-  'pipeline/extracted_rows_per_batch',
+  'extracted_rows_per_batch',
   MetricBoundaries.exponential({ start: 1, factor: 2, count: 20 })
 )
 
