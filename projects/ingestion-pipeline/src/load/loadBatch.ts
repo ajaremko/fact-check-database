@@ -4,9 +4,7 @@ import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQue
 
 import { FilePointer } from '../shared'
 
-const batchesLoadedCounter = Metric.counter('loaded_batches', {
-  description: 'Counts the number of batches loaded into BigQuery',
-})
+const batchesLoadedCounter = Metric.counter('loaded_batches')
 
 export const loadBatch = Effect.fn('loadBatch')(
   function* (input: {

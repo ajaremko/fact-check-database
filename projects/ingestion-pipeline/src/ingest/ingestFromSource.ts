@@ -49,13 +49,9 @@ const decodeContext = Schema.decodeUnknownSync(
   })
 )
 
-const requestCounter = Metric.counter('ingest_http_requests', {
-  description: 'Counts the number of requests made to all sources',
-})
+const requestCounter = Metric.counter('ingest_http_requests')
 
-const requestFailureCounter = Metric.counter('ingest_http_request_failures', {
-  description: 'Counts the number of failed requests',
-})
+const requestFailureCounter = Metric.counter('ingest_http_request_failures')
 
 const requestResponseStatusFrequency = Metric.frequency(
   'ingest_http_response_statuses'
