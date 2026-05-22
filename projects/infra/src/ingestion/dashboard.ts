@@ -57,103 +57,104 @@ const pipelineDashboardJson = pulumi
     mosaicLayout: {
       columns: 48,
       tiles: [
-        // Row 1 (y=0, h=8): Pipeline throughput KPIs — one scorecard per stage
+        // Row 1 (y=0, h=8): Pipeline throughput KPIs — first 3 stages
         {
           yPos: 0,
           xPos: 0,
           height: 8,
-          width: 8,
+          width: 16,
           widget: pipeline.totalHttpRequests,
-        },
-        {
-          yPos: 0,
-          xPos: 8,
-          height: 8,
-          width: 8,
-          widget: pipeline.percentFailedRequests,
         },
         {
           yPos: 0,
           xPos: 16,
           height: 8,
-          width: 8,
-          widget: pipeline.sanitizerRecords,
-        },
-        {
-          yPos: 0,
-          xPos: 24,
-          height: 8,
-          width: 8,
-          widget: pipeline.batchesWritten,
+          width: 16,
+          widget: pipeline.percentFailedRequests,
         },
         {
           yPos: 0,
           xPos: 32,
           height: 8,
-          width: 8,
+          width: 16,
+          widget: pipeline.sanitizerRecords,
+        },
+        // Row 2 (y=8, h=8): Pipeline throughput KPIs — last 3 stages
+        {
+          yPos: 8,
+          xPos: 0,
+          height: 8,
+          width: 16,
+          widget: pipeline.batchesWritten,
+        },
+        {
+          yPos: 8,
+          xPos: 16,
+          height: 8,
+          width: 16,
           widget: pipeline.factCheckRows,
         },
         {
-          yPos: 0,
-          xPos: 40,
+          yPos: 8,
+          xPos: 32,
           height: 8,
-          width: 8,
+          width: 16,
           widget: pipeline.batchesLoaded,
         },
-        // Row 2 (y=8, h=8): Ingestor analysis — response codes and queue backpressure
+        // Row 3 (y=16, h=12): Ingestor analysis — response codes and queue backpressure
         {
-          yPos: 8,
+          yPos: 16,
           xPos: 0,
           height: 12,
           width: 24,
           widget: pipeline.httpResponseStatuses,
         },
         {
-          yPos: 8,
+          yPos: 16,
           xPos: 24,
           height: 12,
           width: 24,
           widget: unackedMessagesWidget,
         },
-        // Row 3 (y=16, h=8): Pipeline quality — batch size distribution and policy decisions
+        // Row 4 (y=28, h=11): Pipeline quality — batch size distribution and policy decisions
         {
-          yPos: 20,
+          yPos: 28,
           xPos: 0,
           height: 11,
           width: 24,
           widget: pipeline.rowsPerBatch,
         },
         {
-          yPos: 20,
+          yPos: 28,
           xPos: 24,
           height: 11,
           width: 24,
           widget: pipeline.sanitizerDecisionLabels,
         },
-        // Row 4 (y=24, h=8): Storage health — all buckets with deadletter last
+        // Row 5 (y=39, h=8): Storage health — all buckets with deadletter last
         {
-          yPos: 31,
+          yPos: 39,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 31,
+          yPos: 39,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 31,
+          yPos: 39,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 31,
+          yPos: 39,
           xPos: 36,
           height: 8,
           width: 12,
