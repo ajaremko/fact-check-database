@@ -14,14 +14,14 @@ config:
   ingestion:project: news-research-dev
   ingestion:region: us-central1
   ingestion:archiveLocation: US
-  ingestion:tag: dev-265
+  ingestion:tag: dev-266
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
   ingestion:logLevel: debug
   ingestion:logRetentionDays: 1
-  ingestion:batchRetentionDays: 2
-  ingestion:eventLogRetentionDays: 7
-  ingestion:deadletterRetentionDays: 7
+  ingestion:batchRetentionDays: 1
+  ingestion:eventLogRetentionDays: 3
+  ingestion:deadletterRetentionDays: 3
   ingestion:forceDestroyStorage: true
   ingestion:retainStorageOnDelete: true
 
