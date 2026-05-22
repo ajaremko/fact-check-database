@@ -9,6 +9,8 @@ export const gcpProject = researchConfig.require('project')
 export const gcpRegion = researchConfig.require('region')
 export const tableDeletionProtection =
   researchConfig.getBoolean('tableDeletionProtection') ?? true
+export const retainTablesOnDelete =
+  researchConfig.getBoolean('retainTablesOnDelete') ?? true
 
 export const researchLabels: Record<string, string> = {
   ...labels,

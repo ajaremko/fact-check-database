@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { curatedTableRef } from '../../analysis'
 
-import { tableDeletionProtection, tag } from '../config'
+import { tableDeletionProtection, tag, retainTablesOnDelete } from '../config'
 import { provider } from '../provider'
 
 export const martsDataset = new gcp.bigquery.Dataset(
@@ -14,7 +14,7 @@ export const martsDataset = new gcp.bigquery.Dataset(
     description: 'Marts for final research data',
     location: 'US',
   },
-  { provider }
+  { provider, retainOnDelete: retainTablesOnDelete }
 )
 
 export const martsDatasetId = martsDataset.datasetId
@@ -46,5 +46,5 @@ export const martsFactChecksTable = new gcp.bigquery.Table(
       `,
     },
   },
-  { provider }
+  { provider, retainOnDelete: retainTablesOnDelete }
 )

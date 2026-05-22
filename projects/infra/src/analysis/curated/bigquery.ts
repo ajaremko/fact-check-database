@@ -1,6 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 
-import { tableDeletionProtection, tag, analysisLabels } from '../config'
+import {
+  tableDeletionProtection,
+  tag,
+  analysisLabels,
+  retainTablesOnDelete,
+} from '../config'
 import { provider } from '../provider'
 
 export const curatedDataset = new gcp.bigquery.Dataset(
@@ -11,7 +16,7 @@ export const curatedDataset = new gcp.bigquery.Dataset(
     description: 'Dataset for curated data from staging',
     location: 'US',
   },
-  { provider }
+  { provider, retainOnDelete: retainTablesOnDelete }
 )
 
 export const curatedFactChecksTable = new gcp.bigquery.Table(
@@ -49,5 +54,5 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
     },
     labels: analysisLabels,
   },
-  { provider }
+  { provider, retainOnDelete: retainTablesOnDelete }
 )

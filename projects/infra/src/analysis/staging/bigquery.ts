@@ -2,7 +2,12 @@ import * as gcp from '@pulumi/gcp'
 
 import { FactChecksTableSchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
 
-import { tableDeletionProtection, tag, analysisLabels } from '../config'
+import {
+  tableDeletionProtection,
+  tag,
+  analysisLabels,
+  retainTablesOnDelete,
+} from '../config'
 import { provider } from '../provider'
 
 export const stagingDataset = new gcp.bigquery.Dataset(
@@ -13,7 +18,7 @@ export const stagingDataset = new gcp.bigquery.Dataset(
     description: 'Dataset for staging extracted data',
     location: 'US', // Regional location for data storage
   },
-  { provider }
+  { provider, retainOnDelete: retainTablesOnDelete }
 )
 
 export const stagingFactChecksTable = new gcp.bigquery.Table(
@@ -32,5 +37,5 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
     },
     labels: analysisLabels,
   },
-  { provider }
+  { provider, retainOnDelete: retainTablesOnDelete }
 )
