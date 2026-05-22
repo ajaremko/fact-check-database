@@ -4,7 +4,7 @@ config:
   core:kmsLocation: us-central1
   core:githubOrg: ajaremko
   core:githubRepo: news-research
-  core:workloadIdentityPoolId: shared-identity-pool-06
+  core:workloadIdentityPoolId: shared-identity-pool-07
 
   analysis:project: news-research-dev
   analysis:region: us-central1
