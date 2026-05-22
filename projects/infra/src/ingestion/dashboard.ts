@@ -101,64 +101,64 @@ const pipelineDashboardJson = pulumi
           width: 16,
           widget: pipeline.batchesLoaded,
         },
-        // Row 3 (y=16, h=12): Ingestor analysis — response codes and queue backpressure
+        // Row 3 (y=16, h=8): Storage health — all buckets with deadletter last
         {
           yPos: 16,
-          xPos: 0,
-          height: 12,
-          width: 24,
-          widget: pipeline.httpResponseStatuses,
-        },
-        {
-          yPos: 16,
-          xPos: 24,
-          height: 12,
-          width: 24,
-          widget: unackedMessagesWidget,
-        },
-        // Row 4 (y=28, h=11): Pipeline quality — batch size distribution and policy decisions
-        {
-          yPos: 28,
-          xPos: 0,
-          height: 11,
-          width: 24,
-          widget: pipeline.rowsPerBatch,
-        },
-        {
-          yPos: 28,
-          xPos: 24,
-          height: 11,
-          width: 24,
-          widget: pipeline.sanitizerDecisionLabels,
-        },
-        // Row 5 (y=39, h=8): Storage health — all buckets with deadletter last
-        {
-          yPos: 39,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 39,
+          yPos: 16,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 39,
+          yPos: 16,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 39,
+          yPos: 16,
           xPos: 36,
           height: 8,
           width: 12,
           widget: archive.deadletterSize,
+        },
+        // Row 4 (y=24, h=12): Ingestor analysis — response codes and queue backpressure
+        {
+          yPos: 24,
+          xPos: 0,
+          height: 12,
+          width: 24,
+          widget: pipeline.httpResponseStatuses,
+        },
+        {
+          yPos: 24,
+          xPos: 24,
+          height: 12,
+          width: 24,
+          widget: unackedMessagesWidget,
+        },
+        // Row 5 (y=36, h=11): Pipeline quality — batch size distribution and policy decisions
+        {
+          yPos: 36,
+          xPos: 0,
+          height: 11,
+          width: 24,
+          widget: pipeline.rowsPerBatch,
+        },
+        {
+          yPos: 36,
+          xPos: 24,
+          height: 11,
+          width: 24,
+          widget: pipeline.sanitizerDecisionLabels,
         },
       ],
     },
