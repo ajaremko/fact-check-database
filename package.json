@@ -6,6 +6,7 @@
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.8.0",
+    "@google-cloud/monitoring": "^5.3.2",
     "@nx/docker": "22.7.1",
     "@nx/esbuild": "22.7.1",
     "@nx/eslint": "22.7.1",
