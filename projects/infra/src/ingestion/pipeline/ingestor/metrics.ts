@@ -59,11 +59,20 @@ export const ingestorResponseStatusFrequencyMetric =
     `${tag}-pipeline-ingestor-response-status-frequency`,
     {
       type: 'workload.googleapis.com/pipeline/ingest_http_response_statuses',
-      description: 'Frequency of HTTP response codes returned by the ingestor',
+      description:
+        'Count of HTTP status codes encountered when ingesting content',
       displayName: 'Ingestor response code frequency',
-      metricKind: 'GAUGE',
-      valueType: 'DISTRIBUTION',
-      labels,
+      metricKind: 'CUMULATIVE',
+      valueType: 'INT64',
+      unit: '1',
+      labels: [
+        ...labels,
+        {
+          key: 'key',
+          valueType: 'STRING',
+          description: 'HTTP status code (e.g. 200, 404, 500)',
+        },
+      ],
     },
     { provider }
   )
