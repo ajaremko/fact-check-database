@@ -118,6 +118,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Record the response code for both successes and failures to
     // allow monitoring of source health
+
     yield* requestResponseStatusFrequency(
       Effect.succeed(getReasonPhrase(result.status))
     )
