@@ -1,5 +1,4 @@
 import { Effect, Schema, Metric, flow, pipe } from 'effect'
-import { StatusCodes, getReasonPhrase } from 'http-status-codes'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -116,13 +115,6 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       })
     }
 
-    // Record the response code for both successes and failures to
-    // allow monitoring of source health
-
-    yield* requestResponseStatusFrequency(
-      Effect.succeed(getReasonPhrase(result.status))
-    )
-
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
       observationId,
@@ -172,6 +164,15 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       contentType: 'application/yaml',
     })
 
+    console.log(result.status)
+    // Record the response code for sent requests to
+    // allow monitoring of source health
+    yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
+    // yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
+
+    const state = yield* Metric.value(requestResponseStatusFrequency)
+    console.log(state.occurrences)
+
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which
     // references the archived body
@@ -187,12 +188,12 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
         'source.name': args.source.name,
         'source.url': args.source.url,
         'source.collection': args.source.collection,
-      }),
-      Effect.tagMetrics({
-        'source.id': args.source.id,
-        'source.name': args.source.name,
-        'source.url': args.source.url,
-        'source.collection': args.source.collection,
       })
+      // Effect.tagMetrics({
+      //   'source.id': args.source.id,
+      //   'source.name': args.source.name,
+      //   'source.url': args.source.url,
+      //   'source.collection': args.source.collection,
+      // })
     )
 )

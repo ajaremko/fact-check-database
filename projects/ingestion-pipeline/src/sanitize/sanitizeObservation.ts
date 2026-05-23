@@ -74,8 +74,12 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
     yield* Effect.logDebug(`Evaluating policy for observation`)
     const decision = evaluatePolicy(ctx.policy, observation)
 
+    console.log(decision.label)
     yield* decisionLabelFrequency(Effect.succeed(decision.label))
     yield* Metric.increment(recordsSanitizedCounter)
+
+    const state = yield* Metric.value(decisionLabelFrequency)
+    console.log(state.occurrences)
 
     yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({
