@@ -1,5 +1,5 @@
 import { Effect, Schema, Metric, flow, pipe } from 'effect'
-// import { StatusCodes } from 'http-status-codes'
+import { StatusCodes, getReasonPhrase } from 'http-status-codes'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -118,7 +118,9 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Record the response code for both successes and failures to
     // allow monitoring of source health
-    yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
+    yield* requestResponseStatusFrequency(
+      Effect.succeed(getReasonPhrase(result.status))
+    )
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
