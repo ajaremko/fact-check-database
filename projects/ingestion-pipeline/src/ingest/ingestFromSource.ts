@@ -167,7 +167,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     console.log(result.status)
     // Record the response code for sent requests to
     // allow monitoring of source health
-    yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
+    yield* Metric.update(requestResponseStatusFrequency, String(result.status))
     // yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
 
     const state = yield* Metric.value(requestResponseStatusFrequency)
