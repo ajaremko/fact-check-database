@@ -1,3 +1,6 @@
+// Delete a Metric Descriptor
+// Usage: node delete-metric-descriptor.js --projectId=your-project-id --metricName=metric.name
+
 const monitoring = require('@google-cloud/monitoring')
 
 const client = new monitoring.MetricServiceClient()

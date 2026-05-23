@@ -1,3 +1,6 @@
+// List Metric Descriptors
+// Usage: node list-metric-descriptors.js --projectId=your-project-id [--startsWith=prefix]
+
 const monitoring = require('@google-cloud/monitoring')
 
 const client = new monitoring.MetricServiceClient()
