@@ -19,7 +19,7 @@ import { stagingBucketName } from './staging'
 
 const totalHttpRequestsWidget = ingestorRequestCounterMetricType.apply(
   (type) => ({
-    title: 'Total HTTP Requests',
+    title: 'Requests for Content',
     id: '',
     scorecard: {
       breakdowns: [],
@@ -54,7 +54,7 @@ const percentFailedRequestsWidget = pulumi
     ingestorRequestCounterMetricType,
   ])
   .apply(([failureCounter, counter]) => ({
-    title: 'Percent Failed Requests',
+    title: 'Requests Failed (%)',
     scorecard: {
       sparkChartView: {
         minAlignmentPeriod: '60s',
@@ -82,33 +82,25 @@ const percentFailedRequestsWidget = pulumi
 const httpResponseStatusesWidget =
   ingestorResponseCodeFrequencyMetricType.apply((type) => ({
     title: 'HTTP Response Statuses',
-    xyChart: {
-      chartOptions: {
-        displayHorizontal: false,
-        mode: 'COLOR',
-      },
+    pieChart: {
+      chartType: 'DONUT',
       dataSets: [
         {
           minAlignmentPeriod: '60s',
-          plotType: 'HEATMAP',
-          targetAxis: 'Y1',
           timeSeriesQuery: {
+            outputFullDuration: true,
             timeSeriesFilter: {
               aggregation: {
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: [],
-                perSeriesAligner: 'ALIGN_SUM',
+                groupByFields: ['metric.label."key"'],
+                perSeriesAligner: 'ALIGN_DELTA',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
             },
           },
         },
       ],
-      thresholds: [],
-      yAxis: {
-        scale: 'LINEAR',
-      },
     },
   }))
 
@@ -141,7 +133,7 @@ const stagingSizeWidget = stagingBucketName.apply((name) => ({
 
 const extractorBatchesWrittenWidget =
   extractorBatchesWrittenCounterMetricType.apply((type) => ({
-    title: 'Extraction Batches Written',
+    title: 'Batches Written',
     id: '',
     scorecard: {
       breakdowns: [],
@@ -169,7 +161,7 @@ const extractorBatchesWrittenWidget =
 
 const extractorFactCheckRowsWidget =
   extractorFactCheckRowCounterMetricType.apply((type) => ({
-    title: 'Fact Check Rows Extracted',
+    title: 'Rows Extracted',
     id: '',
     scorecard: {
       breakdowns: [],
@@ -197,7 +189,7 @@ const extractorFactCheckRowsWidget =
 
 const sanitizerRecordsWidget = sanitizerRecordsCounterMetricType.apply(
   (type) => ({
-    title: 'Records Sanitized',
+    title: 'Content Records Sanitized',
     id: '',
     scorecard: {
       breakdowns: [],
@@ -227,49 +219,31 @@ const sanitizerRecordsWidget = sanitizerRecordsCounterMetricType.apply(
 const sanitizerDecisionLabelsWidget =
   sanitizerDecisionLabelFrequencyMetricType.apply((type) => ({
     title: 'Sanitizer Policy Decisions',
-    id: '',
-    xyChart: {
-      chartOptions: {
-        displayHorizontal: false,
-        mode: 'COLOR',
-        showLegend: false,
-      },
+    pieChart: {
+      chartType: 'DONUT',
       dataSets: [
         {
-          breakdowns: [],
-          dimensions: [],
-          legendTemplate: '',
-          measures: [],
           minAlignmentPeriod: '60s',
-          plotType: 'STACKED_AREA',
-          sort: [],
-          targetAxis: 'Y1',
           timeSeriesQuery: {
-            outputFullDuration: false,
+            outputFullDuration: true,
             timeSeriesFilter: {
               aggregation: {
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: ['metric.label."decision"'],
-                perSeriesAligner: 'ALIGN_MEAN',
+                groupByFields: ['metric.label."key"'],
+                perSeriesAligner: 'ALIGN_DELTA',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
             },
-            unitOverride: '',
           },
         },
       ],
-      thresholds: [],
-      yAxis: {
-        label: '',
-        scale: 'LINEAR',
-      },
     },
   }))
 
 const loaderBatchesLoadedWidget = loaderBatchesLoadedCounterMetricType.apply(
   (type) => ({
-    title: 'Batches Loaded to BigQuery',
+    title: 'Batches Loaded',
     id: '',
     scorecard: {
       breakdowns: [],
@@ -323,7 +297,7 @@ const rowsPerBatchWidget = extractorRowsPerBatchHistogramMetricType.apply(
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
                 groupByFields: [],
-                perSeriesAligner: 'ALIGN_SUM',
+                perSeriesAligner: 'ALIGN_DELTA',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
             },
@@ -348,10 +322,10 @@ export const pipelineWidgets = pulumi
     stagingSizeWidget,
     extractorBatchesWrittenWidget,
     extractorFactCheckRowsWidget,
+    rowsPerBatchWidget,
     sanitizerRecordsWidget,
     sanitizerDecisionLabelsWidget,
     loaderBatchesLoadedWidget,
-    rowsPerBatchWidget,
   ])
   .apply(
     ([
@@ -361,10 +335,10 @@ export const pipelineWidgets = pulumi
       stagingSize,
       batchesWritten,
       factCheckRows,
+      rowsPerBatch,
       sanitizerRecords,
       sanitizerDecisionLabels,
       batchesLoaded,
-      rowsPerBatch,
     ]) => ({
       totalHttpRequests,
       percentFailedRequests,
@@ -372,9 +346,9 @@ export const pipelineWidgets = pulumi
       stagingSize,
       batchesWritten,
       factCheckRows,
+      rowsPerBatch,
       sanitizerRecords,
       sanitizerDecisionLabels,
       batchesLoaded,
-      rowsPerBatch,
     })
   )

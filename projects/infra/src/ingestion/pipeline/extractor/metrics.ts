@@ -36,8 +36,9 @@ export const extractorRowsPerBatchHistogramMetric =
       type: 'workload.googleapis.com/pipeline/extracted_rows_per_batch',
       description: 'Number of rows per batch written by the extractor',
       displayName: 'Extracted Rows Per Batch',
-      metricKind: 'GAUGE',
+      metricKind: 'CUMULATIVE',
       valueType: 'DISTRIBUTION',
+      unit: '1',
     },
     { provider }
   )
