@@ -142,6 +142,7 @@ const OtelServiceNameConfig = Config.string('OTEL_SERVICE_NAME').pipe(
   Config.orElse(() => Config.string('SERVICE_NAME'))
 )
 const OtelExportIntervalConfig = Config.integer('OTEL_METRIC_EXPORT_INTERVAL')
+const OtelShutdownTimeoutConfig = Config.integer('OTEL_SHUTDOWN_TIMEOUT')
 const OtelCloudMonitoringPrefixConfig = Config.string(
   'OTEL_CLOUD_MONITORING_PREFIX'
 )
@@ -154,6 +155,10 @@ const otel = Layer.unwrapEffect(
       OtelExportIntervalConfig,
       1 * 60 * 1000
     )
+    const shutdownTimeout = yield* Config.withDefault(
+      OtelShutdownTimeoutConfig,
+      15 * 1000
+    )
 
     if (otelMode === 'local') {
       yield* Effect.logDebug('Using local otel configuration')
@@ -164,6 +169,7 @@ const otel = Layer.unwrapEffect(
           exporter: new OTLPMetricExporter(),
           exportIntervalMillis,
         }),
+        shutdownTimeout,
       }))
     }
 
@@ -195,6 +201,7 @@ const otel = Layer.unwrapEffect(
         }),
         exportIntervalMillis,
       }),
+      shutdownTimeout,
     }))
   })
 )
