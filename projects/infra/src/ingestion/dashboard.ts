@@ -131,13 +131,13 @@ const pipelineDashboardJson = pulumi
           widget: archive.deadletterSize,
         },
         // Row 4 (y=24, h=12): Ingestor analysis — response codes and queue backpressure
-        // {
-        //   yPos: 24,
-        //   xPos: 0,
-        //   height: 12,
-        //   width: 24,
-        //   widget: pipeline.httpResponseStatuses,
-        // },
+        {
+          yPos: 24,
+          xPos: 0,
+          height: 12,
+          width: 24,
+          widget: pipeline.httpResponseStatuses,
+        },
         {
           yPos: 24,
           xPos: 24,
@@ -146,20 +146,20 @@ const pipelineDashboardJson = pulumi
           widget: unackedMessagesWidget,
         },
         // Row 5 (y=36, h=11): Pipeline quality — batch size distribution and policy decisions
-        // {
-        //   yPos: 36,
-        //   xPos: 0,
-        //   height: 11,
-        //   width: 24,
-        //   widget: pipeline.rowsPerBatch,
-        // },
-        // {
-        //   yPos: 36,
-        //   xPos: 24,
-        //   height: 11,
-        //   width: 24,
-        //   widget: pipeline.sanitizerDecisionLabels,
-        // },
+        {
+          yPos: 36,
+          xPos: 0,
+          height: 11,
+          width: 24,
+          widget: pipeline.rowsPerBatch,
+        },
+        {
+          yPos: 36,
+          xPos: 24,
+          height: 11,
+          width: 24,
+          widget: pipeline.sanitizerDecisionLabels,
+        },
         // Row 6 (y=47, h=32):
         {
           yPos: 47,

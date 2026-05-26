@@ -62,6 +62,10 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
                 name: 'OTEL_CLOUD_MONITORING_PREFIX',
                 value: 'workload.googleapis.com/pipeline/',
               },
+              {
+                name: 'OTEL_METRIC_EXPORT_INTERVAL',
+                value: String(10_000),
+              },
             ],
           },
         ],
