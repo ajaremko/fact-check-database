@@ -61,7 +61,7 @@ export const writeBatch = Effect.fn('writeBatch')(
     })
 
     yield* Metric.increment(batchesWrittenCounter)
-    yield* rowsPerBatchHistogram(Effect.succeed(input.rows.length))
+    yield* Metric.update(rowsPerBatchHistogram, input.rows.length)
 
     return yield* encodeExtractionBatchEvent(batch)
   },

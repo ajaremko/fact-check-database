@@ -226,7 +226,7 @@ const job = Layer.effect(
 function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   return Effect.gen(function* () {
     const ctx = yield* JobContext
-    yield* Effect.logInfo(`Starting job with runId: ${ctx.runId}`)
+    yield* Effect.logInfo(`Starting ingestor job run ${ctx.runId}`)
     return yield* self.pipe(
       Effect.withSpan('jobRun'),
       Effect.annotateLogs({

@@ -28,7 +28,7 @@ function processTarget(source: Source, index: number) {
     const timestamp = yield* Clock.currentTimeMillis
 
     // ingest from target and publish event
-    yield* Effect.logDebug(`Processing target ${index + 1}`)
+    yield* Effect.logDebug(`Requesting content from source ${index + 1}`)
     const event = yield* ingestFromSource({
       ingestionId: job.runId,
       timestamp,
