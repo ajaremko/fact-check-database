@@ -12,6 +12,39 @@ export const extractorFactCheckRowCounterMetric =
       displayName: 'Extracted Fact Check Rows count',
       metricKind: 'GAUGE',
       valueType: 'DOUBLE',
+      labels: [
+        {
+          key: 'source_id',
+          valueType: 'STRING',
+          description: 'The ID of the source the rows were extracted from',
+        },
+        {
+          key: 'source_name',
+          valueType: 'STRING',
+          description: 'The name of the source the rows were extracted from',
+        },
+        {
+          key: 'source_url',
+          valueType: 'STRING',
+          description: 'The URL of the source the rows were extracted from',
+        },
+        {
+          key: 'source_collection',
+          valueType: 'STRING',
+          description:
+            'The collection type of the source the rows were extracted from',
+        },
+        {
+          key: 'extractor_id',
+          valueType: 'STRING',
+          description: 'ID of the extractor that produced the rows',
+        },
+        {
+          key: 'extractor_version',
+          valueType: 'STRING',
+          description: 'Version of the extractor that produced the rows',
+        },
+      ],
     },
     { provider }
   )
@@ -25,20 +58,49 @@ export const extractorBatchesWrittenCounterMetric =
       displayName: 'Extracted Batches Written count',
       metricKind: 'GAUGE',
       valueType: 'DOUBLE',
+      labels: [
+        {
+          key: 'table_dataset_id',
+          valueType: 'STRING',
+          description: 'Dataset ID of the destination table',
+        },
+        {
+          key: 'table_table_id',
+          valueType: 'STRING',
+          description: 'Table ID of the destination table',
+        },
+      ],
     },
     { provider }
   )
 
-export const extractorRowsPerBatchHistogramMetric =
+export const extractorRowsPerBatchCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-extractor-rows-per-batch`,
+    `${tag}-pipeline-extractor-rows-per-batch-counter`,
     {
       type: 'workload.googleapis.com/pipeline/extracted_rows_per_batch',
-      description: 'Number of rows per batch written by the extractor',
-      displayName: 'Extracted Rows Per Batch',
-      metricKind: 'CUMULATIVE',
-      valueType: 'DISTRIBUTION',
-      unit: '1',
+      description:
+        'Total rows written per batch, tagged by job run ID to allow per-run aggregation',
+      displayName: 'Extracted Rows Per Batch count',
+      metricKind: 'GAUGE',
+      valueType: 'DOUBLE',
+      labels: [
+        {
+          key: 'table_dataset_id',
+          valueType: 'STRING',
+          description: 'Dataset ID of the destination table',
+        },
+        {
+          key: 'table_table_id',
+          valueType: 'STRING',
+          description: 'Table ID of the destination table',
+        },
+        {
+          key: 'job_run_id',
+          valueType: 'STRING',
+          description: 'Run ID of the job that wrote the batch',
+        },
+      ],
     },
     { provider }
   )

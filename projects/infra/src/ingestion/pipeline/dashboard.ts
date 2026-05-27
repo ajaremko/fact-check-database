@@ -3,18 +3,15 @@ import * as pulumi from '@pulumi/pulumi'
 import {
   extractorFactCheckRowCounterMetricType,
   extractorBatchesWrittenCounterMetricType,
-  extractorRowsPerBatchHistogramMetricType,
+  extractorRowsPerBatchCounterMetricType,
 } from './extractor'
 import {
   ingestorRequestCounterMetricType,
   ingestorRequestFailureCounterMetricType,
-  ingestorResponseCodeFrequencyMetricType,
+  ingestorResponseCounterMetricType,
 } from './ingestor'
 import { loaderBatchesLoadedCounterMetricType } from './loader'
-import {
-  sanitizerRecordsCounterMetricType,
-  sanitizerDecisionLabelFrequencyMetricType,
-} from './sanitizer'
+import { sanitizerRecordsCounterMetricType } from './sanitizer'
 import { stagingBucketName } from './staging'
 
 const totalHttpRequestsWidget = ingestorRequestCounterMetricType.apply(
@@ -80,7 +77,7 @@ const percentFailedRequestsWidget = pulumi
   }))
 
 const httpResponseStatusesWidget =
-  ingestorResponseCodeFrequencyMetricType.apply((type) => ({
+  ingestorResponseCounterMetricType.apply((type) => ({
     title: 'HTTP Response Statuses',
     pieChart: {
       chartType: 'DONUT',
@@ -93,7 +90,7 @@ const httpResponseStatusesWidget =
               aggregation: {
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: ['metric.label."key"'],
+                groupByFields: ['metric.label."result_status"'],
                 perSeriesAligner: 'ALIGN_DELTA',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
@@ -217,7 +214,7 @@ const sanitizerRecordsWidget = sanitizerRecordsCounterMetricType.apply(
 )
 
 const sanitizerDecisionLabelsWidget =
-  sanitizerDecisionLabelFrequencyMetricType.apply((type) => ({
+  sanitizerRecordsCounterMetricType.apply((type) => ({
     title: 'Sanitizer Policy Decisions',
     pieChart: {
       chartType: 'DONUT',
@@ -230,7 +227,7 @@ const sanitizerDecisionLabelsWidget =
               aggregation: {
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: ['metric.label."key"'],
+                groupByFields: ['metric.label."decision_label"'],
                 perSeriesAligner: 'ALIGN_DELTA',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
@@ -270,45 +267,30 @@ const loaderBatchesLoadedWidget = loaderBatchesLoadedCounterMetricType.apply(
   })
 )
 
-const rowsPerBatchWidget = extractorRowsPerBatchHistogramMetricType.apply(
+const rowsPerBatchWidget = extractorRowsPerBatchCounterMetricType.apply(
   (type) => ({
-    title: 'Rows Per Batch Distribution',
+    title: 'Rows Per Batch',
     id: '',
-    xyChart: {
-      chartOptions: {
-        displayHorizontal: false,
-        mode: 'COLOR',
-        showLegend: false,
+    scorecard: {
+      breakdowns: [],
+      dimensions: [],
+      measures: [],
+      sparkChartView: {
+        sparkChartType: 'SPARK_LINE',
       },
-      dataSets: [
-        {
-          breakdowns: [],
-          dimensions: [],
-          legendTemplate: '',
-          measures: [],
-          minAlignmentPeriod: '60s',
-          plotType: 'HEATMAP',
-          sort: [],
-          targetAxis: 'Y1',
-          timeSeriesQuery: {
-            outputFullDuration: false,
-            timeSeriesFilter: {
-              aggregation: {
-                alignmentPeriod: '60s',
-                crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: [],
-                perSeriesAligner: 'ALIGN_DELTA',
-              },
-              filter: `metric.type="${type}" resource.type="generic_task"`,
-            },
-            unitOverride: '',
-          },
-        },
-      ],
       thresholds: [],
-      yAxis: {
-        label: '',
-        scale: 'LINEAR',
+      timeSeriesQuery: {
+        outputFullDuration: true,
+        timeSeriesFilter: {
+          aggregation: {
+            alignmentPeriod: '60s',
+            crossSeriesReducer: 'REDUCE_SUM',
+            groupByFields: [],
+            perSeriesAligner: 'ALIGN_MEAN',
+          },
+          filter: `metric.type="${type}" resource.type="generic_task"`,
+        },
+        unitOverride: '',
       },
     },
   })

@@ -3,38 +3,38 @@ import * as gcp from '@pulumi/gcp'
 import { provider } from '../../project'
 import { tag } from '../../config'
 
-const labels = [
+const sourceLabels = [
   {
-    key: 'source.id',
+    key: 'source_id',
     valueType: 'STRING',
     description: 'The ID of the source being ingested from',
   },
   {
-    key: 'source.name',
+    key: 'source_name',
     valueType: 'STRING',
     description: 'The name of the source being ingested from',
   },
   {
-    key: 'source.url',
+    key: 'source_url',
     valueType: 'STRING',
     description: 'The URL of the source being ingested from',
   },
   {
-    key: 'source.collection',
+    key: 'source_collection',
     valueType: 'STRING',
-    description: 'The type of collection of the source being ingested from',
+    description: 'The collection type of the source being ingested from',
   },
 ]
 
 export const ingestorRequestCounterMetric = new gcp.monitoring.MetricDescriptor(
   `${tag}-pipeline-ingestor-requests`,
   {
-    type: 'workload.googleapis.com/pipeline/ingest_http_requests',
+    type: 'workload.googleapis.com/pipeline/content_requests',
     description: 'Number of HTTP GET requests made by the ingestor',
-    displayName: 'Ingestor Requests count',
+    displayName: 'Content Requests count',
     metricKind: 'GAUGE',
     valueType: 'DOUBLE',
-    labels,
+    labels: sourceLabels,
   },
   { provider }
 )
@@ -43,33 +43,38 @@ export const ingestorRequestFailureCounterMetric =
   new gcp.monitoring.MetricDescriptor(
     `${tag}-pipeline-ingestor-request-failures`,
     {
-      type: 'workload.googleapis.com/pipeline/ingest_http_request_failures',
+      type: 'workload.googleapis.com/pipeline/content_request_failures',
       description:
-        'Number of HTTP GET requests made by the ingestor that resulted in client failure',
-      displayName: 'Ingestor request failures count',
+        'Number of HTTP GET requests made by the ingestor that resulted in failure',
+      displayName: 'Content Request Failures count',
       metricKind: 'GAUGE',
       valueType: 'DOUBLE',
-      labels,
+      labels: sourceLabels,
     },
     { provider }
   )
 
-export const ingestorResponseStatusFrequencyMetric =
+export const ingestorResponseCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-ingestor-response-status-frequency`,
+    `${tag}-pipeline-ingestor-response-counter`,
     {
-      type: 'workload.googleapis.com/pipeline/ingest_http_response_statuses',
+      type: 'workload.googleapis.com/pipeline/content_request_responses',
       description:
-        'Count of HTTP status codes encountered when ingesting content',
-      displayName: 'Ingestor response code frequency',
+        'Count of HTTP responses received when ingesting content, tagged by status code and content type',
+      displayName: 'Content Request Responses count',
       metricKind: 'GAUGE',
       valueType: 'DOUBLE',
       labels: [
-        ...labels,
+        ...sourceLabels,
         {
-          key: 'key',
+          key: 'result_status',
           valueType: 'STRING',
           description: 'HTTP status code (e.g. 200, 404, 500)',
+        },
+        {
+          key: 'result_content_type',
+          valueType: 'STRING',
+          description: 'HTTP response content type',
         },
       ],
     },

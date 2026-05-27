@@ -18,14 +18,14 @@ export const ingestorInvokerServiceAccountEmail =
   ingestorInvokerServiceAccount.email
 
 import {
-  ingestorRequestFailureCounterMetric,
-  ingestorResponseStatusFrequencyMetric,
   ingestorRequestCounterMetric,
+  ingestorRequestFailureCounterMetric,
+  ingestorResponseCounterMetric,
 } from './metrics'
 
 export const ingestorRequestCounterMetricType =
   ingestorRequestCounterMetric.type
 export const ingestorRequestFailureCounterMetricType =
   ingestorRequestFailureCounterMetric.type
-export const ingestorResponseCodeFrequencyMetricType =
-  ingestorResponseStatusFrequencyMetric.type
+export const ingestorResponseCounterMetricType =
+  ingestorResponseCounterMetric.type

@@ -45,9 +45,8 @@ export const loadBatch = Effect.fn('loadBatch')(
         'batch.object': input.pointer.object,
       }),
       Effect.tagMetrics({
-        'batch.tableId': input.table.table,
-        'batch.datasetId': input.table.dataset,
-      }),
-      Effect.withSpan('loadBatch')
+        table_dataset_id: input.table.dataset,
+        table_table_id: input.table.table,
+      })
     )
 )

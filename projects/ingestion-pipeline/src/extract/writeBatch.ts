@@ -1,4 +1,4 @@
-import { Effect, Metric, MetricBoundaries, pipe, Schema } from 'effect'
+import { Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Ndjson from '@news-research/ingestion-data/Ndjson'
 import * as Node from '@news-research/ingestion-data/Node'
@@ -21,12 +21,8 @@ const encodeNdjson = pipe(
 const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
-const batchesWrittenCounter = Metric.counter('extracted_batches_written')
-
-const rowsPerBatchHistogram = Metric.histogram(
-  'extracted_rows_per_batch',
-  MetricBoundaries.exponential({ start: 1, factor: 2, count: 20 })
-)
+const batchesWritten = Metric.counter('extracted_batches_written')
+const rowsPerBatch = Metric.counter('extracted_rows_per_batch')
 
 export const writeBatch = Effect.fn('writeBatch')(
   function* (input: {
@@ -60,8 +56,10 @@ export const writeBatch = Effect.fn('writeBatch')(
       pointer,
     })
 
-    yield* Metric.increment(batchesWrittenCounter)
-    yield* Metric.update(rowsPerBatchHistogram, input.rows.length)
+    yield* Metric.increment(batchesWritten)
+    yield* Metric.incrementBy(rowsPerBatch, input.rows.length).pipe(
+      Effect.tagMetrics({ job_run_id: input.runId })
+    )
 
     return yield* encodeExtractionBatchEvent(batch)
   },
@@ -71,6 +69,10 @@ export const writeBatch = Effect.fn('writeBatch')(
         'batch.tableId': input.tableId,
         'batch.datasetId': input.datasetId,
         'batch.rows': input.rows.length,
+      }),
+      Effect.tagMetrics({
+        table_dataset_id: input.datasetId,
+        table_table_id: input.tableId,
       })
     )
 )

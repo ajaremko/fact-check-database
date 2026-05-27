@@ -24,12 +24,12 @@ export const extractorJobName = extractorJob.name
 import {
   extractorBatchesWrittenCounterMetric,
   extractorFactCheckRowCounterMetric,
-  extractorRowsPerBatchHistogramMetric,
+  extractorRowsPerBatchCounterMetric,
 } from './metrics'
 
 export const extractorFactCheckRowCounterMetricType =
   extractorFactCheckRowCounterMetric.type
 export const extractorBatchesWrittenCounterMetricType =
   extractorBatchesWrittenCounterMetric.type
-export const extractorRowsPerBatchHistogramMetricType =
-  extractorRowsPerBatchHistogramMetric.type
+export const extractorRowsPerBatchCounterMetricType =
+  extractorRowsPerBatchCounterMetric.type

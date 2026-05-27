@@ -14,12 +14,12 @@ export const loaderBatchesLoadedCounterMetric =
       valueType: 'DOUBLE',
       labels: [
         {
-          key: 'batch.tableId',
+          key: 'batch_table_id',
           valueType: 'STRING',
           description: 'The ID of the table being written to',
         },
         {
-          key: 'batch.datasetId',
+          key: 'batch_dataset_id',
           valueType: 'STRING',
           description: 'The ID of the dataset being written to',
         },

@@ -18,9 +18,7 @@ const decodeObservation = pipe(
 
 const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
 
-const extractedFactCheckRowsCounter = Metric.counter(
-  'extracted_fact_check_rows'
-)
+const extractedFactCheckRows = Metric.counter('extracted_fact_check_rows')
 
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
@@ -114,13 +112,21 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
       )
 
     const rows = yield* encodeFactCheckRows(factChecks)
-    yield* Metric.incrementBy(extractedFactCheckRowsCounter, rows.length)
+    yield* Metric.incrementBy(extractedFactCheckRows, rows.length).pipe(
+      Effect.tagMetrics({
+        source_collection: observation.source.collection,
+        source_name: observation.source.name,
+        source_url: observation.source.url,
+        source_id: observation.source.id,
+        extractor_id: extractor.id,
+        extractor_version: String(extractor.version),
+      })
+    )
 
     return rows
   },
   (effect, ctx) =>
     effect.pipe(
-      Effect.withSpan('extractRowsFromSanitized'),
       Effect.annotateLogs({
         'observation.id': ctx.observationId,
         'pointer.bucket': ctx.pointer.bucket,

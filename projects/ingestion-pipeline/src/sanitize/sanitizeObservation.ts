@@ -55,9 +55,7 @@ const decodeArgs = Schema.decodeSync(
   })
 )
 
-const decisionLabelCounter = Metric.counter('sanitize_decision_labels')
-
-const recordsSanitizedCounter = Metric.counter('sanitize_records_sanitized')
+const contentRecordsSanitized = Metric.counter('content_records_sanitized')
 
 export const sanitizeObservation = Effect.fn('sanitizeObservation')(
   function* (args: {
@@ -74,10 +72,15 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
     yield* Effect.logDebug(`Evaluating policy for observation`)
     const decision = evaluatePolicy(ctx.policy, observation)
 
-    yield* Metric.increment(
-      Metric.tagged(decisionLabelCounter, 'key', decision.label)
+    yield* Metric.increment(contentRecordsSanitized).pipe(
+      Effect.tagMetrics({
+        decision_label: decision.label,
+        source_collection: observation.source.collection,
+        source_name: observation.source.name,
+        source_url: observation.source.url,
+        source_id: observation.source.id,
+      })
     )
-    yield* Metric.increment(recordsSanitizedCounter)
 
     yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({

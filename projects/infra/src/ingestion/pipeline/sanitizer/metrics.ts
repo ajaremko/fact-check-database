@@ -7,29 +7,37 @@ export const sanitizerRecordsCounterMetric =
   new gcp.monitoring.MetricDescriptor(
     `${tag}-pipeline-sanitizer-records-counter`,
     {
-      type: 'workload.googleapis.com/pipeline/sanitize_records_sanitized',
-      description: 'Count of ingested records sanitized',
-      displayName: 'Records Sanitized count',
-      metricKind: 'GAUGE',
-      valueType: 'DOUBLE',
-    },
-    { provider }
-  )
-
-export const sanitizerDecisionLabelFrequencyMetric =
-  new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-sanitizer-decision-label`,
-    {
-      type: 'workload.googleapis.com/pipeline/sanitize_decision_labels',
-      description: 'Policy decision label frequency for ingested content',
-      displayName: 'Sanitizer Decision Label frequency',
+      type: 'workload.googleapis.com/pipeline/content_records_sanitized',
+      description:
+        'Count of ingested records processed by the sanitizer, tagged by policy decision and source',
+      displayName: 'Content Records Sanitized count',
       metricKind: 'GAUGE',
       valueType: 'DOUBLE',
       labels: [
         {
-          key: 'key',
+          key: 'decision_label',
           valueType: 'STRING',
-          description: 'Decision Label (e.g. SAFE_PUBLIC, QUARANTINE, etc.)',
+          description: 'Policy decision label (e.g. SAFE_PUBLIC, QUARANTINE)',
+        },
+        {
+          key: 'source_id',
+          valueType: 'STRING',
+          description: 'ID of the source the record was ingested from',
+        },
+        {
+          key: 'source_name',
+          valueType: 'STRING',
+          description: 'Name of the source the record was ingested from',
+        },
+        {
+          key: 'source_url',
+          valueType: 'STRING',
+          description: 'URL of the source the record was ingested from',
+        },
+        {
+          key: 'source_collection',
+          valueType: 'STRING',
+          description: 'Collection type of the source the record was ingested from',
         },
       ],
     },
