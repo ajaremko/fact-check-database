@@ -72,6 +72,10 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 name: 'OTEL_METRIC_EXPORT_INTERVAL',
                 value: String(10_000),
               },
+              {
+                name: 'OTEL_SHUTDOWN_TIMEOUT',
+                value: String(60_000),
+              },
             ],
           },
         ],

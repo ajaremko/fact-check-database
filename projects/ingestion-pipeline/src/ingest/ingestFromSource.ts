@@ -52,7 +52,7 @@ const requestCounter = Metric.counter('ingest_http_requests')
 
 const requestFailureCounter = Metric.counter('ingest_http_request_failures')
 
-const requestResponseStatusFrequency = Metric.frequency(
+const requestResponseStatusCounter = Metric.counter(
   'ingest_http_response_statuses'
 )
 
@@ -164,14 +164,11 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       contentType: 'application/yaml',
     })
 
-    console.log(result.status)
     // Record the response code for sent requests to
     // allow monitoring of source health
-    yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
-    // yield* requestResponseStatusFrequency(Effect.succeed(String(result.status)))
-
-    const state = yield* Metric.value(requestResponseStatusFrequency)
-    console.log(state.occurrences)
+    yield* Metric.increment(
+      Metric.tagged(requestResponseStatusCounter, 'key', String(result.status))
+    )
 
     // Return an `IngestionAttempted` event with details of
     // the attempt and pointer to the attempt record, which

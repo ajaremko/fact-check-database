@@ -23,9 +23,8 @@ export const sanitizerDecisionLabelFrequencyMetric =
       type: 'workload.googleapis.com/pipeline/sanitize_decision_labels',
       description: 'Policy decision label frequency for ingested content',
       displayName: 'Sanitizer Decision Label frequency',
-      metricKind: 'CUMULATIVE',
+      metricKind: 'GAUGE',
       valueType: 'DOUBLE',
-      unit: '1',
       labels: [
         {
           key: 'key',

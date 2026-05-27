@@ -62,9 +62,8 @@ export const ingestorResponseStatusFrequencyMetric =
       description:
         'Count of HTTP status codes encountered when ingesting content',
       displayName: 'Ingestor response code frequency',
-      metricKind: 'CUMULATIVE',
+      metricKind: 'GAUGE',
       valueType: 'DOUBLE',
-      unit: '1',
       labels: [
         ...labels,
         {
