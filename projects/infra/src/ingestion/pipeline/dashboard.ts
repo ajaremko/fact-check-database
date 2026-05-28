@@ -2,82 +2,77 @@ import * as pulumi from '@pulumi/pulumi'
 
 import {
   extractorFactCheckRowCounterMetricType,
-  extractorBatchesWrittenCounterMetricType,
+  // extractorBatchesWrittenCounterMetricType,
 } from './extractor'
-import {
-  ingestorRequestCounterMetricType,
-  ingestorRequestFailureCounterMetricType,
-  ingestorResponseCounterMetricType,
-} from './ingestor'
-import { loaderBatchesLoadedCounterMetricType } from './loader'
+import { ingestorContentRequestResultsCounterMetricType } from './ingestor'
+// import { loaderBatchesLoadedCounterMetricType } from './loader'
 import { sanitizerRecordsCounterMetricType } from './sanitizer'
 import { stagingBucketName } from './staging'
 
-const totalHttpRequestsWidget = ingestorRequestCounterMetricType.apply(
-  (type) => ({
-    title: 'Requests for Content',
-    id: '',
-    scorecard: {
-      breakdowns: [],
-      dimensions: [],
-      measures: [],
-      sparkChartView: {
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        timeSeriesFilter: {
-          aggregation: {
-            alignmentPeriod: '60s',
-            crossSeriesReducer: 'REDUCE_SUM',
-            groupByFields: [],
-            perSeriesAligner: 'ALIGN_MEAN',
-          },
-          filter: `metric.type="${type}" resource.type="generic_task"`,
-        },
-        unitOverride: '',
-      },
-    },
-  })
-)
-
-const interval = '[${__interval}]'
-
-const percentFailedRequestsWidget = pulumi
-  .all([
-    ingestorRequestFailureCounterMetricType,
-    ingestorRequestCounterMetricType,
-  ])
-  .apply(([failureCounter, counter]) => ({
-    title: 'Requests Failed (%)',
-    scorecard: {
-      sparkChartView: {
-        minAlignmentPeriod: '60s',
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [
+const contentSourcesWidget =
+  ingestorContentRequestResultsCounterMetricType.apply((type) => ({
+    title: 'Content Sources',
+    timeSeriesTable: {
+      columnSettings: [
         {
-          color: 'YELLOW',
-          direction: 'ABOVE',
-          targetAxis: 'Y1',
-          value: 0,
+          displayName: 'ID',
+          column: 'source_id',
+          visible: true,
+        },
+        {
+          displayName: 'Name',
+          column: 'source_name',
+          visible: true,
+        },
+        {
+          displayName: 'URL',
+          column: 'source_url',
+          visible: true,
+        },
+        {
+          displayName: 'Collection',
+          column: 'source_collection',
+          visible: true,
+        },
+        {
+          column: 'project_id',
+          visible: false,
+        },
+        {
+          displayName: 'Request Count',
+          column: 'value',
+          visible: true,
         },
       ],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        prometheusQuery: `
-          sum(avg_over_time({"__name__"="${failureCounter}","monitored_resource"="generic_task"}${interval}))
-          /
-          sum(avg_over_time({"__name__"="${counter}","monitored_resource"="generic_task"}${interval}))
-          * 100`,
-      },
+      dataSets: [
+        {
+          minAlignmentPeriod: '60s',
+          timeSeriesQuery: {
+            outputFullDuration: true,
+            timeSeriesFilter: {
+              aggregation: {
+                alignmentPeriod: '60s',
+                crossSeriesReducer: 'REDUCE_SUM',
+                groupByFields: [
+                  'metric.label."source_collection"',
+                  'metric.label."source_name"',
+                  'metric.label."source_id"',
+                  'metric.label."source_url"',
+                ],
+                perSeriesAligner: 'ALIGN_COUNT',
+              },
+              filter: `metric.type="${type}" resource.type="generic_task"`,
+            },
+          },
+        },
+      ],
+      metricVisualization: 'BAR',
     },
   }))
 
-const httpResponseStatusesWidget = ingestorResponseCounterMetricType.apply(
-  (type) => ({
-    title: 'HTTP Response Statuses',
+const contentRequestsByStatusWidget =
+  ingestorContentRequestResultsCounterMetricType.apply((type) => ({
+    title: 'Content Requests by HTTP Status',
     pieChart: {
       chartType: 'DONUT',
       dataSets: [
@@ -98,8 +93,58 @@ const httpResponseStatusesWidget = ingestorResponseCounterMetricType.apply(
         },
       ],
     },
+  }))
+
+const contentRecordsSanitizedWidget = sanitizerRecordsCounterMetricType.apply(
+  (type) => ({
+    title: 'Content Records Sanitized by Label',
+    pieChart: {
+      chartType: 'DONUT',
+      dataSets: [
+        {
+          minAlignmentPeriod: '60s',
+          timeSeriesQuery: {
+            outputFullDuration: true,
+            timeSeriesFilter: {
+              aggregation: {
+                alignmentPeriod: '60s',
+                crossSeriesReducer: 'REDUCE_COUNT',
+                groupByFields: ['metric.label."decision_label"'],
+                perSeriesAligner: 'ALIGN_COUNT',
+              },
+              filter: `metric.type="${type}" resource.type="generic_task"`,
+            },
+          },
+        },
+      ],
+    },
   })
 )
+
+const extractorFactCheckRowsWidget =
+  extractorFactCheckRowCounterMetricType.apply((type) => ({
+    title: 'Fact Checks Extracted by Source',
+    pieChart: {
+      chartType: 'DONUT',
+      dataSets: [
+        {
+          minAlignmentPeriod: '60s',
+          timeSeriesQuery: {
+            outputFullDuration: true,
+            timeSeriesFilter: {
+              aggregation: {
+                alignmentPeriod: '60s',
+                crossSeriesReducer: 'REDUCE_COUNT',
+                groupByFields: ['metric.label."source_name"'],
+                perSeriesAligner: 'ALIGN_COUNT',
+              },
+              filter: `metric.type="${type}" resource.type="generic_task"`,
+            },
+          },
+        },
+      ],
+    },
+  }))
 
 const stagingSizeWidget = stagingBucketName.apply((name) => ({
   title: 'Staging Storage Total Bytes',
@@ -128,208 +173,26 @@ const stagingSizeWidget = stagingBucketName.apply((name) => ({
   },
 }))
 
-const extractorBatchesWrittenWidget =
-  extractorBatchesWrittenCounterMetricType.apply((type) => ({
-    title: 'Batches Written',
-    id: '',
-    scorecard: {
-      breakdowns: [],
-      dimensions: [],
-      measures: [],
-      sparkChartView: {
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        timeSeriesFilter: {
-          aggregation: {
-            alignmentPeriod: '60s',
-            crossSeriesReducer: 'REDUCE_SUM',
-            groupByFields: [],
-            perSeriesAligner: 'ALIGN_MEAN',
-          },
-          filter: `metric.type="${type}" resource.type="generic_task"`,
-        },
-        unitOverride: '',
-      },
-    },
-  }))
-
-const extractorFactCheckRowsWidget =
-  extractorFactCheckRowCounterMetricType.apply((type) => ({
-    title: 'Rows Extracted',
-    id: '',
-    scorecard: {
-      breakdowns: [],
-      dimensions: [],
-      measures: [],
-      sparkChartView: {
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        timeSeriesFilter: {
-          aggregation: {
-            alignmentPeriod: '60s',
-            crossSeriesReducer: 'REDUCE_SUM',
-            groupByFields: [],
-            perSeriesAligner: 'ALIGN_MEAN',
-          },
-          filter: `metric.type="${type}" resource.type="generic_task"`,
-        },
-        unitOverride: '',
-      },
-    },
-  }))
-
-const sanitizerRecordsWidget = sanitizerRecordsCounterMetricType.apply(
-  (type) => ({
-    title: 'Content Records Sanitized',
-    id: '',
-    scorecard: {
-      breakdowns: [],
-      dimensions: [],
-      measures: [],
-      sparkChartView: {
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        timeSeriesFilter: {
-          aggregation: {
-            alignmentPeriod: '60s',
-            crossSeriesReducer: 'REDUCE_SUM',
-            groupByFields: [],
-            perSeriesAligner: 'ALIGN_MEAN',
-          },
-          filter: `metric.type="${type}" resource.type="generic_task"`,
-        },
-        unitOverride: '',
-      },
-    },
-  })
-)
-
-const sanitizerDecisionLabelsWidget = sanitizerRecordsCounterMetricType.apply(
-  (type) => ({
-    title: 'Sanitizer Policy Decisions',
-    pieChart: {
-      chartType: 'DONUT',
-      dataSets: [
-        {
-          minAlignmentPeriod: '60s',
-          timeSeriesQuery: {
-            outputFullDuration: true,
-            timeSeriesFilter: {
-              aggregation: {
-                alignmentPeriod: '60s',
-                crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: ['metric.label."decision_label"'],
-                perSeriesAligner: 'ALIGN_COUNT',
-              },
-              filter: `metric.type="${type}" resource.type="generic_task"`,
-            },
-          },
-        },
-      ],
-    },
-  })
-)
-
-const loaderBatchesLoadedWidget = loaderBatchesLoadedCounterMetricType.apply(
-  (type) => ({
-    title: 'Batches Loaded',
-    id: '',
-    scorecard: {
-      breakdowns: [],
-      dimensions: [],
-      measures: [],
-      sparkChartView: {
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        timeSeriesFilter: {
-          aggregation: {
-            alignmentPeriod: '60s',
-            crossSeriesReducer: 'REDUCE_SUM',
-            groupByFields: [],
-            perSeriesAligner: 'ALIGN_MEAN',
-          },
-          filter: `metric.type="${type}" resource.type="generic_task"`,
-        },
-        unitOverride: '',
-      },
-    },
-  })
-)
-
-const rowsPerBatchWidget = pulumi.output('null').apply((type) => ({
-  title: 'Rows Per Batch',
-  id: '',
-  scorecard: {
-    breakdowns: [],
-    dimensions: [],
-    measures: [],
-    sparkChartView: {
-      sparkChartType: 'SPARK_LINE',
-    },
-    thresholds: [],
-    timeSeriesQuery: {
-      outputFullDuration: true,
-      timeSeriesFilter: {
-        aggregation: {
-          alignmentPeriod: '60s',
-          crossSeriesReducer: 'REDUCE_SUM',
-          groupByFields: [],
-          perSeriesAligner: 'ALIGN_MEAN',
-        },
-        filter: `metric.type="${type}" resource.type="generic_task"`,
-      },
-      unitOverride: '',
-    },
-  },
-}))
-
 export const pipelineWidgets = pulumi
   .all<object>([
-    totalHttpRequestsWidget,
-    percentFailedRequestsWidget,
-    httpResponseStatusesWidget,
+    contentRequestsByStatusWidget,
     stagingSizeWidget,
-    extractorBatchesWrittenWidget,
     extractorFactCheckRowsWidget,
-    rowsPerBatchWidget,
-    sanitizerRecordsWidget,
-    sanitizerDecisionLabelsWidget,
-    loaderBatchesLoadedWidget,
+    contentRecordsSanitizedWidget,
+    contentSourcesWidget,
   ])
   .apply(
     ([
-      totalHttpRequests,
-      percentFailedRequests,
-      httpResponseStatuses,
+      contentRequestsByStatus,
       stagingSize,
-      batchesWritten,
-      factCheckRows,
-      rowsPerBatch,
-      sanitizerRecords,
-      sanitizerDecisionLabels,
-      batchesLoaded,
+      extractorFactCheckRows,
+      contentRecordsSanitized,
+      contentSources,
     ]) => ({
-      totalHttpRequests,
-      percentFailedRequests,
-      httpResponseStatuses,
+      contentRequestsByStatus,
       stagingSize,
-      batchesWritten,
-      factCheckRows,
-      rowsPerBatch,
-      sanitizerRecords,
-      sanitizerDecisionLabels,
-      batchesLoaded,
+      extractorFactCheckRows,
+      contentRecordsSanitized,
+      contentSources,
     })
   )

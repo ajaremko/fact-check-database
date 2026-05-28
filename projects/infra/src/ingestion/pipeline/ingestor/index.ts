@@ -17,15 +17,7 @@ export const ingestorJobSchedulerName = ingestorJobScheduler.name
 export const ingestorInvokerServiceAccountEmail =
   ingestorInvokerServiceAccount.email
 
-import {
-  ingestorRequestCounterMetric,
-  ingestorRequestFailureCounterMetric,
-  ingestorResponseCounterMetric,
-} from './metrics'
+import { ingestorContentRequestResultsCounterMetric } from './metrics'
 
-export const ingestorRequestCounterMetricType =
-  ingestorRequestCounterMetric.type
-export const ingestorRequestFailureCounterMetricType =
-  ingestorRequestFailureCounterMetric.type
-export const ingestorResponseCounterMetricType =
-  ingestorResponseCounterMetric.type
+export const ingestorContentRequestResultsCounterMetricType =
+  ingestorContentRequestResultsCounterMetric.type

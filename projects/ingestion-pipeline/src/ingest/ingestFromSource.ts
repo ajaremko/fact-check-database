@@ -49,9 +49,7 @@ const decodeContext = Schema.decodeUnknownSync(
   })
 )
 
-const contentRequests = Metric.counter('content_requests')
-const contentRequestFailures = Metric.counter('content_request_failures')
-const contentRequestResponses = Metric.counter('content_request_responses')
+const contentRequestResults = Metric.counter('content_request_results')
 
 export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
@@ -63,8 +61,6 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     yield* Effect.logTrace('Fetching data from source target')
     const result = yield* fetch(ctx.source, ctx.timestamp)
-    // Increment the request counter for monitoring
-    yield* Metric.increment(contentRequests)
 
     // Derive a stable observation ID from fetch result
     const observationId = yield* encodeHashedObservationId({
@@ -76,7 +72,11 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     if (result._tag === 'FetchFailure') {
       // Record the failure for monitoring purposes
       yield* Effect.logWarning(`Fetch failed: ${result.error}`)
-      yield* Metric.increment(contentRequestFailures)
+      yield* Metric.increment(contentRequestResults).pipe(
+        Effect.tagMetrics({
+          result_status: 'Client Failure',
+        })
+      )
       // For a failed fetch, we won't have a body to archive,
       // so we can skip straight to creating an observation
       // with no pointer to a body
@@ -163,7 +163,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Record the response code for sent requests to
     // allow monitoring of source health
-    yield* Metric.increment(contentRequestResponses).pipe(
+    yield* Metric.increment(contentRequestResults).pipe(
       Effect.tagMetrics({
         result_status: `${getReasonPhrase(result.status)}`,
         result_status_code: `${result.status}`,
