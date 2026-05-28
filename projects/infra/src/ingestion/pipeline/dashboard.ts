@@ -3,7 +3,6 @@ import * as pulumi from '@pulumi/pulumi'
 import {
   extractorFactCheckRowCounterMetricType,
   extractorBatchesWrittenCounterMetricType,
-  extractorRowsPerBatchCounterMetricType,
 } from './extractor'
 import {
   ingestorRequestCounterMetricType,
@@ -76,8 +75,8 @@ const percentFailedRequestsWidget = pulumi
     },
   }))
 
-const httpResponseStatusesWidget =
-  ingestorResponseCounterMetricType.apply((type) => ({
+const httpResponseStatusesWidget = ingestorResponseCounterMetricType.apply(
+  (type) => ({
     title: 'HTTP Response Statuses',
     pieChart: {
       chartType: 'DONUT',
@@ -91,7 +90,7 @@ const httpResponseStatusesWidget =
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
                 groupByFields: ['metric.label."result_status"'],
-                perSeriesAligner: 'ALIGN_DELTA',
+                perSeriesAligner: 'ALIGN_COUNT',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
             },
@@ -99,7 +98,8 @@ const httpResponseStatusesWidget =
         },
       ],
     },
-  }))
+  })
+)
 
 const stagingSizeWidget = stagingBucketName.apply((name) => ({
   title: 'Staging Storage Total Bytes',
@@ -213,8 +213,8 @@ const sanitizerRecordsWidget = sanitizerRecordsCounterMetricType.apply(
   })
 )
 
-const sanitizerDecisionLabelsWidget =
-  sanitizerRecordsCounterMetricType.apply((type) => ({
+const sanitizerDecisionLabelsWidget = sanitizerRecordsCounterMetricType.apply(
+  (type) => ({
     title: 'Sanitizer Policy Decisions',
     pieChart: {
       chartType: 'DONUT',
@@ -228,7 +228,7 @@ const sanitizerDecisionLabelsWidget =
                 alignmentPeriod: '60s',
                 crossSeriesReducer: 'REDUCE_SUM',
                 groupByFields: ['metric.label."decision_label"'],
-                perSeriesAligner: 'ALIGN_DELTA',
+                perSeriesAligner: 'ALIGN_COUNT',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
             },
@@ -236,7 +236,8 @@ const sanitizerDecisionLabelsWidget =
         },
       ],
     },
-  }))
+  })
+)
 
 const loaderBatchesLoadedWidget = loaderBatchesLoadedCounterMetricType.apply(
   (type) => ({
@@ -267,34 +268,32 @@ const loaderBatchesLoadedWidget = loaderBatchesLoadedCounterMetricType.apply(
   })
 )
 
-const rowsPerBatchWidget = extractorRowsPerBatchCounterMetricType.apply(
-  (type) => ({
-    title: 'Rows Per Batch',
-    id: '',
-    scorecard: {
-      breakdowns: [],
-      dimensions: [],
-      measures: [],
-      sparkChartView: {
-        sparkChartType: 'SPARK_LINE',
-      },
-      thresholds: [],
-      timeSeriesQuery: {
-        outputFullDuration: true,
-        timeSeriesFilter: {
-          aggregation: {
-            alignmentPeriod: '60s',
-            crossSeriesReducer: 'REDUCE_SUM',
-            groupByFields: [],
-            perSeriesAligner: 'ALIGN_MEAN',
-          },
-          filter: `metric.type="${type}" resource.type="generic_task"`,
-        },
-        unitOverride: '',
-      },
+const rowsPerBatchWidget = pulumi.output('null').apply((type) => ({
+  title: 'Rows Per Batch',
+  id: '',
+  scorecard: {
+    breakdowns: [],
+    dimensions: [],
+    measures: [],
+    sparkChartView: {
+      sparkChartType: 'SPARK_LINE',
     },
-  })
-)
+    thresholds: [],
+    timeSeriesQuery: {
+      outputFullDuration: true,
+      timeSeriesFilter: {
+        aggregation: {
+          alignmentPeriod: '60s',
+          crossSeriesReducer: 'REDUCE_SUM',
+          groupByFields: [],
+          perSeriesAligner: 'ALIGN_MEAN',
+        },
+        filter: `metric.type="${type}" resource.type="generic_task"`,
+      },
+      unitOverride: '',
+    },
+  },
+}))
 
 export const pipelineWidgets = pulumi
   .all<object>([

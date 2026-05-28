@@ -22,7 +22,6 @@ const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
 const batchesWritten = Metric.counter('extracted_batches_written')
-const rowsPerBatch = Metric.counter('extracted_rows_per_batch')
 
 export const writeBatch = Effect.fn('writeBatch')(
   function* (input: {
@@ -57,9 +56,6 @@ export const writeBatch = Effect.fn('writeBatch')(
     })
 
     yield* Metric.increment(batchesWritten)
-    yield* Metric.incrementBy(rowsPerBatch, input.rows.length).pipe(
-      Effect.tagMetrics({ job_run_id: input.runId })
-    )
 
     return yield* encodeExtractionBatchEvent(batch)
   },

@@ -69,6 +69,12 @@ export const ingestorResponseCounterMetric =
         {
           key: 'result_status',
           valueType: 'STRING',
+          description:
+            'HTTP status message (e.g. OK, Not Found, Internal Server Error)',
+        },
+        {
+          key: 'result_status_code',
+          valueType: 'STRING',
           description: 'HTTP status code (e.g. 200, 404, 500)',
         },
         {

@@ -1,4 +1,5 @@
 import { Effect, Schema, Metric, flow, pipe } from 'effect'
+import { getReasonPhrase } from 'http-status-codes'
 
 import * as Node from '@news-research/ingestion-data/Node'
 import * as Yaml from '@news-research/ingestion-data/Yaml'
@@ -164,7 +165,8 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     // allow monitoring of source health
     yield* Metric.increment(contentRequestResponses).pipe(
       Effect.tagMetrics({
-        result_status: String(result.status),
+        result_status: `${getReasonPhrase(result.status)}`,
+        result_status_code: `${result.status}`,
         result_content_type: result.contentType || 'unknown',
       })
     )

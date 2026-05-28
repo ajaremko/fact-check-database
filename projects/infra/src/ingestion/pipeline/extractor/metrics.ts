@@ -73,34 +73,3 @@ export const extractorBatchesWrittenCounterMetric =
     },
     { provider }
   )
-
-export const extractorRowsPerBatchCounterMetric =
-  new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-extractor-rows-per-batch-counter`,
-    {
-      type: 'workload.googleapis.com/pipeline/extracted_rows_per_batch',
-      description:
-        'Total rows written per batch, tagged by job run ID to allow per-run aggregation',
-      displayName: 'Extracted Rows Per Batch count',
-      metricKind: 'GAUGE',
-      valueType: 'DOUBLE',
-      labels: [
-        {
-          key: 'table_dataset_id',
-          valueType: 'STRING',
-          description: 'Dataset ID of the destination table',
-        },
-        {
-          key: 'table_table_id',
-          valueType: 'STRING',
-          description: 'Table ID of the destination table',
-        },
-        {
-          key: 'job_run_id',
-          valueType: 'STRING',
-          description: 'Run ID of the job that wrote the batch',
-        },
-      ],
-    },
-    { provider }
-  )
