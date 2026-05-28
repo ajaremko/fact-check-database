@@ -75,6 +75,8 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       yield* Metric.increment(contentRequestResults).pipe(
         Effect.tagMetrics({
           result_status: 'Client Failure',
+          result_status_code: 'N/A',
+          result_content_type: 'N/A',
         })
       )
       // For a failed fetch, we won't have a body to archive,
