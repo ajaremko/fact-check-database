@@ -32,6 +32,9 @@
     },
     {
       "path": "./projects/ingestion-replay"
+    },
+    {
+      "path": "./projects/core-website"
     }
   ]
 }
