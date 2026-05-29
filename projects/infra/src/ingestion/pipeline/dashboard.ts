@@ -35,7 +35,18 @@ const contentSourcesWidget =
           visible: true,
         },
         {
-          column: 'project_id',
+          displayName: 'Status',
+          column: 'result_status',
+          visible: false,
+        },
+        {
+          displayName: 'Code',
+          column: 'result_status_code',
+          visible: false,
+        },
+        {
+          displayName: 'Content Type',
+          column: 'result_content_type',
           visible: false,
         },
         {
@@ -58,8 +69,93 @@ const contentSourcesWidget =
                   'metric.label."source_name"',
                   'metric.label."source_id"',
                   'metric.label."source_url"',
+                  'metric.label."result_status"',
+                  'metric.label."result_content_type"',
+                  'metric.label."result_status_code"',
                 ],
                 perSeriesAligner: 'ALIGN_COUNT',
+              },
+              filter: `metric.type="${type}" resource.type="generic_task"`,
+              pickTimeSeriesFilter: {
+                direction: 'TOP',
+                numTimeSeries: 30,
+                rankingMethod: 'METHOD_MEAN',
+              },
+            },
+          },
+        },
+      ],
+      metricVisualization: 'BAR',
+    },
+  }))
+
+const sanitizerDecisionsWidget =
+  ingestorContentRequestResultsCounterMetricType.apply((type) => ({
+    title: 'Latest Sanitizer Decisions',
+    timeSeriesTable: {
+      columnSettings: [
+        {
+          displayName: 'ID',
+          column: 'source_id',
+          visible: true,
+        },
+        {
+          displayName: 'Name',
+          column: 'source_name',
+          visible: true,
+        },
+        {
+          displayName: 'URL',
+          column: 'source_url',
+          visible: true,
+        },
+        {
+          displayName: 'Collection',
+          column: 'source_collection',
+          visible: true,
+        },
+        {
+          displayName: 'Status',
+          column: 'result_status',
+          visible: false,
+        },
+        {
+          displayName: 'Code',
+          column: 'result_status_code',
+          visible: false,
+        },
+        {
+          displayName: 'Content Type',
+          column: 'result_content_type',
+          visible: false,
+        },
+        {
+          displayName: 'Records Sanitized',
+          column: 'value',
+          visible: true,
+        },
+        {
+          displayName: 'Decision Label',
+          column: 'decision_label',
+          visible: true,
+        },
+      ],
+      dataSets: [
+        {
+          minAlignmentPeriod: '60s',
+          timeSeriesQuery: {
+            outputFullDuration: true,
+            timeSeriesFilter: {
+              aggregation: {
+                alignmentPeriod: '60s',
+                crossSeriesReducer: 'REDUCE_SUM',
+                groupByFields: [
+                  'metric.label."source_name"',
+                  'metric.label."source_id"',
+                  'metric.label."source_url"',
+                  'metric.label."decision_label"',
+                ],
+                perSeriesAligner: 'ALIGN_MEAN',
               },
               filter: `metric.type="${type}" resource.type="generic_task"`,
             },
@@ -72,7 +168,7 @@ const contentSourcesWidget =
 
 const contentRequestsByStatusWidget =
   ingestorContentRequestResultsCounterMetricType.apply((type) => ({
-    title: 'Content Requests by HTTP Status',
+    title: 'Content Requests by Result',
     pieChart: {
       chartType: 'DONUT',
       dataSets: [
@@ -180,6 +276,7 @@ export const pipelineWidgets = pulumi
     extractorFactCheckRowsWidget,
     contentRecordsSanitizedWidget,
     contentSourcesWidget,
+    sanitizerDecisionsWidget,
   ])
   .apply(
     ([
@@ -188,11 +285,13 @@ export const pipelineWidgets = pulumi
       extractorFactCheckRows,
       contentRecordsSanitized,
       contentSources,
+      sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
       stagingSize,
       extractorFactCheckRows,
       contentRecordsSanitized,
       contentSources,
+      sanitizerDecisions,
     })
   )

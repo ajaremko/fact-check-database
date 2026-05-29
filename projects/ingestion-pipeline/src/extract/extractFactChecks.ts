@@ -114,7 +114,6 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
     const rows = yield* encodeFactCheckRows(factChecks)
     yield* Metric.incrementBy(extractedFactCheckRows, rows.length).pipe(
       Effect.tagMetrics({
-        batch_id: ctx.extractionId,
         source_collection: observation.source.collection,
         source_name: observation.source.name,
         source_url: observation.source.url,

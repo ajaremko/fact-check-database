@@ -14,6 +14,11 @@ export const extractorFactCheckRowCounterMetric =
       valueType: 'DOUBLE',
       labels: [
         {
+          key: 'batch_id',
+          valueType: 'STRING',
+          description: 'The ID of the batch the rows are associated with',
+        },
+        {
           key: 'source_id',
           valueType: 'STRING',
           description: 'The ID of the source the rows were extracted from',
