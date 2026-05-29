@@ -126,6 +126,14 @@
       "preVersionCommand": "npx nx run-many --target=docker:build --configuration=production"
     },
     "groups": {
+      "core": {
+        "projects": ["core-website"],
+        "projectsRelationship": "independent",
+        "docker": {
+          "registryUrl": "${DOCKER_REGISTRY}",
+          "skipVersionActions": true
+        }
+      },
       "ingestion": {
         "projects": ["ingestion-pipeline-*", "ingestion-replay"],
         "projectsRelationship": "independent",
