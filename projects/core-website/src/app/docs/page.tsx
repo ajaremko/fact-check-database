@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import styled from 'styled-components'
-import { C, bp, serif, mono } from '@/lib/theme'
+import { C, serif, mono } from '@/lib/theme'
 
 // --- Layout ---
 
