@@ -74,19 +74,3 @@ export const artifactRegistryService = new gcp.projects.Service(
   },
   { provider, dependsOn: [computeService, resourceManagerService] }
 )
-
-export const domainsService = new gcp.projects.Service(
-  `${tag}-domains-service`,
-  {
-    service: 'domains.googleapis.com',
-  },
-  { provider }
-)
-
-export const dnsService = new gcp.projects.Service(
-  `${tag}-dns-service`,
-  {
-    service: 'dns.googleapis.com',
-  },
-  { provider }
-)

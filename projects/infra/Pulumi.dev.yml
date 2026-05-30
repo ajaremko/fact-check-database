@@ -29,3 +29,11 @@ config:
   research:region: us-central1
   research:tableDeletionProtection: false
   research:retainTablesOnDelete: false
+
+  website:project: news-research-dev
+  website:region: us-central1
+  website:tag: dev-282
+  website:verifiedOwner: alfredsyoung@gmail.com
+  website:verifiedDomains:
+    - factcheckdatabase.com
+    - thefactcheckdatabase.com

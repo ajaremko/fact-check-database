@@ -1,0 +1,44 @@
+import * as gcp from '@pulumi/gcp'
+
+import { tag } from './config'
+import { provider } from './project'
+
+export const cloudRunService = new gcp.projects.Service(
+  `${tag}-cloud-run-service`,
+  {
+    service: 'run.googleapis.com',
+  },
+  { provider }
+)
+
+export const domainsService = new gcp.projects.Service(
+  `${tag}-domains-service`,
+  {
+    service: 'domains.googleapis.com',
+  },
+  { provider }
+)
+
+export const dnsService = new gcp.projects.Service(
+  `${tag}-dns-service`,
+  {
+    service: 'dns.googleapis.com',
+  },
+  { provider }
+)
+
+export const siteVerificationService = new gcp.projects.Service(
+  `${tag}-siteverification-service`,
+  {
+    service: 'siteverification.googleapis.com',
+  },
+  { provider }
+)
+
+export const storageService = new gcp.projects.Service(
+  `${tag}-storage-service`,
+  {
+    service: 'storage.googleapis.com',
+  },
+  { provider }
+)
