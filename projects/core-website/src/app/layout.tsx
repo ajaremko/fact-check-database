@@ -1,5 +1,6 @@
 import './global.css'
 import { StyledComponentsRegistry } from './registry'
+import { Navbar } from '@/components/Navbar'
 
 export const metadata = {
   title: 'Fact-Check Research Dataset',
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+        <StyledComponentsRegistry>
+          <Navbar />
+          {children}
+        </StyledComponentsRegistry>
       </body>
     </html>
   )

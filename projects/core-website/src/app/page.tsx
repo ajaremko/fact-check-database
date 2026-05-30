@@ -1,21 +1,9 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import styled from 'styled-components'
-
-const C = {
-  bgBase: '#0f172a',
-  bgSurface: '#1e293b',
-  bgCode: '#0d1117',
-  borderSubtle: '#334155',
-  textPrimary: '#f1f5f9',
-  textSecondary: '#94a3b8',
-  textMuted: '#64748b',
-  accent: '#38bdf8',
-  accentHover: '#0ea5e9',
-} as const
-
-const bp = { md: '@media (min-width: 768px)' } as const
+import { C } from '@/lib/theme'
 
 // --- Layout ---
 
@@ -23,7 +11,8 @@ const PageWrapper = styled.div`
   background-color: ${C.bgBase};
   color: ${C.textPrimary};
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
 `
 
 const Container = styled.div`
@@ -78,15 +67,6 @@ const HeroSection = styled.section`
   padding: 7rem 0 5rem;
 `
 
-const HeroEyebrow = styled.p`
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: ${C.accent};
-  margin: 0 0 1.25rem;
-`
-
 const HeroHeadline = styled.h1`
   font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
@@ -104,7 +84,7 @@ const HeroSubtitle = styled.p`
   max-width: 620px;
 `
 
-const CTAButton = styled.a`
+const CTAButton = styled(Link)`
   display: inline-block;
   background-color: ${C.accent};
   color: #0f172a;
@@ -117,6 +97,22 @@ const CTAButton = styled.a`
 
   &:hover {
     background-color: ${C.accentHover};
+  }
+`
+
+const SecondaryLink = styled(Link)`
+  display: inline-block;
+  margin-left: 1.5rem;
+  color: ${C.textSecondary};
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-bottom: 1px solid ${C.borderSubtle};
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: ${C.textPrimary};
+    border-color: ${C.textSecondary};
   }
 `
 
@@ -163,103 +159,6 @@ const StatLabel = styled.span`
   letter-spacing: 0.05em;
 `
 
-// --- Sources ---
-
-const SourceGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-
-  ${bp.md} {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`
-
-const SourceCard = styled.div`
-  background-color: ${C.bgSurface};
-  border: 1px solid ${C.borderSubtle};
-  border-radius: 6px;
-  padding: 1.25rem 1.5rem;
-`
-
-const SourceName = styled.h3`
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${C.textPrimary};
-  margin: 0 0 0.5rem;
-`
-
-const SourceDesc = styled.p`
-  font-size: 0.875rem;
-  color: ${C.textSecondary};
-  line-height: 1.65;
-  margin: 0;
-`
-
-// --- Schema Table ---
-
-const SchemaTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-`
-
-const Thead = styled.thead``
-
-const Tbody = styled.tbody`
-  tr:nth-child(even) td {
-    background-color: ${C.bgSurface};
-  }
-`
-
-const Th = styled.th`
-  text-align: left;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid ${C.borderSubtle};
-  color: ${C.textMuted};
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-`
-
-const Td = styled.td`
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid ${C.borderSubtle};
-  color: ${C.textSecondary};
-  vertical-align: top;
-`
-
-const TdMono = styled(Td)`
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  color: ${C.accent};
-  font-size: 0.8rem;
-  white-space: nowrap;
-`
-
-const TdType = styled(Td)`
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  color: ${C.textMuted};
-  font-size: 0.8rem;
-  white-space: nowrap;
-`
-
-// --- Code Block ---
-
-const CodeBlock = styled.pre`
-  background-color: ${C.bgCode};
-  color: #e2e8f0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.825rem;
-  line-height: 1.7;
-  padding: 1.75rem;
-  border-radius: 6px;
-  border: 1px solid ${C.borderSubtle};
-  overflow-x: auto;
-  white-space: pre;
-  margin: 0;
-`
-
 // --- Governance ---
 
 const GovernanceList = styled.dl`
@@ -284,7 +183,8 @@ const GovernanceDetail = styled.dd`
 `
 
 const InlineCode = styled.code`
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
   font-size: 0.85em;
   background-color: ${C.bgSurface};
   border: 1px solid ${C.borderSubtle};
@@ -309,7 +209,7 @@ const BulletList = styled.ul`
   margin: 1rem 0 1.75rem;
 `
 
-const AccessCTA = styled.a`
+const AccessCTA = styled(Link)`
   display: inline-block;
   background-color: ${C.accent};
   color: #0f172a;
@@ -347,107 +247,10 @@ const FooterLink = styled.a`
 
 // --- Static Data ---
 
-interface SourceEntry {
-  name: string
-  description: string
-}
-
-interface SchemaField {
-  field: string
-  type: string
-  description: string
-}
-
 interface GovernanceItem {
   term: string
   detail: ReactNode
 }
-
-const SOURCES: SourceEntry[] = [
-  {
-    name: 'PolitiFact',
-    description:
-      'U.S. political fact-checking from the Poynter Institute. Rates claims on a six-point "Truth-O-Meter" scale ranging from True to Pants on Fire.',
-  },
-  {
-    name: 'Snopes',
-    description:
-      'One of the oldest fact-checking and rumor-debunking publications. Covers viral claims, urban legends, and political misinformation.',
-  },
-  {
-    name: 'FactCheck.org',
-    description:
-      'Nonpartisan U.S. political fact-checking operated by the Annenberg Public Policy Center at the University of Pennsylvania.',
-  },
-  {
-    name: 'LeadStories',
-    description:
-      'Focuses on viral misinformation trending on social media platforms. Uses a real-time trending story detection methodology.',
-  },
-  {
-    name: 'Full Fact',
-    description:
-      'UK-based independent fact-checking charity. Covers claims from politicians, media outlets, and public discourse in the United Kingdom.',
-  },
-  {
-    name: 'Africa Check',
-    description:
-      "Africa's first fact-checking organization, covering claims across sub-Saharan Africa in English, French, and Portuguese.",
-  },
-  {
-    name: 'AFP Fact Check',
-    description:
-      'Global fact-checking unit of Agence France-Presse. Covers claims in multiple languages across Europe, Asia, Africa, and the Americas.',
-  },
-]
-
-const SCHEMA_FIELDS: SchemaField[] = [
-  { field: 'title', type: 'string', description: 'Headline or title of the fact-check article' },
-  {
-    field: 'claim',
-    type: 'string',
-    description: 'The specific claim being evaluated, when extractable from the feed',
-  },
-  { field: 'link', type: 'string', description: 'Canonical URL of the original fact-check article' },
-  {
-    field: 'verdict_raw',
-    type: 'string',
-    description: 'Original verdict label as published by the source organization',
-  },
-  {
-    field: 'verdict_normalized',
-    type: 'enum',
-    description: 'Standardized verdict: true | false | misleading | unsupported | exaggerated',
-  },
-  {
-    field: 'published_at_normalized',
-    type: 'timestamp',
-    description: 'Publication datetime normalized to UTC ISO 8601',
-  },
-  { field: 'source.name', type: 'string', description: 'Name of the fact-checking organization' },
-  { field: 'source.url', type: 'string', description: 'Base URL of the source organization' },
-  { field: 'language', type: 'string', description: "BCP-47 language code of the article (e.g., 'en', 'fr')" },
-  {
-    field: 'content_sha256',
-    type: 'string',
-    description: 'SHA-256 hash of canonical content for deduplication across ingestion runs',
-  },
-]
-
-const SAMPLE_JSON = `{
-  "title": "No, WHO did not declare a 'global health emergency' over a new mpox strain in January 2026",
-  "claim": "The WHO declared a global health emergency over a new mpox strain in January 2026.",
-  "link": "https://factcheck.afp.com/doc.afp.com.36UE3JE",
-  "verdict_raw": "False",
-  "verdict_normalized": "false",
-  "published_at_normalized": "2026-01-14T09:22:00Z",
-  "source": {
-    "name": "AFP Fact Check",
-    "url": "https://factcheck.afp.com"
-  },
-  "language": "en",
-  "content_sha256": "a3f9c2d1e4b8765432fedcba9876543210abcdef0123456789abcdef01234567"
-}`
 
 // --- Page ---
 
@@ -457,8 +260,10 @@ export default function Page() {
       term: 'Encryption at Rest',
       detail: (
         <>
-          All records are encrypted at rest using Google Cloud KMS with customer-managed encryption keys (CMEK). Key
-          management is scoped to the dataset owner&apos;s GCP project and is not delegated to any third party.
+          All records are encrypted at rest using Google Cloud KMS with
+          customer-managed encryption keys (CMEK). Key management is scoped to
+          the dataset owner&apos;s GCP project and is not delegated to any third
+          party.
         </>
       ),
     },
@@ -471,10 +276,12 @@ export default function Page() {
       term: 'Access Policy Labels',
       detail: (
         <>
-          Each record carries a policy label: <InlineCode>SAFE_PUBLIC</InlineCode> for fully processed records,{' '}
-          <InlineCode>RESTRICTED</InlineCode> for records pending manual review, and{' '}
-          <InlineCode>QUARANTINED</InlineCode> for records flagged by automated quality checks. Shared dataset views
-          surface only <InlineCode>SAFE_PUBLIC</InlineCode> records.
+          Each record carries a policy label:{' '}
+          <InlineCode>SAFE_PUBLIC</InlineCode> for fully processed records,{' '}
+          <InlineCode>RESTRICTED</InlineCode> for records pending manual review,
+          and <InlineCode>QUARANTINED</InlineCode> for records flagged by
+          automated quality checks. Shared dataset views surface only{' '}
+          <InlineCode>SAFE_PUBLIC</InlineCode> records.
         </>
       ),
     },
@@ -490,15 +297,18 @@ export default function Page() {
       {/* Hero */}
       <HeroSection>
         <Container>
-          <HeroEyebrow>Research Dataset</HeroEyebrow>
-          <HeroHeadline>A Research-Grade Fact-Check Dataset for the Open Web</HeroHeadline>
+          <SectionLabel>Research Dataset</SectionLabel>
+          <HeroHeadline>
+            A Research-Grade Fact-Check Dataset for the Open Web
+          </HeroHeadline>
           <HeroSubtitle>
-            Continuously updated from 7 international fact-checking organizations. Structured, normalized, and encrypted
-            at rest — built for researchers studying misinformation, not for moderation pipelines.
+            Continuously updated from 7 international fact-checking
+            organizations. Structured, normalized, and encrypted at rest —
+            built for researchers studying misinformation, not for moderation
+            pipelines.
           </HeroSubtitle>
-          <CTAButton href="mailto:alfredsyoung@gmail.com?subject=Dataset%20Access%20Request">
-            Request Access
-          </CTAButton>
+          <CTAButton href="/contact">Request Access</CTAButton>
+          <SecondaryLink href="/docs">View Documentation &rarr;</SecondaryLink>
         </Container>
       </HeroSection>
 
@@ -530,87 +340,29 @@ export default function Page() {
           <SectionLabel>Overview</SectionLabel>
           <SectionHeading>About the Dataset</SectionHeading>
           <BodyText>
-            This dataset aggregates fact-check records published by leading international fact-checking organizations.
-            Each record captures the original claim, the organization&apos;s verdict, a normalized verdict label,
-            publication metadata, and a content hash for deduplication. Ingestion runs daily via automated RSS and Atom
-            feed parsing, with each record archived in its original form alongside normalized fields.
+            This dataset aggregates fact-check records published by leading
+            international fact-checking organizations. Each record captures the
+            original claim, the organization&apos;s verdict, a normalized verdict
+            label, publication metadata, and a content hash for deduplication.
+            Ingestion runs daily via automated RSS and Atom feed parsing, with
+            each record archived in its original form alongside normalized
+            fields.
           </BodyText>
           <BodyText>
-            The dataset is designed for researchers studying misinformation patterns, claim lifecycles, cross-source
-            verdict consistency, and the temporal dynamics of false information. It is not intended as a moderation tool
-            or real-time decision system. Records reflect the judgments of the source organizations and are preserved
-            as-is to support comparative and longitudinal analysis.
+            The dataset is designed for researchers studying misinformation
+            patterns, claim lifecycles, cross-source verdict consistency, and the
+            temporal dynamics of false information. It is not intended as a
+            moderation tool or real-time decision system. Records reflect the
+            judgments of the source organizations and are preserved as-is to
+            support comparative and longitudinal analysis.
           </BodyText>
           <BodyText>
-            Coverage spans seven organizations across multiple geographies and languages, including English-language U.S.
-            sources (PolitiFact, FactCheck.org, Snopes), a viral misinformation tracker (LeadStories), UK-based Full
-            Fact, Africa Check covering sub-Saharan Africa, and AFP Fact Check with multilingual international reach.
+            Coverage spans seven organizations across multiple geographies and
+            languages, including English-language U.S. sources (PolitiFact,
+            FactCheck.org, Snopes), a viral misinformation tracker (LeadStories),
+            UK-based Full Fact, Africa Check covering sub-Saharan Africa, and AFP
+            Fact Check with multilingual international reach.
           </BodyText>
-        </Container>
-      </Section>
-
-      <SectionDivider />
-
-      {/* Sources */}
-      <Section>
-        <Container>
-          <SectionLabel>Coverage</SectionLabel>
-          <SectionHeading>Data Sources</SectionHeading>
-          <SourceGrid>
-            {SOURCES.map((s) => (
-              <SourceCard key={s.name}>
-                <SourceName>{s.name}</SourceName>
-                <SourceDesc>{s.description}</SourceDesc>
-              </SourceCard>
-            ))}
-          </SourceGrid>
-        </Container>
-      </Section>
-
-      <SectionDivider />
-
-      {/* Schema */}
-      <Section>
-        <Container>
-          <SectionLabel>Structure</SectionLabel>
-          <SectionHeading>Schema</SectionHeading>
-          <BodyText>
-            Each record in the BigQuery table corresponds to a single fact-check article. Key fields are listed below.
-            All content fields are nullable — individual feeds may not populate every attribute.
-          </BodyText>
-          <SchemaTable>
-            <Thead>
-              <tr>
-                <Th>Field</Th>
-                <Th>Type</Th>
-                <Th>Description</Th>
-              </tr>
-            </Thead>
-            <Tbody>
-              {SCHEMA_FIELDS.map((f) => (
-                <tr key={f.field}>
-                  <TdMono>{f.field}</TdMono>
-                  <TdType>{f.type}</TdType>
-                  <Td>{f.description}</Td>
-                </tr>
-              ))}
-            </Tbody>
-          </SchemaTable>
-        </Container>
-      </Section>
-
-      <SectionDivider />
-
-      {/* Sample Record */}
-      <Section>
-        <Container>
-          <SectionLabel>Example</SectionLabel>
-          <SectionHeading>Sample Record</SectionHeading>
-          <BodyText>
-            A representative record as it appears in the dataset after normalization. Field values are drawn from a real
-            AFP Fact Check article for illustrative purposes.
-          </BodyText>
-          <CodeBlock>{SAMPLE_JSON}</CodeBlock>
         </Container>
       </Section>
 
@@ -641,25 +393,27 @@ export default function Page() {
           <SectionHeading>Request Access</SectionHeading>
           <AccessBox>
             <BodyText>
-              This dataset is available to academic researchers, journalists, and data scientists working on
-              misinformation research, computational social science, or related fields. Access is granted on a
+              This dataset is available to academic researchers, journalists, and
+              data scientists working on misinformation research, computational
+              social science, or related fields. Access is granted on a
               case-by-case basis after a brief review of the intended use.
             </BodyText>
             <BodyText>Please include the following in your request:</BodyText>
             <BulletList>
-              <li>Your name and institutional affiliation, or independent researcher status</li>
-              <li>A brief description of your research project or intended use case</li>
+              <li>
+                Your name and institutional affiliation, or independent
+                researcher status
+              </li>
+              <li>
+                A brief description of your research project or intended use case
+              </li>
               <li>The approximate data volume you expect to query</li>
-              <li>Whether you require BigQuery direct access, GCS export, or both</li>
+              <li>
+                Whether you require BigQuery direct access, GCS export, or both
+              </li>
             </BulletList>
-            <AccessCTA
-              href={
-                'mailto:alfredsyoung@gmail.com' +
-                '?subject=Dataset%20Access%20Request' +
-                '&body=Name%3A%0AInstitutional%20affiliation%3A%0AProject%20description%3A%0AData%20needs%3A'
-              }
-            >
-              Send Access Request &rarr; alfredsyoung@gmail.com
+            <AccessCTA href="/contact">
+              Send Access Request &rarr;
             </AccessCTA>
           </AccessBox>
         </Container>
@@ -669,7 +423,9 @@ export default function Page() {
       <Footer>
         <Container>
           Dataset maintained by Alfred Young &middot;{' '}
-          <FooterLink href="mailto:alfredsyoung@gmail.com">alfredsyoung@gmail.com</FooterLink>
+          <FooterLink href="mailto:alfredsyoung@gmail.com">
+            alfredsyoung@gmail.com
+          </FooterLink>
         </Container>
       </Footer>
     </PageWrapper>
