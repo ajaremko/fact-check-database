@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styled from 'styled-components'
-import { C, bp } from '@/lib/theme'
+import { C, bp, serif } from '@/lib/theme'
 
 const Bar = styled.nav`
   position: sticky;
@@ -11,6 +11,7 @@ const Bar = styled.nav`
   z-index: 50;
   background-color: ${C.bgSurface};
   border-bottom: 1px solid ${C.borderSubtle};
+  font-family: ${serif};
 `
 
 const Inner = styled.div`
@@ -25,11 +26,9 @@ const Inner = styled.div`
 
 const LogoLink = styled(Link)`
   text-decoration: none;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   color: ${C.textPrimary};
 
   span {
@@ -60,7 +59,7 @@ const NavLink = styled(Link)<{ $active: boolean }>`
 `
 
 const NAV_ITEMS = [
-  { label: 'Dataset', href: '/' },
+  { label: 'Home', href: '/' },
   { label: 'Documentation', href: '/docs' },
   { label: 'Contact', href: '/contact' },
 ] as const
@@ -72,7 +71,7 @@ export function Navbar() {
     <Bar>
       <Inner>
         <LogoLink href="/">
-          Fact<span>Check</span>
+          <span>FactCheck</span>Database.com
         </LogoLink>
         <NavLinks>
           {NAV_ITEMS.map(({ label, href }) => (

@@ -1,9 +1,8 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import Link from 'next/link'
 import styled from 'styled-components'
-import { C } from '@/lib/theme'
+import { C, bp, serif } from '@/lib/theme'
 
 // --- Layout ---
 
@@ -11,8 +10,7 @@ const PageWrapper = styled.div`
   background-color: ${C.bgBase};
   color: ${C.textPrimary};
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: ${serif};
 `
 
 const Container = styled.div`
@@ -87,7 +85,7 @@ const HeroSubtitle = styled.p`
 const CTAButton = styled(Link)`
   display: inline-block;
   background-color: ${C.accent};
-  color: #0f172a;
+  color: ${C.bgBase};
   font-weight: 700;
   font-size: 0.95rem;
   padding: 0.875rem 2rem;
@@ -159,38 +157,37 @@ const StatLabel = styled.span`
   letter-spacing: 0.05em;
 `
 
-// --- Governance ---
+// --- Sources ---
 
-const GovernanceList = styled.dl`
-  margin: 0;
-`
+const SourceGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 
-const GovernanceTerm = styled.dt`
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${C.textPrimary};
-  margin: 0 0 0.35rem;
-`
-
-const GovernanceDetail = styled.dd`
-  color: ${C.textSecondary};
-  line-height: 1.8;
-  margin: 0 0 2rem;
-
-  &:last-child {
-    margin-bottom: 0;
+  ${bp.md} {
+    grid-template-columns: repeat(2, 1fr);
   }
 `
 
-const InlineCode = styled.code`
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.85em;
+const SourceCard = styled.div`
   background-color: ${C.bgSurface};
   border: 1px solid ${C.borderSubtle};
-  border-radius: 3px;
-  padding: 0.1em 0.4em;
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+`
+
+const SourceName = styled.h3`
+  font-size: 1rem;
+  font-weight: 600;
   color: ${C.textPrimary};
+  margin: 0 0 0.5rem;
+`
+
+const SourceDesc = styled.p`
+  font-size: 0.875rem;
+  color: ${C.textSecondary};
+  line-height: 1.65;
+  margin: 0;
 `
 
 // --- Access Section ---
@@ -212,7 +209,7 @@ const BulletList = styled.ul`
 const AccessCTA = styled(Link)`
   display: inline-block;
   background-color: ${C.accent};
-  color: #0f172a;
+  color: ${C.bgBase};
   font-weight: 700;
   font-size: 0.95rem;
   padding: 0.875rem 2rem;
@@ -247,65 +244,64 @@ const FooterLink = styled.a`
 
 // --- Static Data ---
 
-interface GovernanceItem {
-  term: string
-  detail: ReactNode
+interface SourceEntry {
+  name: string
+  description: string
 }
+
+const SOURCES: SourceEntry[] = [
+  {
+    name: 'PolitiFact',
+    description:
+      'U.S. political fact-checking from the Poynter Institute. Rates claims on a six-point "Truth-O-Meter" scale ranging from True to Pants on Fire.',
+  },
+  {
+    name: 'Snopes',
+    description:
+      'One of the oldest fact-checking and rumor-debunking publications. Covers viral claims, urban legends, and political misinformation.',
+  },
+  {
+    name: 'FactCheck.org',
+    description:
+      'Nonpartisan U.S. political fact-checking operated by the Annenberg Public Policy Center at the University of Pennsylvania.',
+  },
+  {
+    name: 'LeadStories',
+    description:
+      'Focuses on viral misinformation trending on social media platforms. Uses a real-time trending story detection methodology.',
+  },
+  {
+    name: 'Full Fact',
+    description:
+      'UK-based independent fact-checking charity. Covers claims from politicians, media outlets, and public discourse in the United Kingdom.',
+  },
+  {
+    name: 'Africa Check',
+    description:
+      "Africa's first fact-checking organization, covering claims across sub-Saharan Africa in English, French, and Portuguese.",
+  },
+  {
+    name: 'AFP Fact Check',
+    description:
+      'Global fact-checking unit of Agence France-Presse. Covers claims in multiple languages across Europe, Asia, Africa, and the Americas.',
+  },
+]
 
 // --- Page ---
 
 export default function Page() {
-  const GOVERNANCE_ITEMS: GovernanceItem[] = [
-    {
-      term: 'Encryption at Rest',
-      detail: (
-        <>
-          All records are encrypted at rest using Google Cloud KMS with
-          customer-managed encryption keys (CMEK). Key management is scoped to
-          the dataset owner&apos;s GCP project and is not delegated to any third
-          party.
-        </>
-      ),
-    },
-    {
-      term: 'Append-Only Archive',
-      detail:
-        'The dataset uses an append-only write pattern with a full audit trail. Records are never modified or deleted — corrections are represented as new records with updated normalized fields alongside the original.',
-    },
-    {
-      term: 'Access Policy Labels',
-      detail: (
-        <>
-          Each record carries a policy label:{' '}
-          <InlineCode>SAFE_PUBLIC</InlineCode> for fully processed records,{' '}
-          <InlineCode>RESTRICTED</InlineCode> for records pending manual review,
-          and <InlineCode>QUARANTINED</InlineCode> for records flagged by
-          automated quality checks. Shared dataset views surface only{' '}
-          <InlineCode>SAFE_PUBLIC</InlineCode> records.
-        </>
-      ),
-    },
-    {
-      term: 'Storage and Access Control',
-      detail:
-        'Data is stored in Google BigQuery and mirrored to Google Cloud Storage in newline-delimited JSON format. Access is controlled via GCP IAM roles granted per researcher after review.',
-    },
-  ]
-
   return (
     <PageWrapper>
       {/* Hero */}
       <HeroSection>
         <Container>
-          <SectionLabel>Research Dataset</SectionLabel>
           <HeroHeadline>
             A Research-Grade Fact-Check Dataset for the Open Web
           </HeroHeadline>
           <HeroSubtitle>
-            Continuously updated from 7 international fact-checking
-            organizations. Structured, normalized, and encrypted at rest —
-            built for researchers studying misinformation, not for moderation
-            pipelines.
+            Continuously updated from international fact-checking organizations.
+            Structured, normalized, and secure — built for researchers and
+            organizations studying our informational environment.
           </HeroSubtitle>
           <CTAButton href="/contact">Request Access</CTAButton>
           <SecondaryLink href="/docs">View Documentation &rarr;</SecondaryLink>
@@ -342,45 +338,45 @@ export default function Page() {
           <BodyText>
             This dataset aggregates fact-check records published by leading
             international fact-checking organizations. Each record captures the
-            original claim, the organization&apos;s verdict, a normalized verdict
-            label, publication metadata, and a content hash for deduplication.
-            Ingestion runs daily via automated RSS and Atom feed parsing, with
-            each record archived in its original form alongside normalized
-            fields.
+            original claim, the organization&apos;s verdict, a normalized
+            verdict label, and publication metadata. New data is ingested daily
+            through automated RSS feed parsing.
           </BodyText>
           <BodyText>
             The dataset is designed for researchers studying misinformation
-            patterns, claim lifecycles, cross-source verdict consistency, and the
-            temporal dynamics of false information. It is not intended as a
-            moderation tool or real-time decision system. Records reflect the
+            patterns, claim lifecycles, cross-source verdict consistency, and
+            the temporal dynamics of false information. Records reflect the
             judgments of the source organizations and are preserved as-is to
             support comparative and longitudinal analysis.
           </BodyText>
           <BodyText>
             Coverage spans seven organizations across multiple geographies and
             languages, including English-language U.S. sources (PolitiFact,
-            FactCheck.org, Snopes), a viral misinformation tracker (LeadStories),
-            UK-based Full Fact, Africa Check covering sub-Saharan Africa, and AFP
-            Fact Check with multilingual international reach.
+            FactCheck.org, Snopes), a viral misinformation tracker
+            (LeadStories), UK-based Full Fact, Africa Check covering sub-Saharan
+            Africa, and AFP Fact Check with multilingual international reach.
           </BodyText>
         </Container>
       </Section>
-
       <SectionDivider />
 
-      {/* Governance */}
+      {/* Data Sources */}
       <Section>
         <Container>
-          <SectionLabel>Security &amp; Compliance</SectionLabel>
-          <SectionHeading>Data Governance</SectionHeading>
-          <GovernanceList>
-            {GOVERNANCE_ITEMS.map((item) => (
-              <div key={item.term}>
-                <GovernanceTerm>{item.term}</GovernanceTerm>
-                <GovernanceDetail>{item.detail}</GovernanceDetail>
-              </div>
+          <SectionLabel>Coverage</SectionLabel>
+          <SectionHeading>Data Sources</SectionHeading>
+          <BodyText>
+            Records are ingested daily from the RSS and Atom feeds of the
+            following organizations.
+          </BodyText>
+          <SourceGrid>
+            {SOURCES.map((s) => (
+              <SourceCard key={s.name}>
+                <SourceName>{s.name}</SourceName>
+                <SourceDesc>{s.description}</SourceDesc>
+              </SourceCard>
             ))}
-          </GovernanceList>
+          </SourceGrid>
         </Container>
       </Section>
 
@@ -393,10 +389,10 @@ export default function Page() {
           <SectionHeading>Request Access</SectionHeading>
           <AccessBox>
             <BodyText>
-              This dataset is available to academic researchers, journalists, and
-              data scientists working on misinformation research, computational
-              social science, or related fields. Access is granted on a
-              case-by-case basis after a brief review of the intended use.
+              This dataset is available to academic researchers, journalists,
+              and data scientists working on misinformation research,
+              computational social science, or related fields. Access is granted
+              on a case-by-case basis after a brief review of the intended use.
             </BodyText>
             <BodyText>Please include the following in your request:</BodyText>
             <BulletList>
@@ -405,16 +401,16 @@ export default function Page() {
                 researcher status
               </li>
               <li>
-                A brief description of your research project or intended use case
+                A brief description of your research project or intended use
+                case
               </li>
               <li>The approximate data volume you expect to query</li>
               <li>
-                Whether you require BigQuery direct access, GCS export, or both
+                Your preferred access method and any technical requirements or
+                constraints
               </li>
             </BulletList>
-            <AccessCTA href="/contact">
-              Send Access Request &rarr;
-            </AccessCTA>
+            <AccessCTA href="/contact">Send Access Request &rarr;</AccessCTA>
           </AccessBox>
         </Container>
       </Section>
@@ -422,7 +418,7 @@ export default function Page() {
       {/* Footer */}
       <Footer>
         <Container>
-          Dataset maintained by Alfred Young &middot;{' '}
+          The Fact Check Database 2026, maintained by Alfred Young &middot;{' '}
           <FooterLink href="mailto:alfredsyoung@gmail.com">
             alfredsyoung@gmail.com
           </FooterLink>

@@ -1,7 +1,7 @@
 'use client'
 
 import styled from 'styled-components'
-import { C } from '@/lib/theme'
+import { C, serif } from '@/lib/theme'
 
 // --- Layout ---
 
@@ -9,8 +9,7 @@ const PageWrapper = styled.div`
   background-color: ${C.bgBase};
   color: ${C.textPrimary};
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: ${serif};
 `
 
 const Container = styled.div`
@@ -85,7 +84,7 @@ const BulletList = styled.ul`
 const CTAButton = styled.a`
   display: inline-block;
   background-color: ${C.accent};
-  color: #0f172a;
+  color: ${C.bgBase};
   font-weight: 700;
   font-size: 0.95rem;
   padding: 0.875rem 2rem;
