@@ -23,11 +23,11 @@ WORKDIR /app
 # COPY dist/public ./public
 
 COPY dist .
-# COPY dist/static ./static
+COPY dist/static ./standalone/projects/core-website/dist/static
 
-# If you want to persist the fetch cache generated during the build so that
-# cached responses are available immediately on startup, uncomment this line:
-COPY dist/cache ./.next/cache
+# Persist the fetch cache generated during the build so that
+# cached responses are available immediately on startup.
+COPY dist/cache ./standalone/projects/core-website/dist/cache
 
 WORKDIR /app/standalone/projects/core-website
 
