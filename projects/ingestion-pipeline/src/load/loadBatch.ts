@@ -1,6 +1,6 @@
 import { Effect, Metric } from 'effect'
 
-import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQueryClient'
+import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
 
 import { FilePointer } from '../shared'
 

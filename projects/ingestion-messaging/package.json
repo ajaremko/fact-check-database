@@ -60,7 +60,7 @@
     "@effect/platform": "^0.96.0",
     "@effect/platform-node": "^0.106.0",
     "@google-cloud/pubsub": "^5.2.2",
-    "@news-research/ingestion-vendor": "0.0.1",
+    "@news-research/core-vendor": "0.0.1",
     "@news-research/ingestion-data": "0.0.1"
   },
   "nx": {

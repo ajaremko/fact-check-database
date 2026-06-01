@@ -2,9 +2,9 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/packages/ingestion-vendor',
+  cacheDir: '../../node_modules/.vite/packages/core-vendor',
   test: {
-    name: '@news-research/ingestion-vendor',
+    name: '@news-research/core-vendor',
     watch: false,
     globals: true,
     environment: 'node',

@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-vendor",
+  "name": "@news-research/core-vendor",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -69,6 +69,6 @@
     "tslib": "^2.3.0"
   },
   "nx": {
-    "name": "ingestion-vendor"
+    "name": "core-vendor"
   }
 }

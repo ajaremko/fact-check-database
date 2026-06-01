@@ -13,7 +13,7 @@
       "path": "../ingestion-data/tsconfig.lib.json"
     },
     {
-      "path": "../ingestion-vendor/tsconfig.lib.json"
+      "path": "../core-vendor/tsconfig.lib.json"
     }
   ]
 }

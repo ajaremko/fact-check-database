@@ -1,7 +1,7 @@
 import { ConfigError, Effect, Layer } from 'effect'
 
-import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
-import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
+import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
+import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
 
 import { StorageReadError, StorageReader } from '../StorageReader'
 

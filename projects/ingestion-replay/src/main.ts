@@ -16,14 +16,14 @@ import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentele
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
-import * as StorageBucket from '@news-research/ingestion-vendor/cloud-storage/StorageBucket'
-import * as StorageClient from '@news-research/ingestion-vendor/cloud-storage/StorageClient'
-import * as PubsubClient from '@news-research/ingestion-vendor/cloud-pubsub/PubsubClient'
-import * as PubsubTopic from '@news-research/ingestion-vendor/cloud-pubsub/PubsubTopic'
-import * as GcpLoggingPinoConfig from '@news-research/ingestion-vendor/pino-logging-gcp-config'
+import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
+import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
+import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
+import * as PubsubTopic from '@news-research/core-vendor/cloud-pubsub/PubsubTopic'
+import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import * as Node from '@news-research/ingestion-data/Node'
-import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
-import { pinoLogger } from '@news-research/ingestion-vendor/pino'
+import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
+import { pinoLogger } from '@news-research/core-vendor/pino'
 
 interface JobContext {
   runId: string

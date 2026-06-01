@@ -9,10 +9,10 @@ import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as HttpServerMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/HttpServerMessageQueueFeeder'
 import * as InMemoryMessageQueue from '@news-research/ingestion-messaging/adapters/InMemoryMessageQueue'
-import * as BigQueryClient from '@news-research/ingestion-vendor/bigquery/BigQueryClient'
-import * as GcpLoggingPinoConfig from '@news-research/ingestion-vendor/pino-logging-gcp-config'
-import { cloudRunInstanceId } from '@news-research/ingestion-vendor/cloud-run'
-import { pinoLogger } from '@news-research/ingestion-vendor/pino'
+import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
+import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
+import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
+import { pinoLogger } from '@news-research/core-vendor/pino'
 
 import { Program } from './Program'
 

@@ -10,9 +10,6 @@
       "path": "./projects/ingestion-data"
     },
     {
-      "path": "./projects/ingestion-vendor"
-    },
-    {
       "path": "./projects/ingestion-messaging"
     },
     {
@@ -35,6 +32,9 @@
     },
     {
       "path": "./projects/website-server"
+    },
+    {
+      "path": "./projects/core-vendor"
     }
   ]
 }
