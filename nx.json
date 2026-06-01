@@ -126,8 +126,8 @@
       "preVersionCommand": "npx nx run-many --target=docker:build --configuration=production"
     },
     "groups": {
-      "core": {
-        "projects": ["core-website"],
+      "website": {
+        "projects": ["website-*"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",

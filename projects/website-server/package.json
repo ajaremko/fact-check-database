@@ -22,7 +22,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "core-website"
+        "repositoryName": "website-server"
       }
     }
   },
