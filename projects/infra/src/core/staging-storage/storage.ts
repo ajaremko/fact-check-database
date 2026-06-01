@@ -2,14 +2,14 @@ import * as gcp from '@pulumi/gcp'
 
 import {
   gcpRegion,
-  ingestionLabels,
+  coreLabels,
   tag,
   retainStorageOnDelete,
   forceDestroyStorage,
   batchRetentionDays,
-} from '../../config'
-import { storageService } from '../../services'
-import { provider } from '../../project'
+} from '../config'
+import { storageService } from '../services'
+import { provider } from '../project'
 
 export const stagingBucket = new gcp.storage.Bucket(
   `${tag}-staging-bucket`,
@@ -17,7 +17,7 @@ export const stagingBucket = new gcp.storage.Bucket(
     location: gcpRegion,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
-    labels: ingestionLabels,
+    labels: coreLabels,
     forceDestroy: forceDestroyStorage,
     lifecycleRules: batchRetentionDays
       ? [

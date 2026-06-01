@@ -2,10 +2,10 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import { stagingDatasetId } from '../../../analysis'
+import { stagingBucketName } from '../../../core'
 
 import { gcpProject, tag } from '../../config'
 import { provider } from '../../project'
-import { stagingBucketName } from '../staging'
 
 export const loaderServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-loader-sa`,

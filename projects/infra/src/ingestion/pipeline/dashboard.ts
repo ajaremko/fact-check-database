@@ -1,5 +1,7 @@
 import * as pulumi from '@pulumi/pulumi'
 
+import { stagingBucketName } from '../../core'
+
 import {
   extractorFactCheckRowCounterMetricType,
   // extractorBatchesWrittenCounterMetricType,
@@ -7,7 +9,6 @@ import {
 import { ingestorContentRequestResultsCounterMetricType } from './ingestor'
 // import { loaderBatchesLoadedCounterMetricType } from './loader'
 import { sanitizerRecordsCounterMetricType } from './sanitizer'
-import { stagingBucketName } from './staging'
 
 const contentSourcesWidget =
   ingestorContentRequestResultsCounterMetricType.apply((type) => ({

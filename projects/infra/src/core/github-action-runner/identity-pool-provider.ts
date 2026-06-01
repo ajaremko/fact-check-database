@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { githubOrg, githubRepo, tag } from '../config'
 import { identityPool } from '../identity-pool'
-import { provider } from '../provider'
+import { provider } from '../project'
 
 export const githubActionIdentityPoolProvider =
   new gcp.iam.WorkloadIdentityPoolProvider(

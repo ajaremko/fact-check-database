@@ -1,9 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
+import { stagingBucketName } from '../../../core'
+
 import { gcpProject, tag } from '../../config'
 import { archiveBucketName } from '../../archive'
-import { stagingBucketName } from '../staging'
 import { provider } from '../../project'
 
 import { extractorSubscription } from './subscription'

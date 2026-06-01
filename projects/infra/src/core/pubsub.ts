@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { coreLabels, tag } from './config'
 import { pubsubService } from './services'
-import { provider } from './provider'
+import { provider } from './project'
 
 export const observationsTopic = new gcp.pubsub.Topic(
   `${tag}-observations-topic`,

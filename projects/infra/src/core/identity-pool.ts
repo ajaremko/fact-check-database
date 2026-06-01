@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { tag, workloadIdentityPoolId } from './config'
 import { IAMService, IAMCredentialsService } from './services'
-import { provider } from './provider'
+import { provider } from './project'
 
 export const identityPool = new gcp.iam.WorkloadIdentityPool(
   `${tag}-shared-identity-pool`,

@@ -1,9 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 
 import { stagingDatasetId } from '../../../analysis'
+import { stagingBucketName } from '../../../core'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { stagingBucketName } from '../staging'
 import { assetsBucketName } from '../../assets'
 import { cloudRunService } from '../../services'
 import { provider } from '../../project'

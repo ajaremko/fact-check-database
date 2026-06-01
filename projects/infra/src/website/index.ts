@@ -4,4 +4,4 @@ export {
   dockerTag as websiteDockerTag,
   verifiedDomains as websiteVerifiedDomains,
 } from './config'
-export { websiteUrl } from './service'
+export { websiteUrl } from './server/service'

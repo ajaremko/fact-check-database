@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
 import { tag } from './config'
-import { provider } from './provider'
+import { provider } from './project'
 
 export const computeService = new gcp.projects.Service(
   `${tag}-compute-service`,

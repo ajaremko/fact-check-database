@@ -1,3 +1,5 @@
+export * from './staging-storage'
+
 import {
   githubActionIdentityPoolProvider,
   githubActionServiceAccount,

@@ -1,11 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 
 import { analysisGcpProject } from '../../../analysis'
+import { stagingBucketName } from '../../../core'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
 import { cloudRunService } from '../../services'
 import { provider } from '../../project'
-import { stagingBucketName } from '../staging'
 import { archiveBucketName } from '../../archive'
 import { getImageUrl } from '../getImageUrl'
 

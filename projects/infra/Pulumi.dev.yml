@@ -5,6 +5,9 @@ config:
   core:githubOrg: ajaremko
   core:githubRepo: news-research
   core:workloadIdentityPoolId: shared-identity-pool-07
+  core:batchRetentionDays: 1
+  core:forceDestroyStorage: true
+  core:retainStorageOnDelete: false
 
   analysis:project: news-research-dev
   analysis:region: us-central1
@@ -32,7 +35,7 @@ config:
 
   website:project: news-research-dev
   website:region: us-central1
-  website:tag: dev-286
+  website:tag: dev-287
   website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
     - factcheckdatabase.com

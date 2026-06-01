@@ -14,6 +14,43 @@ export const workloadIdentityPoolId = coreConfig.require(
   'workloadIdentityPoolId'
 )
 
+/**
+ * The number of days to retain extractor batch data. The loader component
+ * should process all data in the staging bucket within this time frame
+ * to ensure data is not deleted before it can be loaded into BigQuery.
+ */
+export const batchRetentionDays = coreConfig.requireNumber('batchRetentionDays')
+
+/**
+ * Whether to force destroy storage buckets when deleting the stack. This will permanently
+ * delete all data in the bucket, so it should be used with caution. It is recommended to
+ * set this to true in non-production environments for easier cleanup, and false in production
+ * to prevent accidental data loss.
+ */
+export const forceDestroyStorage =
+  coreConfig.getBoolean('forceDestroyStorage') ?? false
+
+if (forceDestroyStorage) {
+  console.warn(
+    `⚠️\tForce destroy storage is enabled. This will permanently delete all data in storage buckets when the stack is deleted. It is recommended to set this to false in production to prevent accidental data loss.`
+  )
+}
+
+/**
+ * Whether to retain storage buckets when deleting the stack. If set to true, storage buckets
+ * will not be deleted when the stack is deleted, allowing for manual cleanup and preventing
+ * accidental data loss. It is recommended to set this to true in production, and it can be
+ * set to false in non-production environments for easier cleanup.
+ */
+export const retainStorageOnDelete =
+  coreConfig.getBoolean('retainStorageOnDelete') ?? true
+
+if (!retainStorageOnDelete) {
+  console.warn(
+    `⚠️\tRetain storage on delete is disabled. Storage buckets will be deleted when the stack is deleted, allowing for easier cleanup but increasing the risk of accidental data loss. It is recommended to set this to true in production.`
+  )
+}
+
 export const coreLabels: Record<string, string> = {
   ...labels,
   tag,

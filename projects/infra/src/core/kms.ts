@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 
 import { coreLabels, kmsLocation, tag } from './config'
 import { kmsService } from './services'
-import { provider } from './provider'
+import { provider } from './project'
 
 export const keyRing = new gcp.kms.KeyRing(
   `${tag}-key-ring`,

@@ -1,9 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject, gcpRegion, dockerTag, tag } from './config'
-import { cloudRunService } from './services'
-import { provider } from './project'
-import { getImageUrl } from './getImageUrl'
+import { gcpProject, gcpRegion, dockerTag, tag } from '../config'
+import { cloudRunService } from '../services'
+import { provider } from '../project'
+import { getImageUrl } from '../getImageUrl'
 
 export const websiteService = new gcp.cloudrun.Service(
   `${tag}-website-service`,
@@ -16,7 +16,7 @@ export const websiteService = new gcp.cloudrun.Service(
       spec: {
         containers: [
           {
-            image: getImageUrl('core-website', dockerTag),
+            image: getImageUrl('website-server', dockerTag),
           },
         ],
       },

@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, githubOrg, githubRepo, tag } from '../config'
 import { identityPool } from '../identity-pool'
-import { provider } from '../provider'
+import { provider } from '../project'
 
 /**
  * The service account to be impersonated by GitHub Actions runner to access GCP resources
