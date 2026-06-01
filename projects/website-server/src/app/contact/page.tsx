@@ -147,8 +147,9 @@ export default function ContactPage() {
           <SectionLabel>Get Access</SectionLabel>
           <PageTitle>Request Dataset Access</PageTitle>
           <BodyText>
-            Access is granted on a case-by-case basis to researchers, journalists,
-            and data scientists working on misinformation research or related fields.
+            Access is granted on a case-by-case basis to researchers,
+            journalists, and data scientists working on misinformation research
+            or related fields.
           </BodyText>
         </Container>
       </PageHeader>
@@ -159,18 +160,19 @@ export default function ContactPage() {
         <Container>
           <AccessBox>
             <BodyText>
-              This dataset is available to academic researchers, journalists, and data
-              scientists working on misinformation research, computational social
-              science, or related fields.
+              This dataset is available to academic researchers, journalists,
+              and data scientists working on misinformation research,
+              computational social science, or related fields.
             </BodyText>
             <BodyText>Please include the following in your request:</BodyText>
             <BulletList>
               <li>
-                Your name and institutional affiliation, or independent researcher
-                status
+                Your name and institutional affiliation, or independent
+                researcher status
               </li>
               <li>
-                A brief description of your research project or intended use case
+                A brief description of your research project or intended use
+                case
               </li>
               <li>The approximate data volume you expect to query</li>
               <li>
@@ -184,9 +186,9 @@ export default function ContactPage() {
 
           <ResponseNote>
             <ResponseNoteText>
-              Requests are typically reviewed within 5 business days. You&apos;ll
-              receive a follow-up to discuss your project and confirm your access
-              level.
+              Requests are typically reviewed within 5 business days.
+              You&apos;ll receive a follow-up to discuss your project and
+              confirm your access level.
             </ResponseNoteText>
           </ResponseNote>
         </Container>

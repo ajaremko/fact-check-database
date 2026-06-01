@@ -1,14 +1,14 @@
 {
-  "name": "@news-research/core-website",
+  "name": "@news-research/website-server",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "core-website",
+    "name": "website-server",
     "targets": {
       "serve": {
         "executor": "@nx/next:server",
         "options": {
-          "buildTarget": "core-website:build",
+          "buildTarget": "website-server:build",
           "dev": true,
           "port": 4200
         }

@@ -155,9 +155,9 @@ const ResultTitle = styled.p`
 `
 
 const VERDICT_STYLES: Record<string, { bg: string; color: string }> = {
-  true:        { bg: '#dcfce7', color: '#166534' },
-  false:       { bg: '#fee2e2', color: '#991b1b' },
-  misleading:  { bg: '#fef3c7', color: '#92400e' },
+  true: { bg: '#dcfce7', color: '#166534' },
+  false: { bg: '#fee2e2', color: '#991b1b' },
+  misleading: { bg: '#fef3c7', color: '#92400e' },
   unsupported: { bg: '#f3f4f6', color: '#374151' },
   exaggerated: { bg: '#ffedd5', color: '#9a3412' },
 }
@@ -172,7 +172,8 @@ const VerdictBadge = styled.span<{ verdict: string }>`
   text-transform: uppercase;
   padding: 0.2em 0.55em;
   border-radius: 4px;
-  background-color: ${({ verdict }) => VERDICT_STYLES[verdict]?.bg ?? '#f3f4f6'};
+  background-color: ${({ verdict }) =>
+    VERDICT_STYLES[verdict]?.bg ?? '#f3f4f6'};
   color: ${({ verdict }) => VERDICT_STYLES[verdict]?.color ?? '#374151'};
 `
 
@@ -226,36 +227,224 @@ interface FactCheck {
 }
 
 const RECORDS: FactCheck[] = [
-  { id: 1,  title: 'COVID-19 vaccines alter human DNA',                                                            source: 'FactCheck.org',  verdict: 'false',       date: 'Jan 12, 2026' },
-  { id: 2,  title: 'The 2020 U.S. election had historically low fraud rates',                                     source: 'PolitiFact',     verdict: 'true',        date: 'Nov 3, 2025'  },
-  { id: 3,  title: 'Drinking bleach cures coronavirus',                                                           source: 'Snopes',         verdict: 'false',       date: 'Mar 4, 2024'  },
-  { id: 4,  title: 'Global average temperatures have risen 1.1°C since pre-industrial times',                     source: 'Full Fact',      verdict: 'true',        date: 'Feb 17, 2026' },
-  { id: 5,  title: '5G towers spread COVID-19',                                                                   source: 'Africa Check',   verdict: 'false',       date: 'Aug 9, 2024'  },
-  { id: 6,  title: 'The U.S. national debt doubled under President Obama',                                        source: 'PolitiFact',     verdict: 'misleading',  date: 'Oct 22, 2025' },
-  { id: 7,  title: 'Ivermectin is proven to cure COVID-19 in humans',                                            source: 'AFP Fact Check', verdict: 'false',       date: 'Sep 1, 2024'  },
-  { id: 8,  title: "The UK's NHS spends more per capita than most EU countries",                                  source: 'Full Fact',      verdict: 'misleading',  date: 'Apr 5, 2025'  },
-  { id: 9,  title: 'Wind turbines cause cancer',                                                                  source: 'Snopes',         verdict: 'false',       date: 'Jun 30, 2024' },
-  { id: 10, title: 'Electric vehicles produce more lifecycle emissions than petrol cars',                          source: 'AFP Fact Check', verdict: 'false',       date: 'Dec 11, 2025' },
-  { id: 11, title: 'The moon landing was faked by NASA in 1969',                                                  source: 'Snopes',         verdict: 'false',       date: 'Jul 20, 2024' },
-  { id: 12, title: 'U.S. immigration courts have a backlog exceeding 3 million cases',                            source: 'FactCheck.org',  verdict: 'true',        date: 'Mar 19, 2025' },
-  { id: 13, title: 'Vitamin C megadoses prevent COVID-19 infection',                                              source: 'Africa Check',   verdict: 'unsupported', date: 'Jan 28, 2024' },
-  { id: 14, title: 'Social media companies are legally required to remove hate speech in the EU',                 source: 'Full Fact',      verdict: 'misleading',  date: 'Nov 14, 2025' },
-  { id: 15, title: 'Sea levels have risen by approximately 20cm over the past century',                           source: 'AFP Fact Check', verdict: 'true',        date: 'Sep 23, 2025' },
-  { id: 16, title: 'Microplastics have been found in human blood',                                                source: 'LeadStories',    verdict: 'true',        date: 'May 3, 2025'  },
-  { id: 17, title: 'ChatGPT was trained on stolen copyrighted books',                                             source: 'LeadStories',    verdict: 'misleading',  date: 'Feb 2, 2026'  },
-  { id: 18, title: 'Measles cases in Europe hit a 25-year high in 2024',                                          source: 'AFP Fact Check', verdict: 'true',        date: 'Jun 10, 2025' },
-  { id: 19, title: 'Kenya has the highest rate of mobile banking adoption in the world',                          source: 'Africa Check',   verdict: 'exaggerated', date: 'Mar 22, 2025' },
-  { id: 20, title: 'The opioid crisis kills more Americans annually than car accidents',                          source: 'PolitiFact',     verdict: 'true',        date: 'Oct 8, 2025'  },
-  { id: 21, title: 'Bill Gates wants to use vaccines to implant microchips in people',                            source: 'Snopes',         verdict: 'false',       date: 'Aug 15, 2024' },
-  { id: 22, title: 'Solar panel production generates more CO₂ than the panels save in their lifetime',           source: 'FactCheck.org',  verdict: 'false',       date: 'Apr 17, 2025' },
-  { id: 23, title: 'The Great Barrier Reef lost half its coral cover between 1995 and 2021',                     source: 'AFP Fact Check', verdict: 'true',        date: 'Jan 7, 2026'  },
-  { id: 24, title: 'Crime rates in the U.S. are at a 50-year high',                                              source: 'PolitiFact',     verdict: 'false',       date: 'Jul 4, 2025'  },
-  { id: 25, title: 'AI-generated deepfakes were used to impersonate candidates in the 2024 election cycle',      source: 'LeadStories',    verdict: 'true',        date: 'Dec 3, 2024'  },
-  { id: 26, title: 'The EU has banned more than 1,000 food additives approved in the U.S.',                      source: 'Full Fact',      verdict: 'misleading',  date: 'Nov 29, 2025' },
-  { id: 27, title: 'South Africa has the highest rate of HIV infections in the world',                            source: 'Africa Check',   verdict: 'unsupported', date: 'Feb 20, 2025' },
-  { id: 28, title: 'The U.S. federal minimum wage has not increased since 2009',                                  source: 'FactCheck.org',  verdict: 'true',        date: 'Aug 1, 2025'  },
-  { id: 29, title: 'Eating red meat every day doubles your risk of heart disease',                                source: 'Snopes',         verdict: 'exaggerated', date: 'May 18, 2025' },
-  { id: 30, title: 'A photo shows a polar bear on a street in Madrid due to climate change',                     source: 'AFP Fact Check', verdict: 'false',       date: 'Jan 21, 2026' },
+  {
+    id: 1,
+    title: 'COVID-19 vaccines alter human DNA',
+    source: 'FactCheck.org',
+    verdict: 'false',
+    date: 'Jan 12, 2026',
+  },
+  {
+    id: 2,
+    title: 'The 2020 U.S. election had historically low fraud rates',
+    source: 'PolitiFact',
+    verdict: 'true',
+    date: 'Nov 3, 2025',
+  },
+  {
+    id: 3,
+    title: 'Drinking bleach cures coronavirus',
+    source: 'Snopes',
+    verdict: 'false',
+    date: 'Mar 4, 2024',
+  },
+  {
+    id: 4,
+    title:
+      'Global average temperatures have risen 1.1°C since pre-industrial times',
+    source: 'Full Fact',
+    verdict: 'true',
+    date: 'Feb 17, 2026',
+  },
+  {
+    id: 5,
+    title: '5G towers spread COVID-19',
+    source: 'Africa Check',
+    verdict: 'false',
+    date: 'Aug 9, 2024',
+  },
+  {
+    id: 6,
+    title: 'The U.S. national debt doubled under President Obama',
+    source: 'PolitiFact',
+    verdict: 'misleading',
+    date: 'Oct 22, 2025',
+  },
+  {
+    id: 7,
+    title: 'Ivermectin is proven to cure COVID-19 in humans',
+    source: 'AFP Fact Check',
+    verdict: 'false',
+    date: 'Sep 1, 2024',
+  },
+  {
+    id: 8,
+    title: "The UK's NHS spends more per capita than most EU countries",
+    source: 'Full Fact',
+    verdict: 'misleading',
+    date: 'Apr 5, 2025',
+  },
+  {
+    id: 9,
+    title: 'Wind turbines cause cancer',
+    source: 'Snopes',
+    verdict: 'false',
+    date: 'Jun 30, 2024',
+  },
+  {
+    id: 10,
+    title:
+      'Electric vehicles produce more lifecycle emissions than petrol cars',
+    source: 'AFP Fact Check',
+    verdict: 'false',
+    date: 'Dec 11, 2025',
+  },
+  {
+    id: 11,
+    title: 'The moon landing was faked by NASA in 1969',
+    source: 'Snopes',
+    verdict: 'false',
+    date: 'Jul 20, 2024',
+  },
+  {
+    id: 12,
+    title: 'U.S. immigration courts have a backlog exceeding 3 million cases',
+    source: 'FactCheck.org',
+    verdict: 'true',
+    date: 'Mar 19, 2025',
+  },
+  {
+    id: 13,
+    title: 'Vitamin C megadoses prevent COVID-19 infection',
+    source: 'Africa Check',
+    verdict: 'unsupported',
+    date: 'Jan 28, 2024',
+  },
+  {
+    id: 14,
+    title:
+      'Social media companies are legally required to remove hate speech in the EU',
+    source: 'Full Fact',
+    verdict: 'misleading',
+    date: 'Nov 14, 2025',
+  },
+  {
+    id: 15,
+    title: 'Sea levels have risen by approximately 20cm over the past century',
+    source: 'AFP Fact Check',
+    verdict: 'true',
+    date: 'Sep 23, 2025',
+  },
+  {
+    id: 16,
+    title: 'Microplastics have been found in human blood',
+    source: 'LeadStories',
+    verdict: 'true',
+    date: 'May 3, 2025',
+  },
+  {
+    id: 17,
+    title: 'ChatGPT was trained on stolen copyrighted books',
+    source: 'LeadStories',
+    verdict: 'misleading',
+    date: 'Feb 2, 2026',
+  },
+  {
+    id: 18,
+    title: 'Measles cases in Europe hit a 25-year high in 2024',
+    source: 'AFP Fact Check',
+    verdict: 'true',
+    date: 'Jun 10, 2025',
+  },
+  {
+    id: 19,
+    title: 'Kenya has the highest rate of mobile banking adoption in the world',
+    source: 'Africa Check',
+    verdict: 'exaggerated',
+    date: 'Mar 22, 2025',
+  },
+  {
+    id: 20,
+    title: 'The opioid crisis kills more Americans annually than car accidents',
+    source: 'PolitiFact',
+    verdict: 'true',
+    date: 'Oct 8, 2025',
+  },
+  {
+    id: 21,
+    title: 'Bill Gates wants to use vaccines to implant microchips in people',
+    source: 'Snopes',
+    verdict: 'false',
+    date: 'Aug 15, 2024',
+  },
+  {
+    id: 22,
+    title:
+      'Solar panel production generates more CO₂ than the panels save in their lifetime',
+    source: 'FactCheck.org',
+    verdict: 'false',
+    date: 'Apr 17, 2025',
+  },
+  {
+    id: 23,
+    title:
+      'The Great Barrier Reef lost half its coral cover between 1995 and 2021',
+    source: 'AFP Fact Check',
+    verdict: 'true',
+    date: 'Jan 7, 2026',
+  },
+  {
+    id: 24,
+    title: 'Crime rates in the U.S. are at a 50-year high',
+    source: 'PolitiFact',
+    verdict: 'false',
+    date: 'Jul 4, 2025',
+  },
+  {
+    id: 25,
+    title:
+      'AI-generated deepfakes were used to impersonate candidates in the 2024 election cycle',
+    source: 'LeadStories',
+    verdict: 'true',
+    date: 'Dec 3, 2024',
+  },
+  {
+    id: 26,
+    title:
+      'The EU has banned more than 1,000 food additives approved in the U.S.',
+    source: 'Full Fact',
+    verdict: 'misleading',
+    date: 'Nov 29, 2025',
+  },
+  {
+    id: 27,
+    title: 'South Africa has the highest rate of HIV infections in the world',
+    source: 'Africa Check',
+    verdict: 'unsupported',
+    date: 'Feb 20, 2025',
+  },
+  {
+    id: 28,
+    title: 'The U.S. federal minimum wage has not increased since 2009',
+    source: 'FactCheck.org',
+    verdict: 'true',
+    date: 'Aug 1, 2025',
+  },
+  {
+    id: 29,
+    title: 'Eating red meat every day doubles your risk of heart disease',
+    source: 'Snopes',
+    verdict: 'exaggerated',
+    date: 'May 18, 2025',
+  },
+  {
+    id: 30,
+    title:
+      'A photo shows a polar bear on a street in Madrid due to climate change',
+    source: 'AFP Fact Check',
+    verdict: 'false',
+    date: 'Jan 21, 2026',
+  },
 ]
 
 // --- Page ---
@@ -270,7 +459,7 @@ export default function HomePage() {
       (r) =>
         r.title.toLowerCase().includes(q) ||
         r.source.toLowerCase().includes(q) ||
-        r.verdict.toLowerCase().includes(q),
+        r.verdict.toLowerCase().includes(q)
     )
   }, [query])
 
@@ -304,7 +493,9 @@ export default function HomePage() {
           <SearchMeta>
             <span>
               {query.trim()
-                ? `${results.length} result${results.length !== 1 ? 's' : ''} for "${query.trim()}"`
+                ? `${results.length} result${
+                    results.length !== 1 ? 's' : ''
+                  } for "${query.trim()}"`
                 : `${RECORDS.length} records indexed`}
             </span>
             <SearchMetaLink href="/dataset">
@@ -318,7 +509,8 @@ export default function HomePage() {
         <Container>
           {results.length === 0 ? (
             <EmptyState>
-              No records match &ldquo;{query}&rdquo;. Try a different claim, source, or verdict.
+              No records match &ldquo;{query}&rdquo;. Try a different claim,
+              source, or verdict.
             </EmptyState>
           ) : (
             <ResultList>

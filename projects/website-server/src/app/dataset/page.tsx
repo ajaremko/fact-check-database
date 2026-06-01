@@ -342,16 +342,60 @@ interface SchemaField {
 }
 
 const SCHEMA_FIELDS: SchemaField[] = [
-  { field: 'title',                  type: 'string',    description: 'Headline or title of the fact-check article' },
-  { field: 'claim',                  type: 'string',    description: 'The specific claim being evaluated, when extractable from the feed' },
-  { field: 'link',                   type: 'string',    description: 'Canonical URL of the original fact-check article' },
-  { field: 'verdict_raw',            type: 'string',    description: 'Original verdict label as published by the source organization' },
-  { field: 'verdict_normalized',     type: 'enum',      description: 'Standardized verdict: true | false | misleading | unsupported | exaggerated' },
-  { field: 'published_at_normalized',type: 'timestamp', description: 'Publication datetime normalized to UTC ISO 8601' },
-  { field: 'source.name',            type: 'string',    description: 'Name of the fact-checking organization' },
-  { field: 'source.url',             type: 'string',    description: 'Base URL of the source organization' },
-  { field: 'language',               type: 'string',    description: "BCP-47 language code of the article (e.g., 'en', 'fr')" },
-  { field: 'content_sha256',         type: 'string',    description: 'SHA-256 hash of canonical content for deduplication across ingestion runs' },
+  {
+    field: 'title',
+    type: 'string',
+    description: 'Headline or title of the fact-check article',
+  },
+  {
+    field: 'claim',
+    type: 'string',
+    description:
+      'The specific claim being evaluated, when extractable from the feed',
+  },
+  {
+    field: 'link',
+    type: 'string',
+    description: 'Canonical URL of the original fact-check article',
+  },
+  {
+    field: 'verdict_raw',
+    type: 'string',
+    description:
+      'Original verdict label as published by the source organization',
+  },
+  {
+    field: 'verdict_normalized',
+    type: 'enum',
+    description:
+      'Standardized verdict: true | false | misleading | unsupported | exaggerated',
+  },
+  {
+    field: 'published_at_normalized',
+    type: 'timestamp',
+    description: 'Publication datetime normalized to UTC ISO 8601',
+  },
+  {
+    field: 'source.name',
+    type: 'string',
+    description: 'Name of the fact-checking organization',
+  },
+  {
+    field: 'source.url',
+    type: 'string',
+    description: 'Base URL of the source organization',
+  },
+  {
+    field: 'language',
+    type: 'string',
+    description: "BCP-47 language code of the article (e.g., 'en', 'fr')",
+  },
+  {
+    field: 'content_sha256',
+    type: 'string',
+    description:
+      'SHA-256 hash of canonical content for deduplication across ingestion runs',
+  },
 ]
 
 const SAMPLE_JSON = `{
