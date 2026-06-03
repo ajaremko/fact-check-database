@@ -1,10 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { curatedTableRef } from './curated'
-import { provider } from './provider'
-import { stagingTableRef } from './staging'
-import { tag } from './config'
+import { provider } from '../project'
+import { stagingTableRef } from '../staging-dataset'
+import { tag } from '../config'
+
+import { curatedTableRef } from './bigquery'
 
 export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
   `${tag}-staging-to-curated-transfer-job`,

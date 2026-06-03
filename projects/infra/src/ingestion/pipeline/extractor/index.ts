@@ -1,9 +1,3 @@
-import { extractorTopic, extractorTopicArchiveSubscription } from './topic'
-
-export const extractorTopicName = extractorTopic.name
-export const extractorTopicArchiveSubscriptionName =
-  extractorTopicArchiveSubscription.name
-
 import {
   extractorSubscription,
   extractorDeadletterTopic,

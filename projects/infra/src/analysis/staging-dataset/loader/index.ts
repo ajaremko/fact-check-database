@@ -20,3 +20,7 @@ import { loaderBatchesLoadedCounterMetric } from './metrics'
 
 export const loaderBatchesLoadedCounterMetricType =
   loaderBatchesLoadedCounterMetric.type
+
+import { deadletterBucket } from './storage'
+
+export const deadletterBucketName = deadletterBucket.name

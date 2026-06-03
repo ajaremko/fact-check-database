@@ -8,13 +8,13 @@ import {
   analysisLabels,
   retainTablesOnDelete,
 } from '../config'
-import { provider } from '../provider'
+import { provider } from '../project'
 
 export const stagingDataset = new gcp.bigquery.Dataset(
   `${tag}-staging-dataset`,
   {
-    datasetId: 'staging',
-    friendlyName: 'Staging Dataset',
+    datasetId: `${tag}_staging`,
+    friendlyName: 'Analysis Staging Dataset',
     description: 'Dataset for staging extracted data',
     location: 'US', // Regional location for data storage
   },

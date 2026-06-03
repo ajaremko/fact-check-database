@@ -1,0 +1,11 @@
+import * as gcp from '@pulumi/gcp'
+
+import { coreLabels, tag } from '../config'
+import { pubsubService } from '../services'
+import { provider } from '../project'
+
+export const stagingStorageTopic = new gcp.pubsub.Topic(
+  `${tag}-batch-staging-topic`,
+  { labels: coreLabels },
+  { dependsOn: [pubsubService], provider }
+)

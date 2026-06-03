@@ -1,14 +1,16 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { stagingBucketName } from '../../../core'
+import {
+  stagingStorageBucketName,
+  stagingStorageTopicName,
+} from '../../../core'
 
 import { gcpProject, tag } from '../../config'
 import { archiveBucketName } from '../../archive'
 import { provider } from '../../project'
 
 import { extractorSubscription } from './subscription'
-import { extractorTopic } from './topic'
 
 export const extractorServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-extractor-sa`,
@@ -29,10 +31,10 @@ export const extractorRawArchiveBucketViewer = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-export const extractorStagingBucketCreator = new gcp.storage.BucketIAMMember(
+export const stagingStorageBucketCreator = new gcp.storage.BucketIAMMember(
   `${tag}-extractor-staging-bucket-creator`,
   {
-    bucket: stagingBucketName,
+    bucket: stagingStorageBucketName,
     role: 'roles/storage.objectCreator',
     member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
   },
@@ -50,10 +52,10 @@ export const extractorSanitizerTopicSubscriber =
     { provider }
   )
 
-export const extractorTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-extractor-topic-publisher`,
+export const stagingTopicPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-extractor-staging-topic-publisher`,
   {
-    topic: extractorTopic.name,
+    topic: stagingStorageTopicName,
     role: 'roles/pubsub.publisher',
     member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
   },

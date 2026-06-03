@@ -8,3 +8,5 @@ export const stagingDatasetId = stagingDataset.datasetId
 export const stagingFactChecksTableId = stagingFactChecksTable.tableId
 
 export const stagingTableRef = pulumi.interpolate`${gcpProject}.${stagingDataset.datasetId}.${stagingFactChecksTable.tableId}`
+
+export * from './loader'

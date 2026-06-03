@@ -1,3 +1,7 @@
-import { stagingBucket } from './storage'
+import { stagingStorageBucket } from './storage'
 
-export const stagingBucketName = stagingBucket.name
+export const stagingStorageBucketName = stagingStorageBucket.name
+
+import { stagingStorageTopic } from './topic'
+
+export const stagingStorageTopicName = stagingStorageTopic.name

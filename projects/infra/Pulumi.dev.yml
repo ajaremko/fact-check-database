@@ -13,6 +13,8 @@ config:
   analysis:region: us-central1
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false
+  analysis:tag: dev-280
+  analysis:logLevel: debug
 
   ingestion:project: news-research-dev
   ingestion:region: us-central1

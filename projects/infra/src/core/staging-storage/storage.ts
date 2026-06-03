@@ -11,7 +11,7 @@ import {
 import { storageService } from '../services'
 import { provider } from '../project'
 
-export const stagingBucket = new gcp.storage.Bucket(
+export const stagingStorageBucket = new gcp.storage.Bucket(
   `${tag}-staging-bucket`,
   {
     location: gcpRegion,

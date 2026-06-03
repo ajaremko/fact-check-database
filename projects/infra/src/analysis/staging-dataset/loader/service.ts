@@ -1,23 +1,24 @@
 import * as gcp from '@pulumi/gcp'
 
-import { analysisGcpProject } from '../../../analysis'
-import { stagingBucketName } from '../../../core'
+import { stagingStorageBucketName } from '../../../core'
+
+import { gcpProject } from '../../config'
+import { provider } from '../../project'
+import { cloudRunService } from '../../services'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { cloudRunService } from '../../services'
-import { provider } from '../../project'
-import { archiveBucketName } from '../../archive'
-import { getImageUrl } from '../getImageUrl'
+import { archiveBucketName } from '../../../ingestion/archive'
+import { getImageUrl } from '../../../ingestion/pipeline/getImageUrl'
 
 import {
   loaderServiceAccount,
   loaderStagingBucketViewer,
   loaderBigQueryJobUser,
-  loaderBigQueryDataEditor,
+  // loaderBigQueryDataEditor,
 } from './service-account'
 
 export const loaderService = new gcp.cloudrunv2.Service(
-  `${tag}-pipeline-loader-service`,
+  `${tag}-staging-dataset-loader-service`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -33,7 +34,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'STAGING_BUCKET_NAME',
-              value: stagingBucketName,
+              value: stagingStorageBucketName,
             },
             {
               name: 'LOGGING_LEVEL',
@@ -41,11 +42,11 @@ export const loaderService = new gcp.cloudrunv2.Service(
             },
             {
               name: 'GOOGLE_CLOUD_PROJECT',
-              value: analysisGcpProject,
+              value: gcpProject,
             },
             {
               name: 'OTEL_CLOUD_MONITORING_PREFIX',
-              value: 'workload.googleapis.com/pipeline/',
+              value: `workload.googleapis.com/${tag}/`,
             },
           ],
         },
@@ -57,7 +58,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
       cloudRunService,
       loaderStagingBucketViewer,
       loaderBigQueryJobUser,
-      loaderBigQueryDataEditor,
+      // loaderBigQueryDataEditor,
     ],
     provider,
   }

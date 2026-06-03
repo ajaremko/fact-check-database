@@ -1,13 +1,13 @@
 export * from './archive'
 export * from './assets'
-export * from './pipeline'
+// export * from './pipeline'
 import { loggingBucketConfig } from './logging'
 
 export const loggingBucketConfigName = loggingBucketConfig.name
 
-import { pipelineDashboard } from './dashboard'
+// import { pipelineDashboard } from './dashboard'
 
-export const pipelineDashboardId = pipelineDashboard.id
+// export const pipelineDashboardId = pipelineDashboard.id
 
 export {
   gcpProject as ingestionGcpProject,

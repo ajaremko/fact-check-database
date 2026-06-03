@@ -9,8 +9,8 @@ import { provider } from '../provider'
 export const martsDataset = new gcp.bigquery.Dataset(
   `${tag}-marts-dataset`,
   {
-    datasetId: 'marts',
-    friendlyName: 'Marts Dataset',
+    datasetId: `${tag}_marts`,
+    friendlyName: 'Research Marts Dataset',
     description: 'Marts for final research data',
     location: 'US',
   },

@@ -1,14 +1,15 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as gcp from '@pulumi/gcp'
 
-import { tag } from '../../config'
-import { provider } from '../../project'
+import { createInvokerServiceAccount } from '../../../ingestion/pipeline/createInvokerServiceAccount'
+import { stagingStorageTopicName } from '../../../core'
 
-import { extractorTopicName } from '../extractor'
-import { createArchivedSubscription } from '../createArchivedSubscription'
-import { createInvokerServiceAccount } from '../createInvokerServiceAccount'
+import { analysisLabels, gcpRegion, tag } from '../../config'
+import { provider, pubsubServiceAccountEmail } from '../../project'
+import { pubsubService } from '../../services'
 
 import { loaderService } from './service'
+import { deadletterBucket } from './storage'
 
 export const {
   serviceAccount: loaderInvokerServiceAccount,
@@ -19,6 +20,26 @@ export const {
   displayName: 'Ingestion Loader Invoker',
   type: 'service',
 })
+
+const serviceAccount = new gcp.serviceaccount.Account(
+  `${tag}-loader-push-sa`,
+  {
+    accountId: `${tag}-loader-push-sa`,
+    displayName: 'Analysis Loader Invoker',
+  },
+  { provider }
+)
+
+const serviceAccountInvoker = new gcp.cloudrunv2.ServiceIamMember(
+  `${tag}-loader-push-invoker`,
+  {
+    name: loaderService.name,
+    location: gcpRegion,
+    role: 'roles/run.invoker',
+    member: pulumi.interpolate`serviceAccount:${serviceAccount.email}`,
+  },
+  { provider }
+)
 
 const loaderInvokerServiceAccountTokenCreator =
   new gcp.serviceaccount.IAMMember(
@@ -31,36 +52,123 @@ const loaderInvokerServiceAccountTokenCreator =
     { provider }
   )
 
-export const {
-  subscription: loaderSubscription,
-  deadletterTopic: loaderDeadletterTopic,
-  archiveSubscription: loaderDeadletterTopicArchiveSubscription,
-} = createArchivedSubscription({
-  name: 'loader-deadletter',
-  topic: extractorTopicName,
-  archive: {
-    messageRetentionDuration: '604800s', // 7 days
-    cloudStorageConfig: {
-      filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
-      filenamePrefix: 'loader-deadletter/',
-      maxMessages: 1000,
+export const pubsubServiceAccountDeadletterBucketReader =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-pubsub-sa-deadletter-bucket-reader`,
+    {
+      bucket: deadletterBucket.name,
+      role: 'roles/storage.legacyBucketReader',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },
-  },
-  retryPolicy: {
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
-  },
-  pushConfig: {
-    pushEndpoint: pulumi.interpolate`${loaderService.uri}/extractor-topic-messages`,
-    oidcToken: {
-      serviceAccountEmail: loaderInvokerServiceAccount.email,
+    { provider, dependsOn: [pubsubService] }
+  )
+
+export const pubsubServiceAccountDeadletterObjectCreator =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-pubsub-sa-deadletter-object-creator`,
+    {
+      bucket: deadletterBucket.name,
+      role: 'roles/storage.objectCreator',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },
-    attributes: {
-      'x-goog-version': 'v1',
-    },
+    { provider, dependsOn: [pubsubService] }
+  )
+
+// create the deadletter topic to write failed messages to
+export const loaderDeadletterTopic = new gcp.pubsub.Topic(
+  `${tag}-loader-deadletter-topic`,
+  { labels: analysisLabels },
+  { dependsOn: [pubsubService], provider }
+)
+
+// grant the pubsub service account permissions to publish
+// to the deadletter topic
+const pubsubServiceAccountPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-pubsub-sa-loader-deadletter-publisher`,
+  {
+    topic: loaderDeadletterTopic.name,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
   },
-  dependsOn: [loaderInvokerServiceAccountTokenCreator],
-})
+  { provider }
+)
+
+// create the subscription with a deadletter policy that
+// sends failed messages to the deadletter topic
+export const loaderSubscription = new gcp.pubsub.Subscription(
+  `${tag}-loader-deadletter-topic-archive-subscription`,
+  {
+    topic: stagingStorageTopicName,
+    deadLetterPolicy: {
+      deadLetterTopic: loaderDeadletterTopic.id,
+      maxDeliveryAttempts: 5,
+    },
+    retryPolicy: {
+      minimumBackoff: '10s',
+      maximumBackoff: '600s',
+    },
+    pushConfig: {
+      pushEndpoint: pulumi.interpolate`${loaderService.uri}/extractor-topic-messages`,
+      oidcToken: {
+        serviceAccountEmail: loaderInvokerServiceAccount.email,
+      },
+      attributes: {
+        'x-goog-version': 'v1',
+      },
+    },
+    labels: analysisLabels,
+  },
+  {
+    provider,
+    dependsOn: [
+      loaderInvokerServiceAccountTokenCreator,
+      pubsubServiceAccountDeadletterBucketReader,
+      pubsubServiceAccountDeadletterObjectCreator,
+      pubsubServiceAccountPublisher,
+      serviceAccountInvoker,
+    ],
+  }
+)
+
+// grant the pubsub service account permissions to access
+// the subscription
+const pubsubServiceAccountSubscriber = new gcp.pubsub.SubscriptionIAMMember(
+  `${tag}-pubsub-sa-loader-deadletter-subscriber`,
+  {
+    subscription: loaderSubscription.name,
+    role: 'roles/pubsub.subscriber',
+    member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+  },
+  { provider }
+)
+
+// create a subscription to the deadletter topic that
+// writes messages to the deadletter bucket once
+// all permissions are in place
+export const loaderDeadletterTopicArchiveSubscription =
+  new gcp.pubsub.Subscription(
+    `${tag}-loader-deadletter-archive-subscription`,
+    {
+      topic: loaderDeadletterTopic.name,
+      messageRetentionDuration: '604800s', // 7 days
+      cloudStorageConfig: {
+        bucket: deadletterBucket.name,
+        filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
+        filenamePrefix: 'loader-deadletter/',
+        maxMessages: 1000,
+      },
+      labels: analysisLabels,
+    },
+    {
+      dependsOn: [
+        pubsubServiceAccountPublisher,
+        pubsubServiceAccountSubscriber,
+        pubsubServiceAccountDeadletterBucketReader,
+        pubsubServiceAccountDeadletterObjectCreator,
+      ],
+      provider,
+    }
+  )
 
 // import {
 //   deadletterBucketName,

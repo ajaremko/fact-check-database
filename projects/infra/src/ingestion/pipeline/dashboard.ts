@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi'
 
-import { stagingBucketName } from '../../core'
+import { stagingStorageBucketName } from '../../core'
 
 import {
   extractorFactCheckRowCounterMetricType,
@@ -243,7 +243,7 @@ const extractorFactCheckRowsWidget =
     },
   }))
 
-const stagingSizeWidget = stagingBucketName.apply((name) => ({
+const stagingSizeWidget = stagingStorageBucketName.apply((name) => ({
   title: 'Staging Storage Total Bytes',
   id: '',
   scorecard: {

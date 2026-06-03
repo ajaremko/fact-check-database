@@ -1,7 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 
+import {
+  stagingStorageBucketName,
+  stagingStorageTopicName,
+} from '../../../core'
 import { stagingDatasetId } from '../../../analysis'
-import { stagingBucketName } from '../../../core'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
 import { assetsBucketName } from '../../assets'
@@ -13,10 +16,9 @@ import {
   extractorServiceAccount,
   extractorRawArchiveBucketViewer,
   extractorSanitizerTopicSubscriber,
-  extractorStagingBucketCreator,
-  extractorTopicPublisher,
+  stagingStorageBucketCreator,
+  stagingTopicPublisher,
 } from './service-account'
-import { extractorTopic } from './topic'
 import { extractorSubscription } from './subscription'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
@@ -42,11 +44,11 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: extractorTopic.name,
+                value: stagingStorageTopicName,
               },
               {
                 name: 'STORAGE_BUCKET_NAME',
-                value: stagingBucketName,
+                value: stagingStorageBucketName,
               },
               {
                 name: 'BIGQUERY_DATASET',
@@ -86,9 +88,9 @@ export const extractorJob = new gcp.cloudrunv2.Job(
     dependsOn: [
       cloudRunService,
       extractorRawArchiveBucketViewer,
-      extractorStagingBucketCreator,
+      stagingStorageBucketCreator,
       extractorSanitizerTopicSubscriber,
-      extractorTopicPublisher,
+      stagingTopicPublisher,
     ],
     provider,
   }
