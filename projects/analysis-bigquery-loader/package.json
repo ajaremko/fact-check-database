@@ -1,9 +1,9 @@
 {
-  "name": "@news-research/ingestion-pipeline-loader",
+  "name": "@news-research/analysis-bigquery-loader",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "ingestion-pipeline-loader",
+    "name": "analysis-bigquery-loader",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,23 +13,23 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/ingestion-pipeline-loader/dist",
+          "outputPath": "projects/analysis-bigquery-loader/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/ingestion-pipeline-loader/src/main.ts",
-          "tsConfig": "projects/ingestion-pipeline-loader/tsconfig.app.json",
+          "main": "projects/analysis-bigquery-loader/src/main.ts",
+          "tsConfig": "projects/analysis-bigquery-loader/tsconfig.app.json",
           "assets": [
-            "projects/ingestion-pipeline-loader/src/assets"
+            "projects/analysis-bigquery-loader/src/assets"
           ]
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-pipeline-loader/esbuild.config.js"
+            "esbuildConfig": "projects/analysis-bigquery-loader/esbuild.config.js"
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-pipeline-loader/esbuild.config.js",
+            "esbuildConfig": "projects/analysis-bigquery-loader/esbuild.config.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-pipeline-loader/dist/package.json",
-          "{workspaceRoot}/projects/ingestion-pipeline-loader/dist/package-lock.json"
+          "{workspaceRoot}/projects/analysis-bigquery-loader/dist/package.json",
+          "{workspaceRoot}/projects/analysis-bigquery-loader/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-pipeline-loader/dist/workspace_modules"
+          "{workspaceRoot}/projects/analysis-bigquery-loader/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "ingestion-pipeline-loader:build",
+          "buildTarget": "analysis-bigquery-loader:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "ingestion-pipeline-loader:build:development"
+            "buildTarget": "analysis-bigquery-loader:build:development"
           },
           "production": {
-            "buildTarget": "ingestion-pipeline-loader:build:production"
+            "buildTarget": "analysis-bigquery-loader:build:production"
           }
         }
       },
@@ -99,7 +99,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "ingestion-pipeline-loader"
+        "repositoryName": "analysis-bigquery-loader"
       }
     }
   },

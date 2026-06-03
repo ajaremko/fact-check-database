@@ -25,9 +25,6 @@
       "path": "./projects/ingestion-pipeline-ingestor"
     },
     {
-      "path": "./projects/ingestion-pipeline-loader"
-    },
-    {
       "path": "./projects/ingestion-replay"
     },
     {
@@ -35,6 +32,9 @@
     },
     {
       "path": "./projects/core-vendor"
+    },
+    {
+      "path": "./projects/analysis-bigquery-loader"
     }
   ]
 }
