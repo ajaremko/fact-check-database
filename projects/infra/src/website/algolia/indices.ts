@@ -1,3 +1,4 @@
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import * as algolia from '@pulumi/algolia'
 
 import { stackName } from '../../config'
