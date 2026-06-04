@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi'
 
 import { archiveBucketName } from './raw'
-import { deadletterBucketName } from './deadletter'
+import { archiveDeadletterBucketName } from './deadletter'
 import { eventLogBucketName } from './events'
 
 const archiveSizeWidget = archiveBucketName.apply((name) => ({
@@ -30,7 +30,7 @@ const archiveSizeWidget = archiveBucketName.apply((name) => ({
   },
 }))
 
-const deadletterSizeWidget = deadletterBucketName.apply((name) => ({
+const deadletterSizeWidget = archiveDeadletterBucketName.apply((name) => ({
   title: 'Deadletter Archive Total Bytes',
   id: '',
   scorecard: {

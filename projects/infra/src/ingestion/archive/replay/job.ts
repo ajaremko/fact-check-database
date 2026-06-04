@@ -3,10 +3,10 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, gcpRegion, dockerTag, tag, logLevel } from '../../config'
 import { cloudRunService } from '../../services'
-import { deadletterBucketName } from '..'
+import { archiveDeadletterBucketName } from '..'
 import { provider } from '../../project'
 import { getImageUrl } from '../../pipeline/getImageUrl'
-import { extractorTopicName } from '../../pipeline'
+import { sanitizerTopicName } from '../../pipeline'
 
 export const replayServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-archive-replay-sa`,
@@ -52,7 +52,7 @@ export const replayJob = new gcp.cloudrunv2.Job(
             envs: [
               {
                 name: 'GCS_BUCKET_NAME',
-                value: deadletterBucketName,
+                value: archiveDeadletterBucketName,
               },
               {
                 name: 'GCS_SOURCE_PATH',
@@ -64,7 +64,7 @@ export const replayJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: extractorTopicName,
+                value: sanitizerTopicName,
               },
               {
                 name: 'LOG_LEVEL',

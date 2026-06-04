@@ -1,3 +1,3 @@
 import { deadletterBucket } from './storage'
 
-export const deadletterBucketName = deadletterBucket.name
+export const archiveDeadletterBucketName = deadletterBucket.name

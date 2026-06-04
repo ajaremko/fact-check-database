@@ -1,3 +1,5 @@
+export * from './algolia'
+
 export {
   gcpProject as websiteGcpProject,
   gcpRegion as websiteGcpRegion,

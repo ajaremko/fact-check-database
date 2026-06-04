@@ -3,14 +3,14 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { ingestionLabels, tag } from '../config'
 import { provider, pubsubServiceAccountEmail } from '../project'
-import { deadletterBucketName } from '../archive'
+import { archiveDeadletterBucketName } from '../archive'
 import { pubsubService } from '../services'
 
 export const pubsubServiceAccountDeadletterBucketReader =
   new gcp.storage.BucketIAMMember(
     `${tag}-pubsub-sa-deadletter-bucket-reader`,
     {
-      bucket: deadletterBucketName,
+      bucket: archiveDeadletterBucketName,
       role: 'roles/storage.legacyBucketReader',
       member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },
@@ -21,7 +21,7 @@ export const pubsubServiceAccountDeadletterObjectCreator =
   new gcp.storage.BucketIAMMember(
     `${tag}-pubsub-sa-deadletter-object-creator`,
     {
-      bucket: deadletterBucketName,
+      bucket: archiveDeadletterBucketName,
       role: 'roles/storage.objectCreator',
       member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },
@@ -105,7 +105,7 @@ export function createArchivedSubscription(opts: {
       topic: deadletterTopic.name,
       messageRetentionDuration: opts.archive.messageRetentionDuration,
       cloudStorageConfig: {
-        bucket: deadletterBucketName,
+        bucket: archiveDeadletterBucketName,
         ...opts.archive.cloudStorageConfig,
       },
       labels: ingestionLabels,

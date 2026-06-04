@@ -14,7 +14,7 @@ export const loaderServiceAccount = new gcp.serviceaccount.Account(
     accountId: `${tag}-loader-sa`,
     displayName: 'Staging Dataset Loader (Analysis)',
   },
-  { provider }
+  { provider, dependsOn: [stagingDataset] }
 )
 
 export const loaderStagingBucketViewer = new gcp.storage.BucketIAMMember(
@@ -27,16 +27,16 @@ export const loaderStagingBucketViewer = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-// export const loaderBigQueryDataEditor = new gcp.bigquery.DatasetIamMember(
-//   `${tag}-loader-bigquery-data-editor`,
-//   {
-//     datasetId: stagingDataset.id,
-//     role: 'roles/bigquery.dataEditor',
-//     member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
-//     project: gcpProject,
-//   },
-//   { provider }
-// )
+export const loaderBigQueryDataEditor = new gcp.bigquery.DatasetIamMember(
+  `${tag}-loader-bigquery-data-editor`,
+  {
+    datasetId: stagingDataset.datasetId, // not stagingDataset.id
+    role: 'roles/bigquery.dataEditor',
+    member: pulumi.interpolate`serviceAccount:${loaderServiceAccount.email}`,
+    project: gcpProject,
+  },
+  { provider }
+)
 
 export const loaderBigQueryJobUser = new gcp.projects.IAMMember(
   `${tag}-loader-bigquery-job-user`,
