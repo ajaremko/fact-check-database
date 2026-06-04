@@ -2,6 +2,9 @@ name: news-research
 runtime: nodejs
 description: Infrastructure for News Research project
 main: src/index.ts
+config:
+  algolia:appId:
+    value: 3R16A1FPTN
 packages:
   algolia:
     source: pulumi/pulumi/terraform-provider
