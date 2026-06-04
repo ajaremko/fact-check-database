@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
-import { provider } from '../../project'
-import { tag } from '../../config'
+import { provider } from '../project'
+import { tag } from '../config'
 
 export const sanitizerRecordsCounterMetric =
   new gcp.monitoring.MetricDescriptor(
@@ -37,7 +37,8 @@ export const sanitizerRecordsCounterMetric =
         {
           key: 'source_collection',
           valueType: 'STRING',
-          description: 'Collection type of the source the record was ingested from',
+          description:
+            'Collection type of the source the record was ingested from',
         },
       ],
     },

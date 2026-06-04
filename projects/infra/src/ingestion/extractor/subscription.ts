@@ -1,4 +1,4 @@
-import { createArchivedSubscription } from '../createArchivedSubscription'
+import { createArchivedSubscription } from '../shared'
 import { sanitizerTopicName } from '../sanitizer'
 
 export const {

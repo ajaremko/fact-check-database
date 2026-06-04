@@ -1,10 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { archiveBucketName } from '../../archive'
-import { tag, gcpProject } from '../../config'
-import { provider } from '../../project'
-import { assetsBucketName } from '../../assets'
+import { archiveBucketName } from '../archive'
+import { tag, gcpProject } from '../config'
+import { provider } from '../project'
+import { assetsBucketName } from '../assets'
 
 import { ingestorTopic } from './topic'
 

@@ -1,11 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { extractorSchedule, tag } from '../../config'
-import { provider, schedulerServiceAgentEmail } from '../../project'
-
-import { createInvokerServiceAccount } from '../createInvokerServiceAccount'
-import { createJobScheduler } from '../createJobScheduler'
+import { createInvokerServiceAccount, createJobScheduler } from '../shared'
+import { provider, schedulerServiceAgentEmail } from '../project'
+import { extractorSchedule, tag } from '../config'
 
 import { extractorJob } from './job'
 

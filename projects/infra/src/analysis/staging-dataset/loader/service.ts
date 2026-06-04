@@ -8,7 +8,7 @@ import { cloudRunService } from '../../services'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
 import { archiveBucketName } from '../../../ingestion/archive'
-import { getImageUrl } from '../../../ingestion/pipeline/getImageUrl'
+import { getImageUrl } from '../../../ingestion/shared/getImageUrl'
 
 import {
   loaderServiceAccount,
@@ -26,7 +26,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
       serviceAccount: loaderServiceAccount.email,
       containers: [
         {
-          image: getImageUrl('ingestion-pipeline-loader', dockerTag),
+          image: getImageUrl('analysis-bigquery-loader', dockerTag),
           envs: [
             {
               name: 'STORAGE_BUCKET_NAME',

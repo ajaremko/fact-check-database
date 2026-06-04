@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
-import { provider } from '../../project'
-import { tag } from '../../config'
+import { provider } from '../project'
+import { tag } from '../config'
 
 export const ingestorContentRequestResultsCounterMetric =
   new gcp.monitoring.MetricDescriptor(

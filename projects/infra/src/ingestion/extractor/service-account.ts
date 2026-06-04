@@ -1,14 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import {
-  stagingStorageBucketName,
-  stagingStorageTopicName,
-} from '../../../core'
+import { stagingStorageBucketName, stagingStorageTopicName } from '../../core'
 
-import { gcpProject, tag } from '../../config'
-import { archiveBucketName } from '../../archive'
-import { provider } from '../../project'
+import { gcpProject, tag } from '../config'
+import { archiveBucketName } from '../archive'
+import { provider } from '../project'
 
 import { extractorSubscription } from './subscription'
 

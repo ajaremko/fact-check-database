@@ -1,13 +1,13 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { assetsBucketName, ingestionSourcesObjectName } from '../../assets'
-import { cloudRunService } from '../../services'
-import { provider } from '../../project'
-import { archiveBucketName } from '../../archive'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
+import { assetsBucketName, ingestionSourcesObjectName } from '../assets'
+import { cloudRunService } from '../services'
+import { provider } from '../project'
+import { archiveBucketName } from '../archive'
+import { getImageUrl } from '../shared'
 
-import { ingestorTopicName } from '../ingestor'
-import { getImageUrl } from '../getImageUrl'
+import { ingestorTopic } from './topic'
 
 import {
   ingestorServiceAccount,
@@ -40,7 +40,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: ingestorTopicName,
+                value: ingestorTopic.name,
               },
               {
                 name: 'STORAGE_BUCKET_NAME',

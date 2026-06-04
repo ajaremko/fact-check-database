@@ -1,12 +1,12 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpProject, gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { cloudRunService } from '../../services'
-import { archiveDeadletterBucketName } from '..'
-import { provider } from '../../project'
-import { getImageUrl } from '../../pipeline/getImageUrl'
-import { sanitizerTopicName } from '../../pipeline'
+import { gcpProject, gcpRegion, dockerTag, tag, logLevel } from '../config'
+import { cloudRunService } from '../services'
+import { archiveDeadletterBucketName } from '../archive'
+import { provider } from '../project'
+import { getImageUrl } from '../shared'
+import { sanitizerTopicName } from '../sanitizer'
 
 export const replayServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-archive-replay-sa`,

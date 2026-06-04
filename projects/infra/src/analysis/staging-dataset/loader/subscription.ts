@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as gcp from '@pulumi/gcp'
 
-import { createInvokerServiceAccount } from '../../../ingestion/pipeline/createInvokerServiceAccount'
+import { createInvokerServiceAccount } from '../../../ingestion/shared/createInvokerServiceAccount'
 import { stagingStorageTopicName } from '../../../core'
 
 import { analysisLabels, gcpRegion, tag } from '../../config'

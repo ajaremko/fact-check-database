@@ -1,12 +1,13 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as gcp from '@pulumi/gcp'
 
-import { tag } from '../../config'
-import { provider } from '../../project'
-
-import { createArchivedSubscription } from '../createArchivedSubscription'
-import { createInvokerServiceAccount } from '../createInvokerServiceAccount'
+import {
+  createArchivedSubscription,
+  createInvokerServiceAccount,
+} from '../shared'
 import { ingestorTopicName } from '../ingestor'
+import { provider } from '../project'
+import { tag } from '../config'
 
 import { sanitizerService } from './service'
 

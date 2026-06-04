@@ -1,4 +1,4 @@
-import { createArchivedTopic } from '../createArchivedTopic'
+import { createArchivedTopic } from '../shared'
 
 export const {
   topic: sanitizerTopic,

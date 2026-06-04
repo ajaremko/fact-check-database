@@ -13,7 +13,7 @@ config:
   analysis:region: us-central1
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false
-  analysis:tag: dev-280
+  analysis:tag: dev-291
   analysis:logLevel: debug
 
   ingestion:project: news-research-dev
@@ -21,7 +21,7 @@ config:
   ingestion:archiveLocation: US
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
-  ingestion:tag: dev-280
+  ingestion:tag: dev-291
   ingestion:logLevel: debug
   ingestion:logRetentionDays: 1
   ingestion:batchRetentionDays: 1
@@ -37,7 +37,7 @@ config:
 
   website:project: news-research-dev
   website:region: us-central1
-  website:tag: dev-287
+  website:tag: dev-291
   website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
     - factcheckdatabase.com

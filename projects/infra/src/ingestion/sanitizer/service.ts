@@ -1,13 +1,11 @@
 import * as gcp from '@pulumi/gcp'
 
-import { assetsBucketName, sanitizerPolicyObjectName } from '../../assets'
-import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { cloudRunService } from '../../services'
-import { provider } from '../../project'
-import { getImageUrl } from '../getImageUrl'
-import { archiveBucketName } from '../../archive'
-
-import { sanitizerTopic } from './topic'
+import { assetsBucketName, sanitizerPolicyObjectName } from '../assets'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
+import { cloudRunService } from '../services'
+import { provider } from '../project'
+import { getImageUrl } from '../shared'
+import { archiveBucketName } from '../archive'
 
 import {
   sanitizerAssetBucketViewer,
@@ -15,6 +13,7 @@ import {
   sanitizerServiceAccount,
   sanitizerTopicPublisher,
 } from './service-account'
+import { sanitizerTopic } from './topic'
 
 export const sanitizerService = new gcp.cloudrunv2.Service(
   `${tag}-pipeline-sanitizer-service`,

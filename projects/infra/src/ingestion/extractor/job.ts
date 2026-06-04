@@ -1,16 +1,13 @@
 import * as gcp from '@pulumi/gcp'
 
-import {
-  stagingStorageBucketName,
-  stagingStorageTopicName,
-} from '../../../core'
-import { stagingDatasetId } from '../../../analysis'
+import { stagingStorageBucketName, stagingStorageTopicName } from '../../core'
+import { stagingDatasetId } from '../../analysis'
 
-import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { assetsBucketName } from '../../assets'
-import { cloudRunService } from '../../services'
-import { provider } from '../../project'
-import { getImageUrl } from '../getImageUrl'
+import { gcpRegion, dockerTag, tag, logLevel } from '../config'
+import { assetsBucketName } from '../assets'
+import { cloudRunService } from '../services'
+import { provider } from '../project'
+import { getImageUrl } from '../shared'
 
 import {
   extractorServiceAccount,
