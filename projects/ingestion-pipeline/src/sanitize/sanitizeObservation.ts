@@ -103,7 +103,16 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
 
     // Encode a record of the sanitization with a pointer
     // to the raw response and sanitized record if applicable.
-    yield* Effect.logInfo(`Writing sanitize record for observation`)
+    yield* Effect.logInfo(`Writing sanitize record for observation`).pipe(
+      Effect.annotateLogs({
+        'decision.label': decision.label,
+        'decision.error': decision.error,
+        'source.collection': observation.source.collection,
+        'source.id': observation.source.id,
+        'source.name': observation.source.name,
+        'source.url': observation.source.url,
+      })
+    )
     const recordPath = yield* encodeSanitizedObservationPath(
       sanitizedObservation
     )

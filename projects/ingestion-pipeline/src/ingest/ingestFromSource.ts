@@ -150,7 +150,13 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Write a record of the successful attempt, including a
     // pointer to the archived body
-    yield* Effect.logInfo('Writing fetch success record')
+    yield* Effect.logInfo('Writing fetch success record').pipe(
+      Effect.annotateLogs({
+        'result.status': getReasonPhrase(result.status),
+        'result.status_code': result.status,
+        'result.content_type': result.contentType || 'unknown',
+      })
+    )
     const recordPath = yield* encodeObservationPath(observation)
     const recordData = yield* encodeObservation(observation)
     const recordMeta = yield* encodeObservationMetadata(observation)
@@ -168,7 +174,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     yield* Metric.increment(contentRequestResults).pipe(
       Effect.tagMetrics({
         result_status: `${getReasonPhrase(result.status)}`,
-        result_status_code: `${result.status}`,
+        result_status_code: String(result.status),
         result_content_type: result.contentType || 'unknown',
       })
     )
