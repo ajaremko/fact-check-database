@@ -150,7 +150,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Write a record of the successful attempt, including a
     // pointer to the archived body
-    yield* Effect.logTrace('Writing fetch success record')
+    yield* Effect.logInfo('Writing fetch success record')
     const recordPath = yield* encodeObservationPath(observation)
     const recordData = yield* encodeObservation(observation)
     const recordMeta = yield* encodeObservationMetadata(observation)

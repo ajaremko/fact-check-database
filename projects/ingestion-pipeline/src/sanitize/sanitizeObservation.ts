@@ -103,7 +103,7 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
 
     // Encode a record of the sanitization with a pointer
     // to the raw response and sanitized record if applicable.
-    yield* Effect.logDebug(`Writing sanitize record for observation`)
+    yield* Effect.logInfo(`Writing sanitize record for observation`)
     const recordPath = yield* encodeSanitizedObservationPath(
       sanitizedObservation
     )
