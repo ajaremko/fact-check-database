@@ -105,6 +105,7 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
     // to the raw response and sanitized record if applicable.
     yield* Effect.logInfo(`Writing sanitize record for observation`).pipe(
       Effect.annotateLogs({
+        event: 'record_sanitized',
         'decision.label': decision.label,
         'decision.error': decision.error,
         'source.collection': observation.source.collection,

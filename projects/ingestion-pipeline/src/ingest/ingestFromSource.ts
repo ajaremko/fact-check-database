@@ -71,7 +71,12 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     if (result._tag === 'FetchFailure') {
       // Record the failure for monitoring purposes
-      yield* Effect.logWarning(`Fetch failed: ${result.error}`)
+      yield* Effect.logWarning('Fetch failed').pipe(
+        Effect.annotateLogs({
+          event: 'fetch_failure',
+          'result.error': String(result.error),
+        })
+      )
       yield* Metric.increment(contentRequestResults).pipe(
         Effect.tagMetrics({
           result_status: 'Client Failure',
