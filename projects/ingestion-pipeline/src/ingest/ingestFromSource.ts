@@ -152,6 +152,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     // pointer to the archived body
     yield* Effect.logInfo('Writing fetch success record').pipe(
       Effect.annotateLogs({
+        event: 'fetch_success',
         'result.status': getReasonPhrase(result.status),
         'result.status_code': result.status,
         'result.content_type': result.contentType || 'unknown',

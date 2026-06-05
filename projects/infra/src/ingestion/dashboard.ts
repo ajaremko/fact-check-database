@@ -34,7 +34,7 @@ FROM \`${gcpProject}._Default._AllLogs\`
 WHERE
   timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
   AND severity = 'INFO'
-  AND JSON_VALUE(json_payload, '$.message') = 'Writing fetch success record'
+  AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
   AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
 ORDER BY timestamp DESC
 LIMIT 100`.trim(),
