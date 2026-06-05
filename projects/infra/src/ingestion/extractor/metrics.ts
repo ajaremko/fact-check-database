@@ -14,24 +14,9 @@ export const extractorFactCheckRowCounterMetric =
       valueType: 'DOUBLE',
       labels: [
         {
-          key: 'batch_id',
-          valueType: 'STRING',
-          description: 'The ID of the batch the rows are associated with',
-        },
-        {
-          key: 'source_id',
-          valueType: 'STRING',
-          description: 'The ID of the source the rows were extracted from',
-        },
-        {
           key: 'source_name',
           valueType: 'STRING',
           description: 'The name of the source the rows were extracted from',
-        },
-        {
-          key: 'source_url',
-          valueType: 'STRING',
-          description: 'The URL of the source the rows were extracted from',
         },
         {
           key: 'source_collection',
@@ -43,11 +28,6 @@ export const extractorFactCheckRowCounterMetric =
           key: 'extractor_id',
           valueType: 'STRING',
           description: 'ID of the extractor that produced the rows',
-        },
-        {
-          key: 'extractor_version',
-          valueType: 'STRING',
-          description: 'Version of the extractor that produced the rows',
         },
       ],
     },

@@ -190,9 +190,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
         'source.collection': args.source.collection,
       }),
       Effect.tagMetrics({
-        source_id: args.source.id,
         source_name: args.source.name,
-        source_url: args.source.url,
         source_collection: args.source.collection,
       })
     )

@@ -20,19 +20,9 @@ export const sanitizerRecordsCounterMetric =
           description: 'Policy decision label (e.g. SAFE_PUBLIC, QUARANTINE)',
         },
         {
-          key: 'source_id',
-          valueType: 'STRING',
-          description: 'ID of the source the record was ingested from',
-        },
-        {
           key: 'source_name',
           valueType: 'STRING',
           description: 'Name of the source the record was ingested from',
-        },
-        {
-          key: 'source_url',
-          valueType: 'STRING',
-          description: 'URL of the source the record was ingested from',
         },
         {
           key: 'source_collection',

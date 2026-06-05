@@ -116,10 +116,7 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
       Effect.tagMetrics({
         source_collection: observation.source.collection,
         source_name: observation.source.name,
-        source_url: observation.source.url,
-        source_id: observation.source.id,
         extractor_id: extractor.id,
-        extractor_version: String(extractor.version),
       })
     )
 

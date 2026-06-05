@@ -15,19 +15,9 @@ export const ingestorContentRequestResultsCounterMetric =
       valueType: 'DOUBLE',
       labels: [
         {
-          key: 'source_id',
-          valueType: 'STRING',
-          description: 'The ID of the source being ingested from',
-        },
-        {
           key: 'source_name',
           valueType: 'STRING',
           description: 'The name of the source being ingested from',
-        },
-        {
-          key: 'source_url',
-          valueType: 'STRING',
-          description: 'The URL of the source being ingested from',
         },
         {
           key: 'source_collection',

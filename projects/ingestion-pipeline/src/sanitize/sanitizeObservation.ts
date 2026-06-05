@@ -77,8 +77,6 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
         decision_label: decision.label,
         source_collection: observation.source.collection,
         source_name: observation.source.name,
-        source_url: observation.source.url,
-        source_id: observation.source.id,
       })
     )
 
