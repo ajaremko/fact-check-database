@@ -10,6 +10,7 @@ export const loggingBucketConfig = new gcp.logging.ProjectBucketConfig(
     location: 'global',
     retentionDays: logRetention,
     bucketId: '_Default',
+    enableAnalytics: true,
   },
   {
     provider,

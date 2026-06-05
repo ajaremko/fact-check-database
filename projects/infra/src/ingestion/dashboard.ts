@@ -2,7 +2,7 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import { archiveWidgets } from './archive/dashboard'
-import { tag } from './config'
+import { gcpProject, tag } from './config'
 import { provider } from './project'
 
 import { stagingStorageBucketName } from '../core'
@@ -14,85 +14,35 @@ import {
 import { ingestorContentRequestResultsCounterMetricType } from './ingestor'
 import { sanitizerRecordsCounterMetricType } from './sanitizer'
 
-const contentSourcesWidget =
-  ingestorContentRequestResultsCounterMetricType.apply((type) => ({
-    title: 'Content Sources',
-    timeSeriesTable: {
-      columnSettings: [
-        {
-          displayName: 'ID',
-          column: 'source_id',
-          visible: true,
+const contentSourcesWidget = {
+  title: 'Content Request Results',
+  analyticsChart: {
+    chartType: 'TABLE',
+    dataSet: [
+      {
+        opsAnalyticsQuery: {
+          sql: `
+SELECT
+  timestamp,
+  JSON_VALUE(json_payload, '$["source.name"]')         AS source_name,
+  JSON_VALUE(json_payload, '$["source.collection"]')   AS source_collection,
+  JSON_VALUE(json_payload, '$["source.url"]')          AS source_url,
+  JSON_VALUE(json_payload, '$["result.status_code"]')  AS status_code,
+  JSON_VALUE(json_payload, '$["result.content_type"]') AS content_type,
+  JSON_VALUE(json_payload, '$["job.runId"]')           AS run_id
+FROM \`${gcpProject}._Default._AllLogs\`
+WHERE
+  timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+  AND severity = 'INFO'
+  AND JSON_VALUE(json_payload, '$.message') = 'Writing fetch success record'
+  AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
+ORDER BY timestamp DESC
+LIMIT 100`.trim(),
         },
-        {
-          displayName: 'Name',
-          column: 'source_name',
-          visible: true,
-        },
-        {
-          displayName: 'URL',
-          column: 'source_url',
-          visible: true,
-        },
-        {
-          displayName: 'Collection',
-          column: 'source_collection',
-          visible: true,
-        },
-        {
-          displayName: 'Status',
-          column: 'result_status',
-          visible: false,
-        },
-        {
-          displayName: 'Code',
-          column: 'result_status_code',
-          visible: false,
-        },
-        {
-          displayName: 'Content Type',
-          column: 'result_content_type',
-          visible: false,
-        },
-        {
-          displayName: 'Request Count',
-          column: 'value',
-          visible: true,
-        },
-      ],
-      dataSets: [
-        {
-          minAlignmentPeriod: '60s',
-          timeSeriesQuery: {
-            outputFullDuration: true,
-            timeSeriesFilter: {
-              aggregation: {
-                alignmentPeriod: '60s',
-                crossSeriesReducer: 'REDUCE_SUM',
-                groupByFields: [
-                  'metric.label."source_collection"',
-                  'metric.label."source_name"',
-                  'metric.label."source_id"',
-                  'metric.label."source_url"',
-                  'metric.label."result_status"',
-                  'metric.label."result_content_type"',
-                  'metric.label."result_status_code"',
-                ],
-                perSeriesAligner: 'ALIGN_COUNT',
-              },
-              filter: `metric.type="${type}" resource.type="generic_task"`,
-              pickTimeSeriesFilter: {
-                direction: 'TOP',
-                numTimeSeries: 30,
-                rankingMethod: 'METHOD_MEAN',
-              },
-            },
-          },
-        },
-      ],
-      metricVisualization: 'BAR',
-    },
-  }))
+      },
+    ],
+  },
+}
 
 const sanitizerDecisionsWidget =
   ingestorContentRequestResultsCounterMetricType.apply((type) => ({
