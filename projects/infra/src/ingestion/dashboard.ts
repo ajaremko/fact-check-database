@@ -14,33 +14,81 @@ import {
 import { ingestorContentRequestResultsCounterMetricType } from './ingestor'
 import { sanitizerRecordsCounterMetricType } from './sanitizer'
 
+// const contentSourcesWidget = {
+//   title: 'Content Request Results',
+//   timeSeriesTable: {
+//     columnSettings: [
+//       { displayName: 'Source ID', column: 'source_id', visible: true },
+//       { displayName: 'Timestamp', column: 'timestamp', visible: true },
+//       { displayName: 'Source', column: 'source_name', visible: true },
+//       { displayName: 'Collection', column: 'source_collection', visible: true },
+//       { displayName: 'URL', column: 'source_url', visible: true },
+//       { displayName: 'Status', column: 'status_code', visible: true },
+//       { displayName: 'Content Type', column: 'content_type', visible: true },
+//       { displayName: 'Run ID', column: 'run_id', visible: false },
+//     ],
+//     dataSets: [
+//       {
+//         timeSeriesQuery: {
+//           opsAnalyticsQuery: {
+//             queryHandle: '',
+//             sql: `SELECT
+//   timestamp,
+//   JSON_VALUE(json_payload, '$.source.name')         AS source_name,
+//   JSON_VALUE(json_payload, '$.source.id')           AS source_id,
+//   JSON_VALUE(json_payload, '$.source.collection')   AS source_collection,
+//   JSON_VALUE(json_payload, '$.source.url')          AS source_url,
+//   JSON_VALUE(json_payload, '$.result.status_code')  AS status_code,
+//   JSON_VALUE(json_payload, '$.result.content_type') AS content_type,
+//   JSON_VALUE(json_payload, '$.job.runId')           AS run_id
+// FROM \`${gcpProject}.global._Default._Default\`
+// WHERE
+//   timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+//   AND severity = 'INFO'
+//   AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
+//   AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
+// ORDER BY timestamp DESC
+// LIMIT 100`,
+//           },
+//         },
+//       },
+//     ],
+//   },
+// }
+
 const contentSourcesWidget = {
   title: 'Content Request Results',
-  analyticsChart: {
-    chartType: 'TABLE',
-    dataSet: [
+  timeSeriesTable: {
+    columnSettings: [],
+    dataSets: [
       {
-        opsAnalyticsQuery: {
-          sql: `
-SELECT
-  timestamp,
-  JSON_VALUE(json_payload, '$["source.name"]')         AS source_name,
-  JSON_VALUE(json_payload, '$["source.collection"]')   AS source_collection,
-  JSON_VALUE(json_payload, '$["source.url"]')          AS source_url,
-  JSON_VALUE(json_payload, '$["result.status_code"]')  AS status_code,
-  JSON_VALUE(json_payload, '$["result.content_type"]') AS content_type,
-  JSON_VALUE(json_payload, '$["job.runId"]')           AS run_id
-FROM \`${gcpProject}._Default._AllLogs\`
-WHERE
-  timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
-  AND severity = 'INFO'
-  AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
-  AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
-ORDER BY timestamp DESC
-LIMIT 100`.trim(),
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                STRING(json_payload['source.name'])         AS Source,
+                STRING(json_payload['source.id'])           AS \`Source ID\`,
+                STRING(json_payload['source.url'])          AS URL,
+                STRING(json_payload['source.collection'])   AS Collection,
+                STRING(json_payload['result.status'])       AS Status,
+                INT64(json_payload['result.status_code'])   AS Code,
+                STRING(json_payload['result.content_type']) AS \`Content Type\`,
+                COUNT(*)                                    AS Count
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+                AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
+              GROUP BY Source, \`Source ID\`, Collection, URL, Status, Code, \`Content Type\`
+              ORDER BY Source, Code
+              LIMIT 1000`,
+          },
         },
       },
     ],
+    metricVisualization: 'BAR',
   },
 }
 
