@@ -272,6 +272,39 @@ const stagingSizeWidget = stagingStorageBucketName.apply((name) => ({
   },
 }))
 
+const contentFailuresWidget = {
+  title: 'Content Request Failures',
+  timeSeriesTable: {
+    dataSets: [
+      {
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                STRING(json_payload['source.name'])       AS Source,
+                STRING(json_payload['source.id'])         AS \`Source ID\`,
+                STRING(json_payload['source.collection']) AS Collection,
+                STRING(json_payload['source.url'])        AS URL,
+                STRING(json_payload['result.error'])      AS Error,
+                COUNT(*)                                  AS Count
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+                AND severity = 'WARNING'
+                AND JSON_VALUE(json_payload, '$.event') = 'fetch_failure'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
+              GROUP BY Source, \`Source ID\`, Collection, URL, Error
+              ORDER BY Source`,
+          },
+        },
+      },
+    ],
+    metricVisualization: 'BAR',
+  },
+}
+
 export const pipelineWidgets = pulumi
   .all<object>([
     contentRequestsByStatusWidget,
@@ -279,6 +312,7 @@ export const pipelineWidgets = pulumi
     extractorFactCheckRowsWidget,
     contentRecordsSanitizedWidget,
     contentSourcesWidget,
+    contentFailuresWidget,
     sanitizerDecisionsWidget,
   ])
   .apply(
@@ -288,6 +322,7 @@ export const pipelineWidgets = pulumi
       extractorFactCheckRows,
       contentRecordsSanitized,
       contentSources,
+      contentFailures,
       sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
@@ -295,6 +330,7 @@ export const pipelineWidgets = pulumi
       extractorFactCheckRows,
       contentRecordsSanitized,
       contentSources,
+      contentFailures,
       sanitizerDecisions,
     })
   )
@@ -372,7 +408,7 @@ const pipelineDashboardJson = pulumi
           width: 16,
           widget: pipeline.extractorFactCheckRows,
         },
-        // Row 2 (y=12, h=19): Recently ingested content sources
+        // Row 2 (y=12, h=19): Content request results
         {
           yPos: 12,
           xPos: 0,
@@ -380,9 +416,17 @@ const pipelineDashboardJson = pulumi
           width: 48,
           widget: pipeline.contentSources,
         },
-        // Row 3 (y=31, h=19): Pipeline logs
+        // Row 3 (y=31, h=19): Content request failures
         {
           yPos: 31,
+          xPos: 0,
+          height: 19,
+          width: 48,
+          widget: pipeline.contentFailures,
+        },
+        // Row 4 (y=50, h=19): Pipeline logs
+        {
+          yPos: 50,
           xPos: 0,
           height: 19,
           width: 48,
@@ -396,30 +440,30 @@ const pipelineDashboardJson = pulumi
             },
           },
         },
-        // Row 4 (y=50, h=8): Storage health — all buckets with deadletter last
+        // Row 5 (y=69, h=8): Storage health — all buckets with deadletter last
         {
-          yPos: 50,
+          yPos: 69,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 50,
+          yPos: 69,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 50,
+          yPos: 69,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 50,
+          yPos: 69,
           xPos: 36,
           height: 8,
           width: 12,
