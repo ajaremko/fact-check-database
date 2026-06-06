@@ -68,21 +68,22 @@ const contentSourcesWidget = {
             queryHandle: '',
             sql: `
               SELECT
-                STRING(json_payload['source.name'])         AS Source,
-                STRING(json_payload['source.id'])           AS \`Source ID\`,
-                STRING(json_payload['source.url'])          AS URL,
-                STRING(json_payload['source.collection'])   AS Collection,
-                STRING(json_payload['result.status'])       AS Status,
-                INT64(json_payload['result.status_code'])   AS Code,
-                STRING(json_payload['result.content_type']) AS \`Content Type\`,
-                COUNT(*)                                    AS Count
+                STRING(json_payload['source.id'])               AS \`ID\`,
+                STRING(json_payload['source.name'])             AS Name,
+                STRING(json_payload['source.url'])              AS URL,
+                STRING(json_payload['source.collection'])       AS Collection,
+                STRING(json_payload['result.status'])           AS Status,
+                INT64(json_payload['result.status_code'])       AS Code,
+                STRING(json_payload['result.content_type'])     AS \`Content Type\`,
+                COUNT(*)                                        AS Count,
+                FORMAT_TIMESTAMP('%R:%M%p %x', MAX(timestamp))  AS Latest
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
                 AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
-              GROUP BY Source, \`Source ID\`, Collection, URL, Status, Code, \`Content Type\`
-              ORDER BY Source, Code
+              GROUP BY Name, \`ID\`, Collection, URL, Status, Code, \`Content Type\`
+              ORDER BY Name, Code
               LIMIT 1000`,
           },
         },
@@ -283,20 +284,55 @@ const contentFailuresWidget = {
             queryHandle: '',
             sql: `
               SELECT
-                STRING(json_payload['source.name'])       AS Source,
-                STRING(json_payload['source.id'])         AS \`Source ID\`,
-                STRING(json_payload['source.collection']) AS Collection,
-                STRING(json_payload['source.url'])        AS URL,
-                STRING(json_payload['result.error'])      AS Error,
-                COUNT(*)                                  AS Count
+                STRING(json_payload['source.id'])               AS \`ID\`,
+                STRING(json_payload['source.name'])             AS Name,
+                STRING(json_payload['source.collection'])       AS Collection,
+                STRING(json_payload['source.url'])              AS URL,
+                STRING(json_payload['result.error'])            AS Error,
+                COUNT(*)                                        AS Count,
+                FORMAT_TIMESTAMP('%R:%M%p %x', MAX(timestamp))  AS Latest
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'WARNING'
                 AND JSON_VALUE(json_payload, '$.event') = 'fetch_failure'
                 AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
-              GROUP BY Source, \`Source ID\`, Collection, URL, Error
-              ORDER BY Source`,
+              GROUP BY Name, \`ID\`, Collection, URL, Error
+              ORDER BY Name`,
+          },
+        },
+      },
+    ],
+    metricVisualization: 'BAR',
+  },
+}
+
+const sanitizerDecisionsTableWidget = {
+  title: 'Content Sanitizer Decisions',
+  timeSeriesTable: {
+    dataSets: [
+      {
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                STRING(json_payload['source.id'])               AS \`ID\`,
+                STRING(json_payload['source.name'])             AS Name,
+                STRING(json_payload['source.url'])              AS URL,
+                STRING(json_payload['source.collection'])       AS Collection,
+                STRING(json_payload['decision.label'])          AS Decision,
+                COUNT(*)                                        AS Count,
+                FORMAT_TIMESTAMP('%R:%M%p %x', MAX(timestamp))  AS Latest
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+                AND severity = 'INFO'
+                AND JSON_VALUE(json_payload, '$.event') = 'record_sanitized'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-sanitizer'
+              GROUP BY Name, \`ID\`, Collection, URL, Decision
+              ORDER BY Name, Decision`,
           },
         },
       },
@@ -313,6 +349,7 @@ export const pipelineWidgets = pulumi
     contentRecordsSanitizedWidget,
     contentSourcesWidget,
     contentFailuresWidget,
+    sanitizerDecisionsTableWidget,
     sanitizerDecisionsWidget,
   ])
   .apply(
@@ -323,6 +360,7 @@ export const pipelineWidgets = pulumi
       contentRecordsSanitized,
       contentSources,
       contentFailures,
+      sanitizerDecisionsTable,
       sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
@@ -331,6 +369,7 @@ export const pipelineWidgets = pulumi
       contentRecordsSanitized,
       contentSources,
       contentFailures,
+      sanitizerDecisionsTable,
       sanitizerDecisions,
     })
   )
@@ -424,9 +463,17 @@ const pipelineDashboardJson = pulumi
           width: 48,
           widget: pipeline.contentFailures,
         },
-        // Row 4 (y=50, h=19): Pipeline logs
+        // Row 4 (y=50, h=19): Content sanitizer decisions
         {
           yPos: 50,
+          xPos: 0,
+          height: 19,
+          width: 48,
+          widget: pipeline.sanitizerDecisionsTable,
+        },
+        // Row 5 (y=69, h=19): Pipeline logs
+        {
+          yPos: 69,
           xPos: 0,
           height: 19,
           width: 48,
@@ -440,30 +487,30 @@ const pipelineDashboardJson = pulumi
             },
           },
         },
-        // Row 5 (y=69, h=8): Storage health — all buckets with deadletter last
+        // Row 6 (y=88, h=8): Storage health — all buckets with deadletter last
         {
-          yPos: 69,
+          yPos: 88,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 69,
+          yPos: 88,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 69,
+          yPos: 88,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 69,
+          yPos: 88,
           xPos: 36,
           height: 8,
           width: 12,
