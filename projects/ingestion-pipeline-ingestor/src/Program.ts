@@ -49,11 +49,6 @@ function processTarget(source: Source, index: number) {
 export const Program = Effect.gen(function* () {
   const job = yield* JobContext
   const { sources } = yield* SourceList
-  yield* Effect.logInfo(`Starting job ${job.runId}.`).pipe(
-    Effect.annotateLogs({
-      event: 'ingestor_job_started',
-    })
-  )
 
   // process all targets with configured concurrency
   yield* Effect.logDebug(`Processing ${sources.length} targets`)
