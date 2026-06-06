@@ -87,6 +87,16 @@ export const Program = Effect.gen(function* () {
     return
   }
 
+  yield* Effect.logInfo(`Extractor job run ${job.runId} completed`).pipe(
+    Effect.annotateLogs({
+      event: 'extractor_job_completed',
+      'job.tasks': tasks.length,
+      'job.successes': successes.length,
+      'job.failures': tasks.length - successes.length,
+      'job.rowsExtracted': rows.length,
+    })
+  )
+
   // publish message
   const outgoing = yield* writeBatch({
     runId: job.runId,

@@ -188,11 +188,7 @@ const job = Layer.effect(
 function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   return Effect.gen(function* () {
     const ctx = yield* JobContext
-    yield* Effect.logInfo(`Starting extractor job run ${ctx.runId}`).pipe(
-      Effect.annotateLogs({
-        event: 'extractor_job_started',
-      })
-    )
+    yield* Effect.logInfo(`Starting extractor job run ${ctx.runId}`)
     return yield* self.pipe(
       Effect.withSpan('jobRun'),
       Effect.annotateLogs({

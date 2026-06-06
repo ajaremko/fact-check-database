@@ -7,54 +7,9 @@ import { provider } from './project'
 
 import { stagingStorageBucketName } from '../core'
 
-import {
-  extractorFactCheckRowCounterMetricType,
-  // extractorBatchesWrittenCounterMetricType,
-} from './extractor'
+import { extractorFactCheckRowCounterMetricType } from './extractor'
 import { ingestorContentRequestResultsCounterMetricType } from './ingestor'
 import { sanitizerRecordsCounterMetricType } from './sanitizer'
-
-// const contentSourcesWidget = {
-//   title: 'Content Request Results',
-//   timeSeriesTable: {
-//     columnSettings: [
-//       { displayName: 'Source ID', column: 'source_id', visible: true },
-//       { displayName: 'Timestamp', column: 'timestamp', visible: true },
-//       { displayName: 'Source', column: 'source_name', visible: true },
-//       { displayName: 'Collection', column: 'source_collection', visible: true },
-//       { displayName: 'URL', column: 'source_url', visible: true },
-//       { displayName: 'Status', column: 'status_code', visible: true },
-//       { displayName: 'Content Type', column: 'content_type', visible: true },
-//       { displayName: 'Run ID', column: 'run_id', visible: false },
-//     ],
-//     dataSets: [
-//       {
-//         timeSeriesQuery: {
-//           opsAnalyticsQuery: {
-//             queryHandle: '',
-//             sql: `SELECT
-//   timestamp,
-//   JSON_VALUE(json_payload, '$.source.name')         AS source_name,
-//   JSON_VALUE(json_payload, '$.source.id')           AS source_id,
-//   JSON_VALUE(json_payload, '$.source.collection')   AS source_collection,
-//   JSON_VALUE(json_payload, '$.source.url')          AS source_url,
-//   JSON_VALUE(json_payload, '$.result.status_code')  AS status_code,
-//   JSON_VALUE(json_payload, '$.result.content_type') AS content_type,
-//   JSON_VALUE(json_payload, '$.job.runId')           AS run_id
-// FROM \`${gcpProject}.global._Default._Default\`
-// WHERE
-//   timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
-//   AND severity = 'INFO'
-//   AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
-//   AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
-// ORDER BY timestamp DESC
-// LIMIT 100`,
-//           },
-//         },
-//       },
-//     ],
-//   },
-// }
 
 const contentSourcesWidget = {
   title: 'Content Request Results',
@@ -341,6 +296,65 @@ const sanitizerDecisionsTableWidget = {
   },
 }
 
+const ingestorJobRunsWidget = {
+  title: 'Ingestor Job Runs',
+  timeSeriesTable: {
+    dataSets: [
+      {
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                STRING(json_payload['job.runId']) AS \`Run Id\`,
+                FORMAT_TIMESTAMP('%R:%M%p %x', timestamp) AS Timestamp,
+                STRING(json_payload['job.concurrency']) AS Concurrency,
+                STRING(json_payload['job.successThreshold']) AS SuccessThreshold,
+                STRING(json_payload['serviceContext.version']) AS Version
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+                AND severity = 'INFO'
+                AND JSON_VALUE(json_payload, '$.event') = 'ingestor_job_completed'
+              ORDER BY timestamp DESC
+              LIMIT 50`,
+          },
+        },
+      },
+    ],
+    metricVisualization: 'BAR',
+  },
+}
+
+const extractorJobRunsWidget = {
+  title: 'Extractor Job Runs',
+  timeSeriesTable: {
+    dataSets: [
+      {
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                timestamp,
+                JSON_VALUE(json_payload, '$.serviceContext.version') AS Version
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+                AND severity = 'INFO'
+                AND JSON_VALUE(json_payload, '$.event') = 'extractor_job_completed'
+              ORDER BY timestamp DESC
+              LIMIT 50`,
+          },
+        },
+      },
+    ],
+    metricVisualization: 'BAR',
+  },
+}
+
 export const pipelineWidgets = pulumi
   .all<object>([
     contentRequestsByStatusWidget,
@@ -350,6 +364,8 @@ export const pipelineWidgets = pulumi
     contentSourcesWidget,
     contentFailuresWidget,
     sanitizerDecisionsTableWidget,
+    ingestorJobRunsWidget,
+    extractorJobRunsWidget,
     sanitizerDecisionsWidget,
   ])
   .apply(
@@ -361,6 +377,8 @@ export const pipelineWidgets = pulumi
       contentSources,
       contentFailures,
       sanitizerDecisionsTable,
+      ingestorJobRuns,
+      extractorJobRuns,
       sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
@@ -370,6 +388,8 @@ export const pipelineWidgets = pulumi
       contentSources,
       contentFailures,
       sanitizerDecisionsTable,
+      ingestorJobRuns,
+      extractorJobRuns,
       sanitizerDecisions,
     })
   )
@@ -471,9 +491,24 @@ const pipelineDashboardJson = pulumi
           width: 48,
           widget: pipeline.sanitizerDecisionsTable,
         },
-        // Row 5 (y=69, h=19): Pipeline logs
+        // Row 5 (y=69, h=16): Job run logs — ingestor and extractor side by side
         {
           yPos: 69,
+          xPos: 0,
+          height: 16,
+          width: 24,
+          widget: pipeline.ingestorJobRuns,
+        },
+        {
+          yPos: 69,
+          xPos: 24,
+          height: 16,
+          width: 24,
+          widget: pipeline.extractorJobRuns,
+        },
+        // Row 6 (y=85, h=19): Pipeline logs
+        {
+          yPos: 85,
           xPos: 0,
           height: 19,
           width: 48,
@@ -487,30 +522,30 @@ const pipelineDashboardJson = pulumi
             },
           },
         },
-        // Row 6 (y=88, h=8): Storage health — all buckets with deadletter last
+        // Row 7 (y=104, h=8): Storage health — all buckets with deadletter last
         {
-          yPos: 88,
+          yPos: 104,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 88,
+          yPos: 104,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 88,
+          yPos: 104,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 88,
+          yPos: 104,
           xPos: 36,
           height: 8,
           width: 12,

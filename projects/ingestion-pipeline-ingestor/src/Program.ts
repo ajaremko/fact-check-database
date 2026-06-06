@@ -64,9 +64,22 @@ export const Program = Effect.gen(function* () {
     `Processed ${successes.length} of ${sources.length} targets`
   )
 
-  // fail if below threshold
   const successRate = successes.length / sources.length
-  if (successRate < job.successThreshold) {
+  const result = successRate >= job.successThreshold ? 'success' : 'failure'
+
+  yield* Effect.logInfo(`Ingestor job run ${job.runId} completed`).pipe(
+    Effect.annotateLogs({
+      event: 'ingestor_job_completed',
+      'job.successRate': successRate,
+      'job.tasks': tasks.length,
+      'job.successes': successes.length,
+      'job.failures': tasks.length - successes.length,
+      'job.result': result,
+    })
+  )
+
+  // fail if below threshold
+  if (result === 'failure') {
     yield* Effect.fail(
       new Error(
         `Success rate ${successRate} is below threshold ${job.successThreshold}`
