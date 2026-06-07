@@ -31,7 +31,7 @@ export const writeBatch = Effect.fn('writeBatch')(
     tableId: string
     datasetId: string
   }) {
-    const encodePath = yield* encodeExtractionBatchPath({
+    const path = yield* encodeExtractionBatchPath({
       batchId: input.runId,
       extractedAt: input.timestamp,
       tableId: input.tableId,
@@ -39,7 +39,7 @@ export const writeBatch = Effect.fn('writeBatch')(
     })
     const data = yield* encodeNdjson(input.rows)
     const pointer = yield* writeFile({
-      path: encodePath,
+      path,
       data,
       contentType: 'application/x-ndjson',
     })
@@ -54,6 +54,14 @@ export const writeBatch = Effect.fn('writeBatch')(
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })
+
+    yield* Effect.logInfo(`Batch written with ${input.rows.length} rows`).pipe(
+      Effect.annotateLogs({
+        event: 'batch_written',
+        'batch.path': path,
+        'batch.format': batch.sourceFormat,
+      })
+    )
 
     yield* Metric.increment(batchesWritten)
 
