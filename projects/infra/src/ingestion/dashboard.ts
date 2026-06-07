@@ -11,6 +11,8 @@ import { extractorFactCheckRowCounterMetricType } from './extractor'
 import { ingestorContentRequestResultsCounterMetricType } from './ingestor'
 import { sanitizerRecordsCounterMetricType } from './sanitizer'
 
+const timezone = 'America/Los_Angeles'
+
 const contentSourcesWidget = {
   title: 'Archived Requests',
   timeSeriesTable: {
@@ -23,6 +25,8 @@ const contentSourcesWidget = {
             queryHandle: '',
             sql: `
               SELECT
+                FORMAT_TIMESTAMP('%x', MAX(timestamp), '${timezone}')          AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp), '${timezone}')    AS Time,
                 STRING(json_payload['source.id'])               AS \`Source ID\`,
                 STRING(json_payload['source.name'])             AS Name,
                 STRING(json_payload['source.url'])              AS URL,
@@ -30,9 +34,7 @@ const contentSourcesWidget = {
                 STRING(json_payload['result.status'])           AS Status,
                 INT64(json_payload['result.status_code'])       AS Code,
                 STRING(json_payload['result.content_type'])     AS \`Content Type\`,
-                COUNT(*)                                        AS Count,
-                FORMAT_TIMESTAMP('%x', MAX(timestamp))          AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp))    AS Time
+                COUNT(*)                                        AS Count
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
@@ -240,14 +242,14 @@ const contentFailuresWidget = {
             queryHandle: '',
             sql: `
               SELECT
+                FORMAT_TIMESTAMP('%x', MAX(timestamp), '${timezone}')          AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp), '${timezone}')    AS Time,
                 STRING(json_payload['source.id'])               AS \`Source ID\`,
                 STRING(json_payload['source.name'])             AS Name,
                 STRING(json_payload['source.collection'])       AS Collection,
                 STRING(json_payload['source.url'])              AS URL,
                 STRING(json_payload['result.error'])            AS Error,
-                COUNT(*)                                        AS Count,
-                FORMAT_TIMESTAMP('%x', MAX(timestamp))          AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp))    AS Time
+                COUNT(*)                                        AS Count
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
@@ -275,14 +277,14 @@ const sanitizerDecisionsTableWidget = {
             queryHandle: '',
             sql: `
               SELECT
+                FORMAT_TIMESTAMP('%x', MAX(timestamp), '${timezone}')          AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp), '${timezone}')    AS Time,
                 STRING(json_payload['source.id'])               AS \`Source ID\`,
                 STRING(json_payload['source.name'])             AS Name,
                 STRING(json_payload['source.url'])              AS URL,
                 STRING(json_payload['source.collection'])       AS Collection,
                 STRING(json_payload['decision.label'])          AS Decision,
-                COUNT(*)                                        AS Count,
-                FORMAT_TIMESTAMP('%x', MAX(timestamp))          AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp))    AS Time
+                COUNT(*)                                        AS Count
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
@@ -311,8 +313,8 @@ const ingestorJobRunsWidget = {
             sql: `
               SELECT
                 STRING(json_payload.serviceContext.version) AS Version,
-                FORMAT_TIMESTAMP('%x', timestamp) AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp) AS Time,
+                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}') AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
                 STRING(json_payload['job.result']) AS Result,
                 INT64(json_payload['job.tasks']) AS Sources,
                 INT64(json_payload['job.failures']) AS Failures,
@@ -343,8 +345,8 @@ const extractorJobRunsWidget = {
             sql: `
               SELECT
                 STRING(json_payload.serviceContext.version) AS Version,
-                FORMAT_TIMESTAMP('%x', timestamp) AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp) AS Time,
+                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}') AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
                 INT64(json_payload['job.tasks']) AS Records,
                 INT64(json_payload['job.failures']) AS Failures,
                 INT64(json_payload['job.rowsExtracted']) AS \`Rows Extracted\`
@@ -373,18 +375,56 @@ const factChecksExtractedWidget = {
             queryHandle: '',
             sql: `
               SELECT
-                timestamp,
+                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')        AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}')  AS Time,
                 STRING(json_payload['source.name'])       AS Source,
                 STRING(json_payload['source.id'])         AS \`Source ID\`,
                 STRING(json_payload['source.collection']) AS Collection,
-                STRING(json_payload['extractor.id'])      AS Extractor,
                 INT64(json_payload['count'])              AS \`Fact Checks\`,
+                STRING(json_payload['extractor.id'])      AS \`Extractor Id\`,
+                INT64(json_payload['extractor.version'])  AS \`Extractor Version\`,
                 STRING(json_payload['job.runId'])         AS \`Run ID\`
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'INFO'
                 AND JSON_VALUE(json_payload, '$.event') = 'fact_checks_extracted'
+              ORDER BY timestamp DESC
+              LIMIT 100`,
+          },
+        },
+      },
+    ],
+    metricVisualization: 'BAR',
+  },
+}
+
+const extractionErrorWidget = {
+  title: 'Extraction Errors',
+  timeSeriesTable: {
+    dataSets: [
+      {
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')  AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                STRING(json_payload['source.id'])         AS \`Source ID\`,
+                STRING(json_payload['source.name'])       AS Source,
+                STRING(json_payload['source.collection']) AS Collection,
+                STRING(json_payload['extractor.id'])      AS Extractor,
+                INT64(json_payload['extractor.version'])  AS \`Extractor Version\`,
+                STRING(json_payload['type'])              AS \`Error Type\`,
+                STRING(json_payload['message'])           AS Message,
+                STRING(json_payload['job.runId'])         AS \`Run ID\`
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+                AND severity = 'WARNING'
+                AND JSON_VALUE(json_payload, '$.event') = 'extraction_error'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },
@@ -407,6 +447,7 @@ export const pipelineWidgets = pulumi
     ingestorJobRunsWidget,
     extractorJobRunsWidget,
     factChecksExtractedWidget,
+    extractionErrorWidget,
     sanitizerDecisionsWidget,
   ])
   .apply(
@@ -421,6 +462,7 @@ export const pipelineWidgets = pulumi
       ingestorJobRuns,
       extractorJobRuns,
       factChecksExtracted,
+      extractionErrors,
       sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
@@ -433,6 +475,7 @@ export const pipelineWidgets = pulumi
       ingestorJobRuns,
       extractorJobRuns,
       factChecksExtracted,
+      extractionErrors,
       sanitizerDecisions,
     })
   )
@@ -557,9 +600,17 @@ const pipelineDashboardJson = pulumi
           width: 48,
           widget: pipeline.factChecksExtracted,
         },
-        // Row 7 (y=101, h=19): Pipeline logs
+        // Row 7 (y=101, h=16): Extraction errors
         {
           yPos: 101,
+          xPos: 0,
+          height: 16,
+          width: 48,
+          widget: pipeline.extractionErrors,
+        },
+        // Row 8 (y=117, h=19): Pipeline logs
+        {
+          yPos: 117,
           xPos: 0,
           height: 19,
           width: 48,
@@ -573,30 +624,30 @@ const pipelineDashboardJson = pulumi
             },
           },
         },
-        // Row 8 (y=120, h=8): Storage health — all buckets with deadletter last
+        // Row 9 (y=136, h=8): Storage health — all buckets with deadletter last
         {
-          yPos: 120,
+          yPos: 136,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 120,
+          yPos: 136,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 120,
+          yPos: 136,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 120,
+          yPos: 136,
           xPos: 36,
           height: 8,
           width: 12,
