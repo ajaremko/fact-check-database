@@ -26,7 +26,7 @@ const contentSourcesWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', MAX(timestamp), '${timezone}')          AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp), '${timezone}')    AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', MAX(timestamp), '${timezone}')    AS Time,
                 STRING(json_payload['source.id'])               AS \`Source ID\`,
                 STRING(json_payload['source.name'])             AS Name,
                 STRING(json_payload['source.url'])              AS URL,
@@ -232,7 +232,7 @@ const stagingSizeWidget = stagingStorageBucketName.apply((name) => ({
 }))
 
 const contentFailuresWidget = {
-  title: 'HTTP Failures',
+  title: 'Failed Requests',
   timeSeriesTable: {
     dataSets: [
       {
@@ -243,7 +243,7 @@ const contentFailuresWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', MAX(timestamp), '${timezone}')          AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp), '${timezone}')    AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', MAX(timestamp), '${timezone}')    AS Time,
                 STRING(json_payload['source.id'])               AS \`Source ID\`,
                 STRING(json_payload['source.name'])             AS Name,
                 STRING(json_payload['source.collection'])       AS Collection,
@@ -278,7 +278,7 @@ const sanitizerDecisionsTableWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', MAX(timestamp), '${timezone}')          AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', MAX(timestamp), '${timezone}')    AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', MAX(timestamp), '${timezone}')    AS Time,
                 STRING(json_payload['source.id'])               AS \`Source ID\`,
                 STRING(json_payload['source.name'])             AS Name,
                 STRING(json_payload['source.url'])              AS URL,
@@ -302,7 +302,7 @@ const sanitizerDecisionsTableWidget = {
 }
 
 const ingestorJobRunsWidget = {
-  title: 'Ingestor Job Runs',
+  title: 'Job Runs',
   timeSeriesTable: {
     dataSets: [
       {
@@ -313,12 +313,12 @@ const ingestorJobRunsWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}') AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
-                STRING(json_payload.serviceContext.version) AS Version,s
-                STRING(json_payload['job.result']) AS Result,
+                FORMAT_TIMESTAMP('%I:%M %p', timestamp, '${timezone}') AS Time,
+                STRING(json_payload.serviceContext.version) AS Version,
                 INT64(json_payload['job.tasks']) AS Sources,
                 INT64(json_payload['job.failures']) AS Failures,
-                FLOAT64(json_payload['job.successThreshold']) AS \`Success Threshold\`
+                FLOAT64(json_payload['job.successThreshold']) AS \`Success Threshold\`,
+                STRING(json_payload['job.result']) AS Result
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
@@ -334,7 +334,7 @@ const ingestorJobRunsWidget = {
 }
 
 const extractorJobRunsWidget = {
-  title: 'Extractor Job Runs',
+  title: 'Job Runs',
   timeSeriesTable: {
     dataSets: [
       {
@@ -345,7 +345,7 @@ const extractorJobRunsWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}') AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', timestamp, '${timezone}') AS Time,
                 STRING(json_payload.serviceContext.version) AS Version,
                 INT64(json_payload['job.tasks']) AS Records,
                 INT64(json_payload['job.failures']) AS Failures,
@@ -365,7 +365,7 @@ const extractorJobRunsWidget = {
 }
 
 const factChecksExtractedWidget = {
-  title: 'Fact Checks Extracted',
+  title: 'Extraction Results',
   timeSeriesTable: {
     dataSets: [
       {
@@ -376,7 +376,7 @@ const factChecksExtractedWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')        AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}')  AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', timestamp, '${timezone}')  AS Time,
                 STRING(json_payload['source.name'])       AS Source,
                 STRING(json_payload['source.id'])         AS \`Source ID\`,
                 STRING(json_payload['source.collection']) AS Collection,
@@ -411,7 +411,7 @@ const extractionErrorWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')        AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}')  AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', timestamp, '${timezone}')  AS Time,
                 STRING(json_payload['extractor.id'])      AS Extractor,
                 INT64(json_payload['extractor.version'])  AS Version,
                 STRING(json_payload['type'])              AS \`Error Type\`,
@@ -447,7 +447,7 @@ const batchWrittenWidget = {
             sql: `
               SELECT
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')       AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                FORMAT_TIMESTAMP('%I:%M %p', timestamp, '${timezone}') AS Time,
                 INT64(json_payload['batch.rows'])       AS Entries,
                 STRING(json_payload['batch.format'])    AS Format,
                 STRING(json_payload['batch.datasetId']) AS Dataset,
@@ -468,6 +468,20 @@ const batchWrittenWidget = {
   },
 }
 
+const contentIngestionTabGroup = {
+  title: 'Content Ingestion',
+  singleViewGroup: {
+    displayType: 'TAB',
+  },
+}
+
+const dataExtractionTabGroup = {
+  title: 'Data Extraction',
+  singleViewGroup: {
+    displayType: 'TAB',
+  },
+}
+
 export const pipelineWidgets = pulumi
   .all<object>([
     contentRequestsByStatusWidget,
@@ -482,6 +496,8 @@ export const pipelineWidgets = pulumi
     factChecksExtractedWidget,
     extractionErrorWidget,
     batchWrittenWidget,
+    contentIngestionTabGroup,
+    dataExtractionTabGroup,
     sanitizerDecisionsWidget,
   ])
   .apply(
@@ -498,6 +514,8 @@ export const pipelineWidgets = pulumi
       factChecksExtracted,
       extractionErrors,
       batchesWritten,
+      contentIngestion,
+      dataExtraction,
       sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
@@ -512,6 +530,8 @@ export const pipelineWidgets = pulumi
       factChecksExtracted,
       extractionErrors,
       batchesWritten,
+      contentIngestion,
+      dataExtraction,
       sanitizerDecisions,
     })
   )
@@ -567,94 +587,159 @@ const pipelineDashboardJson = pulumi
     mosaicLayout: {
       columns: 48,
       tiles: [
-        // Row 1 (y=0, h=12): Ingestor analysis — pipeline kpis
+        // Section header: Overview (y=0, h=4)
         {
           yPos: 0,
+          xPos: 0,
+          height: 4,
+          width: 48,
+          widget: {
+            title: 'Overview',
+            sectionHeader: {
+              dividerBelow: true,
+              subtitle: 'Pipeline health and activity at a glance',
+            },
+          },
+        },
+        // Row 1 (y=4, h=12): Pipeline KPIs — three donut charts
+        {
+          yPos: 4,
           xPos: 0,
           height: 12,
           width: 16,
           widget: pipeline.contentRequestsByStatus,
         },
         {
-          yPos: 0,
+          yPos: 4,
           xPos: 16,
           height: 12,
           width: 16,
           widget: pipeline.contentRecordsSanitized,
         },
         {
-          yPos: 0,
+          yPos: 4,
           xPos: 32,
           height: 12,
           width: 16,
           widget: pipeline.extractorFactCheckRows,
         },
-        // Row 2 (y=12, h=19): Content request results
+        // Section header: Content Ingestion (y=16, h=4)
         {
-          yPos: 12,
+          yPos: 16,
           xPos: 0,
-          height: 19,
+          height: 4,
           width: 48,
-          widget: pipeline.contentSources,
+          widget: {
+            title: 'Content Ingestion',
+            sectionHeader: {
+              dividerBelow: true,
+              subtitle: 'HTTP fetch results, sanitizer decisions, and source activity',
+            },
+          },
         },
-        // Row 3 (y=31, h=19): Content request failures
+        // Row 2 (y=20, h=26): Content Ingestion tab group
         {
-          yPos: 31,
+          yPos: 20,
           xPos: 0,
-          height: 19,
+          height: 26,
           width: 48,
-          widget: pipeline.contentFailures,
+          widget: pipeline.contentIngestion,
         },
-        // Row 4 (y=50, h=19): Content sanitizer decisions
         {
-          yPos: 50,
+          yPos: 20,
           xPos: 0,
-          height: 19,
+          height: 26,
           width: 48,
-          widget: pipeline.sanitizerDecisionsTable,
-        },
-        // Row 5 (y=69, h=16): Job run logs — ingestor and extractor side by side
-        {
-          yPos: 69,
-          xPos: 0,
-          height: 16,
-          width: 24,
           widget: pipeline.ingestorJobRuns,
         },
         {
-          yPos: 69,
-          xPos: 24,
-          height: 16,
-          width: 24,
+          yPos: 20,
+          xPos: 0,
+          height: 26,
+          width: 48,
+          widget: pipeline.contentSources,
+        },
+        {
+          yPos: 20,
+          xPos: 0,
+          height: 26,
+          width: 48,
+          widget: pipeline.contentFailures,
+        },
+        {
+          yPos: 20,
+          xPos: 0,
+          height: 26,
+          width: 48,
+          widget: pipeline.sanitizerDecisionsTable,
+        },
+        // Section header: Data Extraction (y=46, h=4)
+        {
+          yPos: 46,
+          xPos: 0,
+          height: 4,
+          width: 48,
+          widget: {
+            title: 'Data Extraction',
+            sectionHeader: {
+              dividerBelow: true,
+              subtitle: 'Fact check extraction results, errors, and batch output',
+            },
+          },
+        },
+        // Row 3 (y=50, h=26): Data Extraction tab group
+        {
+          yPos: 50,
+          xPos: 0,
+          height: 26,
+          width: 48,
+          widget: pipeline.dataExtraction,
+        },
+        {
+          yPos: 50,
+          xPos: 0,
+          height: 26,
+          width: 48,
           widget: pipeline.extractorJobRuns,
         },
-        // Row 6 (y=85, h=16): Fact checks extracted
         {
-          yPos: 85,
+          yPos: 50,
           xPos: 0,
-          height: 16,
+          height: 26,
           width: 48,
           widget: pipeline.factChecksExtracted,
         },
-        // Row 7 (y=101, h=16): Extraction errors
         {
-          yPos: 101,
+          yPos: 50,
           xPos: 0,
-          height: 16,
+          height: 26,
           width: 48,
           widget: pipeline.extractionErrors,
         },
-        // Row 8 (y=117, h=16): Batches written
         {
-          yPos: 117,
+          yPos: 50,
           xPos: 0,
-          height: 16,
+          height: 26,
           width: 48,
           widget: pipeline.batchesWritten,
         },
-        // Row 9 (y=133, h=19): Pipeline logs
+        // Section header: System Logs (y=76, h=4)
         {
-          yPos: 133,
+          yPos: 76,
+          xPos: 0,
+          height: 4,
+          width: 48,
+          widget: {
+            title: 'System Logs',
+            sectionHeader: {
+              dividerBelow: true,
+              subtitle: 'Raw log output from all pipeline components',
+            },
+          },
+        },
+        // Row 4 (y=80, h=19): Pipeline logs
+        {
+          yPos: 80,
           xPos: 0,
           height: 19,
           width: 48,
@@ -668,30 +753,44 @@ const pipelineDashboardJson = pulumi
             },
           },
         },
-        // Row 10 (y=152, h=8): Storage health — all buckets with deadletter last
+        // Section header: Storage (y=99, h=4)
         {
-          yPos: 152,
+          yPos: 99,
+          xPos: 0,
+          height: 4,
+          width: 48,
+          widget: {
+            title: 'Storage',
+            sectionHeader: {
+              dividerBelow: true,
+              subtitle: 'Storage bucket sizes across the ingestion pipeline',
+            },
+          },
+        },
+        // Row 5 (y=103, h=8): Storage health — all buckets with deadletter last
+        {
+          yPos: 103,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 152,
+          yPos: 103,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 152,
+          yPos: 103,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 152,
+          yPos: 103,
           xPos: 36,
           height: 8,
           width: 12,
