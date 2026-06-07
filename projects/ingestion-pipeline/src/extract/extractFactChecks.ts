@@ -71,6 +71,16 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
         data: responseData,
       })
       .pipe(
+        Effect.tap((x) =>
+          Effect.logInfo(
+            `Extracted ${x.length} fact checks from observation`
+          ).pipe(
+            Effect.annotateLogs({
+              event: 'fact_checks_extracted',
+              count: x.length,
+            })
+          )
+        ),
         Effect.map(
           Array.map(
             (factCheck): FactCheckRow => ({
