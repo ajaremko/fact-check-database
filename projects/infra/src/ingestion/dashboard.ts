@@ -312,9 +312,9 @@ const ingestorJobRunsWidget = {
             queryHandle: '',
             sql: `
               SELECT
-                STRING(json_payload.serviceContext.version) AS Version,
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}') AS Date,
                 FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                STRING(json_payload.serviceContext.version) AS Version,s
                 STRING(json_payload['job.result']) AS Result,
                 INT64(json_payload['job.tasks']) AS Sources,
                 INT64(json_payload['job.failures']) AS Failures,
@@ -344,9 +344,9 @@ const extractorJobRunsWidget = {
             queryHandle: '',
             sql: `
               SELECT
-                STRING(json_payload.serviceContext.version) AS Version,
                 FORMAT_TIMESTAMP('%x', timestamp, '${timezone}') AS Date,
                 FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                STRING(json_payload.serviceContext.version) AS Version,
                 INT64(json_payload['job.tasks']) AS Records,
                 INT64(json_payload['job.failures']) AS Failures,
                 INT64(json_payload['job.rowsExtracted']) AS \`Rows Extracted\`
@@ -410,21 +410,54 @@ const extractionErrorWidget = {
             queryHandle: '',
             sql: `
               SELECT
-                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')  AS Date,
-                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')        AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}')  AS Time,
+                STRING(json_payload['extractor.id'])      AS Extractor,
+                INT64(json_payload['extractor.version'])  AS Version,
+                STRING(json_payload['type'])              AS \`Error Type\`,
+                STRING(json_payload['message'])           AS Message,
                 STRING(json_payload['source.id'])         AS \`Source ID\`,
                 STRING(json_payload['source.name'])       AS Source,
                 STRING(json_payload['source.collection']) AS Collection,
-                STRING(json_payload['extractor.id'])      AS Extractor,
-                INT64(json_payload['extractor.version'])  AS \`Extractor Version\`,
-                STRING(json_payload['type'])              AS \`Error Type\`,
-                STRING(json_payload['message'])           AS Message,
                 STRING(json_payload['job.runId'])         AS \`Run ID\`
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'WARNING'
                 AND JSON_VALUE(json_payload, '$.event') = 'extraction_error'
+              ORDER BY timestamp DESC
+              LIMIT 100`,
+          },
+        },
+      },
+    ],
+    metricVisualization: 'BAR',
+  },
+}
+
+const batchWrittenWidget = {
+  title: 'Batches Written',
+  timeSeriesTable: {
+    dataSets: [
+      {
+        minAlignmentPeriod: '60s',
+        timeSeriesQuery: {
+          opsAnalyticsQuery: {
+            queryHandle: '',
+            sql: `
+              SELECT
+                FORMAT_TIMESTAMP('%x', timestamp, '${timezone}')       AS Date,
+                FORMAT_TIMESTAMP('%R:%M %p', timestamp, '${timezone}') AS Time,
+                INT64(json_payload['batch.rows'])       AS Entries,
+                STRING(json_payload['batch.format'])    AS Format,
+                STRING(json_payload['batch.datasetId']) AS Dataset,
+                STRING(json_payload['batch.tableId'])   AS \`Table\`,
+                STRING(json_payload['batch.path'])      AS \`Staging Path\`
+              FROM \`${gcpProject}.global._Default._Default\`
+              WHERE
+                timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+                AND severity = 'INFO'
+                AND JSON_VALUE(json_payload, '$.event') = 'batch_written'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },
@@ -448,6 +481,7 @@ export const pipelineWidgets = pulumi
     extractorJobRunsWidget,
     factChecksExtractedWidget,
     extractionErrorWidget,
+    batchWrittenWidget,
     sanitizerDecisionsWidget,
   ])
   .apply(
@@ -463,6 +497,7 @@ export const pipelineWidgets = pulumi
       extractorJobRuns,
       factChecksExtracted,
       extractionErrors,
+      batchesWritten,
       sanitizerDecisions,
     ]) => ({
       contentRequestsByStatus,
@@ -476,6 +511,7 @@ export const pipelineWidgets = pulumi
       extractorJobRuns,
       factChecksExtracted,
       extractionErrors,
+      batchesWritten,
       sanitizerDecisions,
     })
   )
@@ -608,9 +644,17 @@ const pipelineDashboardJson = pulumi
           width: 48,
           widget: pipeline.extractionErrors,
         },
-        // Row 8 (y=117, h=19): Pipeline logs
+        // Row 8 (y=117, h=16): Batches written
         {
           yPos: 117,
+          xPos: 0,
+          height: 16,
+          width: 48,
+          widget: pipeline.batchesWritten,
+        },
+        // Row 9 (y=133, h=19): Pipeline logs
+        {
+          yPos: 133,
           xPos: 0,
           height: 19,
           width: 48,
@@ -624,30 +668,30 @@ const pipelineDashboardJson = pulumi
             },
           },
         },
-        // Row 9 (y=136, h=8): Storage health — all buckets with deadletter last
+        // Row 10 (y=152, h=8): Storage health — all buckets with deadletter last
         {
-          yPos: 136,
+          yPos: 152,
           xPos: 0,
           height: 8,
           width: 12,
           widget: archive.archiveSize,
         },
         {
-          yPos: 136,
+          yPos: 152,
           xPos: 12,
           height: 8,
           width: 12,
           widget: archive.eventLogSize,
         },
         {
-          yPos: 136,
+          yPos: 152,
           xPos: 24,
           height: 8,
           width: 12,
           widget: pipeline.stagingSize,
         },
         {
-          yPos: 136,
+          yPos: 152,
           xPos: 36,
           height: 8,
           width: 12,
