@@ -108,7 +108,15 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
             })
           )
         ),
-        Effect.tapError(Effect.logWarning),
+        Effect.tapError((err) =>
+          Effect.logWarning(err).pipe(
+            Effect.annotateLogs({
+              event: 'extraction_error',
+              type: err._tag,
+              error: err.message,
+            })
+          )
+        ),
         Effect.catchAll(() => Effect.succeed([])),
         Effect.annotateLogs({
           'source.collection': observation.source.collection,
