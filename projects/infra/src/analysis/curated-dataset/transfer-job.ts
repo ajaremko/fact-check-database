@@ -55,7 +55,7 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             fact_check.published_at_normalized as published_at,
             
           FROM \`${stagingTableRef}\`
-          WHERE extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 6 HOUR)
+          WHERE extracted_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
         ) S
         ON T.fact_check_id = S.fact_check_id
         WHEN NOT MATCHED THEN
