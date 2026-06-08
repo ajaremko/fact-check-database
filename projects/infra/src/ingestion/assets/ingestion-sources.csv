@@ -2,7 +2,7 @@ id,collection,name,url
 politifact,rss,politifact.com,https://www.politifact.com/rss/all/
 snopes,rss,snopes.com,https://www.snopes.com/feed/
 factcheck,rss,factcheck.org,https://www.factcheck.org/feed/
-leadstories,rss,leadstories.com,https://leadstories.com/atom.xml
+leadstories,atom,leadstories.com,https://leadstories.com/atom.xml
 fullfact,rss,fullfact.org,https://fullfact.org/feed/
 africacheck,rss,africacheck.org,https://africacheck.org/feed
 factcheck,rss,factcheck.afp.com,https://factcheck.afp.com/rss.xml
