@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import Link from 'next/link'
 import styled from 'styled-components'
 import {
@@ -278,44 +279,49 @@ function HitsWidget() {
 
 // --- Component ---
 
-function SafeFactCheckSearch() {
-  try {
-    const searchClient = algoliasearch(
-      process.env.NEXT_PUBLIC_ALGOLIA_APP_ID ?? '',
-      process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY ?? ''
-    )
-    const INDEX_NAME = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME ?? ''
-    return function FactCheckSearch() {
-      return (
-        <InstantSearch searchClient={searchClient} indexName={INDEX_NAME}>
-          <SearchSection>
-            <Container>
-              <SearchBoxWidget />
-              <SearchMetaWidget />
-            </Container>
-          </SearchSection>
-          <ResultsSection>
-            <Container>
-              <HitsWidget />
-            </Container>
-          </ResultsSection>
-        </InstantSearch>
-      )
-    }
-  } catch (error) {
-    console.error('Error initializing Algolia search client:', error)
-    return function FactCheckSearch() {
-      return (
-        <div style={{ minHeight: '100vh', background: '#faf8f4' }}>
-          <p
-            style={{ padding: '2rem', color: C.textMuted, textAlign: 'center' }}
-          >
-            Failed to load search functionality. Please try again later.
-          </p>
-        </div>
-      )
-    }
-  }
+interface Props {
+  appId: string
+  searchKey: string
+  indexName: string
 }
 
-export default SafeFactCheckSearch()
+export default function FactCheckSearch({
+  appId,
+  searchKey,
+  indexName,
+}: Props) {
+  function acquireSearchClient() {
+    try {
+      return algoliasearch(appId, searchKey)
+    } catch (error) {
+      console.error('Error initializing Algolia search client:', error)
+      return null
+    }
+  }
+
+  const searchClient = useMemo(acquireSearchClient, [appId, searchKey])
+
+  if (!searchClient) {
+    return (
+      <EmptyState>
+        Search is currently unavailable. Please try again later.
+      </EmptyState>
+    )
+  }
+
+  return (
+    <InstantSearch searchClient={searchClient} indexName={indexName}>
+      <SearchSection>
+        <Container>
+          <SearchBoxWidget />
+          <SearchMetaWidget />
+        </Container>
+      </SearchSection>
+      <ResultsSection>
+        <Container>
+          <HitsWidget />
+        </Container>
+      </ResultsSection>
+    </InstantSearch>
+  )
+}
