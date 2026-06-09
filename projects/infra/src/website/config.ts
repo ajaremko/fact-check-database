@@ -33,3 +33,11 @@ export const websiteLabels: Record<string, string> = {
   ...labels,
   tag,
 }
+
+/**
+ * Algolia configuration for the website's search functionality. These values should
+ * correspond to the Algolia application and index that are set up for the website's
+ * fact check search feature.
+ */
+export const algoliaAppId = websiteConfig.require('algoliaAppId')
+export const algoliaSearchKey = websiteConfig.require('algoliaSearchKey')

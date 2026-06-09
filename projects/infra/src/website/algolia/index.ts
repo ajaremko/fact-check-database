@@ -4,4 +4,4 @@ export const algoliaServiceAccountEmail = algoliaServiceAccount.email
 
 import { factChecksIndex } from './indices'
 
-export const algoliafactChecksIndexName = factChecksIndex.name
+export const algoliaFactChecksIndexName = factChecksIndex.name
