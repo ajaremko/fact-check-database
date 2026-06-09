@@ -1,0 +1,50 @@
+import type { Metadata } from 'next'
+
+export const metadataBase: Metadata = {
+  title: 'Fact Check Database',
+  description:
+    'Explore thousands of verified fact-checks from leading international organizations.',
+  robots: 'index, follow',
+  generator: 'Next.js',
+  creator: 'Alfred Young',
+  publisher: 'The Fact Check Database',
+  authors: [
+    { name: 'Fact Check DB Team', url: 'https://factcheckdatabase.com' },
+  ],
+  referrer: 'origin',
+  alternates: {
+    canonical: 'https://factcheckdatabase.com',
+  },
+  icons: {
+    icon: '/favicon-16x16.png',
+    shortcut: '/favicon-32x32.png',
+    apple: '/apple-touch-icon.png',
+  },
+  keywords: [
+    'fact check database',
+    'verified fact-checks',
+    'international organizations',
+    'misinformation',
+    'disinformation',
+    'fake news',
+    'media literacy',
+    'critical thinking',
+    'information verification',
+    'fact-checking organizations',
+    'political fact-checks',
+    'health misinformation',
+    'science fact-checks',
+    'social media misinformation',
+    'fact-checking tools',
+    'media bias',
+    'news literacy',
+    'information integrity',
+    'fact-checking resources',
+    'debunking misinformation',
+    'fact-checking methodologies',
+    'media accountability',
+    'public awareness',
+    'information ecosystem',
+    'fact-checking impact',
+  ],
+}

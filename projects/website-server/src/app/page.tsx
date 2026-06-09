@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
+
 import { Search } from '@/lib/search'
+import { metadataBase } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = metadataBase
 
 export default function HomePage() {
   return (
