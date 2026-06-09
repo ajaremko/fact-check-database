@@ -32,7 +32,7 @@ COPY dist/cache ./standalone/projects/website-server/dist/cache
 
 WORKDIR /app/standalone/projects/website-server
 
-COPY public /public
+COPY public ./public
 
 # Install production dependencies
 RUN npm --omit=dev -f install
