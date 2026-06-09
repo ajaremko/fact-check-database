@@ -76,7 +76,7 @@ const FooterLink = styled.a`
 
 // --- Dynamic search section ---
 
-const FactCheckSearch = dynamic(() => import('@/components/FactCheckSearch'), {
+const FactCheckSearch = dynamic(() => import('@/lib/search/FactCheckSearch'), {
   ssr: false,
   loading: () => <div style={{ minHeight: '40vh', background: C.bgBase }} />,
 })
@@ -89,7 +89,7 @@ interface Props {
   indexName: string
 }
 
-export function PageClient({ appId, searchKey, indexName }: Props) {
+export function Search({ appId, searchKey, indexName }: Props) {
   return (
     <PageWrapper>
       <Hero>
@@ -103,7 +103,11 @@ export function PageClient({ appId, searchKey, indexName }: Props) {
         </Container>
       </Hero>
 
-      <FactCheckSearch appId={appId} searchKey={searchKey} indexName={indexName} />
+      <FactCheckSearch
+        appId={appId}
+        searchKey={searchKey}
+        indexName={indexName}
+      />
 
       <Footer>
         <Container>

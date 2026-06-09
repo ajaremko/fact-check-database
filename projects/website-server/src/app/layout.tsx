@@ -1,6 +1,8 @@
 import './global.css'
+
+import { Navbar } from '@/lib/navigation'
+
 import { StyledComponentsRegistry } from './registry'
-import { Navbar } from '@/components/Navbar'
 
 export const metadata = {
   title: 'Fact-Check Research Dataset',

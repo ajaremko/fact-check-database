@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styled from 'styled-components'
+
 import { C, bp, serif } from '@/lib/theme'
 
 const Bar = styled.nav`
