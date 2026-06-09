@@ -1,9 +1,17 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject, gcpRegion, dockerTag, tag } from '../config'
+import {
+  gcpProject,
+  gcpRegion,
+  dockerTag,
+  tag,
+  algoliaSearchKey,
+  algoliaAppId,
+} from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../getImageUrl'
+import { algoliaFactChecksIndexName } from '../algolia'
 
 export const websiteService = new gcp.cloudrun.Service(
   `${tag}-website-service`,
@@ -17,6 +25,20 @@ export const websiteService = new gcp.cloudrun.Service(
         containers: [
           {
             image: getImageUrl('website-server', dockerTag),
+            envs: [
+              {
+                name: 'ALGOLIA_APP_ID',
+                value: algoliaAppId,
+              },
+              {
+                name: 'ALGOLIA_SEARCH_KEY',
+                value: algoliaSearchKey,
+              },
+              {
+                name: 'ALGOLIA_INDEX_NAME',
+                value: algoliaFactChecksIndexName,
+              },
+            ],
           },
         ],
       },

@@ -37,7 +37,7 @@ config:
 
   website:project: news-research-dev
   website:region: us-central1
-  website:tag: dev-304
+  website:tag: dev-305
   website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
     - factcheckdatabase.com
