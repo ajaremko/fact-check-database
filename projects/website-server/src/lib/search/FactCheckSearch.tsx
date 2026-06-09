@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import styled from 'styled-components'
 import {
@@ -163,6 +163,35 @@ const EmptyState = styled.div`
   font-size: 0.9375rem;
 `
 
+// --- Sort ---
+
+const SortControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+`
+
+const SortLabel = styled.span`
+  margin-right: 0.15rem;
+`
+
+const SortButton = styled.button<{ $active: boolean }>`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: ${({ $active }) => ($active ? C.accent : C.textMuted)};
+  font-weight: ${({ $active }) => ($active ? '600' : '400')};
+  text-decoration: ${({ $active }) => ($active ? 'underline' : 'none')};
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: ${C.textSecondary};
+  }
+`
+
 // --- Algolia ---
 
 interface AlgoliaHit {
@@ -196,6 +225,29 @@ function formatDate(
   }
 }
 
+type SortOption = 'newest' | 'oldest' | 'verdict'
+
+function getTimestamp(hit: AlgoliaHit): number {
+  const dateStr = hit.published_at ?? hit.raw_published_at
+  if (!dateStr) return 0
+  const t = new Date(dateStr).getTime()
+  return isNaN(t) ? 0 : t
+}
+
+function sortHits(hits: readonly AlgoliaHit[], sort: SortOption): AlgoliaHit[] {
+  const copy = [...hits]
+  if (sort === 'newest')
+    return copy.sort((a, b) => getTimestamp(b) - getTimestamp(a))
+  if (sort === 'oldest')
+    return copy.sort((a, b) => getTimestamp(a) - getTimestamp(b))
+  return copy.sort((a, b) => {
+    if (!a.verdict && !b.verdict) return 0
+    if (!a.verdict) return 1
+    if (!b.verdict) return -1
+    return a.verdict.localeCompare(b.verdict)
+  })
+}
+
 // --- Search Widgets ---
 
 function SearchBoxWidget() {
@@ -216,26 +268,48 @@ function SearchBoxWidget() {
   )
 }
 
-function SearchMetaWidget() {
+function SearchBarRow({
+  sort,
+  onSortChange,
+}: {
+  sort: SortOption
+  onSortChange: (s: SortOption) => void
+}) {
   const { query } = useSearchBox()
   const { nbHits } = useStats()
   return (
     <SearchMeta>
       <span>
         {query.trim()
-          ? `${nbHits} result${nbHits !== 1 ? 's' : ''} for "${query.trim()}"`
-          : `${nbHits.toLocaleString()} records indexed`}
+          ? `${nbHits} result${nbHits !== 1 ? 's' : ''} for "${query.trim()}".`
+          : `${nbHits.toLocaleString()} records indexed.`}
+        &nbsp;
+        <SearchMetaLink href="/dataset">About this dataset &rarr;</SearchMetaLink>
       </span>
-      <SearchMetaLink href="/dataset">About this dataset &rarr;</SearchMetaLink>
+      <SortControls>
+        <SortLabel>Sort:</SortLabel>
+        <SortButton $active={sort === 'newest'} onClick={() => onSortChange('newest')}>
+          Newest
+        </SortButton>
+        <span>·</span>
+        <SortButton $active={sort === 'oldest'} onClick={() => onSortChange('oldest')}>
+          Oldest
+        </SortButton>
+        <span>·</span>
+        <SortButton $active={sort === 'verdict'} onClick={() => onSortChange('verdict')}>
+          By verdict
+        </SortButton>
+      </SortControls>
     </SearchMeta>
   )
 }
 
-function HitsWidget() {
+function HitsWidget({ sort }: { sort: SortOption }) {
   const { hits } = useHits<AlgoliaHit>()
   const { query } = useSearchBox()
+  const sorted = useMemo(() => sortHits(hits, sort), [hits, sort])
 
-  if (hits.length === 0) {
+  if (sorted.length === 0) {
     return (
       <EmptyState>
         {query.trim()
@@ -247,7 +321,7 @@ function HitsWidget() {
 
   return (
     <ResultList>
-      {hits.map((hit) => (
+      {sorted.map((hit) => (
         <ResultItem key={hit.objectID}>
           <ResultHeader>
             <ResultTitle>
@@ -290,6 +364,8 @@ export default function FactCheckSearch({
   searchKey,
   indexName,
 }: Props) {
+  const [sort, setSort] = useState<SortOption>('newest')
+
   function acquireSearchClient() {
     try {
       return algoliasearch(appId, searchKey)
@@ -314,12 +390,12 @@ export default function FactCheckSearch({
       <SearchSection>
         <Container>
           <SearchBoxWidget />
-          <SearchMetaWidget />
+          <SearchBarRow sort={sort} onSortChange={setSort} />
         </Container>
       </SearchSection>
       <ResultsSection>
         <Container>
-          <HitsWidget />
+          <HitsWidget sort={sort} />
         </Container>
       </ResultsSection>
     </InstantSearch>
