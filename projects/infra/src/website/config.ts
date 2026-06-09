@@ -22,6 +22,14 @@ export const dockerTag = websiteConfig.get('tag')
 export const verifiedDomains =
   websiteConfig.requireObject<string[]>('verifiedDomains')
 
+export const mainDomain = verifiedDomains[0]
+
+if (!mainDomain) {
+  throw new Error(
+    'At least one verified domain must be provided in the configuration.'
+  )
+}
+
 /**
  * The email address of the verified owner of the website. This should be the
  * email address associated with the Google account that has ownership of the
