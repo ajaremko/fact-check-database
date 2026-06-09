@@ -111,7 +111,8 @@ export function Search({ appId, searchKey, indexName }: Props) {
 
       <Footer>
         <Container>
-          The Fact Check Database 2026, maintained by Alfred Young &middot;{' '}
+          The Fact Check Database 2026,
+          <span>maintained by Alfred Young &middot; </span>
           <FooterLink href="mailto:alfredsyoung@gmail.com">
             alfredsyoung@gmail.com
           </FooterLink>

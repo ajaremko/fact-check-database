@@ -24,12 +24,15 @@ WORKDIR /app
 
 COPY dist .
 COPY dist/static ./standalone/projects/website-server/dist/static
+COPY dist/static ./standalone/projects/website-server/dist/static
 
 # Persist the fetch cache generated during the build so that
 # cached responses are available immediately on startup.
 COPY dist/cache ./standalone/projects/website-server/dist/cache
 
 WORKDIR /app/standalone/projects/website-server
+
+COPY public /public
 
 # Install production dependencies
 RUN npm --omit=dev -f install

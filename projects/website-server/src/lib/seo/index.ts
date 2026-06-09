@@ -5,7 +5,6 @@ export const metadataBase: Metadata = {
   description:
     'Explore thousands of verified fact-checks from leading international organizations.',
   robots: 'index, follow',
-  generator: 'Next.js',
   creator: 'Alfred Young',
   publisher: 'The Fact Check Database',
   authors: [
