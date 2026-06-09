@@ -46,6 +46,7 @@ Thumbs.db
 # Logs
 *.log
 *.env
+*.env.local
 vitest.config.*.timestamp*
 .claude/worktrees
 .nx/polygraph

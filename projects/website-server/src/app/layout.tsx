@@ -14,13 +14,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
-        <StyledComponentsRegistry>
+    <StyledComponentsRegistry>
+      <html lang="en">
+        <body>
           <Navbar />
           {children}
-        </StyledComponentsRegistry>
-      </body>
-    </html>
+        </body>
+      </html>
+    </StyledComponentsRegistry>
   )
 }
