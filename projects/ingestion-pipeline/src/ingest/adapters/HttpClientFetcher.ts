@@ -30,7 +30,8 @@ const pickContentType = pickHeaders(['content-type', 'contenttype'])
 export const make = Effect.gen(function* () {
   const client = yield* HttpClient.HttpClient
   const headers = {
-    'User-Agent': 'NewsResearchIngestor/1.0',
+    'User-Agent':
+      'FactCheckDatabaseIngestor/1.0 (+https://factcheckdatabase.com)',
     Accept: 'application/rss+xml, application/xml;q=0.9, */*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
     Connection: 'keep-alive',
