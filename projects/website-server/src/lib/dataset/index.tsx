@@ -3,43 +3,24 @@
 import Link from 'next/link'
 import styled from 'styled-components'
 
-import { C, bp, serif, mono } from '@/lib/theme'
+import {
+  BodyText,
+  Container,
+  PageWrapper,
+  SectionDivider,
+  SectionLabel,
+  SiteFooter,
+  SiteFooterMeta,
+} from '@/lib/layout'
+import { C, bp, mono } from '@/lib/theme'
 
 // --- Layout ---
-
-const PageWrapper = styled.div`
-  background-color: ${C.bgBase};
-  color: ${C.textPrimary};
-  min-height: 100vh;
-  font-family: ${serif};
-`
-
-const Container = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-`
 
 const Section = styled.section`
   padding: 5rem 0;
 `
 
-const SectionDivider = styled.hr`
-  border: none;
-  border-top: 1px solid ${C.borderSubtle};
-  margin: 0;
-`
-
 // --- Typography ---
-
-const SectionLabel = styled.p`
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: ${C.accent};
-  margin: 0 0 0.75rem;
-`
 
 const SectionHeading = styled.h2`
   font-size: 1.75rem;
@@ -47,17 +28,6 @@ const SectionHeading = styled.h2`
   color: ${C.textPrimary};
   margin: 0 0 1.5rem;
   line-height: 1.3;
-`
-
-const BodyText = styled.p`
-  color: ${C.textSecondary};
-  line-height: 1.8;
-  margin: 0 0 1rem;
-  font-size: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 `
 
 // --- Hero ---
@@ -268,26 +238,6 @@ const AccessCTA = styled(Link)`
 
   &:hover {
     background-color: ${C.accentHover};
-  }
-`
-
-// --- Footer ---
-
-const Footer = styled.footer`
-  border-top: 1px solid ${C.borderSubtle};
-  padding: 2rem 0;
-  text-align: center;
-  color: ${C.textMuted};
-  font-size: 0.85rem;
-`
-
-const FooterLink = styled.a`
-  color: ${C.textMuted};
-  text-decoration: underline;
-  text-underline-offset: 3px;
-
-  &:hover {
-    color: ${C.textSecondary};
   }
 `
 
@@ -591,14 +541,9 @@ export function Dataset() {
       </Section>
 
       {/* Footer */}
-      <Footer>
-        <Container>
-          The Fact Check Database 2026, maintained by Alfred Young &middot;{' '}
-          <FooterLink href="mailto:alfredsyoung@gmail.com">
-            alfredsyoung@gmail.com
-          </FooterLink>
-        </Container>
-      </Footer>
+      <SiteFooter>
+        <SiteFooterMeta />
+      </SiteFooter>
     </PageWrapper>
   )
 }

@@ -3,37 +3,20 @@
 import dynamic from 'next/dynamic'
 import styled from 'styled-components'
 
-import { C, serif } from '@/lib/theme'
-
-// --- Layout ---
-
-const PageWrapper = styled.div`
-  background-color: ${C.bgBase};
-  color: ${C.textPrimary};
-  min-height: 100vh;
-  font-family: ${serif};
-`
-
-const Container = styled.div`
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-`
+import {
+  Container,
+  PageWrapper,
+  SectionLabel,
+  SiteFooter,
+  SiteFooterMeta,
+} from '@/lib/layout'
+import { C } from '@/lib/theme'
 
 // --- Hero ---
 
 const Hero = styled.section`
   padding: 5rem 0 3rem;
   text-align: center;
-`
-
-const Eyebrow = styled.p`
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: ${C.accent};
-  margin: 0 0 1.25rem;
 `
 
 const Headline = styled.h1`
@@ -52,26 +35,6 @@ const Subtitle = styled.p`
   max-width: 560px;
   margin-left: auto;
   margin-right: auto;
-`
-
-// --- Footer ---
-
-const Footer = styled.footer`
-  border-top: 1px solid ${C.borderSubtle};
-  padding: 2rem 0;
-  text-align: center;
-  color: ${C.textMuted};
-  font-size: 0.85rem;
-`
-
-const FooterLink = styled.a`
-  color: ${C.textMuted};
-  text-decoration: underline;
-  text-underline-offset: 3px;
-
-  &:hover {
-    color: ${C.textSecondary};
-  }
 `
 
 // --- Dynamic search section ---
@@ -94,7 +57,7 @@ export function Search({ appId, searchKey, indexName }: Props) {
     <PageWrapper>
       <Hero>
         <Container>
-          <Eyebrow>Live Search</Eyebrow>
+          <SectionLabel>Live Search</SectionLabel>
           <Headline>Search the Fact-Check Database</Headline>
           <Subtitle>
             Explore thousands of verified fact-checks from leading international
@@ -109,18 +72,9 @@ export function Search({ appId, searchKey, indexName }: Props) {
         indexName={indexName}
       />
 
-      <Footer>
-        <Container>
-          The Fact Check Database 2026
-          <br />
-          Build #{process.env.NEXT_PUBLIC_BUILD_NUMBER}
-          <br />
-          <span>Created and maintained by Alfred Young &middot; </span>
-          <FooterLink href="mailto:alfredsyoung@gmail.com">
-            alfredsyoung@gmail.com
-          </FooterLink>
-        </Container>
-      </Footer>
+      <SiteFooter>
+        <SiteFooterMeta />
+      </SiteFooter>
     </PageWrapper>
   )
 }

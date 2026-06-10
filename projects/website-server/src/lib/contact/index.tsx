@@ -2,28 +2,16 @@
 
 import styled from 'styled-components'
 
-import { C, serif } from '@/lib/theme'
-
-// --- Layout ---
-
-const PageWrapper = styled.div`
-  background-color: ${C.bgBase};
-  color: ${C.textPrimary};
-  min-height: 100vh;
-  font-family: ${serif};
-`
-
-const Container = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-`
-
-const SectionDivider = styled.hr`
-  border: none;
-  border-top: 1px solid ${C.borderSubtle};
-  margin: 0;
-`
+import {
+  BodyText,
+  Container,
+  PageWrapper,
+  SectionDivider,
+  SectionLabel,
+  SiteFooter,
+  SiteFooterMeta,
+} from '@/lib/layout'
+import { C } from '@/lib/theme'
 
 // --- Page Header ---
 
@@ -37,28 +25,6 @@ const PageTitle = styled.h1`
   color: ${C.textPrimary};
   line-height: 1.2;
   margin: 0 0 1rem;
-`
-
-// --- Typography ---
-
-const SectionLabel = styled.p`
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: ${C.accent};
-  margin: 0 0 0.75rem;
-`
-
-const BodyText = styled.p`
-  color: ${C.textSecondary};
-  line-height: 1.8;
-  margin: 0 0 1rem;
-  font-size: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 `
 
 // --- Content ---
@@ -111,26 +77,6 @@ const ResponseNoteText = styled.p`
   font-size: 0.875rem;
   line-height: 1.7;
   margin: 0;
-`
-
-// --- Footer ---
-
-const Footer = styled.footer`
-  border-top: 1px solid ${C.borderSubtle};
-  padding: 2rem 0;
-  text-align: center;
-  color: ${C.textMuted};
-  font-size: 0.85rem;
-`
-
-const FooterLink = styled.a`
-  color: ${C.textMuted};
-  text-decoration: underline;
-  text-underline-offset: 3px;
-
-  &:hover {
-    color: ${C.textSecondary};
-  }
 `
 
 // --- Page ---
@@ -195,14 +141,9 @@ export function Contact() {
         </Container>
       </ContentSection>
 
-      <Footer>
-        <Container>
-          Dataset maintained by Alfred Young &middot;{' '}
-          <FooterLink href="mailto:alfredsyoung@gmail.com">
-            alfredsyoung@gmail.com
-          </FooterLink>
-        </Container>
-      </Footer>
+      <SiteFooter>
+        <SiteFooterMeta />
+      </SiteFooter>
     </PageWrapper>
   )
 }
