@@ -1,6 +1,9 @@
 'use client'
 
 import styled from 'styled-components'
+import { ReactFlow, MarkerType } from '@xyflow/react'
+
+import '@xyflow/react/dist/style.css'
 
 import {
   BodyText,
@@ -12,6 +15,84 @@ import {
   SiteFooterMeta,
 } from '@/lib/layout'
 import { C, bp, serif } from '@/lib/theme'
+
+// --- Pipeline flow graph ---
+
+const stageNodeStyle = {
+  background: C.bgSurface,
+  border: `1px solid ${C.borderSubtle}`,
+  borderRadius: '6px',
+  padding: '12px 14px',
+  width: 160,
+  cursor: 'default',
+} as const
+
+const terminalNodeStyle = {
+  background: C.accent,
+  border: 'none',
+  borderRadius: '6px',
+  padding: '8px 14px',
+  fontSize: '0.8125rem',
+  fontWeight: 600,
+  color: C.bgBase,
+  textAlign: 'center' as const,
+  cursor: 'default',
+} as const
+
+const labelCenter = { textAlign: 'center' as const, lineHeight: 1.4 }
+
+const stageLabel = (num: string, name: string, desc: string) => (
+  <div style={labelCenter}>
+    <div style={{ fontSize: '0.6rem', color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+      {num}
+    </div>
+    <div style={{ fontWeight: 600, fontSize: '0.875rem', color: C.textPrimary }}>{name}</div>
+    <div style={{ fontSize: '0.7rem', color: C.textSecondary, marginTop: 4 }}>{desc}</div>
+  </div>
+)
+
+const pipelineNodes = [
+  {
+    id: 'src',
+    position: { x: 0, y: 18 },
+    data: { label: 'RSS Feeds' },
+    style: { ...terminalNodeStyle, width: 100 },
+  },
+  {
+    id: 's1',
+    position: { x: 160, y: 0 },
+    data: { label: stageLabel('Stage 1', 'Collection', 'Fetch & archive raw feed content') },
+    style: stageNodeStyle,
+  },
+  {
+    id: 's2',
+    position: { x: 370, y: 0 },
+    data: { label: stageLabel('Stage 2', 'Sanitization', 'Classify safety via policy rules') },
+    style: stageNodeStyle,
+  },
+  {
+    id: 's3',
+    position: { x: 580, y: 0 },
+    data: { label: stageLabel('Stage 3', 'Extraction', 'Parse, normalize & load structured data') },
+    style: stageNodeStyle,
+  },
+  {
+    id: 'out',
+    position: { x: 790, y: 18 },
+    data: { label: 'Research Dataset' },
+    style: { ...terminalNodeStyle, width: 130 },
+  },
+]
+
+const edgeStyle = { stroke: C.accent, strokeWidth: 1.5 }
+const edgeMarker = { type: MarkerType.ArrowClosed, color: C.accent }
+
+const pipelineEdges = [
+  { id: 'e0', source: 'src', target: 's1', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
+  { id: 'e1', source: 's1', target: 's2', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
+  { id: 'e2', source: 's2', target: 's3', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
+  { id: 'e3', source: 's3', target: 'out', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
+]
 
 // --- Hero ---
 
@@ -48,6 +129,26 @@ const SectionHeading = styled.h2`
   color: ${C.textPrimary};
   margin: 0 0 1.5rem;
   line-height: 1.3;
+`
+
+// --- Pipeline Chart ---
+
+const PipelineChart = styled.div`
+  width: 100%;
+  height: 200px;
+  border: 1px solid ${C.borderSubtle};
+  border-radius: 6px;
+  margin: 2rem 0 0;
+  overflow: hidden;
+
+  .react-flow__handle {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .react-flow__node {
+    cursor: default !important;
+  }
 `
 
 // --- Pipeline Steps ---
@@ -148,66 +249,6 @@ const SourceDesc = styled.p`
   margin: 0;
 `
 
-// --- Policy Gates ---
-
-const GateList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 1.75rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-`
-
-const GateItem = styled.li`
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  padding: 1.25rem 1.5rem;
-  background-color: ${C.bgSurface};
-  border: 1px solid ${C.borderSubtle};
-  border-radius: 6px;
-`
-
-const GateLabel = styled.span`
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: ${C.accent};
-  padding-top: 0.1rem;
-  min-width: 5rem;
-`
-
-const GateDesc = styled.p`
-  font-size: 0.9rem;
-  color: ${C.textSecondary};
-  line-height: 1.65;
-  margin: 0;
-`
-
-// --- Verdict Vocabulary ---
-
-const VerdictRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
-`
-
-const VerdictChip = styled.span`
-  display: inline-block;
-  background-color: ${C.bgSurface};
-  border: 1px solid ${C.borderSubtle};
-  border-radius: 4px;
-  padding: 0.4rem 0.875rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${C.accent};
-  letter-spacing: 0.04em;
-`
-
 // --- Static data ---
 
 interface SourceEntry {
@@ -259,37 +300,6 @@ const SOURCES: SourceEntry[] = [
     description:
       'Global fact-checking desk operated by Agence France-Presse. Covers viral and misleading content in multiple languages worldwide.',
   },
-]
-
-const POLICY_GATES = [
-  {
-    label: 'Gate 1',
-    description:
-      'Fetch result — if the HTTP request failed (network error, timeout, DNS failure), the observation is immediately quarantined as QUARANTINED_FETCH_FAILED. No body content is available for further evaluation.',
-  },
-  {
-    label: 'Gate 2',
-    description:
-      "Body size — if the response body exceeds the configured maxBytes limit for the source's collection type, the observation is quarantined as QUARANTINED_TOO_LARGE. This prevents oversized or malformed responses from entering extraction.",
-  },
-  {
-    label: 'Gate 3',
-    description:
-      'Content-Type — if an allowlist is configured for the collection type, the response Content-Type must match one of the allowed substrings. Missing or unexpected Content-Type values result in QUARANTINED_UNEXPECTED_CONTENT_TYPE.',
-  },
-  {
-    label: 'Pass',
-    description:
-      'Observations that pass all gates are assigned the default access label for their collection — typically SAFE_PUBLIC for public RSS/Atom feeds. Per-source override rules can assign a different label or quarantine specific sources.',
-  },
-]
-
-const VERDICT_VOCABULARY = [
-  'true',
-  'false',
-  'misleading',
-  'unsupported',
-  'exaggerated',
 ]
 
 // --- Component ---
@@ -346,6 +356,24 @@ export function Methodology() {
             replayable so that archived content can be reliably reprocessed to
             extract new or updated information.
           </BodyText>
+          <PipelineChart>
+            <ReactFlow
+              nodes={pipelineNodes}
+              edges={pipelineEdges}
+              fitView
+              fitViewOptions={{ padding: 0.15 }}
+              nodesDraggable={false}
+              nodesConnectable={false}
+              elementsSelectable={false}
+              panOnDrag={false}
+              zoomOnScroll={false}
+              zoomOnPinch={false}
+              zoomOnDoubleClick={false}
+              preventScrolling={false}
+              proOptions={{ hideAttribution: true }}
+              style={{ background: C.bgBase }}
+            />
+          </PipelineChart>
           <StepList>
             <StepItem>
               <StepNumber>1</StepNumber>
