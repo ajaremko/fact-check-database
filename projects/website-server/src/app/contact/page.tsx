@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   ...metadataBase,
   title: 'FCDB | Contact',
   description:
-    'Get in touch with the Fact Check Database team for inquiries, support, or collaboration opportunities.',
+    'Get in touch with the Fact Check Database team — dataset access requests, press inquiries, tips, or general feedback.',
 }
 
 export default function ContactPage() {

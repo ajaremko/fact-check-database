@@ -45,5 +45,11 @@ export const metadataBase: Metadata = {
     'public awareness',
     'information ecosystem',
     'fact-checking impact',
+    'trump',
+    'snopes',
+    'factcheck.org',
+    'politifact',
+    'africacheck',
+    'fullfact',
   ],
 }

@@ -61,7 +61,6 @@ const NavLink = styled(Link)<{ $active: boolean }>`
 
 const NAV_ITEMS = [
   { label: 'Dataset', href: '/dataset' },
-  { label: 'Methodology', href: '/methodology' },
   { label: 'Contact', href: '/contact' },
 ] as const
 

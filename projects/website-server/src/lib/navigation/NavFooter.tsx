@@ -97,13 +97,13 @@ export function NavFooter() {
           <GroupHeading>Dataset</GroupHeading>
           <LinkList>
             <li>
-              <FooterNavLink href="/dataset">About</FooterNavLink>
+              <FooterNavLink href="/dataset/access">Request Access</FooterNavLink>
             </li>
             <li>
-              <FooterNavLink href="/corrections">Corrections</FooterNavLink>
+              <FooterNavLink href="/dataset/corrections">Corrections</FooterNavLink>
             </li>
             <li>
-              <FooterNavLink href="/submissions">Submissions</FooterNavLink>
+              <FooterNavLink href="/dataset/submissions">Submissions</FooterNavLink>
             </li>
           </LinkList>
         </div>
@@ -111,10 +111,10 @@ export function NavFooter() {
           <GroupHeading>Legal</GroupHeading>
           <LinkList>
             <li>
-              <FooterNavLink href="/terms">Terms of Service</FooterNavLink>
+              <FooterNavLink href="/legal/terms">Terms of Service</FooterNavLink>
             </li>
             <li>
-              <FooterNavLink href="/privacy">Privacy Policy</FooterNavLink>
+              <FooterNavLink href="/legal/privacy">Privacy Policy</FooterNavLink>
             </li>
           </LinkList>
         </div>
