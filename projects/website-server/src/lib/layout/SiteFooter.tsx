@@ -7,6 +7,7 @@ import { C } from '@/lib/theme'
 import { Container } from './Container'
 
 export const SiteFooter = styled.footer`
+  background-color: ${C.bgSurface};
   border-top: 1px solid ${C.borderSubtle};
   padding: 2rem 0;
   text-align: center;
