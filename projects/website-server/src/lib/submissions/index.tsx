@@ -34,7 +34,7 @@ const ContentSection = styled.section`
   padding: 4rem 0;
 `
 
-const AccessBox = styled.div`
+const InfoBox = styled.div`
   background-color: ${C.bgSurface};
   border-left: 3px solid ${C.accent};
   border-radius: 0 6px 6px 0;
@@ -65,7 +65,7 @@ const CTAButton = styled.a`
   }
 `
 
-const ResponseNote = styled.div`
+const Note = styled.div`
   margin-top: 2rem;
   padding: 1.25rem 1.5rem;
   background-color: ${C.bgSurface};
@@ -73,7 +73,7 @@ const ResponseNote = styled.div`
   border-radius: 6px;
 `
 
-const ResponseNoteText = styled.p`
+const NoteText = styled.p`
   color: ${C.textMuted};
   font-size: 0.875rem;
   line-height: 1.7;
@@ -82,22 +82,22 @@ const ResponseNoteText = styled.p`
 
 // --- Page ---
 
-export function Contact() {
+export function Submissions() {
   const mailtoHref =
     'mailto:alfredsyoung@gmail.com' +
-    '?subject=Dataset%20Access%20Request' +
-    '&body=Name%3A%0AInstitutional%20affiliation%3A%0AProject%20description%3A%0AData%20needs%3A'
+    '?subject=Tip%20Submission' +
+    '&body=Claim%20or%20source%3A%0AOrganization%20that%20fact-checked%20it%3A%0ALink%20to%20the%20fact-check%3A%0AAdditional%20context%3A'
 
   return (
     <PageWrapper>
       <PageHeader>
         <Container>
-          <SectionLabel>Get Access</SectionLabel>
-          <PageTitle>Request Dataset Access</PageTitle>
+          <SectionLabel>Contribute</SectionLabel>
+          <PageTitle>Submit a Tip</PageTitle>
           <BodyText>
-            Access is granted on a case-by-case basis to researchers,
-            journalists, and data scientists working on misinformation research
-            or related fields.
+            Know of a fact-checking organization or published fact-check that
+            should be in this database? Let us know. We review all submissions
+            and prioritize sources that publish structured, machine-readable data.
           </BodyText>
         </Container>
       </PageHeader>
@@ -106,39 +106,29 @@ export function Contact() {
 
       <ContentSection>
         <Container>
-          <AccessBox>
+          <InfoBox>
             <BodyText>
-              This dataset is available to academic researchers, journalists,
-              and data scientists working on misinformation research,
-              computational social science, or related fields.
+              Submissions are most useful when they include a direct link to the
+              fact-check or source organization. Please include the following in
+              your email:
             </BodyText>
-            <BodyText>Please include the following in your request:</BodyText>
             <BulletList>
-              <li>
-                Your name and institutional affiliation, or independent
-                researcher status
-              </li>
-              <li>
-                A brief description of your research project or intended use
-                case
-              </li>
-              <li>The approximate data volume you expect to query</li>
-              <li>
-                Whether you require BigQuery direct access, GCS export, or both
-              </li>
+              <li>The claim or article being fact-checked</li>
+              <li>The organization that published the fact-check</li>
+              <li>A direct URL to the fact-check</li>
+              <li>Any relevant context about why this source is valuable</li>
             </BulletList>
-            <CTAButton href={mailtoHref}>
-              Send Access Request &rarr; alfredsyoung@gmail.com
-            </CTAButton>
-          </AccessBox>
+            <CTAButton href={mailtoHref}>Submit a Tip &rarr;</CTAButton>
+          </InfoBox>
 
-          <ResponseNote>
-            <ResponseNoteText>
-              Requests are typically reviewed within 5 business days.
-              You&apos;ll receive a follow-up to discuss your project and
-              confirm your access level.
-            </ResponseNoteText>
-          </ResponseNote>
+          <Note>
+            <NoteText>
+              We cannot guarantee that all submitted sources will be added to the
+              pipeline. Sources must publish structured or semi-structured data
+              and meet baseline editorial standards. We will follow up if your
+              submission leads to a new integration.
+            </NoteText>
+          </Note>
         </Container>
       </ContentSection>
 

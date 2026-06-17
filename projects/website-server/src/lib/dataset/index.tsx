@@ -12,6 +12,7 @@ import {
   SiteFooter,
   SiteFooterMeta,
 } from '@/lib/layout'
+import { NavFooter } from '@/lib/navigation'
 import { C, bp, mono } from '@/lib/theme'
 
 // --- Layout ---
@@ -542,6 +543,7 @@ export function Dataset() {
 
       {/* Footer */}
       <SiteFooter>
+        <NavFooter />
         <SiteFooterMeta />
       </SiteFooter>
     </PageWrapper>

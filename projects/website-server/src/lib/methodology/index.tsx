@@ -14,6 +14,7 @@ import {
   SiteFooter,
   SiteFooterMeta,
 } from '@/lib/layout'
+import { NavFooter } from '@/lib/navigation'
 import { C, bp, serif } from '@/lib/theme'
 
 // --- Pipeline flow graph ---
@@ -442,6 +443,7 @@ export function Methodology() {
       </Section>
 
       <SiteFooter>
+        <NavFooter />
         <SiteFooterMeta />
       </SiteFooter>
     </PageWrapper>

@@ -10,6 +10,7 @@ import {
   SiteFooter,
   SiteFooterMeta,
 } from '@/lib/layout'
+import { NavFooter } from '@/lib/navigation'
 import { C } from '@/lib/theme'
 
 // --- Hero ---
@@ -73,6 +74,7 @@ export function Search({ appId, searchKey, indexName }: Props) {
       />
 
       <SiteFooter>
+        <NavFooter />
         <SiteFooterMeta />
       </SiteFooter>
     </PageWrapper>
