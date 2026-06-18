@@ -1,4 +1,5 @@
 export * from './algolia'
+export * from './recaptcha'
 
 export {
   gcpProject as websiteGcpProject,

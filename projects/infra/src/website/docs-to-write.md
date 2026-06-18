@@ -1,1 +1,7 @@
 Verify Ownership:Ensure the root domain (or the specific subdomain) is verified in the Google Search Console using your personal Google account.Find Your Service Account Email:Identify the exact service account or email address that Pulumi is using to authenticate with GCP (e.g., pulumi-sa@my-project.iam.gserviceaccount.com).Grant Owner Permissions:Go to the Google Search Console Property Selector and select your verified domain.Click Settings in the left menu, then navigate to Users and permissions.Click Add user.Enter the service account email address.Under permissions, explicitly select Owner (Note: "Full" or "Restricted" permissions will not bypass this error).
+
+Verify ownership of domains
+
+manually setup domain mappings on cloud run
+
+manually setup up domain for reCaptcha

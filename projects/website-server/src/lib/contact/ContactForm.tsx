@@ -11,6 +11,15 @@ import { RecaptchaWrapper } from '@/lib/forms'
 
 import { submitContactForm } from './actions'
 
+declare global {
+  const grecaptcha: {
+    enterprise: {
+      ready: (cb: () => void) => void
+      execute: (siteKey: string, options: { action: string }) => Promise<string>
+    }
+  }
+}
+
 // --- Schema ---
 
 const contactSchema = z.object({
@@ -20,7 +29,6 @@ const contactSchema = z.object({
     .min(1, 'Email is required'),
   topic: z.string().min(1, 'Please select a topic'),
   message: z.string().min(1, 'Message is required'),
-  recaptchaToken: z.string().min(1, 'Recaptcha verification failed'),
 })
 
 type ContactFormData = z.infer<typeof contactSchema>
@@ -181,7 +189,20 @@ export function ContactForm({ recaptchaSiteKey }: Props) {
   })
 
   const onSubmit = async (data: ContactFormData) => {
-    const result = await submitContactForm(data)
+    const recaptchaToken = await new Promise<string>((resolve, reject) => {
+      grecaptcha.enterprise.ready(async () => {
+        try {
+          resolve(
+            await grecaptcha.enterprise.execute(recaptchaSiteKey, {
+              action: 'contact_form_submission',
+            }),
+          )
+        } catch (e) {
+          reject(e)
+        }
+      })
+    })
+    const result = await submitContactForm({ ...data, recaptchaToken })
     if (result.success) setSubmitted(true)
   }
 
@@ -253,11 +274,7 @@ export function ContactForm({ recaptchaSiteKey }: Props) {
         />
         {errors.message && <ErrorText>{errors.message.message}</ErrorText>}
       </FormGroup>
-      <RecaptchaWrapper
-        action="contact_form_submission"
-        siteKey={recaptchaSiteKey}
-        {...register('recaptchaToken')}
-      />
+      <RecaptchaWrapper siteKey={recaptchaSiteKey} />
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Sending…' : 'Send Message'}
       </SubmitButton>
