@@ -1,12 +1,33 @@
 'use client'
 
 import { useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import styled from 'styled-components'
+import { z } from 'zod'
 
 import { C } from '@/lib/theme'
 
-import { type SubmissionsFormData, submitTip } from './actions'
+import { submitTip } from './actions'
+
+// --- Schema ---
+
+const submissionsSchema = z.object({
+  claim: z.string().min(1, 'This field is required'),
+  organization: z.string().min(1, 'Organization is required'),
+  url: z
+    .string()
+    .min(1, 'URL is required')
+    .url('Enter a valid URL starting with http:// or https://'),
+  context: z.string().optional(),
+  contactEmail: z
+    .string()
+    .email('Enter a valid email address')
+    .or(z.literal(''))
+    .optional(),
+})
+
+type SubmissionsFormData = z.infer<typeof submissionsSchema>
 
 // --- Styled components ---
 
@@ -40,7 +61,8 @@ const Input = styled.input<{ $hasError?: boolean }>`
   font-size: 0.9375rem;
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
-  border: 1px solid ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -61,7 +83,8 @@ const Textarea = styled.textarea<{ $hasError?: boolean }>`
   font-size: 0.9375rem;
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
-  border: 1px solid ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -139,7 +162,7 @@ export function SubmissionsForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<SubmissionsFormData>()
+  } = useForm<SubmissionsFormData>({ resolver: zodResolver(submissionsSchema) })
 
   const onSubmit = async (data: SubmissionsFormData) => {
     const result = await submitTip(data)
@@ -167,7 +190,7 @@ export function SubmissionsForm() {
           type="text"
           placeholder="The specific claim or article title"
           $hasError={!!errors.claim}
-          {...register('claim', { required: 'This field is required' })}
+          {...register('claim')}
         />
         {errors.claim && <ErrorText>{errors.claim.message}</ErrorText>}
       </FormGroup>
@@ -181,9 +204,7 @@ export function SubmissionsForm() {
           type="text"
           placeholder="e.g. PolitiFact, Snopes, AFP Fact Check"
           $hasError={!!errors.organization}
-          {...register('organization', {
-            required: 'Organization is required',
-          })}
+          {...register('organization')}
         />
         {errors.organization && (
           <ErrorText>{errors.organization.message}</ErrorText>
@@ -191,19 +212,13 @@ export function SubmissionsForm() {
       </FormGroup>
 
       <FormGroup>
-        <Label htmlFor="url">URL to the fact-check</Label>
+        <Label htmlFor="url">URL of source</Label>
         <Input
           id="url"
           type="url"
           placeholder="https://"
           $hasError={!!errors.url}
-          {...register('url', {
-            required: 'URL is required',
-            pattern: {
-              value: /^https?:\/\/.+/,
-              message: 'Enter a valid URL starting with http:// or https://',
-            },
-          })}
+          {...register('url')}
         />
         {errors.url && <ErrorText>{errors.url.message}</ErrorText>}
       </FormGroup>
@@ -230,12 +245,7 @@ export function SubmissionsForm() {
           type="email"
           placeholder="you@example.com"
           $hasError={!!errors.contactEmail}
-          {...register('contactEmail', {
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Enter a valid email address',
-            },
-          })}
+          {...register('contactEmail')}
         />
         {errors.contactEmail && (
           <ErrorText>{errors.contactEmail.message}</ErrorText>

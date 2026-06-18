@@ -1,12 +1,28 @@
 'use client'
 
 import { useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import styled from 'styled-components'
+import { z } from 'zod'
 
 import { C } from '@/lib/theme'
 
-import { type ContactFormData, submitContactForm } from './actions'
+import { submitContactForm } from './actions'
+
+// --- Schema ---
+
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Enter a valid email address'),
+  topic: z.string().min(1, 'Please select a topic'),
+  message: z.string().min(1, 'Message is required'),
+})
+
+type ContactFormData = z.infer<typeof contactSchema>
 
 // --- Styled components ---
 
@@ -152,7 +168,7 @@ export function ContactForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ContactFormData>()
+  } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) })
 
   const onSubmit = async (data: ContactFormData) => {
     const result = await submitContactForm(data)
@@ -180,7 +196,7 @@ export function ContactForm() {
           type="text"
           placeholder="Your name"
           $hasError={!!errors.name}
-          {...register('name', { required: 'Name is required' })}
+          {...register('name')}
         />
         {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
       </FormGroup>
@@ -192,13 +208,7 @@ export function ContactForm() {
           type="email"
           placeholder="you@example.com"
           $hasError={!!errors.email}
-          {...register('email', {
-            required: 'Email is required',
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Enter a valid email address',
-            },
-          })}
+          {...register('email')}
         />
         {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
       </FormGroup>
@@ -208,7 +218,7 @@ export function ContactForm() {
         <Select
           id="topic"
           $hasError={!!errors.topic}
-          {...register('topic', { required: 'Please select a topic' })}
+          {...register('topic')}
           defaultValue=""
         >
           <option value="" disabled>
@@ -229,7 +239,7 @@ export function ContactForm() {
           id="message"
           placeholder="Your message…"
           $hasError={!!errors.message}
-          {...register('message', { required: 'Message is required' })}
+          {...register('message')}
         />
         {errors.message && <ErrorText>{errors.message.message}</ErrorText>}
       </FormGroup>

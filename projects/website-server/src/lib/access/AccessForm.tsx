@@ -1,12 +1,29 @@
 'use client'
 
 import { useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import styled from 'styled-components'
+import { z } from 'zod'
 
 import { C } from '@/lib/theme'
 
-import { type AccessFormData, submitAccessRequest } from './actions'
+import { submitAccessRequest } from './actions'
+
+// --- Schema ---
+
+const accessSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
+  affiliation: z.string().min(1, 'Affiliation is required'),
+  projectDescription: z.string().min(1, 'Project description is required'),
+  dataVolume: z.enum(['lt10k', '10k-100k', 'gt100k', 'unsure'], {
+    message: 'Please select an expected volume',
+  }),
+  accessType: z.array(z.string()).min(1, 'Select at least one access type'),
+})
+
+type AccessFormData = z.infer<typeof accessSchema>
 
 // --- Styled components ---
 
@@ -174,7 +191,10 @@ export function AccessForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<AccessFormData>()
+  } = useForm<AccessFormData>({
+    resolver: zodResolver(accessSchema),
+    defaultValues: { accessType: [] },
+  })
 
   const onSubmit = async (data: AccessFormData) => {
     const result = await submitAccessRequest(data)
@@ -203,7 +223,7 @@ export function AccessForm() {
           type="text"
           placeholder="Your name"
           $hasError={!!errors.name}
-          {...register('name', { required: 'Name is required' })}
+          {...register('name')}
         />
         {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
       </FormGroup>
@@ -215,13 +235,7 @@ export function AccessForm() {
           type="email"
           placeholder="you@example.com"
           $hasError={!!errors.email}
-          {...register('email', {
-            required: 'Email is required',
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Enter a valid email address',
-            },
-          })}
+          {...register('email')}
         />
         {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
       </FormGroup>
@@ -233,7 +247,7 @@ export function AccessForm() {
           type="text"
           placeholder="University, organization, or Independent Researcher"
           $hasError={!!errors.affiliation}
-          {...register('affiliation', { required: 'Affiliation is required' })}
+          {...register('affiliation')}
         />
         {errors.affiliation && (
           <ErrorText>{errors.affiliation.message}</ErrorText>
@@ -246,9 +260,7 @@ export function AccessForm() {
           id="projectDescription"
           placeholder="Briefly describe your research project or intended use case…"
           $hasError={!!errors.projectDescription}
-          {...register('projectDescription', {
-            required: 'Project description is required',
-          })}
+          {...register('projectDescription')}
         />
         {errors.projectDescription && (
           <ErrorText>{errors.projectDescription.message}</ErrorText>
@@ -260,10 +272,8 @@ export function AccessForm() {
         <Select
           id="dataVolume"
           $hasError={!!errors.dataVolume}
-          {...register('dataVolume', {
-            required: 'Please select an expected volume',
-          })}
           defaultValue=""
+          {...register('dataVolume')}
         >
           <option value="" disabled>
             Select an estimate…
@@ -285,10 +295,7 @@ export function AccessForm() {
             <input
               type="checkbox"
               value="bigquery"
-              {...register('accessType', {
-                validate: (v) =>
-                  (v && v.length > 0) || 'Select at least one access type',
-              })}
+              {...register('accessType')}
             />
             BigQuery direct access
           </CheckboxRow>
