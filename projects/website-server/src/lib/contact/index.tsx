@@ -36,7 +36,11 @@ const ContentSection = styled.section`
 
 // --- Page ---
 
-export function Contact() {
+interface Props {
+  recaptchaSiteKey: string
+}
+
+export function Contact({ recaptchaSiteKey }: Props) {
   return (
     <PageWrapper>
       <PageHeader>
@@ -54,7 +58,7 @@ export function Contact() {
 
       <ContentSection>
         <Container>
-          <ContactForm />
+          <ContactForm recaptchaSiteKey={recaptchaSiteKey} />
         </Container>
       </ContentSection>
 

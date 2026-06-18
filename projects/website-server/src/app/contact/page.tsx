@@ -3,6 +3,8 @@ import { Metadata } from 'next'
 import { Contact } from '@/lib/contact'
 import { metadataBase } from '@/lib/seo'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   ...metadataBase,
   title: 'FCDB | Contact',
@@ -11,5 +13,5 @@ export const metadata: Metadata = {
 }
 
 export default function ContactPage() {
-  return <Contact />
+  return <Contact recaptchaSiteKey={process.env.RECAPTCHA_SITE_KEY ?? ''} />
 }

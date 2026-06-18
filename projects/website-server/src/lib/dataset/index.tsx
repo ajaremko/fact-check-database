@@ -381,7 +381,7 @@ export function Dataset() {
             Structured, normalized, and secure — built for researchers and
             organizations studying our informational environment.
           </HeroSubtitle>
-          <CTAButton href="/contact">Request Access</CTAButton>
+          <CTAButton href="/dataset/access">Request Access</CTAButton>
         </Container>
       </HeroSection>
 
@@ -513,31 +513,13 @@ export function Dataset() {
         <Container>
           <SectionLabel>Access</SectionLabel>
           <SectionHeading>Request Access</SectionHeading>
-          <AccessBox>
-            <BodyText>
-              This dataset is available to academic researchers, journalists,
-              and data scientists working on misinformation research,
-              computational social science, or related fields. Access is granted
-              on a case-by-case basis after a brief review of the intended use.
-            </BodyText>
-            <BodyText>Please include the following in your request:</BodyText>
-            <BulletList>
-              <li>
-                Your name and institutional affiliation, or independent
-                researcher status
-              </li>
-              <li>
-                A brief description of your research project or intended use
-                case
-              </li>
-              <li>The approximate data volume you expect to query</li>
-              <li>
-                Your preferred access method and any technical requirements or
-                constraints
-              </li>
-            </BulletList>
-            <AccessCTA href="/contact">Send Access Request &rarr;</AccessCTA>
-          </AccessBox>
+          <BodyText>
+            This dataset is available to academic researchers, journalists, and
+            data scientists working on misinformation research, computational
+            social science, or related fields. Access is granted on a
+            case-by-case basis after a brief review of the intended use.
+          </BodyText>
+          <CTAButton href="/dataset/access">Submit a Request</CTAButton>
         </Container>
       </Section>
 

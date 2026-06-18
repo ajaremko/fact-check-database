@@ -82,6 +82,9 @@ export function NavFooter() {
           <GroupHeading>Dataset</GroupHeading>
           <LinkList>
             <li>
+              <FooterNavLink href="/dataset">About</FooterNavLink>
+            </li>
+            <li>
               <FooterNavLink href="/dataset/methodology">
                 Methodology
               </FooterNavLink>

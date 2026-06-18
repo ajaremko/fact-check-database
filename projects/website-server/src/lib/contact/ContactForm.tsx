@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { z } from 'zod'
 
 import { C } from '@/lib/theme'
+import { RecaptchaWrapper } from '@/lib/forms'
 
 import { submitContactForm } from './actions'
 
@@ -15,11 +16,11 @@ import { submitContactForm } from './actions'
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Enter a valid email address'),
+    .email('Please enter a valid email address')
+    .min(1, 'Email is required'),
   topic: z.string().min(1, 'Please select a topic'),
   message: z.string().min(1, 'Message is required'),
+  recaptchaToken: z.string().min(1, 'Recaptcha verification failed'),
 })
 
 type ContactFormData = z.infer<typeof contactSchema>
@@ -50,7 +51,8 @@ const Input = styled.input<{ $hasError?: boolean }>`
   font-size: 0.9375rem;
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
-  border: 1px solid ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -71,7 +73,8 @@ const Select = styled.select<{ $hasError?: boolean }>`
   font-size: 0.9375rem;
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
-  border: 1px solid ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -90,7 +93,8 @@ const Textarea = styled.textarea<{ $hasError?: boolean }>`
   font-size: 0.9375rem;
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
-  border: 1px solid ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -161,14 +165,20 @@ const SuccessText = styled.p`
 
 // --- Component ---
 
-export function ContactForm() {
+interface Props {
+  recaptchaSiteKey: string
+}
+
+export function ContactForm({ recaptchaSiteKey }: Props) {
   const [submitted, setSubmitted] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) })
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+  })
 
   const onSubmit = async (data: ContactFormData) => {
     const result = await submitContactForm(data)
@@ -243,7 +253,11 @@ export function ContactForm() {
         />
         {errors.message && <ErrorText>{errors.message.message}</ErrorText>}
       </FormGroup>
-
+      <RecaptchaWrapper
+        action="contact_form_submission"
+        siteKey={recaptchaSiteKey}
+        {...register('recaptchaToken')}
+      />
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Sending…' : 'Send Message'}
       </SubmitButton>
