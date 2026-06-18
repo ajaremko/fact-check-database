@@ -16,7 +16,7 @@ const FooterNav = styled.nav`
   text-align: left;
 
   ${bp.md} {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 `
 
@@ -76,6 +76,51 @@ export function NavFooter() {
             <li>
               <FooterNavLink href="/contact">Contact</FooterNavLink>
             </li>
+          </LinkList>
+        </div>
+        <div>
+          <GroupHeading>Dataset</GroupHeading>
+          <LinkList>
+            <li>
+              <FooterNavLink href="/dataset/methodology">
+                Methodology
+              </FooterNavLink>
+            </li>
+            <li>
+              <FooterNavLink href="/dataset/access">
+                Request Access
+              </FooterNavLink>
+            </li>
+            <li>
+              <FooterNavLink href="/dataset/corrections">
+                Corrections
+              </FooterNavLink>
+            </li>
+            <li>
+              <FooterNavLink href="/dataset/submissions">
+                Submissions
+              </FooterNavLink>
+            </li>
+          </LinkList>
+        </div>
+        <div>
+          <GroupHeading>Legal</GroupHeading>
+          <LinkList>
+            <li>
+              <FooterNavLink href="/legal/terms">
+                Terms of Service
+              </FooterNavLink>
+            </li>
+            <li>
+              <FooterNavLink href="/legal/privacy">
+                Privacy Policy
+              </FooterNavLink>
+            </li>
+          </LinkList>
+        </div>
+        <div>
+          <GroupHeading>Social</GroupHeading>
+          <LinkList>
             <li>
               <ExternalLink href="#" target="_blank" rel="noopener noreferrer">
                 Facebook
@@ -90,31 +135,6 @@ export function NavFooter() {
               <ExternalLink href="#" target="_blank" rel="noopener noreferrer">
                 LinkedIn
               </ExternalLink>
-            </li>
-          </LinkList>
-        </div>
-        <div>
-          <GroupHeading>Dataset</GroupHeading>
-          <LinkList>
-            <li>
-              <FooterNavLink href="/dataset/access">Request Access</FooterNavLink>
-            </li>
-            <li>
-              <FooterNavLink href="/dataset/corrections">Corrections</FooterNavLink>
-            </li>
-            <li>
-              <FooterNavLink href="/dataset/submissions">Submissions</FooterNavLink>
-            </li>
-          </LinkList>
-        </div>
-        <div>
-          <GroupHeading>Legal</GroupHeading>
-          <LinkList>
-            <li>
-              <FooterNavLink href="/legal/terms">Terms of Service</FooterNavLink>
-            </li>
-            <li>
-              <FooterNavLink href="/legal/privacy">Privacy Policy</FooterNavLink>
             </li>
           </LinkList>
         </div>
