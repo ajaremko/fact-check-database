@@ -210,38 +210,6 @@ const CodeBlock = styled.pre`
   margin: 0;
 `
 
-// --- Access Section ---
-
-const AccessBox = styled.div`
-  background-color: ${C.bgSurface};
-  border-left: 3px solid ${C.accent};
-  border-radius: 0 6px 6px 0;
-  padding: 2rem 2.5rem;
-`
-
-const BulletList = styled.ul`
-  color: ${C.textSecondary};
-  line-height: 2;
-  padding-left: 1.25rem;
-  margin: 1rem 0 1.75rem;
-`
-
-const AccessCTA = styled(Link)`
-  display: inline-block;
-  background-color: ${C.accent};
-  color: ${C.bgBase};
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.875rem 2rem;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: ${C.accentHover};
-  }
-`
-
 // --- Static Data ---
 
 interface SourceEntry {
