@@ -1,6 +1,7 @@
 import './global.css'
 
 import { Navbar } from '@/lib/navigation'
+import { AnalyticsScript } from '@/lib/analytics'
 
 import { StyledComponentsRegistry } from './registry'
 
@@ -19,6 +20,7 @@ export default function RootLayout({
     <StyledComponentsRegistry>
       <html lang="en">
         <body>
+          <AnalyticsScript />
           <Navbar />
           {children}
         </body>
