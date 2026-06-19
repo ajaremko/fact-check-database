@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import styled from 'styled-components'
 import { z } from 'zod'
 
+import { RecaptchaWidget, useGetRecaptchaToken } from '@/lib/forms'
 import { C } from '@/lib/theme'
 
 import { submitTip } from './actions'
@@ -157,6 +158,7 @@ const SuccessText = styled.p`
 
 export function SubmissionsForm() {
   const [submitted, setSubmitted] = useState(false)
+  const getRecaptchaToken = useGetRecaptchaToken()
 
   const {
     register,
@@ -165,8 +167,14 @@ export function SubmissionsForm() {
   } = useForm<SubmissionsFormData>({ resolver: zodResolver(submissionsSchema) })
 
   const onSubmit = async (data: SubmissionsFormData) => {
-    const result = await submitTip(data)
-    if (result.success) setSubmitted(true)
+    try {
+      const recaptchaToken = await getRecaptchaToken()
+      const result = await submitTip({ ...data, recaptchaToken })
+      if (result.success) setSubmitted(true)
+    } catch (error) {
+      console.error(error)
+      setSubmitted(false)
+    }
   }
 
   if (submitted) {
@@ -252,6 +260,7 @@ export function SubmissionsForm() {
         )}
       </FormGroup>
 
+      <RecaptchaWidget />
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Submitting…' : 'Submit Tip'}
       </SubmitButton>

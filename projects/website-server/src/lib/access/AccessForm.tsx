@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import styled from 'styled-components'
 import { z } from 'zod'
 
+import { RecaptchaWidget, useGetRecaptchaToken } from '@/lib/forms'
 import { C } from '@/lib/theme'
 
 import { submitAccessRequest } from './actions'
@@ -186,6 +187,7 @@ const SuccessText = styled.p`
 
 export function AccessForm() {
   const [submitted, setSubmitted] = useState(false)
+  const getRecaptchaToken = useGetRecaptchaToken()
 
   const {
     register,
@@ -197,8 +199,14 @@ export function AccessForm() {
   })
 
   const onSubmit = async (data: AccessFormData) => {
-    const result = await submitAccessRequest(data)
-    if (result.success) setSubmitted(true)
+    try {
+      const recaptchaToken = await getRecaptchaToken()
+      const result = await submitAccessRequest({ ...data, recaptchaToken })
+      if (result.success) setSubmitted(true)
+    } catch (error) {
+      console.error(error)
+      setSubmitted(false)
+    }
   }
 
   if (submitted) {
@@ -309,6 +317,7 @@ export function AccessForm() {
         )}
       </FormGroup>
 
+      <RecaptchaWidget />
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Submitting…' : 'Submit Request'}
       </SubmitButton>

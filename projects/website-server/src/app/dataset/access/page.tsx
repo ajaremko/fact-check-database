@@ -1,7 +1,10 @@
 import { Metadata } from 'next'
 
 import { RequestAccess } from '@/lib/access'
+import { RecaptchaProvider, RecaptchaScript } from '@/lib/forms'
 import { metadataBase } from '@/lib/seo'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   ...metadataBase,
@@ -11,5 +14,10 @@ export const metadata: Metadata = {
 }
 
 export default function AccessPage() {
-  return <RequestAccess />
+  return (
+    <RecaptchaProvider siteKey={process.env.RECAPTCHA_SITE_KEY ?? ''}>
+      <RecaptchaScript />
+      <RequestAccess />
+    </RecaptchaProvider>
+  )
 }
