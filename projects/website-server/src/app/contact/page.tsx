@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 
 import { Contact } from '@/lib/contact'
+import { RecaptchaProvider, RecaptchaScript } from '@/lib/forms'
 import { metadataBase } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
@@ -13,5 +14,10 @@ export const metadata: Metadata = {
 }
 
 export default function ContactPage() {
-  return <Contact recaptchaSiteKey={process.env.RECAPTCHA_SITE_KEY ?? ''} />
+  return (
+    <RecaptchaProvider siteKey={process.env.RECAPTCHA_SITE_KEY ?? ''}>
+      <RecaptchaScript />
+      <Contact />
+    </RecaptchaProvider>
+  )
 }

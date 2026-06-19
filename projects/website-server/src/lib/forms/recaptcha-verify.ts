@@ -1,69 +1,107 @@
-const SCORE_THRESHOLD = 0.5
+'use server'
 
-interface AssessmentResponse {
-  tokenProperties: {
-    valid: boolean
-    action: string
+import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise'
+import type { google } from '@google-cloud/recaptcha-enterprise/build/protos/protos'
+
+const projectId = process.env.RECAPTCHA_PROJECT_ID ?? ''
+const siteKey = process.env.RECAPTCHA_SITE_KEY ?? ''
+
+type Env = {
+  client: RecaptchaEnterpriseServiceClient
+  projectPath: string
+}
+
+let env: Env | null = null
+
+function accessEnv(): Env {
+  if (env === null) {
+    const client = new RecaptchaEnterpriseServiceClient()
+    const projectPath = client.projectPath(projectId)
+    env = { client, projectPath }
   }
-  riskAnalysis: {
-    score: number
+  return env
+}
+
+type AssessmentResult =
+  | {
+      success: true
+      score: number
+      reasons: google.cloud.recaptchaenterprise.v1.RiskAnalysis.ClassificationReason[]
+    }
+  | {
+      success: false
+      cause: unknown
+    }
+
+async function createAssessment(
+  token: string,
+  recaptchaAction: string
+): Promise<AssessmentResult> {
+  const { client, projectPath } = accessEnv()
+
+  // Build the assessment request.
+  const request = {
+    assessment: {
+      event: {
+        token: token,
+        siteKey,
+      },
+    },
+    parent: projectPath,
+  }
+
+  try {
+    const [response] = await client.createAssessment(request)
+
+    // Check if the token is valid.
+    if (!response.tokenProperties || !response.tokenProperties.valid) {
+      return { success: false, cause: new Error('Invalid token') }
+    }
+
+    // Check if the expected action was executed.
+    // The `action` property is set by user client in the grecaptcha.enterprise.execute() method.
+    if (response.tokenProperties.action !== recaptchaAction) {
+      console.log(
+        'The action attribute in your reCAPTCHA tag does not match the action you are expecting to score'
+      )
+      return { success: false, cause: new Error('Action mismatch') }
+    }
+
+    // For more information on interpreting the assessment, see:
+    // https://cloud.google.com/recaptcha/docs/interpret-assessment
+    if (!response.riskAnalysis || !response.riskAnalysis.score) {
+      return {
+        success: false,
+        cause: new Error('No risk analysis available for this token.'),
+      }
+    }
+
+    return {
+      success: true,
+      score: response.riskAnalysis.score,
+      reasons: response.riskAnalysis.reasons ?? [],
+    }
+  } catch (error) {
+    return { success: false, cause: error }
   }
 }
 
-const apiKey = process.env.RECAPTCHA_API_KEY
-const projectId = process.env.RECAPTCHA_PROJECT_ID
-const siteKey = process.env.RECAPTCHA_SITE_KEY
+const SCORE_THRESHOLD = 0.5
 
-console.log(
-  '[recaptcha] config',
-  JSON.stringify({ apiKey, projectId, siteKey })
-)
+type VerificationResult = {
+  success: boolean
+  score?: number
+}
 
 export async function verifyRecaptchaToken(
   token: string,
-  action: string
-): Promise<{ success: boolean; score: number }> {
-  if (!apiKey || !projectId || !siteKey) {
-    console.error('[recaptcha] missing required environment variables')
-    return { success: false, score: 0 }
+  recaptchaAction: string
+): Promise<VerificationResult> {
+  console.debug('[recaptcha] Verifying token for action:', recaptchaAction)
+  const result = await createAssessment(token, recaptchaAction)
+  if (!result.success) {
+    console.debug('[recaptcha] Verification failed:', result.cause)
+    return { success: false }
   }
-
-  let response: Response
-  try {
-    response = await fetch(
-      `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: { token, siteKey, expectedAction: action },
-        }),
-      }
-    )
-  } catch (e) {
-    console.error('[recaptcha] assessment request failed', e)
-    return { success: false, score: 0 }
-  }
-
-  if (!response.ok) {
-    const bytes = await response.arrayBuffer()
-    const text = new TextDecoder().decode(bytes)
-    console.error('[recaptcha] assessment returned HTTP', response.status, text)
-    return { success: false, score: 0 }
-  }
-
-  const assessment = (await response.json()) as AssessmentResponse
-  const { valid, action: returnedAction } = assessment.tokenProperties
-  const score = assessment.riskAnalysis.score
-
-  if (!valid || returnedAction !== action) {
-    console.error('[recaptcha] invalid token or action mismatch', {
-      valid,
-      returnedAction,
-      action,
-    })
-    return { success: false, score }
-  }
-
-  return { success: score >= SCORE_THRESHOLD, score }
+  return { success: result.score >= SCORE_THRESHOLD, score: result.score }
 }

@@ -7,18 +7,13 @@ import styled from 'styled-components'
 import { z } from 'zod'
 
 import { C } from '@/lib/theme'
-import { RecaptchaWrapper } from '@/lib/forms'
+import {
+  RecaptchaScript,
+  RecaptchaWidget,
+  useGetRecaptchaToken,
+} from '@/lib/forms'
 
 import { submitContactForm } from './actions'
-
-declare global {
-  const grecaptcha: {
-    enterprise: {
-      ready: (cb: () => void) => void
-      execute: (siteKey: string, options: { action: string }) => Promise<string>
-    }
-  }
-}
 
 // --- Schema ---
 
@@ -173,12 +168,9 @@ const SuccessText = styled.p`
 
 // --- Component ---
 
-interface Props {
-  recaptchaSiteKey: string
-}
-
-export function ContactForm({ recaptchaSiteKey }: Props) {
+export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
+  const getRecaptchaToken = useGetRecaptchaToken()
 
   const {
     register,
@@ -189,21 +181,15 @@ export function ContactForm({ recaptchaSiteKey }: Props) {
   })
 
   const onSubmit = async (data: ContactFormData) => {
-    const recaptchaToken = await new Promise<string>((resolve, reject) => {
-      grecaptcha.enterprise.ready(async () => {
-        try {
-          resolve(
-            await grecaptcha.enterprise.execute(recaptchaSiteKey, {
-              action: 'contact_form_submission',
-            }),
-          )
-        } catch (e) {
-          reject(e)
-        }
-      })
-    })
-    const result = await submitContactForm({ ...data, recaptchaToken })
-    if (result.success) setSubmitted(true)
+    try {
+      const recaptchaToken = await getRecaptchaToken()
+      const result = await submitContactForm({ ...data, recaptchaToken })
+      if (result.success) setSubmitted(true)
+    } catch (error) {
+      console.error(error)
+      setSubmitted(false)
+      return
+    }
   }
 
   if (submitted) {
@@ -263,7 +249,6 @@ export function ContactForm({ recaptchaSiteKey }: Props) {
         </Select>
         {errors.topic && <ErrorText>{errors.topic.message}</ErrorText>}
       </FormGroup>
-
       <FormGroup>
         <Label htmlFor="message">Message</Label>
         <Textarea
@@ -274,7 +259,8 @@ export function ContactForm({ recaptchaSiteKey }: Props) {
         />
         {errors.message && <ErrorText>{errors.message.message}</ErrorText>}
       </FormGroup>
-      <RecaptchaWrapper siteKey={recaptchaSiteKey} />
+      <RecaptchaWidget />
+      <RecaptchaScript />
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Sending…' : 'Send Message'}
       </SubmitButton>

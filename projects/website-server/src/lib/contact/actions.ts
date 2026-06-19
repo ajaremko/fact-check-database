@@ -11,11 +11,12 @@ export type ContactFormData = {
 }
 
 export async function submitContactForm(
-  data: ContactFormData,
+  formData: ContactFormData
 ): Promise<{ success: boolean }> {
+  const { recaptchaToken, ...data } = formData
   const verification = await verifyRecaptchaToken(
-    data.recaptchaToken,
-    'contact_form_submission',
+    recaptchaToken,
+    'contact_form_submission'
   )
   if (!verification.success) return { success: false }
   console.log('[contact-form]', JSON.stringify(data))
