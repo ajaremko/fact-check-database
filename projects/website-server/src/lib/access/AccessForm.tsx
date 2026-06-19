@@ -28,7 +28,10 @@ import { submitAccessRequest } from './actions'
 
 const accessSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Enter a valid email address'),
   affiliation: z.string().min(1, 'Affiliation is required'),
   projectDescription: z.string().min(1, 'Project description is required'),
   dataVolume: z.enum(['lt10k', '10k-100k', 'gt100k', 'unsure'], {
@@ -43,7 +46,7 @@ type AccessFormData = z.infer<typeof accessSchema>
 
 export function AccessForm() {
   const [submitted, setSubmitted] = useState(false)
-  const getRecaptchaToken = useGetRecaptchaToken()
+  const getRecaptchaToken = useGetRecaptchaToken('access_request')
 
   const {
     register,

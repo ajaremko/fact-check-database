@@ -43,7 +43,7 @@ type ContactFormData = z.infer<typeof contactSchema>
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
-  const getRecaptchaToken = useGetRecaptchaToken()
+  const getRecaptchaToken = useGetRecaptchaToken('contact_form_submission')
 
   const {
     register,

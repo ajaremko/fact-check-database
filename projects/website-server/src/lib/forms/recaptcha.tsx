@@ -63,7 +63,7 @@ declare global {
   }
 }
 
-export function useGetRecaptchaToken() {
+export function useGetRecaptchaToken(action: string) {
   const context = useRecaptcha()
   return async () => {
     if (!context.ready) {
@@ -74,7 +74,7 @@ export function useGetRecaptchaToken() {
         try {
           resolve(
             await grecaptcha.enterprise.execute(context.siteKey, {
-              action: 'contact_form_submission',
+              action,
             })
           )
         } catch (e) {

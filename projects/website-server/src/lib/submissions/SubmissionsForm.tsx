@@ -45,7 +45,7 @@ type SubmissionsFormData = z.infer<typeof submissionsSchema>
 
 export function SubmissionsForm() {
   const [submitted, setSubmitted] = useState(false)
-  const getRecaptchaToken = useGetRecaptchaToken()
+  const getRecaptchaToken = useGetRecaptchaToken('tip_submission')
 
   const {
     register,
