@@ -15,4 +15,4 @@ const recaptchaApiKey = new gcp.recaptcha.EnterpriseKey(
   { provider }
 )
 
-export const recaptchaApiKeyId = recaptchaApiKey.id
+export const recaptchaApiKeyName = recaptchaApiKey.name

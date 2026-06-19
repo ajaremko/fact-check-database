@@ -12,6 +12,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../getImageUrl'
 import { algoliaFactChecksIndexName } from '../algolia'
+import { recaptchaApiKeyName } from '../recaptcha'
 
 export const websiteService = new gcp.cloudrun.Service(
   `${tag}-website-service`,
@@ -37,6 +38,14 @@ export const websiteService = new gcp.cloudrun.Service(
               {
                 name: 'ALGOLIA_INDEX_NAME',
                 value: algoliaFactChecksIndexName,
+              },
+              {
+                name: 'RECAPTCHA_SITE_KEY',
+                value: recaptchaApiKeyName,
+              },
+              {
+                name: 'RECAPTCHA_PROJECT_ID',
+                value: gcpProject,
               },
             ],
           },
