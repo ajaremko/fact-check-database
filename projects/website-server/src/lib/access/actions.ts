@@ -1,6 +1,8 @@
 'use server'
 
 import { verifyRecaptchaToken } from '@/lib/forms'
+import * as AccessRequest from '@/lib/contracts/AccessRequest'
+import { publishFormSubmission } from '@/lib/pubsub/publisher'
 
 export type AccessFormData = {
   name: string
@@ -20,6 +22,6 @@ export async function submitAccessRequest(
     'access_request',
   )
   if (!verification.success) return { success: false }
-  console.log('[access-request]', JSON.stringify(data))
+  await publishFormSubmission(AccessRequest.make(data))
   return { success: true }
 }

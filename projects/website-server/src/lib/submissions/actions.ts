@@ -1,6 +1,8 @@
 'use server'
 
 import { verifyRecaptchaToken } from '@/lib/forms'
+import * as TipSubmission from '@/lib/contracts/TipSubmission'
+import { publishFormSubmission } from '@/lib/pubsub/publisher'
 
 export type SubmissionsFormData = {
   claim: string
@@ -19,6 +21,6 @@ export async function submitTip(
     'tip_submission',
   )
   if (!verification.success) return { success: false }
-  console.log('[tip-submission]', JSON.stringify(data))
+  await publishFormSubmission(TipSubmission.make(data))
   return { success: true }
 }

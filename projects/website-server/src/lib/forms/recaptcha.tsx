@@ -44,6 +44,7 @@ export function RecaptchaScript() {
       src={`https://www.google.com/recaptcha/enterprise.js?render=${context.siteKey}`}
       strategy="afterInteractive"
       onLoad={context.handleScriptLoaded}
+      onError={(err) => console.error('reCAPTCHA script failed to load', err)}
     />
   )
 }

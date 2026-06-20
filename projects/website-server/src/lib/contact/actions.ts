@@ -1,6 +1,8 @@
 'use server'
 
 import { verifyRecaptchaToken } from '@/lib/forms'
+import * as ContactSubmission from '@/lib/contracts/ContactSubmission'
+import { publishFormSubmission } from '@/lib/pubsub/publisher'
 
 export type ContactFormData = {
   name: string
@@ -19,6 +21,6 @@ export async function submitContactForm(
     'contact_form_submission'
   )
   if (!verification.success) return { success: false }
-  console.log('[contact-form]', JSON.stringify(data))
+  await publishFormSubmission(ContactSubmission.make(data))
   return { success: true }
 }
