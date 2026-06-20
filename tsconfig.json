@@ -38,6 +38,9 @@
     },
     {
       "path": "./projects/website-emailer"
+    },
+    {
+      "path": "./projects/website-contracts"
     }
   ]
 }
