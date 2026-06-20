@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { InstantSearch } from 'react-instantsearch'
+import { InstantSearch, InstantSearchSSRProvider } from 'react-instantsearch'
+import type { InstantSearchServerState } from 'react-instantsearch'
 import { liteClient as algoliasearch } from 'algoliasearch/lite'
 
 import { C } from '@/lib/theme'
@@ -47,12 +48,14 @@ interface Props {
   appId: string
   searchKey: string
   indexName: string
+  serverState?: InstantSearchServerState
 }
 
 export default function FactCheckSearch({
   appId,
   searchKey,
   indexName,
+  serverState,
 }: Props) {
   const [sort, setSort] = useState<SortOption>('newest')
 
@@ -76,18 +79,20 @@ export default function FactCheckSearch({
   }
 
   return (
-    <InstantSearch searchClient={searchClient} indexName={indexName}>
-      <SearchSection>
-        <Container>
-          <SearchBoxWidgetLive />
-          <SearchBarRowLive sort={sort} onSortChange={setSort} />
-        </Container>
-      </SearchSection>
-      <ResultsSection>
-        <Container>
-          <HitsWidgetLive sort={sort} />
-        </Container>
-      </ResultsSection>
-    </InstantSearch>
+    <InstantSearchSSRProvider {...(serverState ?? {})}>
+      <InstantSearch searchClient={searchClient} indexName={indexName}>
+        <SearchSection>
+          <Container>
+            <SearchBoxWidgetLive />
+            <SearchBarRowLive sort={sort} onSortChange={setSort} />
+          </Container>
+        </SearchSection>
+        <ResultsSection>
+          <Container>
+            <HitsWidgetLive sort={sort} />
+          </Container>
+        </ResultsSection>
+      </InstantSearch>
+    </InstantSearchSSRProvider>
   )
 }
