@@ -35,6 +35,9 @@
     },
     {
       "path": "./projects/analysis-bigquery-loader"
+    },
+    {
+      "path": "./projects/website-emailer"
     }
   ]
 }
