@@ -1,13 +1,27 @@
 import type { Metadata } from 'next'
+import { unstable_cache } from 'next/cache'
 import { liteClient as algoliasearch } from 'algoliasearch/lite'
 import type { InstantSearchServerState } from 'react-instantsearch'
 
 import { Search } from '@/lib/search'
 import { metadataBase } from '@/lib/seo'
 
-export const revalidate = 21600 // 6 hours — index is updated twice daily
+// Keep the page dynamic so env vars are read at request time, not baked in
+// during `next build`. The Algolia fetch is cached separately below.
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = metadataBase
+
+function makeBrowseFetcher(appId: string, searchKey: string, indexName: string) {
+  return unstable_cache(
+    async () => {
+      const client = algoliasearch(appId, searchKey)
+      return client.search([{ indexName, params: {} }])
+    },
+    ['algolia-browse', indexName],
+    { revalidate: 21600 } // 6 hours — index is updated twice daily
+  )
+}
 
 export default async function HomePage() {
   const appId = process.env.ALGOLIA_APP_ID ?? ''
@@ -18,11 +32,8 @@ export default async function HomePage() {
 
   if (appId && searchKey && indexName) {
     try {
-      const client = algoliasearch(appId, searchKey)
-      // Fetch the initial browse results server-side. This populates
-      // InstantSearchSSRProvider so widgets render with real data during
-      // hydration instead of an empty-hits flash.
-      const { results } = await client.search([{ indexName, params: {} }])
+      const fetchBrowse = makeBrowseFetcher(appId, searchKey, indexName)
+      const { results } = await fetchBrowse()
       serverState = {
         initialResults: {
           [indexName]: {
