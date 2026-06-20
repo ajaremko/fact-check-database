@@ -31,8 +31,6 @@
     "@effect/platform-node": "^0.106.0",
     "@google-cloud/recaptcha-enterprise": "^6.4.2",
     "@hookform/resolvers": "^5.4.0",
-    "@news-research/core-vendor": "0.0.1",
-    "@news-research/ingestion-messaging": "0.0.1",
     "@xyflow/react": "^12.11.0",
     "algoliasearch": "^5.53.0",
     "effect": "^3.21.0",
