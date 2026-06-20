@@ -5,7 +5,7 @@ import type { InstantSearchServerState } from 'react-instantsearch'
 import { Search } from '@/lib/search'
 import { metadataBase } from '@/lib/seo'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 21600 // 6 hours — index is updated twice daily
 
 export const metadata: Metadata = metadataBase
 
