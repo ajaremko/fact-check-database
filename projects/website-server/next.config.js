@@ -16,6 +16,15 @@ const nextConfig = {
   },
   output: 'standalone',
   distDir: 'dist',
+  // GCP SDK packages use native gRPC bindings (google-gax) that cannot be
+  // bundled by webpack. Mark them external so Next.js resolves them from
+  // node_modules at runtime instead of attempting to bundle them.
+  serverExternalPackages: [
+    '@google-cloud/pubsub',
+    '@google-cloud/recaptcha-enterprise',
+    '@news-research/core-vendor',
+    '@news-research/ingestion-messaging',
+  ],
 }
 
 const plugins = [

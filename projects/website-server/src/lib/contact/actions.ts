@@ -1,8 +1,11 @@
 'use server'
 
-import { verifyRecaptchaToken } from '@/lib/forms'
+import { Effect } from 'effect'
+import { publish } from '@news-research/ingestion-messaging'
+
 import * as ContactSubmission from '@/lib/contracts/ContactSubmission'
-import { publishFormSubmission } from '@/lib/pubsub/publisher'
+import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
+import { appLayer } from '@/lib/pubsub/app-layer'
 
 export type ContactFormData = {
   name: string
@@ -16,11 +19,18 @@ export async function submitContactForm(
   formData: ContactFormData
 ): Promise<{ success: boolean }> {
   const { recaptchaToken, ...data } = formData
-  const verification = await verifyRecaptchaToken(
-    recaptchaToken,
-    'contact_form_submission'
+  return Effect.runPromise(
+    Effect.gen(function* () {
+      yield* verifyRecaptcha(recaptchaToken, 'contact_form_submission')
+      yield* publish(Buffer.from(JSON.stringify(ContactSubmission.make(data))))
+      yield* Effect.logInfo('Contact form submitted').pipe(
+        Effect.annotateLogs({ email: data.email, topic: data.topic })
+      )
+      return { success: true as const }
+    }).pipe(
+      Effect.tapErrorCause(Effect.logError),
+      Effect.catchAll(() => Effect.succeed({ success: false as const })),
+      Effect.provide(appLayer)
+    )
   )
-  if (!verification.success) return { success: false }
-  await publishFormSubmission(ContactSubmission.make(data))
-  return { success: true }
 }

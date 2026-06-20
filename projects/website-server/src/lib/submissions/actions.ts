@@ -1,8 +1,11 @@
 'use server'
 
-import { verifyRecaptchaToken } from '@/lib/forms'
+import { Effect } from 'effect'
+import { publish } from '@news-research/ingestion-messaging'
+
 import * as TipSubmission from '@/lib/contracts/TipSubmission'
-import { publishFormSubmission } from '@/lib/pubsub/publisher'
+import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
+import { appLayer } from '@/lib/pubsub/app-layer'
 
 export type SubmissionsFormData = {
   claim: string
@@ -16,11 +19,18 @@ export type SubmissionsFormData = {
 export async function submitTip(
   data: SubmissionsFormData,
 ): Promise<{ success: boolean }> {
-  const verification = await verifyRecaptchaToken(
-    data.recaptchaToken,
-    'tip_submission',
+  return Effect.runPromise(
+    Effect.gen(function* () {
+      yield* verifyRecaptcha(data.recaptchaToken, 'tip_submission')
+      yield* publish(Buffer.from(JSON.stringify(TipSubmission.make(data))))
+      yield* Effect.logInfo('Tip submitted').pipe(
+        Effect.annotateLogs({ organization: data.organization, url: data.url })
+      )
+      return { success: true as const }
+    }).pipe(
+      Effect.tapErrorCause(Effect.logError),
+      Effect.catchAll(() => Effect.succeed({ success: false as const })),
+      Effect.provide(appLayer)
+    )
   )
-  if (!verification.success) return { success: false }
-  await publishFormSubmission(TipSubmission.make(data))
-  return { success: true }
 }

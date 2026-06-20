@@ -1,8 +1,11 @@
 'use server'
 
-import { verifyRecaptchaToken } from '@/lib/forms'
+import { Effect } from 'effect'
+import { publish } from '@news-research/ingestion-messaging'
+
 import * as AccessRequest from '@/lib/contracts/AccessRequest'
-import { publishFormSubmission } from '@/lib/pubsub/publisher'
+import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
+import { appLayer } from '@/lib/pubsub/app-layer'
 
 export type AccessFormData = {
   name: string
@@ -17,11 +20,18 @@ export type AccessFormData = {
 export async function submitAccessRequest(
   data: AccessFormData,
 ): Promise<{ success: boolean }> {
-  const verification = await verifyRecaptchaToken(
-    data.recaptchaToken,
-    'access_request',
+  return Effect.runPromise(
+    Effect.gen(function* () {
+      yield* verifyRecaptcha(data.recaptchaToken, 'access_request')
+      yield* publish(Buffer.from(JSON.stringify(AccessRequest.make(data))))
+      yield* Effect.logInfo('Access request submitted').pipe(
+        Effect.annotateLogs({ email: data.email, affiliation: data.affiliation })
+      )
+      return { success: true as const }
+    }).pipe(
+      Effect.tapErrorCause(Effect.logError),
+      Effect.catchAll(() => Effect.succeed({ success: false as const })),
+      Effect.provide(appLayer)
+    )
   )
-  if (!verification.success) return { success: false }
-  await publishFormSubmission(AccessRequest.make(data))
-  return { success: true }
 }
