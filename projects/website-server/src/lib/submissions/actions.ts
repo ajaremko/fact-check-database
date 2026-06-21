@@ -1,9 +1,10 @@
 'use server'
 
 import { Effect } from 'effect'
+
+import { TipSubmissionSchema } from '@news-research/website-contracts'
 import { publish } from '@news-research/ingestion-messaging'
 
-import * as TipSubmission from '@/lib/contracts/TipSubmission'
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
 import { appLayer } from '@/lib/pubsub/app-layer'
 
@@ -17,12 +18,27 @@ export type SubmissionsFormData = {
 }
 
 export async function submitTip(
-  data: SubmissionsFormData,
+  data: SubmissionsFormData
 ): Promise<{ success: boolean }> {
   return Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(data.recaptchaToken, 'tip_submission')
-      yield* publish(Buffer.from(JSON.stringify(TipSubmission.make(data))))
+      yield* publish(
+        Buffer.from(
+          JSON.stringify(
+            TipSubmissionSchema.make({
+              kind: 'tip_submission',
+              version: 1,
+              claim: data.claim,
+              organization: data.organization,
+              url: data.url,
+              context: data.context,
+              contact_email: data.contactEmail,
+              submitted_at: new Date().toISOString(),
+            })
+          )
+        )
+      )
       yield* Effect.logInfo('Tip submitted').pipe(
         Effect.annotateLogs({ organization: data.organization, url: data.url })
       )

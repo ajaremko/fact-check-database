@@ -1,18 +1,9 @@
-import { Schema } from 'effect'
+import {
+  AccessRequestSchema,
+  type AccessRequest,
+} from '@news-research/website-contracts'
 
-export const AccessRequestSchema = Schema.Struct({
-  version: Schema.Literal(1),
-  kind: Schema.Literal('access_request'),
-  name: Schema.String,
-  email: Schema.String,
-  affiliation: Schema.String,
-  project_description: Schema.String,
-  data_volume: Schema.String,
-  access_types: Schema.Array(Schema.String),
-  submitted_at: Schema.String,
-})
-
-export type AccessRequest = Schema.Schema.Type<typeof AccessRequestSchema>
+export { AccessRequestSchema, type AccessRequest }
 
 export const make = (data: {
   name: string
@@ -29,6 +20,4 @@ export const make = (data: {
   email: data.email,
   affiliation: data.affiliation,
   project_description: data.projectDescription,
-  data_volume: data.dataVolume,
-  access_types: data.accessType,
 })

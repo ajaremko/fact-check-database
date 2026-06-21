@@ -1,16 +1,9 @@
-import { Schema } from 'effect'
+import {
+  ContactSubmissionSchema,
+  type ContactSubmission,
+} from '@news-research/website-contracts'
 
-export const ContactSubmissionSchema = Schema.Struct({
-  version: Schema.Literal(1),
-  kind: Schema.Literal('contact_submission'),
-  name: Schema.String,
-  email: Schema.String,
-  topic: Schema.String,
-  message: Schema.String,
-  submitted_at: Schema.String,
-})
-
-export type ContactSubmission = Schema.Schema.Type<typeof ContactSubmissionSchema>
+export { ContactSubmissionSchema, type ContactSubmission }
 
 export const make = (data: {
   name: string

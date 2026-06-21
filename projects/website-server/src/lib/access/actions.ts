@@ -1,9 +1,10 @@
 'use server'
 
 import { Effect } from 'effect'
+
+import { AccessRequestSchema } from '@news-research/website-contracts'
 import { publish } from '@news-research/ingestion-messaging'
 
-import * as AccessRequest from '@/lib/contracts/AccessRequest'
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
 import { appLayer } from '@/lib/pubsub/app-layer'
 
@@ -18,14 +19,31 @@ export type AccessFormData = {
 }
 
 export async function submitAccessRequest(
-  data: AccessFormData,
+  data: AccessFormData
 ): Promise<{ success: boolean }> {
   return Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(data.recaptchaToken, 'access_request')
-      yield* publish(Buffer.from(JSON.stringify(AccessRequest.make(data))))
+      yield* publish(
+        Buffer.from(
+          JSON.stringify(
+            AccessRequestSchema.make({
+              kind: 'access_request',
+              version: 1,
+              name: data.name,
+              email: data.email,
+              affiliation: data.affiliation,
+              project_description: data.projectDescription,
+              submitted_at: new Date().toISOString(),
+            })
+          )
+        )
+      )
       yield* Effect.logInfo('Access request submitted').pipe(
-        Effect.annotateLogs({ email: data.email, affiliation: data.affiliation })
+        Effect.annotateLogs({
+          email: data.email,
+          affiliation: data.affiliation,
+        })
       )
       return { success: true as const }
     }).pipe(

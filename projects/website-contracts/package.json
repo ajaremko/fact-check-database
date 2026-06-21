@@ -2,7 +2,6 @@
   "name": "@news-research/website-contracts",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -26,12 +25,18 @@
           "main": "projects/website-contracts/src/index.ts",
           "tsConfig": "projects/website-contracts/tsconfig.lib.json",
           "format": [
-            "esm"
+            "cjs"
           ],
-          "declarationRootDir": "projects/website-contracts/src"
+          "declarationRootDir": "projects/website-contracts/src",
+          "esbuildOptions": {
+            "outExtension": { ".js": ".js" }
+          }
         }
       }
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "effect": "^3.21.0",
+    "tslib": "^2.3.0"
+  }
 }

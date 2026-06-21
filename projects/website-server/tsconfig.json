@@ -53,6 +53,9 @@
     },
     {
       "path": "../core-vendor"
+    },
+    {
+      "path": "../website-contracts"
     }
   ]
 }
