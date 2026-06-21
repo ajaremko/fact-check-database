@@ -29,14 +29,15 @@
           ],
           "declarationRootDir": "projects/website-contracts/src",
           "esbuildOptions": {
-            "outExtension": { ".js": ".js" }
+            "outExtension": {
+              ".js": ".js"
+            }
           }
         }
       }
     }
   },
   "dependencies": {
-    "effect": "^3.21.0",
-    "tslib": "^2.3.0"
+    "effect": "^3.21.0"
   }
 }
