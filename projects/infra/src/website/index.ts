@@ -1,5 +1,6 @@
 export * from './algolia'
 export * from './recaptcha'
+export * from './emailer'
 
 export {
   gcpProject as websiteGcpProject,

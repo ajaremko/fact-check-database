@@ -16,6 +16,11 @@ export const gcpRegion = websiteConfig.require('region')
 export const dockerTag = websiteConfig.get('tag')
 
 /**
+ * The log verbosity level for the ingestion pipeline components.
+ */
+export const logLevel = websiteConfig.require('logLevel')
+
+/**
  * A list of domains that have been verified for use with the website.
  * These domains can be used for domain mapping in Cloud Run.
  */

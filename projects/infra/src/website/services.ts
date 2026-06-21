@@ -42,3 +42,11 @@ export const storageService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const pubsubService = new gcp.projects.Service(
+  `${tag}-pubsub-service`,
+  {
+    service: 'pubsub.googleapis.com',
+  },
+  { provider }
+)

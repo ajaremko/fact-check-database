@@ -8,7 +8,10 @@ import { pinoLogger } from '@news-research/core-vendor/pino'
 
 import { Program } from './Program.js'
 
-const MessagingModeConfig = Config.literal('gcp', 'filesystem')('MESSAGING_MODE')
+const MessagingModeConfig = Config.literal(
+  'gcp',
+  'filesystem'
+)('MESSAGING_MODE')
 const LoggingModeConfig = Config.literal('gcp', 'console')('LOGGING_MODE')
 const LoggingLevelConfig = Config.logLevel('LOGGING_LEVEL')
 
@@ -57,7 +60,7 @@ function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
     }
 
     yield* Effect.logInfo('Using http server message queue feeder')
-    const server = HttpServerMessageQueueFeeder.layer('/website-submissions')
+    const server = HttpServerMessageQueueFeeder.layer('/submissions')
     return yield* Effect.all([self, Layer.launch(server)], {
       concurrency: 'unbounded',
     })

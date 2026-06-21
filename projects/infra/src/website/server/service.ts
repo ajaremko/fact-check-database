@@ -14,6 +14,8 @@ import { getImageUrl } from '../getImageUrl'
 import { algoliaFactChecksIndexName } from '../algolia'
 import { recaptchaApiKeyName } from '../recaptcha'
 
+import { formSubmissionTopic } from './topic'
+
 export const websiteService = new gcp.cloudrun.Service(
   `${tag}-website-service`,
   {
@@ -46,6 +48,10 @@ export const websiteService = new gcp.cloudrun.Service(
               {
                 name: 'RECAPTCHA_PROJECT_ID',
                 value: gcpProject,
+              },
+              {
+                name: 'PUBSUB_TOPIC_NAME',
+                value: formSubmissionTopic.name,
               },
             ],
           },
