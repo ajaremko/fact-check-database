@@ -22,19 +22,14 @@
           "tsConfig": "projects/website-emailer/tsconfig.app.json",
           "assets": [
             "projects/website-emailer/src/assets"
-          ],
-          "esbuildOptions": {
-            "sourcemap": true,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
+          ]
         },
         "configurations": {
           "development": {
-            "minify": false
+            "esbuildConfig": "projects/website-emailer/esbuild.config.js"
           },
           "production": {
+            "esbuildConfig": "projects/website-emailer/esbuild.config.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -83,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@news-research/website-emailer:build",
+          "buildTarget": "website-emailer:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@news-research/website-emailer:build:development"
+            "buildTarget": "website-emailer:build:development"
           },
           "production": {
-            "buildTarget": "@news-research/website-emailer:build:production"
+            "buildTarget": "website-emailer:build:production"
           }
         }
       },

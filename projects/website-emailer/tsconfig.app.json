@@ -9,8 +9,11 @@
   "include": ["src/**/*.ts"],
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
-    { "path": "../ingestion-messaging/tsconfig.lib.json" },
-    { "path": "../core-vendor/tsconfig.lib.json" },
-    { "path": "../website-contracts/tsconfig.lib.json" }
+    {
+      "path": "../website-contracts/tsconfig.lib.json"
+    },
+    {
+      "path": "../ingestion-messaging/tsconfig.lib.json"
+    }
   ]
 }

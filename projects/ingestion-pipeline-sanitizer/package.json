@@ -29,7 +29,7 @@
             "esbuildConfig": "projects/ingestion-pipeline-sanitizer/esbuild.config.js"
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-pipeline-sanitizer/esbuild.config.prod.js",
+            "esbuildConfig": "projects/ingestion-pipeline-sanitizer/esbuild.config.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
