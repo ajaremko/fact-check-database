@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -39,7 +38,6 @@ type ContactFormData = z.infer<typeof contactSchema>
 // --- Component ---
 
 export function ContactForm() {
-  const router = useRouter()
   const getRecaptchaToken = useGetRecaptchaToken('contact_form_submission')
 
   const {
@@ -53,8 +51,7 @@ export function ContactForm() {
   const onSubmit = async (data: ContactFormData) => {
     try {
       const recaptchaToken = await getRecaptchaToken()
-      const result = await submitContactForm({ ...data, recaptchaToken })
-      if (result.success) router.push('/contact/success')
+      await submitContactForm({ ...data, recaptchaToken })
     } catch (error) {
       console.error(error)
     }

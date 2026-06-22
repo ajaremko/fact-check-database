@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -32,7 +31,6 @@ type AccessFormData = z.infer<typeof accessSchema>
 // --- Component ---
 
 export function AccessForm() {
-  const router = useRouter()
   const getRecaptchaToken = useGetRecaptchaToken('access_request')
 
   const {
@@ -46,8 +44,7 @@ export function AccessForm() {
   const onSubmit = async (data: AccessFormData) => {
     try {
       const recaptchaToken = await getRecaptchaToken()
-      const result = await submitAccessRequest({ ...data, recaptchaToken })
-      if (result.success) router.push('/dataset/access/success')
+      await submitAccessRequest({ ...data, recaptchaToken })
     } catch (error) {
       console.error(error)
     }

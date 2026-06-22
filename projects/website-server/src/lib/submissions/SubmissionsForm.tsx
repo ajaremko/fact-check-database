@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -36,7 +35,6 @@ type SubmissionsFormData = z.infer<typeof submissionsSchema>
 // --- Component ---
 
 export function SubmissionsForm() {
-  const router = useRouter()
   const getRecaptchaToken = useGetRecaptchaToken('tip_submission')
 
   const {
@@ -48,8 +46,7 @@ export function SubmissionsForm() {
   const onSubmit = async (data: SubmissionsFormData) => {
     try {
       const recaptchaToken = await getRecaptchaToken()
-      const result = await submitTip({ ...data, recaptchaToken })
-      if (result.success) router.push('/dataset/submissions/success')
+      await submitTip({ ...data, recaptchaToken })
     } catch (error) {
       console.error(error)
     }

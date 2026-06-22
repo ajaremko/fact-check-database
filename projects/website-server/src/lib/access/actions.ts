@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { Effect } from 'effect'
 
 import { AccessRequestSchema } from '@news-research/website-contracts'
@@ -18,8 +19,8 @@ export type AccessFormData = {
 
 export async function submitAccessRequest(
   data: AccessFormData
-): Promise<{ success: boolean }> {
-  return Effect.runPromise(
+): Promise<void> {
+  const result = await Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(data.recaptchaToken, 'access_request')
       yield* publish(
@@ -50,4 +51,8 @@ export async function submitAccessRequest(
       Effect.provide(appLayer)
     )
   )
+
+  if (result.success) {
+    redirect('/dataset/access/success')
+  }
 }

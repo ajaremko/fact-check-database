@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { Effect } from 'effect'
 
 import { TipSubmissionSchema } from '@news-research/website-contracts'
@@ -19,8 +20,8 @@ export type SubmissionsFormData = {
 
 export async function submitTip(
   data: SubmissionsFormData
-): Promise<{ success: boolean }> {
-  return Effect.runPromise(
+): Promise<void> {
+  const result = await Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(data.recaptchaToken, 'tip_submission')
       yield* publish(
@@ -49,4 +50,8 @@ export async function submitTip(
       Effect.provide(appLayer)
     )
   )
+
+  if (result.success) {
+    redirect('/dataset/submissions/success')
+  }
 }

@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { Effect } from 'effect'
 
 import { ContactSubmissionSchema } from '@news-research/website-contracts'
@@ -18,9 +19,9 @@ export type ContactFormData = {
 
 export async function submitContactForm(
   formData: ContactFormData
-): Promise<{ success: boolean }> {
+): Promise<void> {
   const { recaptchaToken, ...data } = formData
-  return Effect.runPromise(
+  const result = await Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(recaptchaToken, 'contact_form_submission')
       yield* publish(
@@ -48,4 +49,8 @@ export async function submitContactForm(
       Effect.provide(appLayer)
     )
   )
+
+  if (result.success) {
+    redirect('/contact/success')
+  }
 }
