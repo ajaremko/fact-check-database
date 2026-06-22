@@ -349,7 +349,7 @@ export function Dataset() {
             Structured, normalized, and secure — built for researchers and
             organizations studying our informational environment.
           </HeroSubtitle>
-          <CTAButton href="/dataset/access">Request Access</CTAButton>
+          <CTAButton href="/dataset/request-access">Request Access</CTAButton>
         </Container>
       </HeroSection>
 
@@ -487,7 +487,7 @@ export function Dataset() {
             social science, or related fields. Access is granted on a
             case-by-case basis after a brief review of the intended use.
           </BodyText>
-          <CTAButton href="/dataset/access">Submit a Request</CTAButton>
+          <CTAButton href="/dataset/request-access">Submit a Request</CTAButton>
         </Container>
       </Section>
 

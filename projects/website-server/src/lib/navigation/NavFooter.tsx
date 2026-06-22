@@ -90,7 +90,7 @@ export function NavFooter() {
               </FooterNavLink>
             </li>
             <li>
-              <FooterNavLink href="/dataset/access">
+              <FooterNavLink href="/dataset/request-access">
                 Request Access
               </FooterNavLink>
             </li>

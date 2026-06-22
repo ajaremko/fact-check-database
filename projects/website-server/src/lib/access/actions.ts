@@ -17,9 +17,7 @@ export type AccessFormData = {
   recaptchaToken: string
 }
 
-export async function submitAccessRequest(
-  data: AccessFormData
-): Promise<void> {
+export async function submitAccessRequest(data: AccessFormData): Promise<void> {
   const result = await Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(data.recaptchaToken, 'access_request')
@@ -53,6 +51,6 @@ export async function submitAccessRequest(
   )
 
   if (result.success) {
-    redirect('/dataset/access/success')
+    redirect('/dataset/request-access/success')
   }
 }
