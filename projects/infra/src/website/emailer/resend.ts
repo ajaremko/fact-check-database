@@ -7,7 +7,7 @@ import { secretManagerService } from '../services'
 export const resendApiKey = new gcp.secretmanager.Secret(
   `${tag}-resend-api-key`,
   {
-    secretId: 'resend-api-key',
+    secretId: 'website-resend-api-key',
     labels: websiteLabels,
     replication: {
       auto: {},
