@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import styled from 'styled-components'
+import { PropsWithChildren } from 'react'
 
 import {
   BodyText,
@@ -13,15 +13,8 @@ import {
   SiteFooterMeta,
 } from '@/lib/layout'
 import { NavFooter } from '@/lib/navigation'
-import { C } from '@/lib/theme'
 
-interface Props {
-  sectionLabel: string
-  title: string
-  message: string
-  returnHref: string
-  returnLabel: string
-}
+// --- Page Header ---
 
 const PageHeader = styled.header`
   padding: 5rem 0 3rem;
@@ -34,44 +27,33 @@ const PageTitle = styled.h1`
   margin: 0 0 1rem;
 `
 
+// --- Content ---
+
 const ContentSection = styled.section`
   padding: 4rem 0;
 `
 
-const ReturnLink = styled(Link)`
-  font-size: 0.9375rem;
-  color: ${C.accent};
-  text-decoration: none;
-  font-weight: 500;
+// --- Page ---
 
-  &:hover {
-    text-decoration: underline;
-  }
-`
-
-export function FormSuccessPage({
-  sectionLabel,
-  title,
-  message,
-  returnHref,
-  returnLabel,
-}: Props) {
+export function AccessLayout(props: PropsWithChildren) {
   return (
     <PageWrapper>
       <PageHeader>
         <Container>
-          <SectionLabel>{sectionLabel}</SectionLabel>
-          <PageTitle>{title}</PageTitle>
-          <BodyText>{message}</BodyText>
+          <SectionLabel>Get Access</SectionLabel>
+          <PageTitle>Request Dataset Access</PageTitle>
+          <BodyText>
+            Access is granted on a case-by-case basis to researchers,
+            journalists, and data scientists working on misinformation research
+            or related fields.
+          </BodyText>
         </Container>
       </PageHeader>
 
       <SectionDivider />
 
       <ContentSection>
-        <Container>
-          <ReturnLink href={returnHref}>← {returnLabel}</ReturnLink>
-        </Container>
+        <Container>{props.children}</Container>
       </ContentSection>
 
       <SiteFooter>
