@@ -19,6 +19,7 @@ import {
   Input,
   Label,
   Select,
+  Spinner,
   SubmitButton,
   Textarea,
 } from '@/lib/forms/styled'
@@ -126,6 +127,7 @@ export function ContactForm() {
         <FormError>Something went wrong. Please try again.</FormError>
       )}
       <SubmitButton type="submit" disabled={isSubmitting}>
+        {isSubmitting && <Spinner />}
         {isSubmitting ? 'Sending…' : 'Send Message'}
       </SubmitButton>
     </Form>

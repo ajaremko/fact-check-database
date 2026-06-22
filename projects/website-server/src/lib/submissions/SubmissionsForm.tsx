@@ -15,6 +15,7 @@ import {
   Input,
   Label,
   OptionalTag,
+  Spinner,
   SubmitButton,
   Textarea,
 } from '@/lib/forms/styled'
@@ -135,6 +136,7 @@ export function SubmissionsForm() {
         <FormError>Something went wrong. Please try again.</FormError>
       )}
       <SubmitButton type="submit" disabled={isSubmitting}>
+        {isSubmitting && <Spinner />}
         {isSubmitting ? 'Submitting…' : 'Submit Tip'}
       </SubmitButton>
     </Form>

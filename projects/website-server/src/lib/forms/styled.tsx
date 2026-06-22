@@ -1,6 +1,6 @@
 'use client'
 
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
 import { C } from '@/lib/theme'
 
@@ -137,9 +137,44 @@ export const FormError = styled.div`
   line-height: 1.6;
 `
 
+export const FormSuccess = styled.div`
+  background-color: ${C.bgSurface};
+  border: 1px solid ${C.borderSubtle};
+  border-left: 3px solid #27ae60;
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.5rem;
+  font-size: 0.9375rem;
+  color: #27ae60;
+  line-height: 1.6;
+`
+
+export const FormSuccessHeading = styled.h2`
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  line-height: 1.3;
+`
+
+const spin = keyframes`
+  to { transform: rotate(360deg); }
+`
+
+export const Spinner = styled.span`
+  width: 0.875em;
+  height: 0.875em;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  display: inline-block;
+  animation: ${spin} 0.6s linear infinite;
+  flex-shrink: 0;
+`
+
 export const SubmitButton = styled.button`
   align-self: flex-start;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   background-color: ${C.accent};
   color: ${C.bgBase};
   font-weight: 700;
@@ -159,4 +194,3 @@ export const SubmitButton = styled.button`
     cursor: not-allowed;
   }
 `
-

@@ -14,6 +14,7 @@ import {
   FormGroup,
   Input,
   Label,
+  Spinner,
   SubmitButton,
   Textarea,
 } from '@/lib/forms/styled'
@@ -115,6 +116,7 @@ export function AccessForm() {
         <FormError>Something went wrong. Please try again.</FormError>
       )}
       <SubmitButton type="submit" disabled={isSubmitting}>
+        {isSubmitting && <Spinner />}
         {isSubmitting ? 'Submitting…' : 'Submit Request'}
       </SubmitButton>
     </Form>
