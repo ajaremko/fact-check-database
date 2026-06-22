@@ -7,14 +7,11 @@ import { z } from 'zod'
 
 import { RecaptchaWidget, useGetRecaptchaToken } from '@/lib/forms'
 import {
-  CheckboxGroup,
-  CheckboxRow,
   ErrorText,
   Form,
   FormGroup,
   Input,
   Label,
-  Select,
   SubmitButton,
   SuccessMessage,
   SuccessText,
@@ -28,16 +25,9 @@ import { submitAccessRequest } from './actions'
 
 const accessSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Enter a valid email address'),
+  email: z.email('Enter a valid email address').min(1, 'Email is required'),
   affiliation: z.string().min(1, 'Affiliation is required'),
   projectDescription: z.string().min(1, 'Project description is required'),
-  dataVolume: z.enum(['lt10k', '10k-100k', 'gt100k', 'unsure'], {
-    message: 'Please select an expected volume',
-  }),
-  accessType: z.array(z.string()).min(1, 'Select at least one access type'),
 })
 
 type AccessFormData = z.infer<typeof accessSchema>
@@ -54,7 +44,6 @@ export function AccessForm() {
     formState: { errors, isSubmitting },
   } = useForm<AccessFormData>({
     resolver: zodResolver(accessSchema),
-    defaultValues: { accessType: [] },
   })
 
   const onSubmit = async (data: AccessFormData) => {
@@ -133,49 +122,6 @@ export function AccessForm() {
           <ErrorText>{errors.projectDescription.message}</ErrorText>
         )}
       </FormGroup>
-
-      <FormGroup>
-        <Label htmlFor="dataVolume">Expected Data Volume</Label>
-        <Select
-          id="dataVolume"
-          $hasError={!!errors.dataVolume}
-          defaultValue=""
-          {...register('dataVolume')}
-        >
-          <option value="" disabled>
-            Select an estimate…
-          </option>
-          <option value="lt10k">&lt; 10,000 records</option>
-          <option value="10k-100k">10,000 – 100,000 records</option>
-          <option value="gt100k">100,000+ records</option>
-          <option value="unsure">Unsure</option>
-        </Select>
-        {errors.dataVolume && (
-          <ErrorText>{errors.dataVolume.message}</ErrorText>
-        )}
-      </FormGroup>
-
-      <FormGroup>
-        <Label>Access Type Needed</Label>
-        <CheckboxGroup>
-          <CheckboxRow>
-            <input
-              type="checkbox"
-              value="bigquery"
-              {...register('accessType')}
-            />
-            BigQuery direct access
-          </CheckboxRow>
-          <CheckboxRow>
-            <input type="checkbox" value="gcs" {...register('accessType')} />
-            GCS export
-          </CheckboxRow>
-        </CheckboxGroup>
-        {errors.accessType && (
-          <ErrorText>{errors.accessType.message}</ErrorText>
-        )}
-      </FormGroup>
-
       <RecaptchaWidget />
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Submitting…' : 'Submit Request'}

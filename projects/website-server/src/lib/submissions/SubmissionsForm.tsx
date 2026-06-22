@@ -28,15 +28,10 @@ const submissionsSchema = z.object({
   claim: z.string().min(1, 'This field is required'),
   organization: z.string().min(1, 'Organization is required'),
   url: z
-    .string()
-    .min(1, 'URL is required')
-    .url('Enter a valid URL starting with http:// or https://'),
+    .url('Enter a valid URL starting with http:// or https://')
+    .min(1, 'URL is required'),
   context: z.string().optional(),
-  contactEmail: z
-    .string()
-    .email('Enter a valid email address')
-    .or(z.literal(''))
-    .optional(),
+  email: z.email('Enter a valid email address').or(z.literal('')).optional(),
 })
 
 type SubmissionsFormData = z.infer<typeof submissionsSchema>
@@ -132,20 +127,18 @@ export function SubmissionsForm() {
       </FormGroup>
 
       <FormGroup>
-        <Label htmlFor="contactEmail">
+        <Label htmlFor="email">
           Your email
           <OptionalTag>(optional — for follow-up)</OptionalTag>
         </Label>
         <Input
-          id="contactEmail"
+          id="email"
           type="email"
           placeholder="you@example.com"
-          $hasError={!!errors.contactEmail}
-          {...register('contactEmail')}
+          $hasError={!!errors.email}
+          {...register('email')}
         />
-        {errors.contactEmail && (
-          <ErrorText>{errors.contactEmail.message}</ErrorText>
-        )}
+        {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
       </FormGroup>
 
       <RecaptchaWidget />

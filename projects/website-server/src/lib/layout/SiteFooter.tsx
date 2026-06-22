@@ -15,15 +15,15 @@ export const SiteFooter = styled.footer`
   font-size: 0.85rem;
 `
 
-export const FooterLink = styled.a`
-  color: ${C.textMuted};
-  text-decoration: underline;
-  text-underline-offset: 3px;
+// export const FooterLink = styled.a`
+//   color: ${C.textMuted};
+//   text-decoration: underline;
+//   text-underline-offset: 3px;
 
-  &:hover {
-    color: ${C.textSecondary};
-  }
-`
+//   &:hover {
+//     color: ${C.textSecondary};
+//   }
+// `
 
 export function SiteFooterMeta() {
   return (
@@ -33,9 +33,6 @@ export function SiteFooterMeta() {
       Build #{process.env.NEXT_PUBLIC_BUILD_NUMBER}
       <br />
       <span>Created and maintained by Alfred Young &middot; </span>
-      <FooterLink href="mailto:alfredsyoung@gmail.com">
-        alfredsyoung@gmail.com
-      </FooterLink>
     </Container>
   )
 }

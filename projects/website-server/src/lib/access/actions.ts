@@ -13,8 +13,6 @@ export type AccessFormData = {
   email: string
   affiliation: string
   projectDescription: string
-  dataVolume: string
-  accessType: string[]
   recaptchaToken: string
 }
 

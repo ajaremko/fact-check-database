@@ -13,7 +13,7 @@ export type SubmissionsFormData = {
   organization: string
   url: string
   context?: string
-  contactEmail?: string
+  email?: string
   recaptchaToken: string
 }
 
@@ -33,7 +33,7 @@ export async function submitTip(
               organization: data.organization,
               url: data.url,
               context: data.context,
-              contact_email: data.contactEmail,
+              email: data.email,
               submitted_at: new Date().toISOString(),
             })
           )
