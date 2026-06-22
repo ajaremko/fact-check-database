@@ -5,3 +5,5 @@ Verify ownership of domains
 manually setup domain mappings on cloud run
 
 manually setup up domain for reCaptcha
+
+manually setup resend account, verify domain(s), create api key and add to secret manager

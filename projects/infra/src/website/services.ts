@@ -50,3 +50,11 @@ export const pubsubService = new gcp.projects.Service(
   },
   { provider }
 )
+
+export const secretManagerService = new gcp.projects.Service(
+  `${tag}-secret-manager-service`,
+  {
+    service: 'secretmanager.googleapis.com',
+  },
+  { provider }
+)

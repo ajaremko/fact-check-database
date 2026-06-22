@@ -19,3 +19,8 @@ export const emailerServiceName = emailerService.name
 import { submissionsDeadletterBucket } from './storage'
 
 export const submissionsDeadletterBucketName = submissionsDeadletterBucket.name
+
+import { resendApiKey } from './resend'
+
+export const resendApiKeySecretId = resendApiKey.secretId
+export const resendApiKeyName = resendApiKey.name

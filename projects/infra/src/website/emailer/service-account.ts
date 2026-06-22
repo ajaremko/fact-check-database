@@ -4,11 +4,23 @@ import * as pulumi from '@pulumi/pulumi'
 import { gcpProject, tag } from '../config'
 import { provider } from '../project'
 
+import { resendApiKey } from './resend'
+
 export const emailerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-emailer-sa`,
   {
     accountId: `${tag}-emailer-sa`,
     displayName: 'Emailer Service Account (Website)',
+  },
+  { provider }
+)
+
+export const secretAccessorBinding = new gcp.secretmanager.SecretIamMember(
+  `${tag}-emailer-secret-accessor`,
+  {
+    secretId: resendApiKey.secretId,
+    role: 'roles/secretmanager.secretAccessor',
+    member: pulumi.interpolate`serviceAccount:${emailerServiceAccount.email}`,
   },
   { provider }
 )
@@ -42,3 +54,10 @@ export const monitoringMetricWriter = new gcp.projects.IAMMember(
   },
   { provider }
 )
+
+export const iamMembers = [
+  secretAccessorBinding,
+  cloudtraceAgent,
+  telemetryTracesWriter,
+  monitoringMetricWriter,
+]

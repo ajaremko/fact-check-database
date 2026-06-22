@@ -54,3 +54,24 @@ export const websiteLabels: Record<string, string> = {
  */
 export const algoliaAppId = websiteConfig.require('algoliaAppId')
 export const algoliaSearchKey = websiteConfig.require('algoliaSearchKey')
+
+/**
+ * Resend configuration for the website's email sending functionality. The API key secret
+ * version should correspond to the version of the Resend API key stored in Secret Manager,
+ * and the confirmation template ID should correspond to the email template set up in
+ * Resend for sending confirmation emails to users.
+ */
+export const resendApiKeySecretVersion = websiteConfig.get(
+  'resendApiKeySecretVersion'
+)
+
+if (!resendApiKeySecretVersion) {
+  console.warn(
+    'No Resend API key secret version specified. The emailer service may fail to start without this configuration.'
+  )
+}
+
+export const resendConfirmationTemplateId = websiteConfig.require(
+  'resendConfirmationTemplateId'
+)
+export const adminEmail = websiteConfig.require('adminEmail')
