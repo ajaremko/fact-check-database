@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -9,9 +10,11 @@ import {
   RecaptchaWidget,
   useGetRecaptchaToken,
 } from '@/lib/forms'
+import { isRedirectError } from '@/lib/forms/redirectError'
 import {
   ErrorText,
   Form,
+  FormError,
   FormGroup,
   Input,
   Label,
@@ -38,6 +41,7 @@ type ContactFormData = z.infer<typeof contactSchema>
 // --- Component ---
 
 export function ContactForm() {
+  const [submitError, setSubmitError] = useState(false)
   const getRecaptchaToken = useGetRecaptchaToken('contact_form_submission')
 
   const {
@@ -49,11 +53,15 @@ export function ContactForm() {
   })
 
   const onSubmit = async (data: ContactFormData) => {
+    setSubmitError(false)
     try {
       const recaptchaToken = await getRecaptchaToken()
       await submitContactForm({ ...data, recaptchaToken })
-    } catch (error) {
-      console.error(error)
+      setSubmitError(true)
+    } catch (err) {
+      if (isRedirectError(err)) throw err
+      console.error(err)
+      setSubmitError(true)
     }
   }
 
@@ -114,6 +122,9 @@ export function ContactForm() {
       </FormGroup>
       <RecaptchaWidget />
       <RecaptchaScript />
+      {submitError && (
+        <FormError>Something went wrong. Please try again.</FormError>
+      )}
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Sending…' : 'Send Message'}
       </SubmitButton>

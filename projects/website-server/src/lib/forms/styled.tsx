@@ -126,6 +126,17 @@ export const ErrorText = styled.span`
   color: #c0392b;
 `
 
+export const FormError = styled.div`
+  background-color: ${C.bgSurface};
+  border: 1px solid ${C.borderSubtle};
+  border-left: 3px solid #c0392b;
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.5rem;
+  font-size: 0.9375rem;
+  color: #c0392b;
+  line-height: 1.6;
+`
+
 export const SubmitButton = styled.button`
   align-self: flex-start;
   display: inline-block;

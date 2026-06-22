@@ -1,13 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { RecaptchaWidget, useGetRecaptchaToken } from '@/lib/forms'
+import { isRedirectError } from '@/lib/forms/redirectError'
 import {
   ErrorText,
   Form,
+  FormError,
   FormGroup,
   Input,
   Label,
@@ -31,6 +34,7 @@ type AccessFormData = z.infer<typeof accessSchema>
 // --- Component ---
 
 export function AccessForm() {
+  const [submitError, setSubmitError] = useState(false)
   const getRecaptchaToken = useGetRecaptchaToken('access_request')
 
   const {
@@ -42,11 +46,15 @@ export function AccessForm() {
   })
 
   const onSubmit = async (data: AccessFormData) => {
+    setSubmitError(false)
     try {
       const recaptchaToken = await getRecaptchaToken()
       await submitAccessRequest({ ...data, recaptchaToken })
-    } catch (error) {
-      console.error(error)
+      setSubmitError(true)
+    } catch (err) {
+      if (isRedirectError(err)) throw err
+      console.error(err)
+      setSubmitError(true)
     }
   }
 
@@ -103,6 +111,9 @@ export function AccessForm() {
         )}
       </FormGroup>
       <RecaptchaWidget />
+      {submitError && (
+        <FormError>Something went wrong. Please try again.</FormError>
+      )}
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Submitting…' : 'Submit Request'}
       </SubmitButton>

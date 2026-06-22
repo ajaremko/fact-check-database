@@ -1,13 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { RecaptchaWidget, useGetRecaptchaToken } from '@/lib/forms'
+import { isRedirectError } from '@/lib/forms/redirectError'
 import {
   ErrorText,
   Form,
+  FormError,
   FormGroup,
   Input,
   Label,
@@ -35,6 +38,7 @@ type SubmissionsFormData = z.infer<typeof submissionsSchema>
 // --- Component ---
 
 export function SubmissionsForm() {
+  const [submitError, setSubmitError] = useState(false)
   const getRecaptchaToken = useGetRecaptchaToken('tip_submission')
 
   const {
@@ -44,11 +48,15 @@ export function SubmissionsForm() {
   } = useForm<SubmissionsFormData>({ resolver: zodResolver(submissionsSchema) })
 
   const onSubmit = async (data: SubmissionsFormData) => {
+    setSubmitError(false)
     try {
       const recaptchaToken = await getRecaptchaToken()
       await submitTip({ ...data, recaptchaToken })
-    } catch (error) {
-      console.error(error)
+      setSubmitError(true)
+    } catch (err) {
+      if (isRedirectError(err)) throw err
+      console.error(err)
+      setSubmitError(true)
     }
   }
 
@@ -123,6 +131,9 @@ export function SubmissionsForm() {
       </FormGroup>
 
       <RecaptchaWidget />
+      {submitError && (
+        <FormError>Something went wrong. Please try again.</FormError>
+      )}
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Submitting…' : 'Submit Tip'}
       </SubmitButton>
