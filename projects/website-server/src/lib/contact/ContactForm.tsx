@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -18,9 +18,6 @@ import {
   Label,
   Select,
   SubmitButton,
-  SuccessMessage,
-  SuccessText,
-  SuccessTitle,
   Textarea,
 } from '@/lib/forms/styled'
 
@@ -42,7 +39,7 @@ type ContactFormData = z.infer<typeof contactSchema>
 // --- Component ---
 
 export function ContactForm() {
-  const [submitted, setSubmitted] = useState(false)
+  const router = useRouter()
   const getRecaptchaToken = useGetRecaptchaToken('contact_form_submission')
 
   const {
@@ -57,24 +54,10 @@ export function ContactForm() {
     try {
       const recaptchaToken = await getRecaptchaToken()
       const result = await submitContactForm({ ...data, recaptchaToken })
-      if (result.success) setSubmitted(true)
+      if (result.success) router.push('/contact/success')
     } catch (error) {
       console.error(error)
-      setSubmitted(false)
-      return
     }
-  }
-
-  if (submitted) {
-    return (
-      <SuccessMessage>
-        <SuccessTitle>Message received</SuccessTitle>
-        <SuccessText>
-          Thank you for reaching out. We&apos;ll follow up at the email address
-          you provided.
-        </SuccessText>
-      </SuccessMessage>
-    )
   }
 
   return (

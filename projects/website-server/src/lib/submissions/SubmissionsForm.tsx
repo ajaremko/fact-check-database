@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -14,9 +14,6 @@ import {
   Label,
   OptionalTag,
   SubmitButton,
-  SuccessMessage,
-  SuccessText,
-  SuccessTitle,
   Textarea,
 } from '@/lib/forms/styled'
 
@@ -39,7 +36,7 @@ type SubmissionsFormData = z.infer<typeof submissionsSchema>
 // --- Component ---
 
 export function SubmissionsForm() {
-  const [submitted, setSubmitted] = useState(false)
+  const router = useRouter()
   const getRecaptchaToken = useGetRecaptchaToken('tip_submission')
 
   const {
@@ -52,23 +49,10 @@ export function SubmissionsForm() {
     try {
       const recaptchaToken = await getRecaptchaToken()
       const result = await submitTip({ ...data, recaptchaToken })
-      if (result.success) setSubmitted(true)
+      if (result.success) router.push('/dataset/submissions/success')
     } catch (error) {
       console.error(error)
-      setSubmitted(false)
     }
-  }
-
-  if (submitted) {
-    return (
-      <SuccessMessage>
-        <SuccessTitle>Tip received</SuccessTitle>
-        <SuccessText>
-          Thank you for the submission. We review all tips and will follow up if
-          your source leads to a new integration.
-        </SuccessText>
-      </SuccessMessage>
-    )
   }
 
   return (

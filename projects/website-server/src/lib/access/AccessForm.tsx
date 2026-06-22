@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -13,9 +13,6 @@ import {
   Input,
   Label,
   SubmitButton,
-  SuccessMessage,
-  SuccessText,
-  SuccessTitle,
   Textarea,
 } from '@/lib/forms/styled'
 
@@ -35,7 +32,7 @@ type AccessFormData = z.infer<typeof accessSchema>
 // --- Component ---
 
 export function AccessForm() {
-  const [submitted, setSubmitted] = useState(false)
+  const router = useRouter()
   const getRecaptchaToken = useGetRecaptchaToken('access_request')
 
   const {
@@ -50,24 +47,10 @@ export function AccessForm() {
     try {
       const recaptchaToken = await getRecaptchaToken()
       const result = await submitAccessRequest({ ...data, recaptchaToken })
-      if (result.success) setSubmitted(true)
+      if (result.success) router.push('/dataset/access/success')
     } catch (error) {
       console.error(error)
-      setSubmitted(false)
     }
-  }
-
-  if (submitted) {
-    return (
-      <SuccessMessage>
-        <SuccessTitle>Request received</SuccessTitle>
-        <SuccessText>
-          Thank you for your interest. Access requests are typically reviewed
-          within 5 business days. We&apos;ll follow up at the email address you
-          provided to discuss your project and confirm your access level.
-        </SuccessText>
-      </SuccessMessage>
-    )
   }
 
   return (

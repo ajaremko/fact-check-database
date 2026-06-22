@@ -149,24 +149,3 @@ export const SubmitButton = styled.button`
   }
 `
 
-export const SuccessMessage = styled.div`
-  background-color: ${C.bgSurface};
-  border: 1px solid ${C.borderSubtle};
-  border-left: 3px solid ${C.accent};
-  border-radius: 0 6px 6px 0;
-  padding: 2rem 2.5rem;
-`
-
-export const SuccessTitle = styled.p`
-  font-size: 1rem;
-  font-weight: 700;
-  color: ${C.textPrimary};
-  margin: 0 0 0.5rem;
-`
-
-export const SuccessText = styled.p`
-  font-size: 0.9375rem;
-  color: ${C.textSecondary};
-  line-height: 1.6;
-  margin: 0;
-`
