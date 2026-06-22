@@ -10,10 +10,13 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
-      "path": "../website-contracts/tsconfig.lib.json"
+      "path": "../core-vendor/tsconfig.lib.json"
     },
     {
       "path": "../ingestion-data/tsconfig.lib.json"
+    },
+    {
+      "path": "../website-contracts/tsconfig.lib.json"
     }
   ]
 }

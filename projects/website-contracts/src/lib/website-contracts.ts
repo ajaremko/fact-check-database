@@ -32,8 +32,8 @@ export const TipSubmissionSchema = Schema.Struct({
   claim: Schema.String,
   organization: Schema.String,
   url: Schema.String,
+  email: Schema.optional(Schema.String),
   context: Schema.optional(Schema.String),
-  contact_email: Schema.optional(Schema.String),
   submitted_at: Schema.String,
 })
 
