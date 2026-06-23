@@ -14,6 +14,8 @@ import { getImageUrl } from '../getImageUrl'
 import { algoliaFactChecksIndexName } from '../algolia'
 import { recaptchaApiKeyName } from '../recaptcha'
 
+import { envoyConfig, envoyConfigVersion } from './envoy'
+import { iamMembers, websiteBackendServiceAccount } from './service-account'
 import { formSubmissionTopic } from './topic'
 
 export const websiteService = new gcp.cloudrun.Service(
@@ -28,13 +30,34 @@ export const websiteService = new gcp.cloudrun.Service(
     },
     template: {
       spec: {
+        serviceAccountName: websiteBackendServiceAccount.email,
+        volumes: [
+          {
+            name: 'envoy-config-volume',
+            secret: {
+              secretName: envoyConfig.secretId, // The Secret Manager secret name
+              items: [
+                {
+                  key: envoyConfigVersion.version, // Version to fetch
+                  path: 'envoy.yaml',
+                },
+              ],
+            },
+          },
+        ],
         containers: [
           {
-            image: getImageUrl('website-proxy', dockerTag),
+            image: 'envoyproxy/envoy:v1.30.0',
             name: 'proxy',
             ports: [
               {
                 containerPort: 8080,
+              },
+            ],
+            volumeMounts: [
+              {
+                name: 'envoy-config-volume',
+                mountPath: '/etc/envoy', // The directory where files will appear
               },
             ],
           },
@@ -77,7 +100,7 @@ export const websiteService = new gcp.cloudrun.Service(
     },
   },
   {
-    dependsOn: [cloudRunService],
+    dependsOn: [cloudRunService, ...iamMembers],
     provider,
   }
 )

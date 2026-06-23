@@ -37,7 +37,7 @@ config:
 
   website:project: news-research-dev
   website:region: us-central1
-  website:tag: dev-337
+  website:tag: dev-339
   website:logLevel: debug
   website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
