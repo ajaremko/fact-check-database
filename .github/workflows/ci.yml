@@ -20,6 +20,9 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
+      - name: Derive nx SHAs
+        uses: nrwl/nx-set-shas@v4
+
       - name: Setup Node, cache dependencies
         uses: actions/setup-node@v4
         with:
@@ -31,13 +34,13 @@ jobs:
 
       - run: npm ci
 
-      - run: npx nx run-many -t lint
+      - run: npx nx affected -t lint
 
-      - run: npx nx run-many -t test
+      - run: npx nx affected -t test
 
-      - run: npx nx run-many -t build
+      - run: npx nx affected -t build
 
-      - run: npx nx run-many -t docker:build
+      - run: npx nx affected -t docker:build
 
   release:
     name: Release Dev Images
