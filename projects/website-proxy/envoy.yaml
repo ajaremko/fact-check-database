@@ -1,8 +1,9 @@
 static_resources:
   listeners:
-    - name: listener_0
+    - name: ingress_listener
       address:
         socket_address:
+          # Envoy listens on 0.0.0.0 so Cloud Run can route external traffic to it
           address: 0.0.0.0
           port_value: 8080
       filter_chains:
@@ -11,6 +12,10 @@ static_resources:
               typed_config:
                 '@type': ://googleapis.com
                 stat_prefix: ingress_http
+                access_log:
+                  - name: envoy.access_loggers.stdout
+                    typed_config:
+                      '@type': ://googleapis.com
                 route_config:
                   name: local_route
                   virtual_hosts:
@@ -20,23 +25,27 @@ static_resources:
                         - match:
                             prefix: '/'
                           route:
-                            cluster: website_backend
+                            cluster: app_backend
+                            # Essential for Cloud Run to avoid timeout on long-lived connections
+                            timeout: 0s
                 http_filters:
                   - name: envoy.filters.http.router
                     typed_config:
                       '@type': ://googleapis.com
+
   clusters:
-    - name: website_backend
+    - name: app_backend
       connect_timeout: 0.25s
       type: LOGICAL_DNS
       dns_lookup_family: V4_ONLY
       lb_policy: ROUND_ROBIN
       load_assignment:
-        cluster_name: website_backend
+        cluster_name: app_backend
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
+                      # Routes traffic internally to your app container
                       address: 127.0.0.1
-                      port_value: 3000
+                      port_value: 8081

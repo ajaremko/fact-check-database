@@ -1,3 +1,3 @@
-FROM envoyproxy/envoy:v1.28.0
+FROM envoyproxy/envoy:v1.30.0
 COPY envoy.yaml /etc/envoy/envoy.yaml
 EXPOSE 8080

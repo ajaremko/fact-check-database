@@ -22,18 +22,30 @@ export const websiteService = new gcp.cloudrun.Service(
     location: gcpRegion,
     metadata: {
       namespace: gcpProject,
+      annotations: {
+        'run.googleapis.com/container-dependencies': '{"proxy":["backend"]}',
+      },
     },
     template: {
       spec: {
         containers: [
           {
-            image: getImageUrl('website-server', dockerTag),
+            image: getImageUrl('website-proxy', dockerTag),
+            name: 'proxy',
             ports: [
               {
                 containerPort: 8080,
               },
             ],
+          },
+          {
+            image: getImageUrl('website-server', dockerTag),
+            name: 'backend',
             envs: [
+              {
+                name: 'PORT',
+                value: '3000',
+              },
               {
                 name: 'ALGOLIA_APP_ID',
                 value: algoliaAppId,
@@ -58,23 +70,7 @@ export const websiteService = new gcp.cloudrun.Service(
                 name: 'PUBSUB_TOPIC_NAME',
                 value: formSubmissionTopic.name,
               },
-              {
-                name: 'REDIS_HOST',
-                value: 'localhost',
-              },
-              {
-                name: 'REDIS_PORT',
-                value: '6379',
-              },
-              {
-                name: 'MAX_REQUESTS_PER_SEC',
-                value: '10',
-              },
             ],
-          },
-          {
-            image: 'redis:7.0.11-alpine',
-            name: 'redis',
           },
         ],
       },
