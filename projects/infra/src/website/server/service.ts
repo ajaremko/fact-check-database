@@ -66,6 +66,10 @@ export const websiteService = new gcp.cloudrun.Service(
                 name: 'REDIS_PORT',
                 value: '6379',
               },
+              {
+                name: 'MAX_REQUESTS_PER_SEC',
+                value: '10',
+              },
             ],
           },
           {
