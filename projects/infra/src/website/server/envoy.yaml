@@ -22,6 +22,29 @@ static_resources:
                   - name: envoy.filters.http.cors
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
+                  - name: envoy.filters.http.local_ratelimit
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+                      stat_prefix: http_local_rate_limiter
+                      token_bucket:
+                        max_tokens: 80
+                        tokens_per_fill: 80
+                        fill_interval: 60s
+                      filter_enabled:
+                        runtime_key: local_rate_limit_enabled
+                        default_value:
+                          numerator: 100
+                          denominator: HUNDRED
+                      filter_enforced:
+                        runtime_key: local_rate_limit_enforced
+                        default_value:
+                          numerator: 100
+                          denominator: HUNDRED
+                      response_headers_to_add:
+                        - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                          header:
+                            key: x-local-rate-limit
+                            value: 'true'
                   - name: envoy.filters.http.router
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
