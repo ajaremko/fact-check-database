@@ -28,6 +28,11 @@ export const websiteService = new gcp.cloudrun.Service(
         containers: [
           {
             image: getImageUrl('website-server', dockerTag),
+            ports: [
+              {
+                containerPort: 8080,
+              },
+            ],
             envs: [
               {
                 name: 'ALGOLIA_APP_ID',
@@ -53,7 +58,19 @@ export const websiteService = new gcp.cloudrun.Service(
                 name: 'PUBSUB_TOPIC_NAME',
                 value: formSubmissionTopic.name,
               },
+              {
+                name: 'REDIS_HOST',
+                value: 'localhost',
+              },
+              {
+                name: 'REDIS_PORT',
+                value: '6379',
+              },
             ],
+          },
+          {
+            image: 'redis:7.0.11-alpine',
+            name: 'redis',
           },
         ],
       },

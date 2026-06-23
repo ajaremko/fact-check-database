@@ -19,8 +19,8 @@ function accessEnv(): Env {
   const opts = {
     // Basic options
     storeClient: client,
-    points: 5, // Number of points
-    duration: 5, // Per second(s)
+    points: 1, // Number of points
+    duration: Number(process.env.MAX_REQUESTS_PER_SEC), // Per second(s)
     keyPrefix: 'rlflx', // must be unique for limiters with different purpose
   }
 
