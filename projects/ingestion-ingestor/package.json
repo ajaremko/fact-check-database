@@ -1,9 +1,9 @@
 {
-  "name": "@news-research/ingestion-pipeline-sanitizer",
+  "name": "@news-research/ingestion-ingestor",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "ingestion-pipeline-sanitizer",
+    "name": "ingestion-ingestor",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,23 +13,23 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/ingestion-pipeline-sanitizer/dist",
+          "outputPath": "projects/ingestion-ingestor/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/ingestion-pipeline-sanitizer/src/main.ts",
-          "tsConfig": "projects/ingestion-pipeline-sanitizer/tsconfig.app.json",
+          "main": "projects/ingestion-ingestor/src/main.ts",
+          "tsConfig": "projects/ingestion-ingestor/tsconfig.app.json",
           "assets": [
-            "projects/ingestion-pipeline-sanitizer/src/assets"
-          ]
+            "projects/ingestion-ingestor/src/assets"
+          ],
+          "esbuildConfig": "projects/ingestion-ingestor/esbuild.config.js"
         },
         "configurations": {
           "development": {
-            "esbuildConfig": "projects/ingestion-pipeline-sanitizer/esbuild.config.js"
+            "minify": false
           },
           "production": {
-            "esbuildConfig": "projects/ingestion-pipeline-sanitizer/esbuild.config.js",
             "bundle": true,
             "thirdParty": true,
             "generatePackageJson": false
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-pipeline-sanitizer/dist/package.json",
-          "{workspaceRoot}/projects/ingestion-pipeline-sanitizer/dist/package-lock.json"
+          "{workspaceRoot}/projects/ingestion-ingestor/dist/package.json",
+          "{workspaceRoot}/projects/ingestion-ingestor/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-pipeline-sanitizer/dist/workspace_modules"
+          "{workspaceRoot}/projects/ingestion-ingestor/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "ingestion-pipeline-sanitizer:build",
+          "buildTarget": "ingestion-ingestor:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "ingestion-pipeline-sanitizer:build:development"
+            "buildTarget": "ingestion-ingestor:build:development"
           },
           "production": {
-            "buildTarget": "ingestion-pipeline-sanitizer:build:production"
+            "buildTarget": "ingestion-ingestor:build:production"
           }
         }
       },
@@ -99,7 +99,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "ingestion-pipeline-sanitizer"
+        "repositoryName": "ingestion-ingestor"
       }
     }
   },

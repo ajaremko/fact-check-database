@@ -1,9 +1,9 @@
 {
-  "name": "@news-research/ingestion-pipeline-ingestor",
+  "name": "@news-research/ingestion-extractor",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "ingestion-pipeline-ingestor",
+    "name": "ingestion-extractor",
     "targets": {
       "build": {
         "executor": "@nx/esbuild:esbuild",
@@ -13,17 +13,17 @@
         "defaultConfiguration": "production",
         "options": {
           "platform": "node",
-          "outputPath": "projects/ingestion-pipeline-ingestor/dist",
+          "outputPath": "projects/ingestion-extractor/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "projects/ingestion-pipeline-ingestor/src/main.ts",
-          "tsConfig": "projects/ingestion-pipeline-ingestor/tsconfig.app.json",
+          "main": "projects/ingestion-extractor/src/main.ts",
+          "tsConfig": "projects/ingestion-extractor/tsconfig.app.json",
           "assets": [
-            "projects/ingestion-pipeline-ingestor/src/assets"
+            "projects/ingestion-extractor/src/assets"
           ],
-          "esbuildConfig": "projects/ingestion-pipeline-ingestor/esbuild.config.js"
+          "esbuildConfig": "projects/ingestion-extractor/esbuild.config.js"
         },
         "configurations": {
           "development": {
@@ -43,8 +43,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-pipeline-ingestor/dist/package.json",
-          "{workspaceRoot}/projects/ingestion-pipeline-ingestor/dist/package-lock.json"
+          "{workspaceRoot}/projects/ingestion-extractor/dist/package.json",
+          "{workspaceRoot}/projects/ingestion-extractor/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -56,7 +56,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/projects/ingestion-pipeline-ingestor/dist/workspace_modules"
+          "{workspaceRoot}/projects/ingestion-extractor/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -78,15 +78,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "ingestion-pipeline-ingestor:build",
+          "buildTarget": "ingestion-extractor:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "ingestion-pipeline-ingestor:build:development"
+            "buildTarget": "ingestion-extractor:build:development"
           },
           "production": {
-            "buildTarget": "ingestion-pipeline-ingestor:build:production"
+            "buildTarget": "ingestion-extractor:build:production"
           }
         }
       },
@@ -99,7 +99,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "ingestion-pipeline-ingestor"
+        "repositoryName": "ingestion-extractor"
       }
     }
   },
