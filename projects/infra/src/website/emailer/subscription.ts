@@ -1,8 +1,6 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as gcp from '@pulumi/gcp'
 
-import { createInvokerServiceAccount } from '../../ingestion/shared/createInvokerServiceAccount'
-
 import { websiteLabels, gcpRegion, tag } from '../config'
 import { provider, pubsubServiceAccountEmail } from '../project'
 import { pubsubService } from '../services'
@@ -11,32 +9,22 @@ import { formSubmissionTopic } from '../server/topic'
 import { emailerService } from './service'
 import { submissionsDeadletterBucket } from './storage'
 
-export const {
-  serviceAccount: emailerInvokerServiceAccount,
-  serviceAccountInvoker: emailerInvokerServiceAccountInvoker,
-} = createInvokerServiceAccount({
-  name: 'emailer-push',
-  serviceName: emailerService.name,
-  displayName: 'Ingestion Loader Invoker',
-  type: 'service',
-})
-
-const serviceAccount = new gcp.serviceaccount.Account(
+const emailerInvokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-emailer-push-sa`,
   {
     accountId: `${tag}-emailer-push-sa`,
-    displayName: 'Analysis Loader Invoker',
+    displayName: 'Website Emailer Invoker',
   },
   { provider }
 )
 
-const serviceAccountInvoker = new gcp.cloudrunv2.ServiceIamMember(
+const emailerInvokerServiceAccountInvoker = new gcp.cloudrunv2.ServiceIamMember(
   `${tag}-emailer-push-invoker`,
   {
     name: emailerService.name,
     location: gcpRegion,
     role: 'roles/run.invoker',
-    member: pulumi.interpolate`serviceAccount:${serviceAccount.email}`,
+    member: pulumi.interpolate`serviceAccount:${emailerInvokerServiceAccount.email}`,
   },
   { provider }
 )
@@ -125,7 +113,7 @@ export const submissionSubscription = new gcp.pubsub.Subscription(
       pubsubServiceAccountDeadletterBucketReader,
       pubsubServiceAccountDeadletterObjectCreator,
       pubsubServiceAccountPublisher,
-      serviceAccountInvoker,
+      emailerInvokerServiceAccountInvoker,
     ],
   }
 )
@@ -156,7 +144,7 @@ export const confirmationSubscription = new gcp.pubsub.Subscription(
       pubsubServiceAccountDeadletterBucketReader,
       pubsubServiceAccountDeadletterObjectCreator,
       pubsubServiceAccountPublisher,
-      serviceAccountInvoker,
+      emailerInvokerServiceAccountInvoker,
     ],
   }
 )
