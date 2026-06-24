@@ -53,7 +53,7 @@ export function createArchivedTopic(opts: {
 
   // grant the pubsub service account permissions to publish to the topic
   const canPublish = new gcp.pubsub.TopicIAMMember(
-    `${tag}-pubsub-sa-${opts.name}-publisher`,
+    `${tag}-pubsub-sa-${opts.name}-topic-publisher`,
     {
       topic: topic.name,
       role: 'roles/pubsub.publisher',
@@ -64,7 +64,7 @@ export function createArchivedTopic(opts: {
 
   // create a subscription that writes messages to the event log bucket
   const subscription = new gcp.pubsub.Subscription(
-    `${tag}-${opts.name}-archive-subscription`,
+    `${tag}-${opts.name}-topic-archive-subscription`,
     {
       topic: topic.name,
       messageRetentionDuration: opts.archive.messageRetentionDuration,

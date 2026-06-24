@@ -64,6 +64,15 @@ export const websiteService = new gcp.cloudrun.Service(
           {
             image: getImageUrl('website-server', dockerTag),
             name: 'backend',
+            startupProbe: {
+              initialDelaySeconds: 10,
+              periodSeconds: 5,
+              failureThreshold: 3,
+              timeoutSeconds: 3,
+              httpGet: {
+                path: '/',
+              },
+            },
             envs: [
               {
                 name: 'PORT',

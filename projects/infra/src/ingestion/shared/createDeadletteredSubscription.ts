@@ -33,7 +33,7 @@ export const pubsubServiceAccountDeadletterObjectCreator =
  * and a deadletter topic subscription that writes messages to the
  * deadletter bucket.
  */
-export function createArchivedSubscription(opts: {
+export function createDeadletteredSubscription(opts: {
   name: string
   topic: pulumi.Input<string>
   retryPolicy?: pulumi.Input<gcp.types.input.pubsub.SubscriptionRetryPolicy>
@@ -50,7 +50,7 @@ export function createArchivedSubscription(opts: {
 
   // create the deadletter topic to write failed messages to
   const deadletterTopic = new gcp.pubsub.Topic(
-    `${tag}-${opts.name}-topic`,
+    `${tag}-${opts.name}-deadletter-topic`,
     { labels: ingestionLabels },
     { dependsOn: [pubsubService, ...dependsOn], provider }
   )
@@ -58,7 +58,7 @@ export function createArchivedSubscription(opts: {
   // grant the pubsub service account permissions to publish
   // to the deadletter topic
   const pubsubServiceAccountPublisher = new gcp.pubsub.TopicIAMMember(
-    `${tag}-pubsub-sa-${opts.name}-publisher`,
+    `${tag}-pubsub-sa-${opts.name}-deadletter-topic-publisher`,
     {
       topic: deadletterTopic.name,
       role: 'roles/pubsub.publisher',
@@ -70,7 +70,7 @@ export function createArchivedSubscription(opts: {
   // create the subscription with a deadletter policy that
   // sends failed messages to the deadletter topic
   const subscription = new gcp.pubsub.Subscription(
-    `${tag}-${opts.name}-topic-archive-subscription`,
+    `${tag}-${opts.name}-topic-subscription`,
     {
       topic: opts.topic,
       deadLetterPolicy: {
@@ -87,7 +87,7 @@ export function createArchivedSubscription(opts: {
   // grant the pubsub service account permissions to access
   // the subscription
   const pubsubServiceAccountSubscriber = new gcp.pubsub.SubscriptionIAMMember(
-    `${tag}-pubsub-sa-${opts.name}-deadletter-subscriber`,
+    `${tag}-pubsub-sa-${opts.name}-topic-subscription-subscriber`,
     {
       subscription: subscription.name,
       role: 'roles/pubsub.subscriber',
@@ -100,7 +100,7 @@ export function createArchivedSubscription(opts: {
   // writes messages to the deadletter bucket once
   // all permissions are in place
   const archiveSubscription = new gcp.pubsub.Subscription(
-    `${tag}-${opts.name}-dl-archive-subscription`,
+    `${tag}-${opts.name}-deadletter-topic-archive-subscription`,
     {
       topic: deadletterTopic.name,
       messageRetentionDuration: opts.archive.messageRetentionDuration,

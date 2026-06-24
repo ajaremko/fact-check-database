@@ -1,5 +1,5 @@
 export * from './createArchivedTopic'
-export * from './createArchivedSubscription'
+export * from './createDeadletteredSubscription'
 export * from './createInvokerServiceAccount'
 export * from './createJobScheduler'
 export * from './getImageUrl'

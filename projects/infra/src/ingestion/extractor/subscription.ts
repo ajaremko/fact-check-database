@@ -1,13 +1,13 @@
-import { createArchivedSubscription } from '../shared'
+import { createDeadletteredSubscription } from '../shared'
 import { sanitizerTopicName } from '../sanitizer'
 
 export const {
   subscription: extractorSubscription,
   deadletterTopic: extractorDeadletterTopic,
   archiveSubscription: extractorDeadletterTopicArchiveSubscription,
-} = createArchivedSubscription({
+} = createDeadletteredSubscription({
   topic: sanitizerTopicName,
-  name: 'extractor-deadletter',
+  name: 'extractor',
   archive: {
     messageRetentionDuration: '604800s', // 7 days
     cloudStorageConfig: {

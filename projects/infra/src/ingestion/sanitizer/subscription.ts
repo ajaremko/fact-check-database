@@ -2,7 +2,7 @@ import * as pulumi from '@pulumi/pulumi'
 import * as gcp from '@pulumi/gcp'
 
 import {
-  createArchivedSubscription,
+  createDeadletteredSubscription,
   createInvokerServiceAccount,
 } from '../shared'
 import { ingestorTopicName } from '../ingestor'
@@ -36,8 +36,8 @@ export const {
   subscription: sanitizerSubscription,
   deadletterTopic: sanitizerDeadletterTopic,
   archiveSubscription: sanitizerDeadletterTopicArchiveSubscription,
-} = createArchivedSubscription({
-  name: 'sanitizer-deadletter',
+} = createDeadletteredSubscription({
+  name: 'sanitizer',
   topic: ingestorTopicName,
   archive: {
     messageRetentionDuration: '604800s', // 7 days
