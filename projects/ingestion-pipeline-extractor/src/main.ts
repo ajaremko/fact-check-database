@@ -180,8 +180,7 @@ const job = Layer.effect(
     const startedAt = yield* Clock.currentTimeMillis
     const runId = yield* Node.generateUUID()
     const concurrency = yield* Config.withDefault(MaxConcurrencyConfig, 10)
-    const datasetId = yield* Config.string('BIGQUERY_DATASET')
-    return { runId, concurrency, startedAt, datasetId }
+    return { runId, concurrency, startedAt }
   })
 )
 
@@ -195,7 +194,6 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
         'job.runId': ctx.runId,
         'job.concurrency': ctx.concurrency,
         'job.startedAt': ctx.startedAt,
-        'job.datasetId': ctx.datasetId,
       })
     )
   })

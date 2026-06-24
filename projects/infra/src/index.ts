@@ -8,6 +8,8 @@ export {
   artifactRegistryBaseUri,
   artifactRegistryLocation,
   artifactRegistryRepositoryId,
+  stagingStorageBucketName,
+  stagingStorageTopicName,
 } from './core'
 
 // export * from './analysis'

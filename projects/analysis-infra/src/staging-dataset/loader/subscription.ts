@@ -13,7 +13,7 @@ import { pubsubService } from '../../services'
 import { loaderService } from './service'
 import { deadletterBucket } from './storage'
 
-const loaderInvokerServiceAccount = new gcp.serviceaccount.Account(
+export const loaderInvokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-loader-push-sa`,
   {
     accountId: `${tag}-loader-push-sa`,

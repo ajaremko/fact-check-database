@@ -12,8 +12,7 @@ export const StagingPathSchema = Schema.transformOrFail(
   Schema.String,
   Schema.Struct({
     version: Schema.Literal(1),
-    tableId: Schema.String,
-    datasetId: Schema.String,
+    type: Schema.Literal('fact_checks'),
     ext: Schema.String,
     date: NumberFromFormattedDate('yyyy-MM-dd'),
     extractionId: Schema.String,
@@ -23,8 +22,7 @@ export const StagingPathSchema = Schema.transformOrFail(
     encode: (input) => {
       const output = [
         `v${input.version}`,
-        `datasetId=${input.datasetId}`,
-        `tableId=${input.tableId}`,
+        `type=${input.type}`,
         `date=${input.date}`,
         `${input.extractionId}.${input.ext}`,
       ].join('/')

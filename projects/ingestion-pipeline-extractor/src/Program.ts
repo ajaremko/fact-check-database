@@ -16,7 +16,6 @@ interface JobContext {
   runId: string
   concurrency: number
   startedAt: number
-  datasetId: string
 }
 
 export const JobContext = Context.GenericTag<JobContext>('JobContext')
@@ -102,8 +101,7 @@ export const Program = Effect.gen(function* () {
     runId: job.runId,
     rows,
     timestamp: job.startedAt,
-    datasetId: job.datasetId,
-    tableId: 'fact_checks',
+    type: 'fact_checks',
   })
   const data = yield* encodeOutgoing(outgoing)
   yield* publish(data)

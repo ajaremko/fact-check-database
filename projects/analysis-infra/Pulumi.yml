@@ -1,4 +1,4 @@
-name: news-research-research
+name: news-research-analysis
 runtime: nodejs
-description: Research infrastructure for News Research project
+description: Analysis infrastructure for News Research project
 main: src/index.ts

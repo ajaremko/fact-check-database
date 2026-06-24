@@ -1,9 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { stagingStorageBucketName } from '../../../core'
-
-import { gcpProject, tag } from '../../config'
+import { gcpProject, stagingStorageBucketName, tag } from '../../config'
 import { provider } from '../../project'
 
 import { stagingDataset } from '../bigquery'

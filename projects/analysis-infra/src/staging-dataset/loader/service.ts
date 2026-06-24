@@ -1,14 +1,18 @@
 import * as gcp from '@pulumi/gcp'
 
-import { stagingStorageBucketName } from '../../../core'
-
-import { gcpProject } from '../../config'
+import {
+  gcpRegion,
+  gcpProject,
+  dockerTag,
+  stagingStorageBucketName,
+  tag,
+  logLevel,
+} from '../../config'
 import { provider } from '../../project'
 import { cloudRunService } from '../../services'
+import { getImageUrl } from '../../getImageUrl'
 
-import { gcpRegion, dockerTag, tag, logLevel } from '../../config'
-import { archiveBucketName } from '../../../ingestion/archive'
-import { getImageUrl } from '../../../ingestion/shared/getImageUrl'
+// import { archiveBucketName } from '../../../ingestion/archive'
 
 import {
   loaderServiceAccount,
@@ -28,10 +32,10 @@ export const loaderService = new gcp.cloudrunv2.Service(
         {
           image: getImageUrl('analysis-bigquery-loader', dockerTag),
           envs: [
-            {
-              name: 'STORAGE_BUCKET_NAME',
-              value: archiveBucketName,
-            },
+            // {
+            //   name: 'STORAGE_BUCKET_NAME',
+            //   value: archiveBucketName,
+            // },
             {
               name: 'STAGING_BUCKET_NAME',
               value: stagingStorageBucketName,

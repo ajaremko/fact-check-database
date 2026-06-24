@@ -1,6 +1,8 @@
 config:
-  research:project: news-research-dev
-  research:region: us-central1
-  research:coreStackName: alfredsyoung/news-research
-  research:tableDeletionProtection: false
-  research:retainTablesOnDelete: false
+  analysis:project: news-research-dev
+  analysis:region: us-central1
+  analysis:coreStackName: alfredsyoung/news-research
+  analysis:tableDeletionProtection: false
+  analysis:retainTablesOnDelete: false
+  analysis:tag: dev-294
+  analysis:logLevel: debug

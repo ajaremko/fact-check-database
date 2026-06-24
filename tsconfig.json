@@ -47,6 +47,9 @@
     },
     {
       "path": "./projects/website-infra"
+    },
+    {
+      "path": "./projects/analysis-infra"
     }
   ]
 }

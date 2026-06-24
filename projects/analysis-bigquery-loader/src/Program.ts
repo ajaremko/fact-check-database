@@ -19,14 +19,16 @@ const decodeIncoming = pipe(
 function processMessage(message: QueueMessage) {
   return Effect.gen(function* () {
     const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
+    const datasetId = yield* Config.string('BIGQUERY_DATASET')
+    const tableId = yield* Config.string('BIGQUERY_TABLE')
     const incoming = yield* decodeIncoming(message.data)
     yield* loadBatch({
       projectId,
       pointer: incoming.pointer,
       sourceFormat: incoming.source_format,
       table: {
-        dataset: incoming.table.dataset_id,
-        table: incoming.table.table_id,
+        dataset: datasetId,
+        table: tableId,
       },
       schema: incoming.schema,
     })

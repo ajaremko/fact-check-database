@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 
 import { stagingStorageBucketName, stagingStorageTopicName } from '../../core'
-import { stagingDatasetId } from '../../analysis'
+import { stagingDatasetId } from '../../_analysis'
 
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { assetsBucketName } from '../assets'

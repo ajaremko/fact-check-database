@@ -15,6 +15,17 @@ const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
 export const stagingStorageTopicName = coreStackRef.getOutput(
   'stagingStorageTopicName'
 )
+export const stagingStorageBucketName = coreStackRef.getOutput(
+  'stagingStorageBucketName'
+)
+
+// Retrieve exported artifact registry details
+export const artifactRegistryLocation = coreStackRef.getOutput(
+  'artifactRegistryLocation'
+)
+export const artifactRegistryRepositoryId = coreStackRef.getOutput(
+  'artifactRegistryRepositoryId'
+)
 
 /**
  * Whether to enable deletion protection on BigQuery tables.

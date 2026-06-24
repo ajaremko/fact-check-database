@@ -15,10 +15,7 @@ export const ExtractionBatchReadySchema = Schema.Struct({
   extraction_batch_id: Schema.String,
   extracted_at: Schema.Number,
   pointer: FilePointerSchema,
-  table: Schema.Struct({
-    table_id: Schema.String,
-    dataset_id: Schema.String,
-  }),
+  type: Schema.Literal('fact_checks'),
   source_format: Schema.Union(
     Schema.Literal('NEWLINE_DELIMITED_JSON'),
     Schema.String

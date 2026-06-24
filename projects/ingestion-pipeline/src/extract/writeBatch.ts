@@ -28,14 +28,12 @@ export const writeBatch = Effect.fn('writeBatch')(
     runId: string
     rows: object[]
     timestamp: number
-    tableId: string
-    datasetId: string
+    type: 'fact_checks'
   }) {
     const path = yield* encodeExtractionBatchPath({
       batchId: input.runId,
       extractedAt: input.timestamp,
-      tableId: input.tableId,
-      datasetId: input.datasetId,
+      type: input.type,
     })
     const data = yield* encodeNdjson(input.rows)
     const pointer = yield* writeFile({
@@ -47,10 +45,7 @@ export const writeBatch = Effect.fn('writeBatch')(
     const batch = ExtractionBatchSchema.make({
       batchId: input.runId,
       extractedAt: input.timestamp,
-      table: {
-        tableId: input.tableId,
-        datasetId: input.datasetId,
-      },
+      type: input.type,
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       pointer,
     })
@@ -70,13 +65,11 @@ export const writeBatch = Effect.fn('writeBatch')(
   (effect, input) =>
     effect.pipe(
       Effect.annotateLogs({
-        'batch.tableId': input.tableId,
-        'batch.datasetId': input.datasetId,
+        'batch.type': input.type,
         'batch.rows': input.rows.length,
       }),
       Effect.tagMetrics({
-        table_dataset_id: input.datasetId,
-        table_table_id: input.tableId,
+        batch_type: input.type,
       })
     )
 )

@@ -22,10 +22,7 @@ export const ExtractionBatchSchema = Schema.Struct({
   batchId: Schema.String,
   extractedAt: Schema.Number,
   pointer: FilePointerSchema,
-  table: Schema.Struct({
-    tableId: Schema.String,
-    datasetId: Schema.String,
-  }),
+  type: Schema.Literal('fact_checks'),
   sourceFormat: Schema.Union(
     Schema.Literal('NEWLINE_DELIMITED_JSON'),
     Schema.String
@@ -37,8 +34,7 @@ export const ExtractionBatchPathSchema = Schema.transformOrFail(
   Schema.Struct({
     batchId: Schema.String,
     extractedAt: Schema.Number,
-    tableId: Schema.String,
-    datasetId: Schema.String,
+    type: Schema.Literal('fact_checks'),
   }),
   {
     strict: true,
@@ -53,8 +49,7 @@ export const ExtractionBatchPathSchema = Schema.transformOrFail(
     encode: (input) => {
       return ParseResult.succeed({
         version: 1,
-        datasetId: input.datasetId,
-        tableId: input.tableId,
+        type: input.type,
         ext: 'batch.ndjson',
         date: input.extractedAt,
         extractionId: input.batchId,
@@ -85,10 +80,7 @@ export const ExtractionBatchEventSchema = Schema.transformOrFail(
             extracted_at: input.extractedAt,
             source_format: input.sourceFormat,
             pointer: input.pointer,
-            table: {
-              table_id: input.table.tableId,
-              dataset_id: input.table.datasetId,
-            },
+            type: input.type,
             schema: FactChecksTableSchema,
           })
         )
