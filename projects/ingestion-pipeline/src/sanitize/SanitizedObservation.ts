@@ -1,7 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 import { DeepMutable, Mutable } from 'effect/Types'
 
-import { omitNullKeys, omitNullableKeys } from '@news-research/ingestion-data'
+import { omitNullKeys, omitNullableKeys } from '@news-research/core-data'
 
 import {
   ArchivePathSchema,

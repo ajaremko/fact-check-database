@@ -1,8 +1,8 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import * as Node from '@news-research/ingestion-data/Node'
-import * as Csv from '@news-research/ingestion-data/Csv'
+import * as Node from '@news-research/core-data/Node'
+import * as Csv from '@news-research/core-data/Csv'
 
 import { SourceList, SourceSchema } from './SourceList'
 

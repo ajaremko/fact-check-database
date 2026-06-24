@@ -1,6 +1,6 @@
 import { Array, Context, Effect, Option, Schema, pipe } from 'effect'
 
-import * as Node from '@news-research/ingestion-data/Node'
+import * as Node from '@news-research/core-data/Node'
 import {
   extractFactChecks,
   writeBatch,

@@ -1,7 +1,7 @@
 import { Array, Effect, Metric, pipe, Schema } from 'effect'
 
-import * as Node from '@news-research/ingestion-data/Node'
-import * as Yaml from '@news-research/ingestion-data/Yaml'
+import * as Node from '@news-research/core-data/Node'
+import * as Yaml from '@news-research/core-data/Yaml'
 
 import { FilePointer, readFile } from '../shared'
 

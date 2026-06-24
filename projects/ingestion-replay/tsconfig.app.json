@@ -10,7 +10,7 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
-      "path": "../ingestion-data/tsconfig.lib.json"
+      "path": "../core-data/tsconfig.lib.json"
     },
     {
       "path": "../core-vendor/tsconfig.lib.json"

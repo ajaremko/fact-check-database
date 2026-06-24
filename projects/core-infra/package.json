@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/infra",
+  "name": "@news-research/core-infra",
   "version": "0.0.1",
   "private": true,
   "nx": {

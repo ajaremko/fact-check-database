@@ -4,12 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/infra"
-    },
-    {
-      "path": "./projects/ingestion-data"
-    },
-    {
       "path": "./projects/ingestion-messaging"
     },
     {
@@ -50,6 +44,15 @@
     },
     {
       "path": "./projects/analysis-infra"
+    },
+    {
+      "path": "./projects/ingestion-infra"
+    },
+    {
+      "path": "./projects/core-infra"
+    },
+    {
+      "path": "./projects/core-data"
     }
   ]
 }

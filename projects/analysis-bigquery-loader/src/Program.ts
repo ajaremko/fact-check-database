@@ -6,7 +6,7 @@ import {
   takeMessage,
 } from '@news-research/ingestion-messaging'
 import { ExtractionBatchReadySchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
-import * as Node from '@news-research/ingestion-data/Node'
+import * as Node from '@news-research/core-data/Node'
 import { loadBatch } from '@news-research/ingestion-pipeline/load'
 
 const decodeIncoming = pipe(

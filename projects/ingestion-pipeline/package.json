@@ -124,7 +124,7 @@
     "@effect/platform": "^0.96.0",
     "date-fns": "^4.1.0",
     "http-status-codes": "^2.3.0",
-    "@news-research/ingestion-data": "0.0.1",
+    "@news-research/core-data": "0.0.1",
     "@news-research/core-vendor": "0.0.1"
   },
   "nx": {

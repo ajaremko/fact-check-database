@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-data",
+  "name": "@news-research/core-data",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -53,6 +53,6 @@
     "yaml": "^2.8.2"
   },
   "nx": {
-    "name": "ingestion-data"
+    "name": "core-data"
   }
 }

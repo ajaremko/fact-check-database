@@ -21,7 +21,7 @@ import * as StorageClient from '@news-research/core-vendor/cloud-storage/Storage
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 import * as PubsubTopic from '@news-research/core-vendor/cloud-pubsub/PubsubTopic'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
-import * as Node from '@news-research/ingestion-data/Node'
+import * as Node from '@news-research/core-data/Node'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 

@@ -17,7 +17,7 @@ import * as PubsubSubscriberClient from '@news-research/core-vendor/cloud-pubsub
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
-import * as Node from '@news-research/ingestion-data/Node'
+import * as Node from '@news-research/core-data/Node'
 import * as CloudStorageStorageWriter from '@news-research/ingestion-pipeline/shared/adapters/CloudStorageStorageWriter'
 import * as CloudStorageStorageReader from '@news-research/ingestion-pipeline/shared/adapters/CloudStorageStorageReader'
 import * as FileSystemStorageWriter from '@news-research/ingestion-pipeline/shared/adapters/FileSystemStorageWriter'

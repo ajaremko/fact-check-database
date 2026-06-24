@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import { omitNullKeys } from '@news-research/ingestion-data'
+import { omitNullKeys } from '@news-research/core-data'
 
 import { SourceSchema } from '../shared'
 

@@ -1,7 +1,7 @@
-# ingestion-data
+# core-data
 
 This library was generated with [Nx](https://nx.dev).
 
 ## Building
 
-Run `nx build ingestion-data` to build the library.
+Run `nx build core-data` to build the library.

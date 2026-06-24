@@ -1,9 +1,9 @@
 import { Effect, Schema, Metric, flow, pipe } from 'effect'
 import { getReasonPhrase } from 'http-status-codes'
 
-import * as Node from '@news-research/ingestion-data/Node'
-import * as Yaml from '@news-research/ingestion-data/Yaml'
-import { omitNullKeys } from '@news-research/ingestion-data'
+import * as Node from '@news-research/core-data/Node'
+import * as Yaml from '@news-research/core-data/Yaml'
+import { omitNullKeys } from '@news-research/core-data'
 
 import {
   SourceEncoded,

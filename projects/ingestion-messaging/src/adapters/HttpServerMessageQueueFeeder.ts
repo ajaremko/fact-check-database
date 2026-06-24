@@ -10,7 +10,7 @@ import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import * as Node from '@news-research/ingestion-data/Node'
+import * as Node from '@news-research/core-data/Node'
 
 import { MessageQueue } from '../MessageQueue'
 
