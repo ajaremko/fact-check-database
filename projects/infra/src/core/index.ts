@@ -25,6 +25,9 @@ export const gcsArchiveKeyName = gcsArchiveKey.name
 import { artifactRegistry } from './artifact-registry'
 
 export const artifactRegistryUri = artifactRegistry.registryUri
+export const artifactRegistryLocation = artifactRegistry.location
+export const artifactRegistryRepositoryId = artifactRegistry.repositoryId
+
 /**
  * Base URI for the shared Artifact Registry.
  * Example: us-central1-docker.pkg.dev

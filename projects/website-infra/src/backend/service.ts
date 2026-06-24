@@ -19,13 +19,13 @@ import { iamMembers, websiteBackendServiceAccount } from './service-account'
 import { formSubmissionTopic } from './topic'
 
 export const websiteService = new gcp.cloudrun.Service(
-  `${tag}-website-service`,
+  `${tag}-backend-service`,
   {
     location: gcpRegion,
     metadata: {
       namespace: gcpProject,
       annotations: {
-        'run.googleapis.com/container-dependencies': '{"proxy":["backend"]}',
+        // 'run.googleapis.com/container-dependencies': '{"proxy":["backend"]}',
       },
     },
     template: {
@@ -115,7 +115,7 @@ export const websiteService = new gcp.cloudrun.Service(
 )
 
 export const publicAccess = new gcp.cloudrunv2.ServiceIamMember(
-  `${tag}-website-service-public-access`,
+  `${tag}-backend-service-public-access`,
   {
     name: websiteService.name,
     location: gcpRegion,

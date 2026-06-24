@@ -1,11 +1,12 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import * as algolia from '@pulumi/algolia'
 
-import { stackName } from '../../config'
+import { stackName } from '../config'
 import { tag } from '../config'
 
 export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
   name: `${tag}_fact_checks_${stackName}`,
+  deletionProtection: false,
   attributesConfig: {
     searchableAttributes: [
       'source_name',

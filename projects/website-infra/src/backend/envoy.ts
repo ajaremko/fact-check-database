@@ -19,7 +19,7 @@ export const envoyConfig = new gcp.secretmanager.Secret(
 )
 
 const configFile = local.getFileOutput({
-  filename: 'website/server/envoy.yaml',
+  filename: 'backend/envoy.yaml',
 })
 
 export const envoyConfigVersion = new gcp.secretmanager.SecretVersion(

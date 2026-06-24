@@ -1,12 +1,25 @@
 import * as pulumi from '@pulumi/pulumi'
 
-import { labels } from '../config'
+export const stackName = pulumi.getStack()
+export const stackSuffix = stackName.toUpperCase()
 
 export const tag = 'website'
 
 const websiteConfig = new pulumi.Config('website')
 export const gcpProject = websiteConfig.require('project')
 export const gcpRegion = websiteConfig.require('region')
+
+const coreStackName = websiteConfig.require('coreStackName')
+// Format: <organization>/<project>/<stack>
+const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
+
+// Retrieve exported artifact registry details
+export const artifactRegistryLocation = coreStackRef.getOutput(
+  'artifactRegistryLocation'
+)
+export const artifactRegistryRepositoryId = coreStackRef.getOutput(
+  'artifactRegistryRepositoryId'
+)
 
 /**
  * The Docker image tag to use for all website components.
@@ -43,7 +56,7 @@ if (!mainDomain) {
 export const verifiedOwnerEmail = websiteConfig.require('verifiedOwner')
 
 export const websiteLabels: Record<string, string> = {
-  ...labels,
+  env: stackName,
   tag,
 }
 

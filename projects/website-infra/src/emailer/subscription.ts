@@ -4,12 +4,12 @@ import * as gcp from '@pulumi/gcp'
 import { websiteLabels, gcpRegion, tag } from '../config'
 import { provider, pubsubServiceAccountEmail } from '../project'
 import { pubsubService } from '../services'
-import { formSubmissionTopic } from '../server/topic'
+import { formSubmissionTopic } from '../backend/topic'
 
 import { emailerService } from './service'
 import { submissionsDeadletterBucket } from './storage'
 
-const emailerInvokerServiceAccount = new gcp.serviceaccount.Account(
+export const emailerInvokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-emailer-push-sa`,
   {
     accountId: `${tag}-emailer-push-sa`,

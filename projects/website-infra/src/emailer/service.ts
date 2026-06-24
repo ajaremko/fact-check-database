@@ -13,7 +13,7 @@ import {
   resendConfirmationTemplateId,
   tag,
 } from '../config'
-import { getImageUrl } from '../../ingestion/shared/getImageUrl'
+import { getImageUrl } from '../getImageUrl'
 
 import { emailerServiceAccount, iamMembers } from './service-account'
 import { resendApiKey } from './resend'

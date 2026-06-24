@@ -1,7 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { artifactRegistry } from '../core'
+import {
+  artifactRegistryLocation,
+  artifactRegistryRepositoryId,
+} from './config'
 
 import { provider } from './project'
 
@@ -14,8 +17,8 @@ export function getImageUrl(app: string, tag?: string) {
 
   const image = gcp.artifactregistry.getDockerImageOutput(
     {
-      location: artifactRegistry.location,
-      repositoryId: artifactRegistry.repositoryId,
+      location: artifactRegistryLocation,
+      repositoryId: artifactRegistryRepositoryId,
       imageName: `${app}:${tag}`,
     },
     { provider }

@@ -45,6 +45,7 @@ config:
     - thefactcheckdatabase.com
   website:algoliaAppId: 3R16A1FPTN
   website:algoliaSearchKey: bbbba8ff55a28c1d6d013282837a1bde
+  website:algoliaDeletionProtection: false
   website:resendConfirmationTemplateId: ae8e79a2-8a86-455d-a4a1-13f6597fb8b6
   website:resendApiKeySecretVersion: 1
   website:adminEmail: alfredsyoung@gmail.com
