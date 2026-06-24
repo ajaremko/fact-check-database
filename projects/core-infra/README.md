@@ -1,17 +1,17 @@
 # Platform Infrastructure
 
-This project provisions all platform infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
+This project provisions all platform core-infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
 
 ## Project Structure
 
 ```
-apps/infra/
+apps/core-infra/
 ├── src/
 │   ├── index.ts              # Main entrypoint, composes modules
 │   ├── config.ts             # Shared configuration
-│   ├── modules/              # Capability-specific infrastructure (future)
+│   ├── modules/              # Capability-specific core-infrastructure (future)
 │   │   └── <module>/         # e.g. ingestion, persistence, analysis
-│   └── ...                   # Core infrastructure components
+│   └── ...                   # Core core-infrastructure components
 ├── docs/                     # Infrastructure documentation
 ├── Pulumi.yml                # Project definition
 ├── Pulumi.dev.yml            # Development stack config
@@ -25,8 +25,8 @@ This structure simplifies deployment ordering and state management compared to p
 Infrastructure is deployed via Pulumi through Nx:
 
 ```bash
-nx preview infra   # Preview changes
-nx deploy infra    # Apply changes
+nx preview core-infra   # Preview changes
+nx deploy core-infra    # Apply changes
 ```
 
 The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
@@ -80,7 +80,7 @@ The [runbook](./docs/runbook.md) documents operational procedures for subsequent
 
 ## Adding New Infrastructure Modules
 
-As the platform evolves, capability-specific infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
+As the platform evolves, capability-specific core-infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
 
 - Encapsulates resources for a specific capability
 - Imports shared primitives (keys, topics, buckets) from the main project
