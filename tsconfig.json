@@ -4,9 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/ingestion-messaging"
-    },
-    {
       "path": "./projects/ingestion-pipeline"
     },
     {
@@ -53,6 +50,9 @@
     },
     {
       "path": "./projects/core-data"
+    },
+    {
+      "path": "./projects/core-messaging"
     }
   ]
 }

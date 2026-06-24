@@ -49,10 +49,10 @@
   ],
   "references": [
     {
-      "path": "../ingestion-messaging"
+      "path": "../core-vendor"
     },
     {
-      "path": "../core-vendor"
+      "path": "../core-messaging"
     },
     {
       "path": "../website-contracts"
