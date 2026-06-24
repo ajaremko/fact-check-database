@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-messaging",
+  "name": "@news-research/core-messaging",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -64,6 +64,6 @@
     "@news-research/core-data": "0.0.1"
   },
   "nx": {
-    "name": "ingestion-messaging"
+    "name": "core-messaging"
   }
 }
