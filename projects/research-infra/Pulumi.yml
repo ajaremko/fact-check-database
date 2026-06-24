@@ -1,0 +1,4 @@
+name: news-research-research
+runtime: nodejs
+description: Research infrastructure for News Research project
+main: src/index.ts
