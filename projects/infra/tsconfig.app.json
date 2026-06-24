@@ -5,9 +5,6 @@
   "references": [
     {
       "path": "../ingestion-pipeline/tsconfig.lib.json"
-    },
-    {
-      "path": "sdks/algolia"
     }
   ]
 }

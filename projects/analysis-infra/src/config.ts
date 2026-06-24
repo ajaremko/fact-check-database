@@ -1,12 +1,20 @@
 import * as pulumi from '@pulumi/pulumi'
 
-import { labels } from '../config'
+export const stackName = pulumi.getStack()
+export const stackSuffix = stackName.toUpperCase()
 
 export const tag = 'analysis'
 
 const analysisConfig = new pulumi.Config('analysis')
 export const gcpProject = analysisConfig.require('project')
 export const gcpRegion = analysisConfig.require('region')
+
+const coreStackName = analysisConfig.require('coreStackName')
+// Format: <organization>/<project>/<stack>
+const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
+export const stagingStorageTopicName = coreStackRef.getOutput(
+  'stagingStorageTopicName'
+)
 
 /**
  * Whether to enable deletion protection on BigQuery tables.
@@ -102,6 +110,6 @@ if (!retainStorageOnDelete) {
 }
 
 export const analysisLabels: Record<string, string> = {
-  ...labels,
+  env: stackName,
   tag,
 }

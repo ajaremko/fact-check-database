@@ -4,9 +4,6 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
-      "path": "../infra/tsconfig.app.json"
-    },
-    {
       "path": "sdks/algolia"
     }
   ]
