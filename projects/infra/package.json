@@ -79,8 +79,5 @@
     "@pulumi/gcp": "^9.20.0",
     "@pulumi/github": "^6.12.2",
     "@pulumi/pulumi": "^3.231.0"
-  },
-  "dependencies": {
-    "@pulumi/algolia": "file:sdks/algolia"
   }
 }
