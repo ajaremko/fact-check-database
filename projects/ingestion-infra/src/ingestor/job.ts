@@ -1,58 +1,58 @@
 import * as gcp from '@pulumi/gcp'
 
-import { stagingStorageBucketName, stagingStorageTopicName } from '../../core'
-
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
-import { assetsBucketName } from '../assets'
+import { assetsBucketName, ingestionSourcesObjectName } from '../assets'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
+import { archiveBucketName } from '../archive'
 import { getImageUrl } from '../shared'
 
-import {
-  extractorServiceAccount,
-  extractorRawArchiveBucketViewer,
-  extractorSanitizerTopicSubscriber,
-  stagingStorageBucketCreator,
-  stagingTopicPublisher,
-} from './service-account'
-import { extractorSubscription } from './subscription'
+import { ingestorTopic } from './topic'
 
-export const extractorJob = new gcp.cloudrunv2.Job(
-  `${tag}-pipeline-extractor-job`,
+import {
+  ingestorServiceAccount,
+  ingestorAssetBucketViewer,
+  ingestorRawArchiveBucketCreator,
+  ingestorTopicPublisher,
+  cloudtraceAgent,
+} from './service-account'
+
+export const ingestorJob = new gcp.cloudrunv2.Job(
+  `${tag}-pipeline-ingestor-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
     template: {
       template: {
         maxRetries: 0,
-        serviceAccount: extractorServiceAccount.email,
+        serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
-            image: getImageUrl('ingestion-pipeline-extractor', dockerTag),
+            image: getImageUrl('ingestion-pipeline-ingestor', dockerTag),
             envs: [
               {
-                name: 'ASSETS_BUCKET_NAME',
+                name: 'TARGET_LIST_BUCKET_NAME',
                 value: assetsBucketName,
               },
               {
-                name: 'PUBSUB_SUBSCRIPTION_ID',
-                value: extractorSubscription.id,
+                name: 'TARGET_LIST_URI',
+                value: ingestionSourcesObjectName,
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
-                value: stagingStorageTopicName,
+                value: ingestorTopic.name,
               },
               {
                 name: 'STORAGE_BUCKET_NAME',
-                value: stagingStorageBucketName,
-              },
-              {
-                name: 'MESSAGE_BATCH_SIZE',
-                value: '1000',
+                value: archiveBucketName,
               },
               {
                 name: 'MAX_CONCURRENCY',
                 value: '10',
+              },
+              {
+                name: 'SUCCESS_THRESHOLD',
+                value: '0.8',
               },
               {
                 name: 'LOGGING_LEVEL',
@@ -66,10 +66,6 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 name: 'OTEL_METRIC_EXPORT_INTERVAL',
                 value: String(10_000),
               },
-              {
-                name: 'OTEL_SHUTDOWN_TIMEOUT',
-                value: String(60_000),
-              },
             ],
           },
         ],
@@ -79,10 +75,10 @@ export const extractorJob = new gcp.cloudrunv2.Job(
   {
     dependsOn: [
       cloudRunService,
-      extractorRawArchiveBucketViewer,
-      stagingStorageBucketCreator,
-      extractorSanitizerTopicSubscriber,
-      stagingTopicPublisher,
+      ingestorAssetBucketViewer,
+      ingestorRawArchiveBucketCreator,
+      ingestorTopicPublisher,
+      cloudtraceAgent,
     ],
     provider,
   }

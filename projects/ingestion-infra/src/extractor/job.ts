@@ -1,8 +1,13 @@
 import * as gcp from '@pulumi/gcp'
 
-import { stagingStorageBucketName, stagingStorageTopicName } from '../../core'
-
-import { gcpRegion, dockerTag, tag, logLevel } from '../config'
+import {
+  gcpRegion,
+  dockerTag,
+  stagingStorageBucketName,
+  stagingStorageTopicName,
+  tag,
+  logLevel,
+} from '../config'
 import { assetsBucketName } from '../assets'
 import { cloudRunService } from '../services'
 import { provider } from '../project'

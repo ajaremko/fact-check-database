@@ -1,0 +1,4 @@
+name: news-research-ingestion
+runtime: nodejs
+description: Ingestion infrastructure for News Research project
+main: src/index.ts

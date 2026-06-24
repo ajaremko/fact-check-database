@@ -2,6 +2,7 @@ export {
   coreGcpProject,
   coreGcpRegion,
   gcsArchiveKeyName,
+  gcsArchiveKeyId,
   githubActionIdentityPoolProviderName,
   githubActionServiceAccountEmail,
   artifactRegistryUri,
