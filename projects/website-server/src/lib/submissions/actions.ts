@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { Effect } from 'effect'
 
 import { TipSubmissionSchema } from '@news-research/website-contracts'
-import { publish } from '@news-research/ingestion-messaging'
+import { publish } from '@news-research/core-messaging'
 
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
 import { appLayer } from '@/lib/pubsub/app-layer'
@@ -18,9 +18,7 @@ export type SubmissionsFormData = {
   recaptchaToken: string
 }
 
-export async function submitTip(
-  data: SubmissionsFormData
-): Promise<void> {
+export async function submitTip(data: SubmissionsFormData): Promise<void> {
   const result = await Effect.runPromise(
     Effect.gen(function* () {
       yield* verifyRecaptcha(data.recaptchaToken, 'tip_submission')

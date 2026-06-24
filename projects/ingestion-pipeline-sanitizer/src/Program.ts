@@ -5,7 +5,7 @@ import {
   takeError,
   QueueMessage,
   publish,
-} from '@news-research/ingestion-messaging'
+} from '@news-research/core-messaging'
 import { ObservationIngestedSchema } from '@news-research/ingestion-pipeline/ingest/contracts/v1'
 import * as Node from '@news-research/core-data/Node'
 import { sanitizeObservation } from '@news-research/ingestion-pipeline/sanitize'

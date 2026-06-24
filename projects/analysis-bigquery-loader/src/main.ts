@@ -7,8 +7,8 @@ import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentele
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
-import * as HttpServerMessageQueueFeeder from '@news-research/ingestion-messaging/adapters/HttpServerMessageQueueFeeder'
-import * as InMemoryMessageQueue from '@news-research/ingestion-messaging/adapters/InMemoryMessageQueue'
+import * as HttpServerMessageQueueFeeder from '@news-research/core-messaging/adapters/HttpServerMessageQueueFeeder'
+import * as InMemoryMessageQueue from '@news-research/core-messaging/adapters/InMemoryMessageQueue'
 import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'

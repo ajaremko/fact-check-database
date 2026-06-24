@@ -1,11 +1,14 @@
 import { Config, Effect, Layer, Logger, LogLevel } from 'effect'
 import { NodeFileSystem } from '@effect/platform-node'
 
-import * as CloudPubsubPublisher from '@news-research/ingestion-messaging/adapters/CloudPubsubPublisher'
-import * as FileSystemPublisher from '@news-research/ingestion-messaging/adapters/FileSystemPublisher'
+import * as CloudPubsubPublisher from '@news-research/core-messaging/adapters/CloudPubsubPublisher'
+import * as FileSystemPublisher from '@news-research/core-messaging/adapters/FileSystemPublisher'
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 
-const MessagingModeConfig = Config.literal('gcp', 'filesystem')('MESSAGING_MODE')
+const MessagingModeConfig = Config.literal(
+  'gcp',
+  'filesystem'
+)('MESSAGING_MODE')
 const LoggingModeConfig = Config.literal('gcp', 'console')('LOGGING_MODE')
 const LogLevelConfig = Config.logLevel('LOGGING_LEVEL')
 
