@@ -1,16 +1,17 @@
 import { Config, Effect, Schema, pipe } from 'effect'
 
+import * as Node from '@news-research/core-data/Node'
 import {
   QueueMessage,
   takeError,
   takeMessage,
 } from '@news-research/core-messaging'
-import { ExtractionBatchReadySchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
-import * as Node from '@news-research/core-data/Node'
-import { loadBatch } from '@news-research/ingestion-pipeline/load'
+
+import { GCSNotificationSchema } from './GCSNotification'
+import { loadBatch } from './loadBatch'
 
 const decodeIncoming = pipe(
-  ExtractionBatchReadySchema,
+  GCSNotificationSchema,
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.decode
@@ -24,13 +25,16 @@ function processMessage(message: QueueMessage) {
     const incoming = yield* decodeIncoming(message.data)
     yield* loadBatch({
       projectId,
-      pointer: incoming.pointer,
-      sourceFormat: incoming.source_format,
+      pointer: {
+        bucket: incoming.bucket,
+        object: incoming.name,
+      },
+      sourceFormat: incoming.contentType,
       table: {
         dataset: datasetId,
         table: tableId,
       },
-      schema: incoming.schema,
+      schema: incoming.metadata,
     })
     yield* message.ack
   }).pipe(

@@ -7,15 +7,6 @@
       "path": "./projects/ingestion-pipeline"
     },
     {
-      "path": "./projects/ingestion-pipeline-extractor"
-    },
-    {
-      "path": "./projects/ingestion-pipeline-sanitizer"
-    },
-    {
-      "path": "./projects/ingestion-pipeline-ingestor"
-    },
-    {
       "path": "./projects/ingestion-replay"
     },
     {
@@ -23,9 +14,6 @@
     },
     {
       "path": "./projects/core-vendor"
-    },
-    {
-      "path": "./projects/analysis-bigquery-loader"
     },
     {
       "path": "./projects/website-emailer"
@@ -53,6 +41,18 @@
     },
     {
       "path": "./projects/core-messaging"
+    },
+    {
+      "path": "./projects/ingestion-extractor"
+    },
+    {
+      "path": "./projects/ingestion-sanitizer"
+    },
+    {
+      "path": "./projects/ingestion-ingestor"
+    },
+    {
+      "path": "./projects/analysis-loader"
     }
   ]
 }

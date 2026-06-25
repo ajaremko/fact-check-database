@@ -10,6 +10,7 @@ import {
   ExtractionBatchEventSchema,
   ExtractionBatchPathSchema,
 } from './ExtractionBatch'
+import { FactChecksTableSchema } from './contracts/v1'
 
 const encodeNdjson = pipe(
   Schema.Object,
@@ -40,6 +41,7 @@ export const writeBatch = Effect.fn('writeBatch')(
       path,
       data,
       contentType: 'application/x-ndjson',
+      meta: FactChecksTableSchema,
     })
 
     const batch = ExtractionBatchSchema.make({
