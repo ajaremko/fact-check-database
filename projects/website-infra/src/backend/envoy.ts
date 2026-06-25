@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as local from '@pulumi/local'
 
-import { tag, websiteLabels } from '../config'
+import { stackName, tag, websiteLabels } from '../config'
 import { provider } from '../project'
 import { secretManagerService } from '../services'
 
@@ -19,7 +19,7 @@ export const envoyConfig = new gcp.secretmanager.Secret(
 )
 
 const configFile = local.getFileOutput({
-  filename: 'backend/envoy.yaml',
+  filename: `backend/envoy.${stackName}.yaml`,
 })
 
 export const envoyConfigVersion = new gcp.secretmanager.SecretVersion(
