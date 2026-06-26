@@ -30,7 +30,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
       serviceAccount: loaderServiceAccount.email,
       containers: [
         {
-          image: getImageUrl('analysis-bigquery-loader', dockerTag),
+          image: getImageUrl('analysis-loader', dockerTag),
           envs: [
             // {
             //   name: 'STORAGE_BUCKET_NAME',
