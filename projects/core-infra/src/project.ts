@@ -7,4 +7,7 @@ export const provider = new gcp.Provider(tag, {
   region: gcpRegion,
 })
 
-export const gcsAccount = gcp.storage.getProjectServiceAccountOutput({})
+export const gcsAccount = gcp.storage.getProjectServiceAccountOutput(
+  {},
+  { provider }
+)
