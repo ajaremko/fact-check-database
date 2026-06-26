@@ -10,11 +10,11 @@ import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/o
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as CloudPubsubMessageBatch from '@news-research/core-messaging/adapters/CloudPubsubMessageBatch'
-import * as CloudPubsubPublisher from '@news-research/core-messaging/adapters/CloudPubsubPublisher'
-import * as FileSystemPublisher from '@news-research/core-messaging/adapters/FileSystemPublisher'
+// import * as CloudPubsubPublisher from '@news-research/core-messaging/adapters/CloudPubsubPublisher'
+// import * as FileSystemPublisher from '@news-research/core-messaging/adapters/FileSystemPublisher'
 import * as FileSystemMessageBatch from '@news-research/core-messaging/adapters/FileSystemMessageBatch'
 import * as PubsubSubscriberClient from '@news-research/core-vendor/cloud-pubsub/PubsubSubscriberClient'
-import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
+// import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import * as Node from '@news-research/core-data/Node'
@@ -60,15 +60,15 @@ const messaging = Layer.unwrapEffect(
       yield* Effect.logDebug('Using filesystem messaging')
       return Layer.empty.pipe(
         Layer.merge(FileSystemMessageBatch.layer),
-        Layer.merge(FileSystemPublisher.layer),
+        // Layer.merge(FileSystemPublisher.layer),
         Layer.provide(NodeFileSystem.layer)
       )
     }
     return Layer.empty.pipe(
       Layer.merge(CloudPubsubMessageBatch.layer),
-      Layer.merge(CloudPubsubPublisher.layer),
-      Layer.provide(PubsubSubscriberClient.layer()),
-      Layer.provide(PubsubClient.layer())
+      // Layer.merge(CloudPubsubPublisher.layer),
+      Layer.provide(PubsubSubscriberClient.layer())
+      // Layer.provide(PubsubClient.layer())
     )
   }).pipe(
     // necessary to merge layer error types correctly

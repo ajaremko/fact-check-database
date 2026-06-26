@@ -97,12 +97,13 @@ export const Program = Effect.gen(function* () {
   )
 
   // publish message
-  const outgoing = yield* writeBatch({
+  // const outgoing =
+  yield* writeBatch({
     runId: job.runId,
     rows,
     timestamp: job.startedAt,
     type: 'fact_checks',
   })
-  const data = yield* encodeOutgoing(outgoing)
-  yield* publish(data)
+  // const data = yield* encodeOutgoing(outgoing)
+  // yield* publish(data)
 })
