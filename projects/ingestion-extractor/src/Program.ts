@@ -8,7 +8,7 @@ import {
 import {
   MessageBatch,
   BatchMessage,
-  publish,
+  // publish,
 } from '@news-research/core-messaging'
 import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
 
@@ -27,12 +27,12 @@ const decodeIncoming = pipe(
   Schema.decode
 )
 
-const encodeOutgoing = pipe(
-  Schema.Object,
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.encode
-)
+// const encodeOutgoing = pipe(
+//   Schema.Object,
+//   Node.parseJson(),
+//   Node.parseBuffer({ encoding: 'utf-8' }),
+//   Schema.encode
+// )
 
 function processMessage(message: BatchMessage) {
   let effect = Effect.gen(function* () {
