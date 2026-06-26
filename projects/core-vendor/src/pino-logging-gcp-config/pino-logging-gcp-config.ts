@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Config, Effect } from 'effect'
 import { type LoggerOptions, levels } from 'pino'
 
