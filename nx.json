@@ -136,7 +136,7 @@
         }
       },
       "ingestion": {
-        "projects": ["ingestion-pipeline-*", "ingestion-replay"],
+        "projects": ["ingestion-*"],
         "projectsRelationship": "independent",
         "docker": {
           "registryUrl": "${DOCKER_REGISTRY}",
