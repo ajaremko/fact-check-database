@@ -5,7 +5,7 @@ import { tag } from '../config'
 
 export const sanitizerRecordsCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-sanitizer-records-counter`,
+    `${tag}-sanitizer-records-counter`,
     {
       type: 'workload.googleapis.com/pipeline/content_records_sanitized',
       description:

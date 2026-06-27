@@ -5,7 +5,7 @@ import { tag } from '../../config'
 
 export const loaderBatchesLoadedCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-loader-batches-loaded`,
+    `${tag}-loader-batches-loaded`,
     {
       type: `workload.googleapis.com/${tag}/loaded_batches`,
       description: 'Number of batches loaded into BigQuery',

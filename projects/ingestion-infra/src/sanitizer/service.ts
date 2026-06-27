@@ -16,7 +16,7 @@ import {
 import { sanitizerTopic } from './topic'
 
 export const sanitizerService = new gcp.cloudrunv2.Service(
-  `${tag}-pipeline-sanitizer-service`,
+  `${tag}-sanitizer-service`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -24,7 +24,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
       serviceAccount: sanitizerServiceAccount.email,
       containers: [
         {
-          image: getImageUrl('ingestion-pipeline-sanitizer', dockerTag),
+          image: getImageUrl('ingestion-sanitizer', dockerTag),
           envs: [
             {
               name: 'ASSETS_BUCKET_NAME',

@@ -23,7 +23,7 @@ import {
 import { extractorSubscription } from './subscription'
 
 export const extractorJob = new gcp.cloudrunv2.Job(
-  `${tag}-pipeline-extractor-job`,
+  `${tag}-extractor-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -33,7 +33,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
         serviceAccount: extractorServiceAccount.email,
         containers: [
           {
-            image: getImageUrl('ingestion-pipeline-extractor', dockerTag),
+            image: getImageUrl('ingestion-extractor', dockerTag),
             envs: [
               {
                 name: 'ASSETS_BUCKET_NAME',

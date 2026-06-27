@@ -32,7 +32,7 @@ const logger = Layer.unwrapEffect(
   Effect.gen(function* () {
     const mode = yield* Config.withDefault(LoggingModeConfig, 'console')
     const level = yield* Config.withDefault(LogLevelConfig, LogLevel.Info)
-    // GCP pino logger can be wired here following ingestion-pipeline-ingestor pattern
+    // GCP pino logger can be wired here following ingestion-ingestor pattern
     return Layer.mergeAll(
       Logger.minimumLogLevel(level),
       mode === 'console' ? Logger.pretty : Logger.json

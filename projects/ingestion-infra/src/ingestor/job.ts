@@ -18,7 +18,7 @@ import {
 } from './service-account'
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
-  `${tag}-pipeline-ingestor-job`,
+  `${tag}-ingestor-job`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -28,7 +28,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
         serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
-            image: getImageUrl('ingestion-pipeline-ingestor', dockerTag),
+            image: getImageUrl('ingestion-ingestor', dockerTag),
             envs: [
               {
                 name: 'TARGET_LIST_BUCKET_NAME',

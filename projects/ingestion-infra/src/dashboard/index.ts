@@ -12,11 +12,11 @@ import { messagingTiles } from './messaging'
 import { storageTiles } from './storage'
 
 // Section heights: header (4) + content
-const OVERVIEW_HEIGHT = 16          // 4 + charts (12)
+const OVERVIEW_HEIGHT = 16 // 4 + charts (12)
 const CONTENT_INGESTION_HEIGHT = 30 // 4 + tabs (26)
-const DATA_EXTRACTION_HEIGHT = 30   // 4 + tabs (26)
-const SYSTEM_LOGS_HEIGHT = 30       // 4 + logs panel (26)
-const MESSAGING_HEIGHT = 30         // 4 + unacked (13) + publish requests (13)
+const DATA_EXTRACTION_HEIGHT = 30 // 4 + tabs (26)
+const SYSTEM_LOGS_HEIGHT = 30 // 4 + logs panel (26)
+const MESSAGING_HEIGHT = 30 // 4 + unacked (13) + publish requests (13)
 
 const OVERVIEW_Y = 0
 const CONTENT_INGESTION_Y = OVERVIEW_Y + OVERVIEW_HEIGHT
@@ -47,7 +47,7 @@ const pipelineDashboardJson = pulumi
   .apply((d) => JSON.stringify(d))
 
 export const pipelineDashboard = new gcp.monitoring.Dashboard(
-  `${tag}-pipeline-dashboard`,
+  `${tag}-dashboard`,
   { dashboardJson: pipelineDashboardJson },
   { provider }
 )

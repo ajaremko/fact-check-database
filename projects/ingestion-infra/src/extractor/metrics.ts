@@ -5,7 +5,7 @@ import { tag } from '../config'
 
 export const extractorFactCheckRowCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-extractor-fact-check-rows`,
+    `${tag}-extractor-fact-check-rows`,
     {
       type: 'workload.googleapis.com/pipeline/extracted_fact_check_rows',
       description: 'Number of fact check rows extracted by the extractor',
@@ -36,7 +36,7 @@ export const extractorFactCheckRowCounterMetric =
 
 export const extractorBatchesWrittenCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-extractor-batches-written`,
+    `${tag}-extractor-batches-written`,
     {
       type: 'workload.googleapis.com/pipeline/extracted_batches_written',
       description: 'Number of batches written by the extractor',

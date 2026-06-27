@@ -22,6 +22,7 @@ function processMessage(message: QueueMessage) {
     const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
     const datasetId = yield* Config.string('BIGQUERY_DATASET')
     const tableId = yield* Config.string('BIGQUERY_TABLE')
+    console.log(message.data.toString('utf-8'))
     const incoming = yield* decodeIncoming(message.data)
     yield* loadBatch({
       projectId,

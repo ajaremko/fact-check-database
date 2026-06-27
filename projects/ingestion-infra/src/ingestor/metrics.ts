@@ -5,7 +5,7 @@ import { tag } from '../config'
 
 export const ingestorContentRequestResultsCounterMetric =
   new gcp.monitoring.MetricDescriptor(
-    `${tag}-pipeline-ingestor-content-request-results-counter`,
+    `${tag}-ingestor-content-request-results-counter`,
     {
       type: 'workload.googleapis.com/pipeline/content_request_results',
       description:

@@ -65,7 +65,7 @@ const archivedRequestsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
-                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-ingestor'
               GROUP BY Name, \`Source ID\`, Collection, URL, Status, Code, \`Content Type\`
               ORDER BY Date, Time, Name, Code
               LIMIT 1000`,
@@ -101,7 +101,7 @@ const failedRequestsWidget = {
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'WARNING'
                 AND JSON_VALUE(json_payload, '$.event') = 'fetch_failure'
-                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-ingestor'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-ingestor'
               GROUP BY Name, \`Source ID\`, Collection, URL, Error
               ORDER BY Name`,
           },
@@ -136,7 +136,7 @@ const sanitizerDecisionsWidget = {
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'INFO'
                 AND JSON_VALUE(json_payload, '$.event') = 'record_sanitized'
-                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-pipeline-sanitizer'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-sanitizer'
               GROUP BY Name, \`Source ID\`, Collection, URL, Decision
               ORDER BY Name, Decision`,
           },
@@ -169,7 +169,8 @@ export function contentIngestionTiles(x: number, y: number): object[] {
         title: 'Content Ingestion',
         sectionHeader: {
           dividerBelow: true,
-          subtitle: 'HTTP fetch results, sanitizer decisions, and source activity',
+          subtitle:
+            'HTTP fetch results, sanitizer decisions, and source activity',
         },
       },
     },
