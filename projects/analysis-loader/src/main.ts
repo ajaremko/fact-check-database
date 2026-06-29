@@ -7,14 +7,12 @@ import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentele
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
-import * as HttpServerMessageQueueFeeder from '@news-research/core-messaging/adapters/HttpServerMessageQueueFeeder'
-import * as InMemoryMessageQueue from '@news-research/core-messaging/adapters/InMemoryMessageQueue'
 import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
-import { Program } from './Program'
+import { Program, ServiceContext } from './Program'
 
 const LoggingLevelConfig = Config.logLevel('LOGGING_LEVEL')
 
@@ -81,23 +79,21 @@ const otel = Layer.unwrapEffect(
   })
 )
 
-function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
-  return Effect.gen(function* () {
-    yield* Effect.logDebug('Using http server message queue feeder')
-    const server = HttpServerMessageQueueFeeder.layer(
-      '/extractor-topic-messages'
-    )
-    return yield* Effect.all([self, Layer.launch(server)], {
-      concurrency: 'unbounded',
-    })
+const service = Layer.effect(
+  ServiceContext,
+  Effect.gen(function* () {
+    const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
+    const datasetId = yield* Config.string('BIGQUERY_DATASET')
+    const tableId = yield* Config.string('BIGQUERY_TABLE')
+    return { projectId, datasetId, tableId }
   })
-}
+)
 
-withMessageQueueFeeder(Program).pipe(
+Program.pipe(
   Effect.provide(BigQueryClient.layer()),
-  Effect.provide(InMemoryMessageQueue.layer),
   Effect.provide(otel),
   Effect.provide(logger),
+  Effect.provide(service),
   withMinimumLogLevel,
   NodeRuntime.runMain({ disablePrettyLogger: true })
 )
