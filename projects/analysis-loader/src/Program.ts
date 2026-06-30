@@ -53,6 +53,7 @@ const loadJobs = HttpRouter.post(
     // is ready to be loaded into bigquery
     const { message } = yield* decodeMessage(body)
     const data = Buffer.from(message.data, 'utf-8')
+    console.log(data.toString('utf-8'))
     const notification = yield* decodeGCSNotification(data)
     // start a batch load job and await its completion
     yield* loadBatch({

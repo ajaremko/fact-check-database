@@ -82,7 +82,7 @@ const otel = Layer.unwrapEffect(
 const service = Layer.effect(
   ServiceContext,
   Effect.gen(function* () {
-    const projectId = yield* Config.string('GOOGLE_CLOUD_PROJECT')
+    const projectId = yield* Config.string('PROJECT_ID')
     const datasetId = yield* Config.string('BIGQUERY_DATASET')
     const tableId = yield* Config.string('BIGQUERY_TABLE')
     return { projectId, datasetId, tableId }
