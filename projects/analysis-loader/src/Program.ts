@@ -102,4 +102,7 @@ const server = Layer.unwrapEffect(
   })
 )
 
-export const Program = Layer.launch(Layer.provide(app, server))
+export const Program = Layer.provide(app, server).pipe(
+  Layer.launch,
+  Effect.tapErrorCause(Effect.logError)
+)
