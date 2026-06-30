@@ -12,7 +12,7 @@ import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
 
-import { GCSNotificationSchema } from './GCSNotification'
+import { StorageObjectDataSchema } from './StorageObjectData'
 import { loadBatch } from './loadBatch'
 
 export interface ServiceContext {
@@ -35,11 +35,11 @@ const decodeMessage = Schema.decodeUnknown(
   })
 )
 
-const decodeGCSNotification = GCSNotificationSchema.pipe(
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.decode
-)
+const decodeGCSNotification = Schema.required(
+  StorageObjectDataSchema.pipe(
+    Schema.pick('bucket', 'name', 'metadata', 'contentType')
+  )
+).pipe(Node.parseJson(), Node.parseBuffer({ encoding: 'utf-8' }), Schema.decode)
 
 const loadJobs = HttpRouter.post(
   '/load-jobs',
@@ -55,6 +55,17 @@ const loadJobs = HttpRouter.post(
     const data = Buffer.from(message.data, 'utf-8')
     console.log(data.toString('utf-8'))
     const notification = yield* decodeGCSNotification(data)
+    if (notification.contentType !== 'application/x-ndjson') {
+      yield* Effect.logWarning(
+        `GCS notification skipped because content type is not application/x-ndjson: ${notification.contentType}`
+      )
+      return yield* HttpServerResponse.json(
+        {
+          message: 'Batch load job submitted',
+        },
+        { status: StatusCodes.CREATED }
+      )
+    }
     // start a batch load job and await its completion
     yield* loadBatch({
       projectId: ctx.projectId,
@@ -62,7 +73,7 @@ const loadJobs = HttpRouter.post(
         bucket: notification.bucket,
         object: notification.name,
       },
-      sourceFormat: notification.contentType,
+      sourceFormat: 'NEWLINE_DELIMITED_JSON',
       table: {
         dataset: ctx.datasetId,
         table: ctx.tableId,
