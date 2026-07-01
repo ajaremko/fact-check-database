@@ -1,4 +1,4 @@
-name: news-research-research
+name: fact-check-database-research
 runtime: nodejs
-description: Research infrastructure for News Research project
+description: Research infrastructure for Fact Check Database project
 main: src/index.ts

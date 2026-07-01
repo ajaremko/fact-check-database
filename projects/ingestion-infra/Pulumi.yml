@@ -1,4 +1,4 @@
-name: news-research-ingestion
+name: fact-check-database-ingestion
 runtime: nodejs
-description: Ingestion infrastructure for News Research project
+description: Ingestion infrastructure for Fact Check Database project
 main: src/index.ts

@@ -1,6 +1,6 @@
-name: news-research-website
+name: fact-check-database-website
 runtime: nodejs
-description: Website infrastructure for News Research project
+description: Website infrastructure for Fact Check Database project
 main: src/index.ts
 config:
   algolia:appId:

@@ -1,4 +1,4 @@
-name: news-research-analysis
+name: fact-check-database-analysis
 runtime: nodejs
-description: Analysis infrastructure for News Research project
+description: Analysis infrastructure for Fact Check Database project
 main: src/index.ts
