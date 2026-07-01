@@ -5,7 +5,7 @@ import { SourceSchema } from './Source'
 // Using STUCT instead of RECORD or X instead of INTEGER causes pulumi to redeploy table
 // on every update. Add this to list of problems/mitigations in documentation about
 // BigQuery and Pulumi.
-export const FactChecksTableSchema = {
+export const FactChecksTableDBSchema = {
   fields: [
     { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },

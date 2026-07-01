@@ -4,7 +4,7 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
-      "path": "../ingestion-pipeline/tsconfig.lib.json"
+      "path": "../core-contracts/tsconfig.lib.json"
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { ParseResult, Schema } from 'effect'
 
 import {
-  FactChecksTableSchema,
+  FactChecksTableDBSchema,
   StagingPathSchema,
 } from '@news-research/core-contracts'
 import { omitNullKeys } from '@news-research/core-data'
@@ -81,7 +81,7 @@ export const ExtractionBatchEventSchema = Schema.transformOrFail(
             source_format: input.sourceFormat,
             pointer: input.pointer,
             type: input.type,
-            schema: FactChecksTableSchema,
+            schema: FactChecksTableDBSchema,
           })
         )
       )

@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { FactChecksTableSchema } from '@news-research/ingestion-pipeline/extract/contracts/v1'
+import { FactChecksTableDBSchema } from '@news-research/core-contracts'
 
 import {
   tableDeletionProtection,
@@ -29,7 +29,7 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
     deletionProtection: tableDeletionProtection,
     // note: changes in FactChecksTableSchema fields may not be detected by pulumi
     // needs further investigation
-    schema: JSON.stringify(FactChecksTableSchema.fields),
+    schema: JSON.stringify(FactChecksTableDBSchema.fields),
     timePartitioning: {
       type: 'DAY',
       field: 'extracted_at',

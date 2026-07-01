@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { FactChecksTableSchema } from '@news-research/core-contracts'
+import { FactChecksTableDBSchema } from '@news-research/core-contracts'
 
 import * as InMemoryStorageWriter from '../shared/adapters/InmemoryStorageWriter'
 
@@ -75,7 +75,7 @@ describe('writeBatch', () => {
           extracted_at: 1_000,
           source_format: 'NEWLINE_DELIMITED_JSON',
           type: 'fact_checks',
-          schema: FactChecksTableSchema,
+          schema: FactChecksTableDBSchema,
           pointer: {
             bucket: 'inmemory',
             object: 'v1/type=fact_checks/date=1970-01-01/run-001.batch.ndjson',

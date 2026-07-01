@@ -2,7 +2,7 @@ import { Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Ndjson from '@news-research/core-data/Ndjson'
 import * as Node from '@news-research/core-data/Node'
-import { FactChecksTableSchema } from '@news-research/core-contracts'
+import { FactChecksTableDBSchema } from '@news-research/core-contracts'
 
 import { writeFile } from '../shared'
 
@@ -41,7 +41,7 @@ export const writeBatch = Effect.fn('writeBatch')(
       path,
       data,
       contentType: 'application/x-ndjson',
-      meta: FactChecksTableSchema,
+      meta: FactChecksTableDBSchema,
     })
 
     const batch = ExtractionBatchSchema.make({

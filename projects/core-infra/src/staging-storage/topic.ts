@@ -1,10 +1,13 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
+import { stagingPathPrefix } from '@news-research/core-contracts'
+
 import { coreLabels, tag } from '../config'
 import { provider, gcsAccount } from '../project'
 import { pubsubService } from '../services'
 
+import { factChecksTableDBSchemaObjectUri } from './schema'
 import { stagingStorageBucket } from './storage'
 
 export const stagingStorageTopic = new gcp.pubsub.Topic(
@@ -29,8 +32,11 @@ export const stagingStorageUploadNofication = new gcp.storage.Notification(
     bucket: stagingStorageBucket.name,
     payloadFormat: 'JSON_API_V1',
     topic: stagingStorageTopic.id,
-    eventTypes: ['OBJECT_FINALIZE', 'OBJECT_METADATA_UPDATE'],
-    customAttributes: {},
+    eventTypes: ['OBJECT_FINALIZE'],
+    objectNamePrefix: stagingPathPrefix('fact_checks', 1),
+    customAttributes: {
+      schema_uri: factChecksTableDBSchemaObjectUri,
+    },
   },
   {
     provider,

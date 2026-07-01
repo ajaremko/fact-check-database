@@ -11,7 +11,10 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
-import { StorageObjectDataSchema } from '@news-research/core-contracts'
+import {
+  StorageObjectDataSchema,
+  PushMessage,
+} from '@news-research/core-contracts'
 
 // import { StorageObjectDataSchema } from './StorageObjectData'
 import { loadBatch } from './loadBatch'
@@ -25,16 +28,7 @@ export interface ServiceContext {
 export const ServiceContext =
   Context.GenericTag<ServiceContext>('ServiceContext')
 
-const decodeMessage = Schema.decodeUnknown(
-  Schema.Struct({
-    message: Schema.Struct({
-      messageId: Schema.String,
-      data: Schema.String.pipe(
-        Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' })
-      ),
-    }),
-  })
-)
+const decodeMessage = Schema.decodeUnknown(PushMessage)
 
 const decodeGCSNotification = Schema.required(
   StorageObjectDataSchema.pipe(

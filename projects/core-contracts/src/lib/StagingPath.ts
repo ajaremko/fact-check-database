@@ -2,6 +2,10 @@ import { ParseResult, Schema } from 'effect'
 
 import { NumberFromFormattedDate } from './NumberFromFormattedDate'
 
+export function stagingPathPrefix(type: string, version: number): string {
+  return `v${version}/type=${type}`
+}
+
 /**
  * Schema for the GCS object path where extracted data is staged. Encodes the
  * `collectionName`, `date`, `extractionId`, and `ext` fields into a structured path for
@@ -21,12 +25,8 @@ export const StagingPathSchema = Schema.transformOrFail(
   {
     strict: true,
     encode: (input) => {
-      const output = [
-        `v${input.version}`,
-        `type=${input.type}`,
-        `date=${input.date}`,
-        `${input.extractionId}.${input.ext}`,
-      ].join('/')
+      const prefix = stagingPathPrefix(input.type, input.version)
+      const output = `${prefix}/date=${input.date}/${input.extractionId}.${input.ext}`
       return ParseResult.succeed(output)
     },
     decode: (input, _, ast) =>
