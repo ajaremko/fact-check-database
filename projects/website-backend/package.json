@@ -1,14 +1,14 @@
 {
-  "name": "@news-research/website-server",
+  "name": "@news-research/website-backend",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "website-server",
+    "name": "website-backend",
     "targets": {
       "serve": {
         "executor": "@nx/next:server",
         "options": {
-          "buildTarget": "website-server:build",
+          "buildTarget": "website-backend:build",
           "dev": true,
           "port": 4200
         }
@@ -22,7 +22,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "website-server"
+        "repositoryName": "website-backend"
       }
     }
   },

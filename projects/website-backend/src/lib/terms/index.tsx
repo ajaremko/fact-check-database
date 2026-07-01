@@ -72,8 +72,8 @@ export function Terms() {
           <TermsHeading>Permitted Use</TermsHeading>
           <BodyText>
             The search interface and public dataset metadata are provided for
-            research, journalism, and educational purposes. Automated scraping of
-            search results at scale, resale of data, or use in systems that
+            research, journalism, and educational purposes. Automated scraping
+            of search results at scale, resale of data, or use in systems that
             amplify or target individual subjects named in fact-checks is
             prohibited.
           </BodyText>
@@ -95,18 +95,18 @@ export function Terms() {
           <TermsHeading>No Warranty</TermsHeading>
           <BodyText>
             The dataset is provided as-is. We make reasonable efforts to ensure
-            accuracy and completeness but do not warrant that records are free of
-            error or that ingestion is continuous without interruption. Verdicts
-            reflect the position of the originating organization at time of
-            publication, not an independent editorial determination by this
-            platform.
+            accuracy and completeness but do not warrant that records are free
+            of error or that ingestion is continuous without interruption.
+            Verdicts reflect the position of the originating organization at
+            time of publication, not an independent editorial determination by
+            this platform.
           </BodyText>
 
           <TermsHeading>Changes</TermsHeading>
           <BodyText>
             These terms may be updated. Continued use after publication of
-            changes constitutes acceptance of the revised terms. Material changes
-            will be noted in the corrections log.
+            changes constitutes acceptance of the revised terms. Material
+            changes will be noted in the corrections log.
           </BodyText>
         </Container>
       </ContentSection>

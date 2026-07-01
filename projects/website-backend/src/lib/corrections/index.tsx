@@ -76,10 +76,11 @@ export function Corrections() {
           <PolicyHeading>What We Correct</PolicyHeading>
           <BodyText>
             Corrections apply to errors in our own documentation, metadata, or
-            infrastructure descriptions. We do not modify or correct the verdicts
-            of source fact-checking organizations — those records are reproduced
-            as published. If a source organization has issued a correction to one
-            of their records, that will be reflected at the next ingestion cycle.
+            infrastructure descriptions. We do not modify or correct the
+            verdicts of source fact-checking organizations — those records are
+            reproduced as published. If a source organization has issued a
+            correction to one of their records, that will be reflected at the
+            next ingestion cycle.
           </BodyText>
 
           <PolicyHeading>How to Report an Error</PolicyHeading>

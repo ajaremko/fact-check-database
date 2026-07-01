@@ -52,8 +52,9 @@ export function Mission() {
           <PageTitle>Our Mission</PageTitle>
           <BodyText>
             We believe that rigorous, reproducible research on information
-            integrity requires stable, auditable infrastructure — not ad hoc data
-            exports. The Fact Check Database exists to provide exactly that.
+            integrity requires stable, auditable infrastructure — not ad hoc
+            data exports. The Fact Check Database exists to provide exactly
+            that.
           </BodyText>
         </Container>
       </PageHeader>
@@ -72,8 +73,8 @@ export function Mission() {
           <PrincipleHeading>Openness</PrincipleHeading>
           <BodyText>
             Our methodology, ingestion pipeline, and schema are fully
-            documented. Researchers can verify exactly how records are collected,
-            normalized, and stored.
+            documented. Researchers can verify exactly how records are
+            collected, normalized, and stored.
           </BodyText>
 
           <PrincipleHeading>Auditability</PrincipleHeading>
@@ -93,8 +94,8 @@ export function Mission() {
 
           <PrincipleHeading>Neutrality</PrincipleHeading>
           <BodyText>
-            This platform does not rank, score, or editorialize. It collects
-            and normalizes verdicts as reported by the source organizations. Any
+            This platform does not rank, score, or editorialize. It collects and
+            normalizes verdicts as reported by the source organizations. Any
             analytical judgments belong to downstream researchers, not this
             pipeline.
           </BodyText>

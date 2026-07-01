@@ -12,7 +12,11 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = metadataBase
 
-function makeBrowseFetcher(appId: string, searchKey: string, indexName: string) {
+function makeBrowseFetcher(
+  appId: string,
+  searchKey: string,
+  indexName: string
+) {
   return unstable_cache(
     async () => {
       const client = algoliasearch(appId, searchKey)

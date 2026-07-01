@@ -67,8 +67,8 @@ export function Team() {
           <PageTitle>The Team</PageTitle>
           <BodyText>
             The Fact Check Database is built and maintained by a small group of
-            researchers and engineers committed to open, auditable infrastructure
-            for information integrity work.
+            researchers and engineers committed to open, auditable
+            infrastructure for information integrity work.
           </BodyText>
         </Container>
       </PageHeader>
@@ -83,7 +83,8 @@ export function Team() {
             <BodyText>
               Alfred designed and operates the data collection, normalization,
               and storage infrastructure. His background spans distributed
-              systems, data governance, and applied research on media ecosystems.
+              systems, data governance, and applied research on media
+              ecosystems.
             </BodyText>
           </MemberCard>
 

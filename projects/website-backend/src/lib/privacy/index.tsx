@@ -83,8 +83,8 @@ export function Privacy() {
           <BodyText>
             If you contact us to request dataset access, we collect the
             information you include in your email (name, affiliation, project
-            description). This information is used solely to evaluate and fulfill
-            your request. It is not shared with third parties.
+            description). This information is used solely to evaluate and
+            fulfill your request. It is not shared with third parties.
           </BodyText>
 
           <PolicyHeading>Cookies</PolicyHeading>

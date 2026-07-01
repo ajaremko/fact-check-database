@@ -14,6 +14,8 @@ export const verifyRecaptcha = (token: string, action: string) =>
     Effect.flatMap((result) =>
       result.success
         ? Effect.void
-        : Effect.fail(new RecaptchaError({ message: 'reCAPTCHA score below threshold' }))
+        : Effect.fail(
+            new RecaptchaError({ message: 'reCAPTCHA score below threshold' })
+          )
     )
   )

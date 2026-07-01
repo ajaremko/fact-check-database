@@ -10,9 +10,6 @@
       "path": "./projects/ingestion-replay"
     },
     {
-      "path": "./projects/website-server"
-    },
-    {
       "path": "./projects/core-vendor"
     },
     {
@@ -56,6 +53,9 @@
     },
     {
       "path": "./projects/core-contracts"
+    },
+    {
+      "path": "./projects/website-backend"
     }
   ]
 }

@@ -44,11 +44,25 @@ const labelCenter = { textAlign: 'center' as const, lineHeight: 1.4 }
 
 const stageLabel = (num: string, name: string, desc: string) => (
   <div style={labelCenter}>
-    <div style={{ fontSize: '0.6rem', color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+    <div
+      style={{
+        fontSize: '0.6rem',
+        color: C.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        marginBottom: 4,
+      }}
+    >
       {num}
     </div>
-    <div style={{ fontWeight: 600, fontSize: '0.875rem', color: C.textPrimary }}>{name}</div>
-    <div style={{ fontSize: '0.7rem', color: C.textSecondary, marginTop: 4 }}>{desc}</div>
+    <div
+      style={{ fontWeight: 600, fontSize: '0.875rem', color: C.textPrimary }}
+    >
+      {name}
+    </div>
+    <div style={{ fontSize: '0.7rem', color: C.textSecondary, marginTop: 4 }}>
+      {desc}
+    </div>
   </div>
 )
 
@@ -62,19 +76,37 @@ const pipelineNodes = [
   {
     id: 's1',
     position: { x: 160, y: 0 },
-    data: { label: stageLabel('Stage 1', 'Collection', 'Fetch & archive raw feed content') },
+    data: {
+      label: stageLabel(
+        'Stage 1',
+        'Collection',
+        'Fetch & archive raw feed content'
+      ),
+    },
     style: stageNodeStyle,
   },
   {
     id: 's2',
     position: { x: 370, y: 0 },
-    data: { label: stageLabel('Stage 2', 'Sanitization', 'Classify safety via policy rules') },
+    data: {
+      label: stageLabel(
+        'Stage 2',
+        'Sanitization',
+        'Classify safety via policy rules'
+      ),
+    },
     style: stageNodeStyle,
   },
   {
     id: 's3',
     position: { x: 580, y: 0 },
-    data: { label: stageLabel('Stage 3', 'Extraction', 'Parse, normalize & load structured data') },
+    data: {
+      label: stageLabel(
+        'Stage 3',
+        'Extraction',
+        'Parse, normalize & load structured data'
+      ),
+    },
     style: stageNodeStyle,
   },
   {
@@ -89,10 +121,38 @@ const edgeStyle = { stroke: C.accent, strokeWidth: 1.5 }
 const edgeMarker = { type: MarkerType.ArrowClosed, color: C.accent }
 
 const pipelineEdges = [
-  { id: 'e0', source: 'src', target: 's1', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
-  { id: 'e1', source: 's1', target: 's2', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
-  { id: 'e2', source: 's2', target: 's3', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
-  { id: 'e3', source: 's3', target: 'out', type: 'smoothstep', style: edgeStyle, markerEnd: edgeMarker },
+  {
+    id: 'e0',
+    source: 'src',
+    target: 's1',
+    type: 'smoothstep',
+    style: edgeStyle,
+    markerEnd: edgeMarker,
+  },
+  {
+    id: 'e1',
+    source: 's1',
+    target: 's2',
+    type: 'smoothstep',
+    style: edgeStyle,
+    markerEnd: edgeMarker,
+  },
+  {
+    id: 'e2',
+    source: 's2',
+    target: 's3',
+    type: 'smoothstep',
+    style: edgeStyle,
+    markerEnd: edgeMarker,
+  },
+  {
+    id: 'e3',
+    source: 's3',
+    target: 'out',
+    type: 'smoothstep',
+    style: edgeStyle,
+    markerEnd: edgeMarker,
+  },
 ]
 
 // --- Hero ---
