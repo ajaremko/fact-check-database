@@ -53,6 +53,9 @@
     },
     {
       "path": "./projects/analysis-loader"
+    },
+    {
+      "path": "./projects/core-contracts"
     }
   ]
 }

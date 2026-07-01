@@ -13,6 +13,7 @@ import { cloudRunService } from '../../services'
 import { getImageUrl } from '../../getImageUrl'
 
 // import { archiveBucketName } from '../../../ingestion/archive'
+import { stagingDataset, stagingFactChecksTable } from '../bigquery'
 
 import {
   loaderServiceAccount,
@@ -22,7 +23,7 @@ import {
 } from './service-account'
 
 export const loaderService = new gcp.cloudrunv2.Service(
-  `${tag}-staging-dataset-loader-service`,
+  `${tag}-staging-loader-service`,
   {
     location: gcpRegion,
     deletionProtection: false,
@@ -32,10 +33,18 @@ export const loaderService = new gcp.cloudrunv2.Service(
         {
           image: getImageUrl('analysis-loader', dockerTag),
           envs: [
-            // {
-            //   name: 'STORAGE_BUCKET_NAME',
-            //   value: archiveBucketName,
-            // },
+            {
+              name: 'PROJECT_ID',
+              value: gcpProject,
+            },
+            {
+              name: 'BIGQUERY_DATASET',
+              value: stagingDataset.datasetId,
+            },
+            {
+              name: 'BIGQUERY_TABLE',
+              value: stagingFactChecksTable.tableId,
+            },
             {
               name: 'STAGING_BUCKET_NAME',
               value: stagingStorageBucketName,

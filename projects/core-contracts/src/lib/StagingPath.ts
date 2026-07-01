@@ -1,5 +1,6 @@
 import { ParseResult, Schema } from 'effect'
-import { NumberFromFormattedDate } from '../../../shared/contracts/v1'
+
+import { NumberFromFormattedDate } from './NumberFromFormattedDate'
 
 /**
  * Schema for the GCS object path where extracted data is staged. Encodes the

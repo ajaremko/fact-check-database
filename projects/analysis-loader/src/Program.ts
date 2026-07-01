@@ -11,8 +11,9 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
+import { StorageObjectDataSchema } from '@news-research/core-contracts'
 
-import { StorageObjectDataSchema } from './StorageObjectData'
+// import { StorageObjectDataSchema } from './StorageObjectData'
 import { loadBatch } from './loadBatch'
 
 export interface ServiceContext {

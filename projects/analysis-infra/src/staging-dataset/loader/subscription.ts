@@ -101,7 +101,7 @@ export const loaderSubscription = new gcp.pubsub.Subscription(
       maximumBackoff: '600s',
     },
     pushConfig: {
-      pushEndpoint: pulumi.interpolate`${loaderService.uri}/extractor-topic-messages`,
+      pushEndpoint: pulumi.interpolate`${loaderService.uri}/load-jobs`,
       oidcToken: {
         serviceAccountEmail: loaderInvokerServiceAccount.email,
       },

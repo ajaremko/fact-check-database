@@ -8,7 +8,7 @@ import { tag } from '../config'
 import { curatedTableRef } from './bigquery'
 
 export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
-  `${tag}-staging-to-curated-transfer-job`,
+  `${tag}-staging-transfer-job`,
   {
     displayName: 'Curated Fact Checks Transfer Job',
     dataSourceId: 'scheduled_query',

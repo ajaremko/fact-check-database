@@ -1,10 +1,10 @@
 import { ParseResult, Schema } from 'effect'
 
+import { FactChecksTableRowSchema } from '@news-research/core-contracts'
 import { omitNullKeys } from '@news-research/core-data'
 
 import { SourceSchema } from '../shared'
 
-import { FactChecksTableRowSchema } from './contracts/v1'
 import { NumberFromDate } from './NumberFromDate'
 import {
   NormalizedTextMediumSchema,

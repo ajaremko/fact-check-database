@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
-import { archiveDeadletterBucketName } from '../archive'
+import { archiveBucketName } from '../archive'
 import { provider } from '../project'
 import { getImageUrl } from '../shared'
 import { sanitizerTopicName } from '../sanitizer'
@@ -52,35 +52,27 @@ export const replayJob = new gcp.cloudrunv2.Job(
             envs: [
               {
                 name: 'GCS_BUCKET_NAME',
-                value: archiveDeadletterBucketName,
+                value: archiveBucketName,
               },
               {
                 name: 'GCS_SOURCE_PATH',
-                value: 'loader/extractor-events/**/*',
+                value: 'ingestor-events/**/*',
               },
               {
                 name: 'GCS_DESTINATION_PATH',
-                value: 'processed/loader/extractor-events/',
+                value: 'reprocessed/ingestor-events/',
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
                 value: sanitizerTopicName,
               },
               {
-                name: 'LOG_LEVEL',
-                value: 'error',
+                name: 'LOGGING_LEVEL',
+                value: 'info',
               },
               {
                 name: 'PINO_LOG_LEVEL',
                 value: logLevel,
-              },
-              {
-                name: 'SERVICE_NAME',
-                value: 'archive-replay-job',
-              },
-              {
-                name: 'SERVICE_VERSION',
-                value: dockerTag,
               },
             ],
           },

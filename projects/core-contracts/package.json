@@ -1,0 +1,47 @@
+{
+  "name": "@news-research/core-contracts",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "name": "core-contracts",
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "projects/core-contracts/dist",
+          "main": "projects/core-contracts/src/index.ts",
+          "tsConfig": "projects/core-contracts/tsconfig.lib.json",
+          "format": [
+            "cjs"
+          ],
+          "declarationRootDir": "projects/core-contracts/src",
+          "esbuildOptions": {
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@google/events": "^5.4.0",
+    "date-fns": "^4.1.0",
+    "effect": "^3.21.0",
+    "vitest": "^3.2.4"
+  }
+}

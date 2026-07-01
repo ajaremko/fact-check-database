@@ -1,4 +1,5 @@
 import { it, expect } from '@effect/vitest'
+import { describe } from 'vitest'
 import { Schema } from 'effect'
 
 import { ArchivePathSchema } from './ArchivePath'

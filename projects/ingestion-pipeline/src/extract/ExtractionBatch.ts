@@ -1,14 +1,14 @@
 import { ParseResult, Schema } from 'effect'
 
+import {
+  FactChecksTableSchema,
+  StagingPathSchema,
+} from '@news-research/core-contracts'
 import { omitNullKeys } from '@news-research/core-data'
 
 import { FilePointerSchema } from '../shared'
 
-import {
-  ExtractionBatchReadySchema,
-  FactChecksTableSchema,
-  StagingPathSchema,
-} from './contracts/v1'
+import { ExtractionBatchReadySchema } from './contracts/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
-import { SourceSchema } from '../../../shared/contracts/v1'
+
+import { SourceSchema } from './Source'
 
 // Using STUCT instead of RECORD or X instead of INTEGER causes pulumi to redeploy table
 // on every update. Add this to list of problems/mitigations in documentation about

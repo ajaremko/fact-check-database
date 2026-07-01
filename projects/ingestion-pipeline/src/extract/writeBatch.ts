@@ -2,6 +2,7 @@ import { Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Ndjson from '@news-research/core-data/Ndjson'
 import * as Node from '@news-research/core-data/Node'
+import { FactChecksTableSchema } from '@news-research/core-contracts'
 
 import { writeFile } from '../shared'
 
@@ -10,7 +11,6 @@ import {
   ExtractionBatchEventSchema,
   ExtractionBatchPathSchema,
 } from './ExtractionBatch'
-import { FactChecksTableSchema } from './contracts/v1'
 
 const encodeNdjson = pipe(
   Schema.Object,
