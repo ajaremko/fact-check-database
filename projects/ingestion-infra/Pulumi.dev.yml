@@ -1,7 +1,7 @@
 config:
-  ingestion:project: news-research-dev
+  ingestion:project: fact-check-database-dev
   ingestion:region: us-central1
-  ingestion:coreStackName: alfredsyoung/news-research
+  ingestion:coreStackName: alfredsyoung/fact-check-database-core
   ingestion:archiveLocation: US
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
