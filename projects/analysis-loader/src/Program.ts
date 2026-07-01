@@ -48,7 +48,8 @@ const loadJobs = HttpRouter.post(
     // is ready to be loaded into bigquery
     const { message } = yield* decodeMessage(body)
     const data = Buffer.from(message.data, 'utf-8')
-    console.log(data.toString('utf-8'))
+    console.log('message', message)
+    console.log('data', data.toString('utf-8'))
     const notification = yield* decodeGCSNotification(data)
     if (notification.contentType !== 'application/x-ndjson') {
       yield* Effect.logWarning(
