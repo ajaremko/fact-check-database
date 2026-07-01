@@ -7,7 +7,7 @@ import { coreLabels, tag } from '../config'
 import { provider, gcsAccount } from '../project'
 import { pubsubService } from '../services'
 
-import { factChecksTableDBSchemaObjectUri } from './schema'
+import { factChecksTableDBSchemaObject } from './schema'
 import { stagingStorageBucket } from './storage'
 
 export const stagingStorageTopic = new gcp.pubsub.Topic(
@@ -35,7 +35,7 @@ export const stagingStorageUploadNofication = new gcp.storage.Notification(
     eventTypes: ['OBJECT_FINALIZE'],
     objectNamePrefix: stagingPathPrefix('fact_checks', 1),
     customAttributes: {
-      schema_uri: factChecksTableDBSchemaObjectUri,
+      schemaObjectId: factChecksTableDBSchemaObject.name,
     },
   },
   {

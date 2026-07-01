@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "@google/events": "^5.4.0",
-    "@news-research/core-data": "0.0.1",
     "date-fns": "^4.1.0",
     "effect": "^3.21.0",
     "vitest": "^3.2.4"

@@ -8,7 +8,9 @@ import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/o
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
+import * as CloudStorageStorageReader from '@news-research/ingestion-pipeline/shared/adapters/CloudStorageStorageReader'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
+import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
@@ -21,6 +23,11 @@ function withMinimumLogLevel<A, E, R>(self: Effect.Effect<A, E, R>) {
     Effect.andThen((level) => Logger.withMinimumLogLevel(self, level))
   )
 }
+
+const storage = Layer.empty.pipe(
+  Layer.merge(CloudStorageStorageReader.layer),
+  Layer.provide(StorageClient.layer())
+)
 
 const gcpLogger = GcpLoggingPinoConfig.make.pipe(
   Effect.andThen((config) => pinoLogger(config))
@@ -91,6 +98,7 @@ const service = Layer.effect(
 
 Program.pipe(
   Effect.provide(BigQueryClient.layer()),
+  Effect.provide(storage),
   Effect.provide(otel),
   Effect.provide(logger),
   Effect.provide(service),

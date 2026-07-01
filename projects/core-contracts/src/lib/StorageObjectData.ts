@@ -81,3 +81,17 @@ export const StorageObjectDataSchema = Schema.extend(
 export type StorageObjectData = Unnest<
   Schema.Schema.Type<typeof StorageObjectDataSchema>
 >
+
+export const StorageObjectAttributesSchema = Schema.Struct({
+  bucketId: Schema.String,
+  eventTime: Schema.DateFromString,
+  eventType: Schema.String,
+  notificationConfig: Schema.String,
+  objectGeneration: Schema.String,
+  objectId: Schema.String,
+  payloadFormat: Schema.String,
+})
+
+export type StorageObjectAttributes = Schema.Schema.Type<
+  typeof StorageObjectAttributesSchema
+>
