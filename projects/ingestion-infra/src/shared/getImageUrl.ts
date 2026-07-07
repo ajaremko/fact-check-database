@@ -4,7 +4,9 @@ import * as pulumi from '@pulumi/pulumi'
 import {
   artifactRegistryLocation,
   artifactRegistryRepositoryId,
+  coreProject,
 } from '../config'
+import { artifactRegistryService } from '../services'
 import { provider } from '../project'
 
 // If an image is specified in config, use that. Otherwise, fall back to a public sample image.
@@ -19,8 +21,9 @@ export function getImageUrl(app: string, tag?: string) {
       location: artifactRegistryLocation,
       repositoryId: artifactRegistryRepositoryId,
       imageName: `${app}:${tag}`,
+      project: coreProject,
     },
-    { provider }
+    { provider, dependsOn: [artifactRegistryService] }
   )
 
   return image.selfLink

@@ -3,6 +3,30 @@ import * as gcp from '@pulumi/gcp'
 import { tag } from './config'
 import { provider } from './project'
 
+export const computeService = new gcp.projects.Service(
+  `${tag}-compute-service`,
+  {
+    service: 'compute.googleapis.com',
+  },
+  { provider }
+)
+
+export const resourceManagerService = new gcp.projects.Service(
+  `${tag}-resource-manager-service`,
+  {
+    service: 'cloudresourcemanager.googleapis.com',
+  },
+  { provider }
+)
+
+export const artifactRegistryService = new gcp.projects.Service(
+  `${tag}-artifact-registry-service`,
+  {
+    service: 'artifactregistry.googleapis.com',
+  },
+  { provider, dependsOn: [computeService, resourceManagerService] }
+)
+
 export const cloudRunService = new gcp.projects.Service(
   `${tag}-cloud-run-service`,
   {
@@ -55,6 +79,14 @@ export const secretManagerService = new gcp.projects.Service(
   `${tag}-secret-manager-service`,
   {
     service: 'secretmanager.googleapis.com',
+  },
+  { provider }
+)
+
+export const recaptchaService = new gcp.projects.Service(
+  `${tag}-recaptcha-service`,
+  {
+    service: 'recaptchaenterprise.googleapis.com',
   },
   { provider }
 )

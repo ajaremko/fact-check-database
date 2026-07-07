@@ -1,9 +1,5 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject } from '../config'
-import { provider } from '../project'
-import { cloudRunService } from '../services'
-
 import {
   adminEmail,
   dockerTag,
@@ -13,7 +9,11 @@ import {
   resendConfirmationTemplateId,
   tag,
 } from '../config'
+import { cloudRunArtifactRegistryReader } from '../iam'
+import { cloudRunService } from '../services'
+import { gcpProject } from '../config'
 import { getImageUrl } from '../getImageUrl'
+import { provider } from '../project'
 
 import { emailerServiceAccount, iamMembers } from './service-account'
 import { resendApiKey } from './resend'
@@ -70,7 +70,7 @@ export const emailerService = new gcp.cloudrunv2.Service(
     },
   },
   {
-    dependsOn: [cloudRunService, ...iamMembers],
+    dependsOn: [cloudRunService, cloudRunArtifactRegistryReader, ...iamMembers],
     provider,
   }
 )

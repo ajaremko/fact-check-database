@@ -5,6 +5,4 @@ export const curatedFactChecksTableId = curatedFactChecksTable.tableId
 
 export { curatedTableRef } from './bigquery'
 
-import { stagingToCuratedTransferJob } from './transfer-job'
-
-export const transferJobName = stagingToCuratedTransferJob.name
+export * from './loader'

@@ -1,4 +1,5 @@
 import * as gcp from '@pulumi/gcp'
+import * as pulumi from '@pulumi/pulumi'
 
 import {
   gcpProject,
@@ -7,16 +8,82 @@ import {
   tag,
   algoliaSearchKey,
   algoliaAppId,
+  htpasswdSecretVersion,
+  stackName,
 } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../getImageUrl'
 import { algoliaFactChecksIndexName } from '../algolia'
 import { recaptchaApiKeyName } from '../recaptcha'
+import { cloudRunArtifactRegistryReader } from '../iam'
 
-import { envoyConfig, envoyConfigVersion } from './envoy'
+import {
+  envoyConfig,
+  envoyConfigVersion,
+  htpasswdConfig,
+  oauth2ProxyConfig,
+  oauth2ProxyConfigVersion,
+} from './envoy'
 import { iamMembers, websiteBackendServiceAccount } from './service-account'
 import { formSubmissionTopic } from './topic'
+
+const htpasswdSecretVolume = htpasswdSecretVersion
+  ? [
+      {
+        name: 'htpasswd-config-volume',
+        secret: {
+          secretName: htpasswdConfig.secretId, // The Secret Manager secret name
+          items: [
+            {
+              key: htpasswdSecretVersion, // Version to fetch
+              path: 'htpasswd',
+            },
+          ],
+        },
+      },
+    ]
+  : []
+
+const htpasswdSecretMount = htpasswdSecretVersion
+  ? [
+      {
+        name: 'htpasswd-config-volume',
+        mountPath: '/etc/secret',
+      },
+    ]
+  : []
+
+const authContainer: pulumi.Input<
+  pulumi.Input<gcp.types.input.cloudrun.ServiceTemplateSpecContainer>[]
+> =
+  stackName === 'dev'
+    ? [
+        {
+          name: 'auth',
+          image: 'bitnamilegacy/oauth2-proxy:7.12.0',
+          args: [
+            '--config=/etc/oauth2-proxy/oauth2-proxy.cfg',
+            '--reverse-proxy=true',
+            '--request-logging=true',
+            '--auth-logging=true',
+          ],
+          envs: [
+            {
+              name: 'PORT',
+              value: '4180',
+            },
+          ],
+          volumeMounts: [
+            {
+              name: 'oauth2-proxy-config-volume',
+              mountPath: '/etc/oauth2-proxy',
+            },
+            ...htpasswdSecretMount,
+          ],
+        },
+      ]
+    : []
 
 export const websiteService = new gcp.cloudrun.Service(
   `${tag}-backend-service`,
@@ -44,6 +111,19 @@ export const websiteService = new gcp.cloudrun.Service(
               ],
             },
           },
+          {
+            name: 'oauth2-proxy-config-volume',
+            secret: {
+              secretName: oauth2ProxyConfig.secretId, // The Secret Manager secret name
+              items: [
+                {
+                  key: oauth2ProxyConfigVersion.version, // Version to fetch
+                  path: 'oauth2-proxy.cfg',
+                },
+              ],
+            },
+          },
+          ...htpasswdSecretVolume,
         ],
         containers: [
           {
@@ -57,12 +137,13 @@ export const websiteService = new gcp.cloudrun.Service(
             volumeMounts: [
               {
                 name: 'envoy-config-volume',
-                mountPath: '/etc/envoy', // The directory where files will appear
+                mountPath: '/etc/envoy',
               },
             ],
           },
+          ...authContainer,
           {
-            image: getImageUrl('website-server', dockerTag),
+            image: getImageUrl('website-backend', dockerTag),
             name: 'backend',
             startupProbe: {
               initialDelaySeconds: 10,
@@ -70,7 +151,7 @@ export const websiteService = new gcp.cloudrun.Service(
               failureThreshold: 3,
               timeoutSeconds: 3,
               httpGet: {
-                path: '/',
+                path: '/health',
               },
             },
             envs: [
@@ -109,7 +190,7 @@ export const websiteService = new gcp.cloudrun.Service(
     },
   },
   {
-    dependsOn: [cloudRunService, ...iamMembers],
+    dependsOn: [cloudRunService, cloudRunArtifactRegistryReader, ...iamMembers],
     provider,
   }
 )

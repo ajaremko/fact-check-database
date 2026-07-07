@@ -13,9 +13,15 @@ const coreStackName = websiteConfig.require('coreStackName')
 // Format: <organization>/<project>/<stack>
 const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
 
+export const coreProject = coreStackRef.getOutput('gcpProject')
+export const coreRegion = coreStackRef.getOutput('gcpRegion')
+
 // Retrieve exported artifact registry details
 export const artifactRegistryLocation = coreStackRef.getOutput(
   'artifactRegistryLocation'
+)
+export const artifactRegistryName = coreStackRef.getOutput(
+  'artifactRegistryName'
 )
 export const artifactRegistryRepositoryId = coreStackRef.getOutput(
   'artifactRegistryRepositoryId'
@@ -88,3 +94,17 @@ export const resendConfirmationTemplateId = websiteConfig.require(
   'resendConfirmationTemplateId'
 )
 export const adminEmail = websiteConfig.require('adminEmail')
+
+export const htpasswdSecretVersion = websiteConfig.get('htpasswdSecretVersion')
+
+if (!htpasswdSecretVersion && stackName === 'dev') {
+  console.warn(
+    'No htpasswd secret version specified. The website service may fail to start without this configuration.'
+  )
+}
+
+if (htpasswdSecretVersion && stackName === 'prod') {
+  throw new Error(
+    'htpasswd secret version is specified in production config. This value should be removed from the configuration.'
+  )
+}

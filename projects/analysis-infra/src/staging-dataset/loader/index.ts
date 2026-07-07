@@ -1,11 +1,11 @@
 import {
-  loaderSubscription,
+  stagingStorageSubscription,
   loaderDeadletterTopic,
   loaderDeadletterTopicArchiveSubscription,
   loaderInvokerServiceAccount,
 } from './subscription'
 
-export const loaderSubscriptionName = loaderSubscription.name
+export const loaderSubscriptionName = stagingStorageSubscription.name
 export const loaderDeadletterTopicName = loaderDeadletterTopic.name
 export const loaderDeadletterTopicArchiveSubscriptionName =
   loaderDeadletterTopicArchiveSubscription.name

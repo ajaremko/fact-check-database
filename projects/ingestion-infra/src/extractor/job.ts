@@ -4,7 +4,6 @@ import {
   gcpRegion,
   dockerTag,
   stagingStorageBucketName,
-  stagingStorageTopicName,
   tag,
   logLevel,
 } from '../config'
@@ -12,13 +11,13 @@ import { assetsBucketName } from '../assets'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../shared'
+import { cloudRunArtifactRegistryReader } from '../iam'
 
 import {
   extractorServiceAccount,
   extractorRawArchiveBucketViewer,
   extractorSanitizerTopicSubscriber,
   stagingStorageBucketCreator,
-  stagingTopicPublisher,
 } from './service-account'
 import { extractorSubscription } from './subscription'
 
@@ -42,10 +41,6 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',
                 value: extractorSubscription.id,
-              },
-              {
-                name: 'PUBSUB_TOPIC_NAME',
-                value: stagingStorageTopicName,
               },
               {
                 name: 'STORAGE_BUCKET_NAME',
@@ -87,7 +82,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
       extractorRawArchiveBucketViewer,
       stagingStorageBucketCreator,
       extractorSanitizerTopicSubscriber,
-      stagingTopicPublisher,
+      cloudRunArtifactRegistryReader,
     ],
     provider,
   }

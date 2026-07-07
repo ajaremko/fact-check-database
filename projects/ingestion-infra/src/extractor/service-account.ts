@@ -1,12 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import {
-  gcpProject,
-  stagingStorageBucketName,
-  stagingStorageTopicName,
-  tag,
-} from '../config'
+import { gcpProject, stagingStorageBucketName, tag } from '../config'
 import { archiveBucketName } from '../archive'
 import { provider } from '../project'
 
@@ -51,16 +46,6 @@ export const extractorSanitizerTopicSubscriber =
     },
     { provider }
   )
-
-export const stagingTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-extractor-staging-topic-publisher`,
-  {
-    topic: stagingStorageTopicName,
-    role: 'roles/pubsub.publisher',
-    member: pulumi.interpolate`serviceAccount:${extractorServiceAccount.email}`,
-  },
-  { provider }
-)
 
 export const cloudtraceAgent = new gcp.projects.IAMMember(
   `${tag}-extractor-trace-agent`,

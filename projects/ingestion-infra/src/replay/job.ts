@@ -7,6 +7,7 @@ import { archiveBucketName } from '../archive'
 import { provider } from '../project'
 import { getImageUrl } from '../shared'
 import { sanitizerTopicName } from '../sanitizer'
+import { cloudRunArtifactRegistryReader } from '../iam'
 
 export const replayServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-archive-replay-sa`,
@@ -81,7 +82,12 @@ export const replayJob = new gcp.cloudrunv2.Job(
     },
   },
   {
-    dependsOn: [cloudRunService, replayPubsubPublisher, replayStorageAdmin],
+    dependsOn: [
+      cloudRunService,
+      replayPubsubPublisher,
+      replayStorageAdmin,
+      cloudRunArtifactRegistryReader,
+    ],
     provider,
   }
 )

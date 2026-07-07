@@ -72,6 +72,23 @@
             "command": "pulumi destroy --stack=prod --cwd={projectRoot}"
           }
         }
+      },
+      "output": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pulumi stack output --stack={args.stack} --cwd={projectRoot}",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "configurations": {
+          "dev": {
+            "command": "pulumi stack output --stack=dev --cwd={projectRoot}"
+          },
+          "prod": {
+            "command": "pulumi stack output --stack=prod --cwd={projectRoot}"
+          }
+        }
       }
     }
   },

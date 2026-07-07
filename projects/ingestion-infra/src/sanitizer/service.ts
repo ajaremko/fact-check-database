@@ -6,6 +6,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../shared'
 import { archiveBucketName } from '../archive'
+import { cloudRunArtifactRegistryReader } from '../iam'
 
 import {
   sanitizerAssetBucketViewer,
@@ -61,6 +62,7 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
       sanitizerAssetBucketViewer,
       sanitizerRawArchiveBucketAdmin,
       sanitizerTopicPublisher,
+      cloudRunArtifactRegistryReader,
     ],
     provider,
   }

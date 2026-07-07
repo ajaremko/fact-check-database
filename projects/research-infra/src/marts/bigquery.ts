@@ -7,7 +7,8 @@ import {
   tag,
   retainTablesOnDelete,
 } from '../config'
-import { provider } from '../provider'
+import { provider } from '../project'
+import { computeService } from '../services'
 
 export const martsDataset = new gcp.bigquery.Dataset(
   `${tag}-marts-dataset`,
@@ -17,7 +18,11 @@ export const martsDataset = new gcp.bigquery.Dataset(
     description: 'Marts for final research data',
     location: 'US',
   },
-  { provider, retainOnDelete: retainTablesOnDelete }
+  {
+    provider,
+    retainOnDelete: retainTablesOnDelete,
+    dependsOn: [computeService],
+  }
 )
 
 export const martsDatasetId = martsDataset.datasetId

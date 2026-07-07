@@ -11,15 +11,15 @@ import {
 import { provider } from '../../project'
 import { cloudRunService } from '../../services'
 import { getImageUrl } from '../../getImageUrl'
+import { cloudRunArtifactRegistryReader } from '../../iam'
 
-// import { archiveBucketName } from '../../../ingestion/archive'
 import { stagingDataset, stagingFactChecksTable } from '../bigquery'
 
 import {
-  loaderServiceAccount,
-  loaderStagingBucketViewer,
-  loaderBigQueryJobUser,
-  // loaderBigQueryDataEditor,
+  stagingDatasetLoaderServiceAccount,
+  stagingDatasetLoaderStagingBucketViewer,
+  stagingDatasetLoaderBigQueryJobUser,
+  stagingDatasetLoaderBigQueryDataEditor,
 } from './service-account'
 
 export const loaderService = new gcp.cloudrunv2.Service(
@@ -28,7 +28,7 @@ export const loaderService = new gcp.cloudrunv2.Service(
     location: gcpRegion,
     deletionProtection: false,
     template: {
-      serviceAccount: loaderServiceAccount.email,
+      serviceAccount: stagingDatasetLoaderServiceAccount.email,
       containers: [
         {
           image: getImageUrl('analysis-loader', dockerTag),
@@ -68,10 +68,12 @@ export const loaderService = new gcp.cloudrunv2.Service(
   },
   {
     dependsOn: [
+      cloudRunArtifactRegistryReader,
       cloudRunService,
-      loaderStagingBucketViewer,
-      loaderBigQueryJobUser,
-      // loaderBigQueryDataEditor,
+      stagingDatasetLoaderServiceAccount,
+      stagingDatasetLoaderStagingBucketViewer,
+      stagingDatasetLoaderBigQueryJobUser,
+      stagingDatasetLoaderBigQueryDataEditor,
     ],
     provider,
   }

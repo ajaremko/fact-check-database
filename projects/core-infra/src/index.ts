@@ -21,6 +21,7 @@ import { artifactRegistry } from './artifact-registry'
 
 export const artifactRegistryUri = artifactRegistry.registryUri
 export const artifactRegistryLocation = artifactRegistry.location
+export const artifactRegistryName = artifactRegistry.name
 export const artifactRegistryRepositoryId = artifactRegistry.repositoryId
 
 /**
@@ -31,7 +32,4 @@ export const artifactRegistryBaseUri = artifactRegistryUri.apply(
   (uri) => uri.split('/')[0]
 )
 
-export {
-  gcpProject as coreGcpProject,
-  gcpRegion as coreGcpRegion,
-} from './config'
+export { gcpProject, gcpRegion } from './config'

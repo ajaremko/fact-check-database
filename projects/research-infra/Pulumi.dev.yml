@@ -1,6 +1,6 @@
 config:
-  research:project: news-research-dev
+  research:project: fact-check-database-dev
   research:region: us-central1
-  research:coreStackName: alfredsyoung/news-research
+  research:analysisStackName: alfredsyoung/fact-check-database-analysis
   research:tableDeletionProtection: false
   research:retainTablesOnDelete: false

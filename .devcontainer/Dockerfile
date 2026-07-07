@@ -9,6 +9,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     openssh-client \
     gnupg \
     lsb-release \
+    apache2-utils \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Setup SSH directory for SSH agent forwarding

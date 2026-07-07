@@ -1,26 +1,6 @@
 config:
-  core:project: news-research-core
-  core:region: us-central1
-  core:kmsLocation: us-central1
-  core:githubOrg: ajaremko
-  core:githubRepo: news-research
-  core:workloadIdentityPoolId: shared-identity-pool-05
-
-  analysis:project: news-research-analysis
-  analysis:region: us-central1
-  analysis:tableDeletionProtection: true
-  analysis:retainDatasetsOnDelete: true
-
-  ingestion:project: news-research-ingestion
-  ingestion:region: us-central1
-  ingestion:archiveLocation: US
-  ingestion:tag: dev-266
-  ingestion:ingestorSchedule: '0 */4 * * *'
-  ingestion:extractorSchedule: '0 */12 * * *'
-  ingestion:logLevel: debug
-  ingestion:batchRetentionDays: 2
-  ingestion:forceDestroyStorage: false
-  ingestion:retainStorageOnDelete: true
-
-  research:project: news-research
+  research:project: fact-check-database-research
   research:region: us-central1
+  research:analysisStackName: alfredsyoung/fact-check-database-analysis
+  research:tableDeletionProtection: false
+  research:retainTablesOnDelete: false

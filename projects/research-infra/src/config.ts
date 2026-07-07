@@ -9,12 +9,14 @@ const researchConfig = new pulumi.Config('research')
 export const gcpProject = researchConfig.require('project')
 export const gcpRegion = researchConfig.require('region')
 
-const coreStackName = researchConfig.require('coreStackName')
+const analysisStackName = researchConfig.require('analysisStackName')
 // Format: <organization>/<project>/<stack>
-const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
+const analysisStackRef = new pulumi.StackReference(
+  `${analysisStackName}/${stackName}`
+)
 
 // Retrieve exported artifact registry details
-export const curatedTableRef = coreStackRef.getOutput('curatedTableRef')
+export const curatedTableRef = analysisStackRef.getOutput('curatedTableRef')
 
 export const tableDeletionProtection =
   researchConfig.getBoolean('tableDeletionProtection') ?? true

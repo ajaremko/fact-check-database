@@ -1,26 +1,15 @@
 config:
-  core:project: news-research-core
-  core:region: us-central1
-  core:kmsLocation: us-central1
-  core:githubOrg: ajaremko
-  core:githubRepo: news-research
-  core:workloadIdentityPoolId: shared-identity-pool-05
-
-  analysis:project: news-research-analysis
-  analysis:region: us-central1
-  analysis:tableDeletionProtection: true
-  analysis:retainDatasetsOnDelete: true
-
-  ingestion:project: news-research-ingestion
-  ingestion:region: us-central1
-  ingestion:archiveLocation: US
-  ingestion:tag: dev-266
-  ingestion:ingestorSchedule: '0 */4 * * *'
-  ingestion:extractorSchedule: '0 */12 * * *'
-  ingestion:logLevel: debug
-  ingestion:batchRetentionDays: 2
-  ingestion:forceDestroyStorage: false
-  ingestion:retainStorageOnDelete: true
-
-  research:project: news-research
-  research:region: us-central1
+  website:project: fact-check-database-website
+  website:region: us-central1
+  website:tag: local_1783455056-07.07.26-24ea3ce
+  website:coreStackName: alfredsyoung/fact-check-database-core
+  website:logLevel: debug
+  website:verifiedOwner: alfredsyoung@gmail.com
+  website:verifiedDomains:
+    - factcheckdatabase.com
+    - thefactcheckdatabase.com
+  website:algoliaAppId: 3R16A1FPTN
+  website:algoliaSearchKey: bbbba8ff55a28c1d6d013282837a1bde
+  website:resendConfirmationTemplateId: ae8e79a2-8a86-455d-a4a1-13f6597fb8b6
+  website:resendApiKeySecretVersion: 1
+  website:adminEmail: alfredsyoung@gmail.com

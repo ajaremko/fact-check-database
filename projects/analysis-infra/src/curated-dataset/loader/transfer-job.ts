@@ -1,16 +1,22 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { provider } from '../project'
-import { stagingTableRef } from '../staging-dataset'
-import { tag } from '../config'
+import { provider } from '../../project'
+import { stagingTableRef } from '../../staging-dataset'
+import { tag } from '../../config'
 
-import { curatedTableRef } from './bigquery'
+import { curatedTableRef } from '../bigquery'
+
+import {
+  curatedLoaderServiceAccount,
+  bigQueryDataTransferTokenCreator,
+} from './service-account'
 
 export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
   `${tag}-staging-transfer-job`,
   {
     displayName: 'Curated Fact Checks Transfer Job',
+    serviceAccountName: curatedLoaderServiceAccount.email,
     dataSourceId: 'scheduled_query',
     location: 'US',
     schedule: 'every 6 hours',
@@ -107,5 +113,5 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
         )`,
     },
   },
-  { provider }
+  { provider, dependsOn: [bigQueryDataTransferTokenCreator] }
 )

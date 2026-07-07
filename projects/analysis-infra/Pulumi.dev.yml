@@ -1,8 +1,9 @@
 config:
-  analysis:project: news-research-dev
+  analysis:project: fact-check-database-dev
   analysis:region: us-central1
-  analysis:coreStackName: alfredsyoung/news-research
+  analysis:deployingServiceAccountEmail: pulumi-cli@fact-check-database-core.iam.gserviceaccount.com
+  analysis:coreStackName: alfredsyoung/fact-check-database-core
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false
-  analysis:tag: dev-357
+  analysis:tag: dev-360
   analysis:logLevel: debug

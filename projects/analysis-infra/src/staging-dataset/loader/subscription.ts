@@ -3,11 +3,17 @@ import * as gcp from '@pulumi/gcp'
 
 import {
   analysisLabels,
+  coreProject,
+  deployingServiceAccountEmail,
   gcpRegion,
   stagingStorageTopicName,
   tag,
 } from '../../config'
-import { provider, pubsubServiceAccountEmail } from '../../project'
+import {
+  coreProvider,
+  provider,
+  pubsubServiceAccountEmail,
+} from '../../project'
 import { pubsubService } from '../../services'
 
 import { loaderService } from './service'
@@ -69,7 +75,7 @@ export const pubsubServiceAccountDeadletterObjectCreator =
 
 // create the deadletter topic to write failed messages to
 export const loaderDeadletterTopic = new gcp.pubsub.Topic(
-  `${tag}-loader-deadletter-topic`,
+  `${tag}-staging-storage-deadletter-topic`,
   { labels: analysisLabels },
   { dependsOn: [pubsubService], provider }
 )
@@ -77,7 +83,7 @@ export const loaderDeadletterTopic = new gcp.pubsub.Topic(
 // grant the pubsub service account permissions to publish
 // to the deadletter topic
 const pubsubServiceAccountPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-pubsub-sa-loader-deadletter-publisher`,
+  `${tag}-pubsub-sa-staging-storage-topic-deadletter-publisher`,
   {
     topic: loaderDeadletterTopic.name,
     role: 'roles/pubsub.publisher',
@@ -86,12 +92,38 @@ const pubsubServiceAccountPublisher = new gcp.pubsub.TopicIAMMember(
   { provider }
 )
 
+// grant the pubsub service account permissions to access
+// the subscription
+const pubsubServiceAccountStagingStorageSubscriber =
+  new gcp.pubsub.TopicIAMMember(
+    `${tag}-pubsub-sa-staging-storage-deadletter-subscriber`,
+    {
+      topic: stagingStorageTopicName,
+      project: coreProject,
+      role: 'roles/pubsub.subscriber',
+      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
+    },
+    { provider: coreProvider }
+  )
+
+// // Grant the deploying SA actAs on the push SA — within the same program
+// const deployingServiceAccountInvokerAccountUser =
+//   new gcp.serviceaccount.IAMMember(
+//     'deploying-sa-invoker-account-user',
+//     {
+//       serviceAccountId: loaderInvokerServiceAccount.name,
+//       role: 'roles/iam.serviceAccountUser',
+//       member: pulumi.interpolate`serviceAccount:${deployingServiceAccountEmail}`,
+//     },
+//     { provider }
+//   )
+
 // create the subscription with a deadletter policy that
 // sends failed messages to the deadletter topic
-export const loaderSubscription = new gcp.pubsub.Subscription(
-  `${tag}-loader-deadletter-topic-archive-subscription`,
+export const stagingStorageSubscription = new gcp.pubsub.Subscription(
+  `${tag}-staging-storage-subscription`,
   {
-    topic: stagingStorageTopicName,
+    topic: pulumi.interpolate`projects/${coreProject}/topics/${stagingStorageTopicName}`,
     deadLetterPolicy: {
       deadLetterTopic: loaderDeadletterTopic.id,
       maxDeliveryAttempts: 5,
@@ -114,6 +146,8 @@ export const loaderSubscription = new gcp.pubsub.Subscription(
   {
     provider,
     dependsOn: [
+      // deployingServiceAccountInvokerAccountUser,
+      pubsubServiceAccountStagingStorageSubscriber,
       loaderInvokerServiceAccountTokenCreator,
       pubsubServiceAccountDeadletterBucketReader,
       pubsubServiceAccountDeadletterObjectCreator,
@@ -126,9 +160,9 @@ export const loaderSubscription = new gcp.pubsub.Subscription(
 // grant the pubsub service account permissions to access
 // the subscription
 const pubsubServiceAccountSubscriber = new gcp.pubsub.SubscriptionIAMMember(
-  `${tag}-pubsub-sa-loader-deadletter-subscriber`,
+  `${tag}-pubsub-sa-staging-storage-deadletter-subscriber`,
   {
-    subscription: loaderSubscription.name,
+    subscription: stagingStorageSubscription.name,
     role: 'roles/pubsub.subscriber',
     member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
   },

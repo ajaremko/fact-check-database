@@ -1,8 +1,8 @@
 config:
-  website:project: news-research-dev
+  website:project: fact-check-database-dev
   website:region: us-central1
-  website:tag: dev-339
-  website:coreStackName: alfredsyoung/news-research
+  website:tag: dev-local_1783370309
+  website:coreStackName: alfredsyoung/fact-check-database-core
   website:logLevel: debug
   website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
@@ -13,3 +13,4 @@ config:
   website:resendConfirmationTemplateId: ae8e79a2-8a86-455d-a4a1-13f6597fb8b6
   website:resendApiKeySecretVersion: 1
   website:adminEmail: alfredsyoung@gmail.com
+  website:htpasswdSecretVersion: 1

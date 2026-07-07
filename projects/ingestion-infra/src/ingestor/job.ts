@@ -6,6 +6,7 @@ import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { archiveBucketName } from '../archive'
 import { getImageUrl } from '../shared'
+import { cloudRunArtifactRegistryReader } from '../iam'
 
 import { ingestorTopic } from './topic'
 
@@ -79,6 +80,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
       ingestorRawArchiveBucketCreator,
       ingestorTopicPublisher,
       cloudtraceAgent,
+      cloudRunArtifactRegistryReader,
     ],
     provider,
   }

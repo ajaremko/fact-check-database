@@ -22,13 +22,61 @@ static_resources:
                   - name: envoy.filters.http.cors
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
-                  - name: envoy.filters.http.basic_auth
+                  - name: envoy.filters.http.ext_authz
                     typed_config:
-                      '@type': type.googleapis.com/envoy.extensions.filters.http.basic_auth.v3.BasicAuth
-                      users:
-                        - username: 'developer'
-                          password:
-                            inline_string: '{SHA}meozafZ1G3mM0JGdAr+Ud5sik08='
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      # Fail closed: if oauth2-proxy is unreachable, deny the request.
+                      failure_mode_allow: false
+                      http_service:
+                        server_uri:
+                          uri: http://127.0.0.1:4180
+                          cluster: oauth2_proxy_service
+                          timeout: 0.5s
+                        # No path_prefix: it prepends to the original request path
+                        # rather than replacing it (e.g. prefix "/oauth2/auth" +
+                        # original path "/" became "/oauth2/auth/", which collided
+                        # with oauth2-proxy's own trailing-slash redirect and caused
+                        # a 308 that browsers auto-follow to a blank page). Letting
+                        # the check call mirror the original path avoids this —
+                        # oauth2-proxy's auth check applies to any path generically.
+                        authorization_request:
+                          # Tell oauth2-proxy the *real* original request details.
+                          # X-Auth-Request-Redirect is the specific header
+                          # oauth2-proxy's sign-in page reads to populate its "rd"
+                          # (redirect-after-login) value — without it, oauth2-proxy
+                          # only sees the fixed /oauth2/auth path Envoy calls it on,
+                          # and redirects back to that instead of the page the user
+                          # actually requested.
+                          headers_to_add:
+                            - key: X-Forwarded-Proto
+                              value: 'https'
+                            - key: X-Forwarded-Host
+                              value: '%REQ(:AUTHORITY)%'
+                            - key: X-Auth-Request-Redirect
+                              value: '%REQ(:PATH)%'
+                          # oauth2-proxy needs the cookie to check the session,
+                          # and needs to see original headers to build redirect URLs.
+                          allowed_headers:
+                            patterns:
+                              - exact: cookie
+                              - exact: x-forwarded-host
+                              - exact: x-forwarded-proto
+                        authorization_response:
+                          # Let oauth2-proxy set/refresh its session cookie.
+                          allowed_upstream_headers:
+                            patterns:
+                              - exact: set-cookie
+                          allowed_client_headers_on_success:
+                            patterns:
+                              - exact: set-cookie
+                          # On a 401 from oauth2-proxy, forward its Location header
+                          # (for redirects) and Content-Type (so the login page HTML
+                          # renders instead of displaying as raw text).
+                          allowed_client_headers:
+                            patterns:
+                              - exact: set-cookie
+                              - exact: location
+                              - exact: content-type
                   - name: envoy.filters.http.router
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -46,6 +94,31 @@ static_resources:
                         allow_headers: origin,keep-alive,user-agent,cache-control,content-type,content-transfer-encoding, authorization
                         max_age: '1728000'
                       routes:
+                        # /health must come before the catch-all "/" route,
+                        # since routes are matched top-to-bottom on first match.
+                        - match:
+                            path: /health
+                          route:
+                            host_rewrite_literal: 127.0.0.1
+                            cluster: backend_service
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              '@type': type.googleapis.com/envoy.config.route.v3.FilterConfig
+                              disabled: true
+
+                        # oauth2-proxy's own endpoints (login page, callback, sign-out,
+                        # etc.) must be reachable without already having a session,
+                        # and must be routed to oauth2-proxy itself, not the app.
+                        - match:
+                            prefix: /oauth2/
+                          route:
+                            host_rewrite_literal: 127.0.0.1
+                            cluster: oauth2_proxy_service
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              '@type': type.googleapis.com/envoy.config.route.v3.FilterConfig
+                              disabled: true
+
                         - match:
                             prefix: '/'
                           route:
@@ -64,3 +137,16 @@ static_resources:
                     socket_address:
                       address: 127.0.0.1
                       port_value: 3000
+
+    - name: oauth2_proxy_service
+      type: LOGICAL_DNS
+      dns_lookup_family: V4_ONLY
+      load_assignment:
+        cluster_name: oauth2_proxy_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 4180

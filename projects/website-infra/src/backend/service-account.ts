@@ -4,7 +4,7 @@ import * as pulumi from '@pulumi/pulumi'
 import { gcpProject, tag } from '../config'
 import { provider } from '../project'
 
-import { envoyConfig } from './envoy'
+import { envoyConfig, htpasswdConfig, oauth2ProxyConfig } from './envoy'
 
 export const websiteBackendServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-backend-sa`,
@@ -15,8 +15,8 @@ export const websiteBackendServiceAccount = new gcp.serviceaccount.Account(
   { provider }
 )
 
-export const secretAccessorBinding = new gcp.secretmanager.SecretIamMember(
-  `${tag}-backend-secret-accessor`,
+export const envoySecretAccessorBinding = new gcp.secretmanager.SecretIamMember(
+  `${tag}-backend-envoy-secret-accessor`,
   {
     secretId: envoyConfig.secretId,
     role: 'roles/secretmanager.secretAccessor',
@@ -24,6 +24,28 @@ export const secretAccessorBinding = new gcp.secretmanager.SecretIamMember(
   },
   { provider }
 )
+
+export const htpasswdSecretAccessorBinding =
+  new gcp.secretmanager.SecretIamMember(
+    `${tag}-backend-htpasswd-secret-accessor`,
+    {
+      secretId: htpasswdConfig.secretId,
+      role: 'roles/secretmanager.secretAccessor',
+      member: pulumi.interpolate`serviceAccount:${websiteBackendServiceAccount.email}`,
+    },
+    { provider }
+  )
+
+export const oauth2ProxySecretAccessorBinding =
+  new gcp.secretmanager.SecretIamMember(
+    `${tag}-backend-oauth2-proxy-secret-accessor`,
+    {
+      secretId: oauth2ProxyConfig.secretId,
+      role: 'roles/secretmanager.secretAccessor',
+      member: pulumi.interpolate`serviceAccount:${websiteBackendServiceAccount.email}`,
+    },
+    { provider }
+  )
 
 export const cloudtraceAgent = new gcp.projects.IAMMember(
   `${tag}-backend-trace-agent`,
@@ -56,7 +78,9 @@ export const monitoringMetricWriter = new gcp.projects.IAMMember(
 )
 
 export const iamMembers = [
-  secretAccessorBinding,
+  envoySecretAccessorBinding,
+  htpasswdSecretAccessorBinding,
+  oauth2ProxySecretAccessorBinding,
   cloudtraceAgent,
   telemetryTracesWriter,
   monitoringMetricWriter,

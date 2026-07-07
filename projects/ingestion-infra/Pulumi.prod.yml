@@ -5,7 +5,7 @@ config:
   ingestion:archiveLocation: US
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
-  ingestion:tag: dev-347
+  ingestion:tag: local_1783026378-07.02.26-e196278
   ingestion:logLevel: info
   ingestion:logRetentionDays: 1
   ingestion:batchRetentionDays: 1

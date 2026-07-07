@@ -8,10 +8,17 @@ export const tag = 'analysis'
 const analysisConfig = new pulumi.Config('analysis')
 export const gcpProject = analysisConfig.require('project')
 export const gcpRegion = analysisConfig.require('region')
+export const deployingServiceAccountEmail = analysisConfig.require(
+  'deployingServiceAccountEmail'
+)
 
 const coreStackName = analysisConfig.require('coreStackName')
 // Format: <organization>/<project>/<stack>
 const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
+
+export const coreProject = coreStackRef.getOutput('gcpProject')
+export const coreRegion = coreStackRef.getOutput('gcpRegion')
+
 export const stagingStorageTopicName = coreStackRef.getOutput(
   'stagingStorageTopicName'
 )
@@ -22,6 +29,9 @@ export const stagingStorageBucketName = coreStackRef.getOutput(
 // Retrieve exported artifact registry details
 export const artifactRegistryLocation = coreStackRef.getOutput(
   'artifactRegistryLocation'
+)
+export const artifactRegistryName = coreStackRef.getOutput(
+  'artifactRegistryName'
 )
 export const artifactRegistryRepositoryId = coreStackRef.getOutput(
   'artifactRegistryRepositoryId'

@@ -10,6 +10,10 @@ const ingestionConfig = new pulumi.Config('ingestion')
 const coreStackName = ingestionConfig.require('coreStackName')
 // Format: <organization>/<project>/<stack>
 const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
+
+export const coreProject = coreStackRef.getOutput('gcpProject')
+export const coreRegion = coreStackRef.getOutput('gcpRegion')
+
 export const stagingStorageTopicName = coreStackRef.getOutput(
   'stagingStorageTopicName'
 )
@@ -20,6 +24,9 @@ export const stagingStorageBucketName = coreStackRef.getOutput(
 // Retrieve exported artifact registry details
 export const artifactRegistryLocation = coreStackRef.getOutput(
   'artifactRegistryLocation'
+)
+export const artifactRegistryName = coreStackRef.getOutput(
+  'artifactRegistryName'
 )
 export const artifactRegistryRepositoryId = coreStackRef.getOutput(
   'artifactRegistryRepositoryId'
