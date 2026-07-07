@@ -1,8 +1,24 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpProject, gcpRegion, tag, mainDomain } from '../config'
+import { gcpProject, gcpRegion, tag, mainDomain, stackName } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
+import { websiteBackendUrl } from '../backend'
+
+const envs =
+  stackName === 'dev'
+    ? [
+        {
+          name: 'REDIRECT_TARGET',
+          value: websiteBackendUrl,
+        },
+      ]
+    : [
+        {
+          name: 'REDIRECT_TARGET',
+          value: mainDomain,
+        },
+      ]
 
 export const redirectService = new gcp.cloudrun.Service(
   `${tag}-redirect-service`,
@@ -17,12 +33,7 @@ export const redirectService = new gcp.cloudrun.Service(
           {
             // See https://hub.docker.com/r/morbz/docker-web-redirect/
             image: 'morbz/docker-web-redirect:v1.0',
-            envs: [
-              {
-                name: 'REDIRECT_TARGET',
-                value: mainDomain,
-              },
-            ],
+            envs: envs,
           },
         ],
       },

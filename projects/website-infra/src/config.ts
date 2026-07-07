@@ -46,7 +46,7 @@ export const logLevel = websiteConfig.require('logLevel')
 export const verifiedDomains =
   websiteConfig.requireObject<string[]>('verifiedDomains')
 
-export const mainDomain = verifiedDomains[0]
+export const [mainDomain, ...secondaryDomains] = verifiedDomains
 
 if (!mainDomain) {
   throw new Error(

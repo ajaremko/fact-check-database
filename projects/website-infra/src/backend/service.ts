@@ -205,5 +205,3 @@ export const publicAccess = new gcp.cloudrunv2.ServiceIamMember(
   },
   { provider }
 )
-
-export const websiteUrl = websiteService.statuses[0].url

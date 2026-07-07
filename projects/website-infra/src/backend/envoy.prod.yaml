@@ -65,7 +65,6 @@ static_resources:
                         - match:
                             prefix: '/'
                           route:
-                            host_rewrite_literal: 127.0.0.1
                             cluster: backend_service
   clusters:
     - name: backend_service

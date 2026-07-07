@@ -47,6 +47,16 @@ export const oauth2ProxySecretAccessorBinding =
     { provider }
   )
 
+export const recaptchaEnterpriseAgent = new gcp.projects.IAMMember(
+  `${tag}-backend-recaptcha-enterprise-agent`,
+  {
+    project: gcpProject,
+    role: 'roles/recaptchaenterprise.agent',
+    member: pulumi.interpolate`serviceAccount:${websiteBackendServiceAccount.email}`,
+  },
+  { provider }
+)
+
 export const cloudtraceAgent = new gcp.projects.IAMMember(
   `${tag}-backend-trace-agent`,
   {
@@ -78,6 +88,7 @@ export const monitoringMetricWriter = new gcp.projects.IAMMember(
 )
 
 export const iamMembers = [
+  recaptchaEnterpriseAgent,
   envoySecretAccessorBinding,
   htpasswdSecretAccessorBinding,
   oauth2ProxySecretAccessorBinding,

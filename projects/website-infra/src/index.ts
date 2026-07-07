@@ -1,6 +1,8 @@
 export * from './algolia'
-export * from './recaptcha'
+export * from './backend'
 export * from './emailer'
+export * from './recaptcha'
+export * from './redirect'
 
 export {
   gcpProject as websiteGcpProject,
@@ -8,5 +10,3 @@ export {
   dockerTag as websiteDockerTag,
   verifiedDomains as websiteVerifiedDomains,
 } from './config'
-export { redirectUrl } from './redirect/service'
-export { websiteUrl } from './backend/service'

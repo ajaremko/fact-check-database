@@ -99,7 +99,6 @@ static_resources:
                         - match:
                             path: /health
                           route:
-                            host_rewrite_literal: 127.0.0.1
                             cluster: backend_service
                           typed_per_filter_config:
                             envoy.filters.http.ext_authz:
@@ -112,7 +111,6 @@ static_resources:
                         - match:
                             prefix: /oauth2/
                           route:
-                            host_rewrite_literal: 127.0.0.1
                             cluster: oauth2_proxy_service
                           typed_per_filter_config:
                             envoy.filters.http.ext_authz:
@@ -122,7 +120,6 @@ static_resources:
                         - match:
                             prefix: '/'
                           route:
-                            host_rewrite_literal: 127.0.0.1
                             cluster: backend_service
   clusters:
     - name: backend_service
