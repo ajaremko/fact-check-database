@@ -1,5 +1,2 @@
-export * from './StorageReader'
-export * from './StorageWriter'
-export * from './FilePointer'
 export * from './Source'
 export * from './Timestamp'

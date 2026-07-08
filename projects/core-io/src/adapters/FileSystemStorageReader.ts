@@ -1,7 +1,7 @@
 import { Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { StorageReadError, StorageReader } from '../StorageReader'
+import { StorageReadError, StorageReader } from '../ports/StorageReader'
 
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem

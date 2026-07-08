@@ -8,7 +8,7 @@ import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/o
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as AlgoliaSearchClient from '@news-research/core-vendor/algolia/AlgoliaSearchClient'
-import * as CloudStorageStorageReader from '@news-research/ingestion-pipeline/shared/adapters/CloudStorageStorageReader'
+import * as CloudStorageStorageReader from '@news-research/core-io/adapters/CloudStorageStorageReader'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'

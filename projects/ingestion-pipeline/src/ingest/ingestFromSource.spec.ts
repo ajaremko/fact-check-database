@@ -2,7 +2,7 @@ import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
 import * as InMemoryFetcher from './adapters/InMemoryFetcher'
-import * as InMemoryStorageWriter from '../shared/adapters/InmemoryStorageWriter'
+import * as InMemoryStorageWriter from '@news-research/core-io/adapters/InMemoryStorageWriter'
 
 import { FetchFailureSchema, FetchSuccessSchema } from './Fetcher'
 import { ingestFromSource } from './ingestFromSource'

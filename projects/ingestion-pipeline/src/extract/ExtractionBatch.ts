@@ -6,7 +6,7 @@ import {
 } from '@news-research/core-contracts'
 import { omitNullKeys } from '@news-research/core-data'
 
-import { FilePointerSchema } from '../shared'
+import { FilePointerSchema } from '@news-research/core-io'
 
 import { ExtractionBatchReadySchema } from './contracts/v1'
 

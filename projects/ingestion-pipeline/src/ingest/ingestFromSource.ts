@@ -5,12 +5,12 @@ import * as Node from '@news-research/core-data/Node'
 import * as Yaml from '@news-research/core-data/Yaml'
 import { omitNullKeys } from '@news-research/core-data'
 
+import { writeFile } from '@news-research/core-io'
 import {
   SourceEncoded,
   TimestampEncoded,
   TimestampSchema,
   SourceSchema,
-  writeFile,
 } from '../shared'
 
 import {

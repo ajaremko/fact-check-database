@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
-import { SourceSchema, FilePointerSchema } from '../shared'
+import { FilePointerSchema } from '@news-research/core-io'
+import { SourceSchema } from '../shared'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

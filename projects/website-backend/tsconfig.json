@@ -52,7 +52,7 @@
       "path": "../core-vendor"
     },
     {
-      "path": "../core-messaging"
+      "path": "../core-io"
     },
     {
       "path": "../website-contracts"

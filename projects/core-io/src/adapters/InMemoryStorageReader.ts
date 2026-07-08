@@ -1,6 +1,6 @@
 import { Effect, Layer } from 'effect'
 
-import { StorageReadError, StorageReader } from '../StorageReader'
+import { StorageReadError, StorageReader } from '../ports/StorageReader'
 
 export function layer(storage: Record<string, string>) {
   return Layer.succeed(StorageReader, {

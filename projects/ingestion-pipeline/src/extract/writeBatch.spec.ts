@@ -3,7 +3,7 @@ import { Effect } from 'effect'
 
 import { FactChecksTableDBSchema } from '@news-research/core-contracts'
 
-import * as InMemoryStorageWriter from '../shared/adapters/InmemoryStorageWriter'
+import * as InMemoryStorageWriter from '@news-research/core-io/adapters/InMemoryStorageWriter'
 
 import { writeBatch } from './writeBatch'
 

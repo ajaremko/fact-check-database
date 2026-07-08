@@ -4,7 +4,7 @@ import * as Ndjson from '@news-research/core-data/Ndjson'
 import * as Node from '@news-research/core-data/Node'
 import { FactChecksTableDBSchema } from '@news-research/core-contracts'
 
-import { writeFile } from '../shared'
+import { writeFile } from '@news-research/core-io'
 
 import {
   ExtractionBatchSchema,

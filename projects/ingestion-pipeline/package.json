@@ -76,46 +76,6 @@
       "types": "./dist/shared/contracts/*/index.d.ts",
       "import": "./dist/shared/contracts/*/index.js",
       "default": "./dist/shared/contracts/*/index.js"
-    },
-    "./shared/StorageWriter": {
-      "types": "./dist/shared/StorageWriter.d.ts",
-      "import": "./dist/shared/StorageWriter.js",
-      "default": "./dist/shared/StorageWriter.js"
-    },
-    "./shared/StorageReader": {
-      "types": "./dist/shared/StorageReader.d.ts",
-      "import": "./dist/shared/StorageReader.js",
-      "default": "./dist/shared/StorageReader.js"
-    },
-    "./shared/adapters/CloudStorageStorageReader": {
-      "types": "./dist/shared/adapters/CloudStorageStorageReader.d.ts",
-      "import": "./dist/shared/adapters/CloudStorageStorageReader.js",
-      "default": "./dist/shared/adapters/CloudStorageStorageReader.js"
-    },
-    "./shared/adapters/CloudStorageStorageWriter": {
-      "types": "./dist/shared/adapters/CloudStorageStorageWriter.d.ts",
-      "import": "./dist/shared/adapters/CloudStorageStorageWriter.js",
-      "default": "./dist/shared/adapters/CloudStorageStorageWriter.js"
-    },
-    "./shared/adapters/FileSystemStorageReader": {
-      "types": "./dist/shared/adapters/FileSystemStorageReader.d.ts",
-      "import": "./dist/shared/adapters/FileSystemStorageReader.js",
-      "default": "./dist/shared/adapters/FileSystemStorageReader.js"
-    },
-    "./shared/adapters/FileSystemStorageWriter": {
-      "types": "./dist/shared/adapters/FileSystemStorageWriter.d.ts",
-      "import": "./dist/shared/adapters/FileSystemStorageWriter.js",
-      "default": "./dist/shared/adapters/FileSystemStorageWriter.js"
-    },
-    "./shared/adapters/InMemoryStorageReader": {
-      "types": "./dist/shared/adapters/InMemoryStorageReader.d.ts",
-      "import": "./dist/shared/adapters/InMemoryStorageReader.js",
-      "default": "./dist/shared/adapters/InMemoryStorageReader.js"
-    },
-    "./shared/adapters/InMemoryStorageWriter": {
-      "types": "./dist/shared/adapters/InMemoryStorageWriter.d.ts",
-      "import": "./dist/shared/adapters/InMemoryStorageWriter.js",
-      "default": "./dist/shared/adapters/InMemoryStorageWriter.js"
     }
   },
   "dependencies": {
@@ -125,6 +85,7 @@
     "http-status-codes": "^2.3.0",
     "@news-research/core-contracts": "0.0.1",
     "@news-research/core-data": "0.0.1",
+    "@news-research/core-io": "0.0.1",
     "@news-research/core-vendor": "0.0.1"
   },
   "nx": {

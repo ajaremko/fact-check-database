@@ -13,7 +13,7 @@ import { createServer } from 'node:http'
 import * as Node from '@news-research/core-data/Node'
 import * as Ndjson from '@news-research/core-data/Ndjson'
 import * as AlgoliaSearchClient from '@news-research/core-vendor/algolia/AlgoliaSearchClient'
-import { StorageReader } from '@news-research/ingestion-pipeline/shared'
+import { StorageReader } from '@news-research/core-io'
 import {
   StorageObjectAttributesSchema,
   PubsubMessagePayload,

@@ -8,7 +8,8 @@ import {
   ArchivePathSchema,
 } from '../shared/contracts/v1'
 
-import { SourceSchema, FilePointerSchema, TimestampSchema } from '../shared'
+import { FilePointerSchema } from '@news-research/core-io'
+import { SourceSchema, TimestampSchema } from '../shared'
 
 import { FetchResultSchema } from './Fetcher'
 import { ObservationIngestedSchema } from './contracts/v1'

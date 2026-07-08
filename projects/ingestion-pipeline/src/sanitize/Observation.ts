@@ -2,12 +2,8 @@ import { Schema, ParseResult } from 'effect'
 
 import { IngestionRecordSchema } from '../shared/contracts/v1'
 
-import {
-  FilePointerSchema,
-  SourceCollectionSchema,
-  SourceSchema,
-  TimestampSchema,
-} from '../shared'
+import { FilePointerSchema } from '@news-research/core-io'
+import { SourceCollectionSchema, SourceSchema, TimestampSchema } from '../shared'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,

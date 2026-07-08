@@ -3,7 +3,7 @@ import { ConfigError, Effect, Layer } from 'effect'
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
 
-import { StorageReadError, StorageReader } from '../StorageReader'
+import { StorageReadError, StorageReader } from '../ports/StorageReader'
 
 export const make = Effect.gen(function* () {
   const { client } = yield* StorageClient.StorageClient

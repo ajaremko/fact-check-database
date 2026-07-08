@@ -37,7 +37,7 @@
       "path": "./projects/core-data"
     },
     {
-      "path": "./projects/core-messaging"
+      "path": "./projects/core-io"
     },
     {
       "path": "./projects/ingestion-extractor"

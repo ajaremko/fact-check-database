@@ -11,7 +11,7 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
-import { readFile } from '@news-research/ingestion-pipeline/shared'
+import { readFile } from '@news-research/core-io'
 import {
   StorageObjectAttributesSchema,
   PubsubMessagePayload,

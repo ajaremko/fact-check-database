@@ -1,4 +1,7 @@
+export * from './ports/FilePointer'
 export * from './ports/MessageBatch'
 export * from './ports/MessageBody'
 export * from './ports/MessageQueue'
 export * from './ports/Publisher'
+export * from './ports/StorageReader'
+export * from './ports/StorageWriter'

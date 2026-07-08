@@ -3,14 +3,8 @@ import { Effect, Metric, pipe, Schema } from 'effect'
 import * as Node from '@news-research/core-data/Node'
 import * as Yaml from '@news-research/core-data/Yaml'
 
-import {
-  FilePointer,
-  TimestampEncoded,
-  FilePointerSchema,
-  TimestampSchema,
-  readFile,
-  writeFile,
-} from '../shared'
+import { FilePointer, FilePointerSchema, readFile, writeFile } from '@news-research/core-io'
+import { TimestampEncoded, TimestampSchema } from '../shared'
 
 import {
   SanitizedObservation,

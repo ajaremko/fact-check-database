@@ -1,7 +1,7 @@
 import { Config, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { StorageWriteError, StorageWriter } from '../StorageWriter'
+import { StorageWriteError, StorageWriter } from '../ports/StorageWriter'
 
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')

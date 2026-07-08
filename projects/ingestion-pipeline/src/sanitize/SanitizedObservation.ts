@@ -9,7 +9,8 @@ import {
   SanitizerRecord,
   SanitizerRecordMetadataSchema,
 } from '../shared/contracts/v1'
-import { FilePointerSchema, SourceSchema, TimestampSchema } from '../shared'
+import { FilePointerSchema } from '@news-research/core-io'
+import { SourceSchema, TimestampSchema } from '../shared'
 
 import { ObservationSanitizedSchema } from './contracts/v1'
 import { PolicyDecisionSchema } from './PolicyDecision'

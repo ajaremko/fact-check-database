@@ -27,6 +27,16 @@
       "import": "./dist/adapters/CloudPubsubPublisher.js",
       "default": "./dist/adapters/CloudPubsubPublisher.js"
     },
+    "./adapters/CloudStorageStorageReader": {
+      "types": "./dist/adapters/CloudStorageStorageReader.d.ts",
+      "import": "./dist/adapters/CloudStorageStorageReader.js",
+      "default": "./dist/adapters/CloudStorageStorageReader.js"
+    },
+    "./adapters/CloudStorageStorageWriter": {
+      "types": "./dist/adapters/CloudStorageStorageWriter.d.ts",
+      "import": "./dist/adapters/CloudStorageStorageWriter.js",
+      "default": "./dist/adapters/CloudStorageStorageWriter.js"
+    },
     "./adapters/FileSystemMessageBatch": {
       "types": "./dist/adapters/FileSystemMessageBatch.d.ts",
       "import": "./dist/adapters/FileSystemMessageBatch.js",
@@ -42,6 +52,16 @@
       "import": "./dist/adapters/FileSystemPublisher.js",
       "default": "./dist/adapters/FileSystemPublisher.js"
     },
+    "./adapters/FileSystemStorageReader": {
+      "types": "./dist/adapters/FileSystemStorageReader.d.ts",
+      "import": "./dist/adapters/FileSystemStorageReader.js",
+      "default": "./dist/adapters/FileSystemStorageReader.js"
+    },
+    "./adapters/FileSystemStorageWriter": {
+      "types": "./dist/adapters/FileSystemStorageWriter.d.ts",
+      "import": "./dist/adapters/FileSystemStorageWriter.js",
+      "default": "./dist/adapters/FileSystemStorageWriter.js"
+    },
     "./adapters/HttpServerMessageQueueFeeder": {
       "types": "./dist/adapters/HttpServerMessageQueueFeeder.d.ts",
       "import": "./dist/adapters/HttpServerMessageQueueFeeder.js",
@@ -51,6 +71,16 @@
       "types": "./dist/adapters/InMemoryMessageQueue.d.ts",
       "import": "./dist/adapters/InMemoryMessageQueue.js",
       "default": "./dist/adapters/InMemoryMessageQueue.js"
+    },
+    "./adapters/InMemoryStorageReader": {
+      "types": "./dist/adapters/InMemoryStorageReader.d.ts",
+      "import": "./dist/adapters/InMemoryStorageReader.js",
+      "default": "./dist/adapters/InMemoryStorageReader.js"
+    },
+    "./adapters/InMemoryStorageWriter": {
+      "types": "./dist/adapters/InMemoryStorageWriter.d.ts",
+      "import": "./dist/adapters/InMemoryStorageWriter.js",
+      "default": "./dist/adapters/InMemoryStorageWriter.js"
     }
   },
   "dependencies": {
