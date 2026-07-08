@@ -9,7 +9,7 @@ import {
   MessageBatch,
   BatchMessage,
   // publish,
-} from '@news-research/core-messaging'
+} from '@news-research/core-io'
 import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
 
 interface JobContext {

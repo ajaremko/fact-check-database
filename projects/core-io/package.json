@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/core-messaging",
+  "name": "@news-research/core-io",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -64,6 +64,6 @@
     "@news-research/core-vendor": "0.0.1"
   },
   "nx": {
-    "name": "core-messaging"
+    "name": "core-io"
   }
 }

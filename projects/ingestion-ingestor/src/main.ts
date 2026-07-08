@@ -14,8 +14,8 @@ import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/o
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
 import * as HttpClientFetcher from '@news-research/ingestion-pipeline/ingest/adapters/HttpClientFetcher'
-import * as CloudPubsubPublisher from '@news-research/core-messaging/adapters/CloudPubsubPublisher'
-import * as FileSystemPublisher from '@news-research/core-messaging/adapters/FileSystemPublisher'
+import * as CloudPubsubPublisher from '@news-research/core-io/adapters/CloudPubsubPublisher'
+import * as FileSystemPublisher from '@news-research/core-io/adapters/FileSystemPublisher'
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'

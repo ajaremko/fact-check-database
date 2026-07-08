@@ -14,7 +14,9 @@ describe('readDirectoryMessages', () => {
       yield* fs.writeFileString(`${dir}/two.json`, 'second')
 
       const entries = yield* readDirectoryMessages(dir)
-      const byId = new Map(entries.map((entry) => [entry.message.messageId, entry]))
+      const byId = new Map(
+        entries.map((entry) => [entry.message.messageId, entry])
+      )
 
       expect(entries).toHaveLength(2)
       expect(byId.get('one.json')?.path).toBe(`${dir}/one.json`)

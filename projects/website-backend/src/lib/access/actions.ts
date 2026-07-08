@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { Effect } from 'effect'
 
 import { AccessRequestSchema } from '@news-research/website-contracts'
-import { publish } from '@news-research/core-messaging'
+import { publish } from '@news-research/core-io'
 
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
 import { appLayer } from '@/lib/pubsub/app-layer'

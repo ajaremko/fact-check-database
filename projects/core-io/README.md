@@ -1,4 +1,4 @@
-# core-messaging
+# core-io
 
 Shared messaging ports (`MessageBatch`, `MessageQueue`, `Publisher`) and swappable adapters for moving data between pipeline stages, without binding business logic to a specific transport.
 
@@ -23,7 +23,7 @@ Each consumer wires the adapters appropriate to their own environment (local fil
 | `HttpServerMessageQueueFeeder`  | `MessageQueue`   | Production  | Push-based ingestion entry point — accepts messages over an HTTP POST route                  |
 | `InMemoryMessageQueue`          | `MessageQueue`   | Test        | In-memory queue used as a test double                                                        |
 
-Each adapter is imported via its own subpath export (e.g. `@news-research/core-messaging/adapters/FileSystemPublisher`) rather than the package root, so consumers only pull in the transport dependencies they actually use.
+Each adapter is imported via its own subpath export (e.g. `@news-research/core-io/adapters/FileSystemPublisher`) rather than the package root, so consumers only pull in the transport dependencies they actually use.
 
 ## What this library does NOT do
 
@@ -47,7 +47,7 @@ Each adapter is imported via its own subpath export (e.g. `@news-research/core-m
 ## Project Structure
 
 ```
-projects/core-messaging/
+projects/core-io/
 ├── src/
 │   ├── index.ts                  # Barrel export for ports (adapters are imported via subpath exports)
 │   ├── ports/
@@ -65,4 +65,4 @@ projects/core-messaging/
 
 ## Building
 
-Run `nx build core-messaging` to build the library.
+Run `nx build core-io` to build the library.

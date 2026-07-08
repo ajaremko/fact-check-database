@@ -2,7 +2,7 @@ import { Array, Clock, Context, Effect, Option, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
 import { ingestFromSource } from '@news-research/ingestion-pipeline/ingest'
-import { publish } from '@news-research/core-messaging'
+import { publish } from '@news-research/core-io'
 
 import { SourceList, Source } from './SourceList'
 
