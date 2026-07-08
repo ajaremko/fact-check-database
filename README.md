@@ -1,10 +1,10 @@
-# News Research – Secure Ingestion & Analysis Infrastructure
+# Fact Check Database – Secure Ingestion & Analysis Infrastructure
 
-✨ This repository contains a production grade research platform designed to support information integrity, misinformation, and media ecosystem research. ✨
+✨ This repository contains a fact check aggregator and production grade research platform designed to support information integrity, misinformation, and media ecosystem research. ✨
 
 ## Overview
 
-The platform’s primary goal is to provide secure, auditable, and reproducible infrastructure for collecting, archiving, and analyzing public information sources (e.g. news feeds, fact-checking outputs, large-scale media datasets).
+The platform’s primary goal is to provide secure, auditable, and reproducible infrastructure for collecting, archiving, and analyzing public fact checking information sources (e.g. news feeds, fact-checking outputs).
 
 This system emphasizes:
 
@@ -52,42 +52,61 @@ Accordingly, the platform incorporates:
 
 ## Repository Structure
 
-This repository is organized as an Nx monorepo with a pulumi infrastructure in apps/infra alongside other services.
+This repository is organized as an Nx monorepo with libraries, apps and pulumi infrastructure projects living alongside each other in `/projects`.
 
 ```
 /
-├── apps/
-│   ├── infra/                # Consolidated Pulumi infrastructure project
-│   │   ├── src/
-│   │   │   ├── modules/      # Capability-specific infrastructure modules
-│   │   │   └── ...           # Core platform primitives
+├── projects/                 # Contains IaC projects, apps and libraries
+│   ├── core-infra/           # Core Pulumi infrastructure project
+│   │   ├── src/              # IaC source
+│   │   │   └── ...
 │   │   └── docs/             # Infrastructure documentation
-│   └── <service>/            # Dockerized applications (Cloud Run, workers, etc.)
-├── packages/                 # Shared libraries (schemas, config, utilities)
+│   │
+│   ├── core-contracts/       # Shared library
+│   │   └── src/              # Library source code
+│   │       └── ...
+│   │
+│   └── ingestion-ingestor/   # Dockerized applications (Cloud Run, workers, etc.)
+│       ├── src/              # App source code
+│       │   └── ...
+│       └── docs/             # App documentation
+│
 ├── docs/                     # Cross-cutting documentation
 └── scripts/                  # Deployment and operational helpers
 ```
 
 ### Infrastructure
 
-All infrastructure is provisioned through a single Pulumi project at `apps/infra/`. This simplifies deployment ordering and state management while maintaining logical separation via modules.
+All infrastructure is provisioned through multiple Pulumi projects in `projects/*-infra/`.
 
-See [apps/infra/README.md](./apps/infra/README.md) for infrastructure documentation.
+See [projects/core-infra/README.md](./projects/core-infra/README.md) for infrastructure documentation.
+
+| Stack           | Documentation                                     |
+| --------------- | ------------------------------------------------- |
+| core-infra      | [README.md](./projects/core-infra/README.md)      |
+| ingestion-infra | [README.md](./projects/ingestion-infra/README.md) |
+| analysis-infra  | [README.md](./projects/analysis-infra/README.md)  |
+| research-infra  | [README.md](./projects/research-infra/README.md)  |
+| website-infra   | [README.md](./projects/website-infra/README.md)   |
 
 ### Services
 
-Dockerized applications (API services, workers, scheduled jobs) live in `apps/` as separate Nx projects. Each service:
+Dockerized applications (API services, workers, scheduled jobs) live in `projects/` as separate Nx projects. Each service:
 
 - Has its own Dockerfile and deployment configuration
 - Is deployed to managed compute (e.g. Cloud Run)
 
 See further documentation for individual services:
 
-| Service   | Documentation                           |
-| --------- | --------------------------------------- |
-| ingestor  | [README.md](./apps/ingestor/README.md)  |
-| sanitizer | [README.md](./apps/sanitizer/README.md) |
-| extractor | [README.md](./apps/extractor/README.md) |
+| Service             | Documentation                                         |
+| ------------------- | ----------------------------------------------------- |
+| ingestion-ingestor  | [README.md](./projects/ingestion-ingestor/README.md)  |
+| ingestion-sanitizer | [README.md](./projects/ingestion-sanitizer/README.md) |
+| ingestion-extractor | [README.md](./projects/ingestion-extractor/README.md) |
+| analysis-loader     | [README.md](./projects/analysis-loader/README.md)     |
+| website-backend     | [README.md](./projects/website-backend/README.md)     |
+| website-emailer     | [README.md](./projects/website-emailer/README.md)     |
+| website-loader      | [README.md](./projects/website-loader/README.md)      |
 
 ## Key Technologies
 
@@ -110,20 +129,13 @@ See [docs/nx.md](./docs/nx.md) for examples of common nx commands to run in the 
 
 ### Pulumi
 
-Pulumi provisions all infrastructure through a single project at `apps/infra/`. This modular monolith approach:
-
-- consolidates deployment into a single state and lifecycle
-- eliminates cross-project stack references and ordering complexity
-- maintains logical separation via modules within `apps/infra/src/modules/`
-- exposes stable outputs for services and CI/CD to consume
-
 Pulumi is used in a configuration-driven manner:
 
 - target GCP projects are defined in stack configuration (dev, prod)
 - services discover resources via stack outputs, not hardcoded values
 - environment parity is achieved through stack-specific configuration
 
-This model simplifies operations for a portfolio project while demonstrating infrastructure patterns appropriate for grant-funded and multi-stakeholder environments.
+This model demonstrating infrastructure patterns appropriate for grant-funded and multi-stakeholder environments.
 
 ### Docker
 
