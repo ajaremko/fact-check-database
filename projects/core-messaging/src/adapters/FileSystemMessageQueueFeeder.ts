@@ -1,47 +1,20 @@
-import { Config, Effect, Layer, Record } from 'effect'
-import { FileSystem } from '@effect/platform'
+import { Config, Effect, Layer } from 'effect'
 
-import { MessageQueue } from '../MessageQueue'
-import { MessageBody } from '../MessageBody'
+import { enqueueAndAwaitOutcome } from './internal/enqueueAndAwaitOutcome'
+import { readDirectoryMessages } from './internal/readDirectoryMessages'
 
-function process(message: MessageBody) {
-  return Effect.gen(function* () {
-    const { messages } = yield* MessageQueue
-    const span = yield* Effect.currentSpan
-    const annotations = yield* Effect.logAnnotations.pipe(
-      Effect.map(Record.fromEntries)
-    )
-    yield* Effect.asyncEffect<void, void, never, never, never, never>(
-      (resume) =>
-        Effect.asVoid(
-          messages.offer({
-            message,
-            ack: Effect.sync(() => resume(Effect.void)),
-            nack: Effect.sync(() => resume(Effect.void)),
-            span,
-            annotations,
-          })
-        )
-    )
-  })
-}
-
-const make = Effect.gen(function* () {
+export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
 
   yield* Effect.logTrace(`Processing messages in directory: ${inputDir}`)
-  const fs = yield* FileSystem.FileSystem
-  const contents = yield* fs.readDirectory(inputDir)
+  const entries = yield* readDirectoryMessages(inputDir)
 
-  for (const file of contents) {
-    const path = `${inputDir}/${file}`
+  for (const { path, message } of entries) {
     yield* Effect.logTrace(`Processing message: ${path}`)
-    const data = yield* fs.readFile(path)
-    yield* process({
-      data: Buffer.from(data),
-      attributes: {},
-      messageId: file,
-      publishTime: new Date(),
+    yield* enqueueAndAwaitOutcome({
+      message,
+      onAck: Effect.void,
+      onNack: Effect.void,
     }).pipe(
       Effect.withSpan('processMessage'),
       Effect.annotateLogs({ 'message.path': path })

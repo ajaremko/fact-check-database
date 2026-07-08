@@ -1,40 +1,28 @@
 import { Config, Effect, Layer } from 'effect'
-import { FileSystem } from '@effect/platform'
 
 import { MessageBatch, BatchMessage } from '../MessageBatch'
-import { MessageBody } from '../MessageBody'
 
-const make = Effect.gen(function* () {
+import { readDirectoryMessages } from './internal/readDirectoryMessages'
+
+export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
 
   yield* Effect.logTrace(`Creating message batch from directory: ${inputDir}`)
-  const fs = yield* FileSystem.FileSystem
-  const contents = yield* fs.readDirectory(inputDir)
-  const messages: BatchMessage[] = []
+  const entries = yield* readDirectoryMessages(inputDir)
 
-  for (const file of contents) {
-    const path = `${inputDir}/${file}`
-    const data = yield* fs.readFile(path)
-    yield* Effect.logTrace(`Adding ${path} to batch`)
-    const span = yield* Effect.makeSpan(path)
-    const annotations = {
-      'message.path': path,
-    }
-    const message: MessageBody = {
-      data: Buffer.from(data),
-      attributes: {},
-      messageId: file,
-      publishTime: new Date(),
-    }
-    messages.push({
-      message,
-      ack: Effect.void,
-      annotations,
-      span,
+  return yield* Effect.forEach(entries, ({ path, message }) =>
+    Effect.gen(function* () {
+      yield* Effect.logTrace(`Adding ${path} to batch`)
+      const span = yield* Effect.makeSpan(path)
+      const batchMessage: BatchMessage = {
+        message,
+        ack: Effect.void,
+        annotations: { 'message.path': path },
+        span,
+      }
+      return batchMessage
     })
-  }
-
-  return messages
+  )
 })
 
 export const layer = Layer.effect(MessageBatch, make)

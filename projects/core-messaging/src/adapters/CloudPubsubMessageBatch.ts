@@ -76,7 +76,7 @@ function release(subscriptionId: string) {
   }
 }
 
-const make = Effect.gen(function* () {
+export const make = Effect.gen(function* () {
   const subscriptionId = yield* Config.string('PUBSUB_SUBSCRIPTION_ID')
   const maxMessages = yield* Config.number('MESSAGE_BATCH_SIZE')
   const { messages } = yield* Effect.acquireRelease(

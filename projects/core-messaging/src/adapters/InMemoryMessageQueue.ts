@@ -15,7 +15,7 @@ function release(resource: Effect.Effect.Success<typeof acquire>) {
   })
 }
 
-const make = Effect.acquireRelease(acquire, release).pipe(
+export const make = Effect.acquireRelease(acquire, release).pipe(
   Effect.map(({ messages, errors }) => MessageQueue.of({ messages, errors }))
 )
 

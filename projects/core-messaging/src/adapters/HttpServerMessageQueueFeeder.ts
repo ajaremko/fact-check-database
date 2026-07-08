@@ -3,63 +3,31 @@ import {
   HttpServer,
   HttpServerRequest,
   HttpServerResponse,
-  HttpBody,
 } from '@effect/platform'
-import { Config, Effect, Layer, Record, Schema } from 'effect'
+import { Config, Effect, Layer, Schema } from 'effect'
 import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import { PubsubMessagePayload } from '@news-research/core-contracts'
 
-import { MessageQueue } from '../MessageQueue'
 import { MessageBody } from '../MessageBody'
+
+import { enqueueAndAwaitOutcome } from './internal/enqueueAndAwaitOutcome'
 
 const decodeMessage = Schema.decodeUnknown(PubsubMessagePayload)
 
-function process(message: MessageBody) {
-  return Effect.gen(function* () {
-    const { messages } = yield* MessageQueue
-    const span = yield* Effect.currentSpan
-    const annotations = yield* Effect.logAnnotations.pipe(
-      Effect.map(Record.fromEntries)
-    )
-    return yield* Effect.asyncEffect<
-      HttpServerResponse.HttpServerResponse,
-      HttpBody.HttpBodyError,
-      never,
-      never,
-      never,
-      never
-    >((resume) =>
-      Effect.asVoid(
-        messages.offer({
-          message,
-          ack: Effect.sync(() =>
-            resume(
-              HttpServerResponse.json(
-                {
-                  message: 'Message processed',
-                },
-                { status: StatusCodes.CREATED }
-              )
-            )
-          ),
-          nack: Effect.sync(() =>
-            resume(
-              HttpServerResponse.json(
-                {
-                  message: 'Failed to process message, please retry',
-                },
-                { status: StatusCodes.INTERNAL_SERVER_ERROR }
-              )
-            )
-          ),
-          span,
-          annotations,
-        })
-      )
-    )
+function enqueueHttpMessage(message: MessageBody) {
+  return enqueueAndAwaitOutcome({
+    message,
+    onAck: HttpServerResponse.json(
+      { message: 'Message processed' },
+      { status: StatusCodes.CREATED }
+    ),
+    onNack: HttpServerResponse.json(
+      { message: 'Failed to process message, please retry' },
+      { status: StatusCodes.INTERNAL_SERVER_ERROR }
+    ),
   })
 }
 
@@ -78,7 +46,7 @@ export function layer(path: HttpRouter.PathInput) {
           messageId: message.messageId,
           publishTime: message.publishTime,
         }
-        return yield* process(messageBody).pipe(
+        return yield* enqueueHttpMessage(messageBody).pipe(
           Effect.withSpan('processHttpRequest'),
           Effect.annotateLogs({
             'request.url': req.url,

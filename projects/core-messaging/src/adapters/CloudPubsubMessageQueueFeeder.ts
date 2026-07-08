@@ -6,6 +6,11 @@ import * as PubsubSubscription from '@news-research/core-vendor/cloud-pubsub/Pub
 
 import { MessageQueue, MessageQueueError } from '../MessageQueue'
 
+// Unlike the FileSystem/HttpServer feeders, this adapter doesn't route
+// through the internal/enqueueAndAwaitOutcome helper: the GCP Pub/Sub client
+// already exposes per-message ack()/nack() on the native SDK message, so
+// ack/nack here delegate straight to the SDK rather than bridging a queue
+// offer into an awaitable outcome via Effect.asyncEffect.
 const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
   const { messages, errors } = yield* MessageQueue
@@ -52,7 +57,7 @@ function release(resource: Effect.Effect.Success<typeof acquire>) {
   })
 }
 
-const make = Effect.acquireRelease(acquire, release)
+export const make = Effect.acquireRelease(acquire, release)
 
 const subscription = PubsubSubscription.layer(
   Config.string('PUBSUB_SUBSCRIPTION_NAME')
