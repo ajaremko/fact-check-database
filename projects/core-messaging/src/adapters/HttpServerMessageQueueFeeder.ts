@@ -10,12 +10,12 @@ import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import { PushMessage } from '@news-research/core-contracts'
+import { PubsubMessagePayload } from '@news-research/core-contracts'
 
 import { MessageQueue } from '../MessageQueue'
 import { MessageBody } from '../MessageBody'
 
-const decodeMessage = Schema.decodeUnknown(PushMessage)
+const decodeMessage = Schema.decodeUnknown(PubsubMessagePayload)
 
 function process(message: MessageBody) {
   return Effect.gen(function* () {
