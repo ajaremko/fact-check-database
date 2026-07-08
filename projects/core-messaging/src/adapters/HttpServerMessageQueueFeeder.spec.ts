@@ -4,7 +4,7 @@ import { ConfigProvider, Effect, Fiber, Layer } from 'effect'
 import { HttpClient, HttpClientRequest } from '@effect/platform'
 import { NodeHttpClient } from '@effect/platform-node'
 
-import { MessageQueue } from '../MessageQueue'
+import { MessageQueue } from '../ports/MessageQueue'
 
 import * as HttpServerMessageQueueFeeder from './HttpServerMessageQueueFeeder'
 import * as InMemoryMessageQueue from './InMemoryMessageQueue'

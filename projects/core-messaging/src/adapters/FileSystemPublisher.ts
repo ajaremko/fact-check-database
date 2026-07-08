@@ -1,7 +1,7 @@
 import { Clock, Config, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import { Publisher, PublisherError } from '../Publisher'
+import { Publisher, PublisherError } from '../ports/Publisher'
 
 export const make = Effect.gen(function* () {
   const outputDir = yield* Config.string('PUBLISHER_OUTPUT_DIR')

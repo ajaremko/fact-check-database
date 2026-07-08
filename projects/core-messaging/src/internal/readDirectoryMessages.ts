@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 import { FileSystem } from '@effect/platform'
 import type { PlatformError } from '@effect/platform/Error'
 
-import { MessageBody } from '../../MessageBody'
+import { MessageBody } from '../ports/MessageBody'
 
 export interface DirectoryMessage {
   readonly path: string

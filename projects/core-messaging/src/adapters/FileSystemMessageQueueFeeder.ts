@@ -1,7 +1,7 @@
 import { Config, Effect, Layer } from 'effect'
 
-import { enqueueAndAwaitOutcome } from './internal/enqueueAndAwaitOutcome'
-import { readDirectoryMessages } from './internal/readDirectoryMessages'
+import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
+import { readDirectoryMessages } from '../internal/readDirectoryMessages'
 
 export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')

@@ -4,7 +4,7 @@ import { Message as GcpsMessage } from '@google-cloud/pubsub'
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 import * as PubsubSubscription from '@news-research/core-vendor/cloud-pubsub/PubsubSubscription'
 
-import { MessageQueue, MessageQueueError } from '../MessageQueue'
+import { MessageQueue, MessageQueueError } from '../ports/MessageQueue'
 
 // Unlike the FileSystem/HttpServer feeders, this adapter doesn't route
 // through the internal/enqueueAndAwaitOutcome helper: the GCP Pub/Sub client

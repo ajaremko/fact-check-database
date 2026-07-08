@@ -1,8 +1,8 @@
 import { Config, Effect, Layer } from 'effect'
 
-import { MessageBatch, BatchMessage } from '../MessageBatch'
+import { MessageBatch, BatchMessage } from '../ports/MessageBatch'
 
-import { readDirectoryMessages } from './internal/readDirectoryMessages'
+import { readDirectoryMessages } from '../internal/readDirectoryMessages'
 
 export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')

@@ -1,7 +1,7 @@
 import { Effect, Record } from 'effect'
 
-import { MessageQueue } from '../../MessageQueue'
-import { MessageBody } from '../../MessageBody'
+import { MessageQueue } from '../ports/MessageQueue'
+import { MessageBody } from '../ports/MessageBody'
 
 export interface EnqueueAndAwaitOutcomeOptions<A, E = never> {
   readonly message: MessageBody

@@ -1,9 +1,9 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect, Fiber } from 'effect'
 
-import { MessageQueue } from '../../MessageQueue'
+import { MessageQueue } from '../ports/MessageQueue'
 
-import * as InMemoryMessageQueue from '../InMemoryMessageQueue'
+import * as InMemoryMessageQueue from '../adapters/InMemoryMessageQueue'
 
 import { enqueueAndAwaitOutcome } from './enqueueAndAwaitOutcome'
 

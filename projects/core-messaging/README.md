@@ -2,7 +2,7 @@
 
 Shared messaging ports (`MessageBatch`, `MessageQueue`, `Publisher`) and swappable adapters for moving data between pipeline stages, without binding business logic to a specific transport.
 
-It is consumed by the ingestion services (`ingestion-extractor`, `ingestion-ingestor`, `ingestion-sanitizer`) and by `website-backend`, each of which wires the adapters appropriate to their own environment (local filesystem/in-memory for development, GCP Pub/Sub or HTTP for production).
+Each consumer wires the adapters appropriate to their own environment (local filesystem/in-memory for development, GCP Pub/Sub or HTTP for production).
 
 ## Ports
 
@@ -12,16 +12,16 @@ It is consumed by the ingestion services (`ingestion-extractor`, `ingestion-inge
 
 ## Adapters
 
-| Adapter                          | Port implemented | Environment | Notes                                                                          |
-| --------------------------------- | ----------------- | ----------- | ------------------------------------------------------------------------------- |
-| `CloudPubsubMessageBatch`          | `MessageBatch`     | Production  | Pulls a batch from a Pub/Sub subscription; acks batch as one RPC when the scope closes |
-| `CloudPubsubMessageQueueFeeder`    | `MessageQueue`     | Production  | Feeds the queue via native Pub/Sub SDK event listeners; ack/nack delegate to the SDK message |
-| `CloudPubsubPublisher`             | `Publisher`        | Production  | Publishes to a Pub/Sub topic                                                    |
-| `FileSystemMessageBatch`           | `MessageBatch`     | Development | Reads every file in a directory into a batch                                    |
-| `FileSystemMessageQueueFeeder`     | `MessageQueue`     | Development | Reads every file in a directory and offers each onto the queue                  |
-| `FileSystemPublisher`              | `Publisher`        | Development | Writes each published message to a timestamped file                             |
-| `HttpServerMessageQueueFeeder`     | `MessageQueue`     | Production  | Push-based ingestion entry point — accepts messages over an HTTP POST route     |
-| `InMemoryMessageQueue`             | `MessageQueue`     | Test        | In-memory queue used as a test double                                          |
+| Adapter                         | Port implemented | Environment | Notes                                                                                        |
+| ------------------------------- | ---------------- | ----------- | -------------------------------------------------------------------------------------------- |
+| `CloudPubsubMessageBatch`       | `MessageBatch`   | Production  | Pulls a batch from a Pub/Sub subscription; acks batch as one RPC when the scope closes       |
+| `CloudPubsubMessageQueueFeeder` | `MessageQueue`   | Production  | Feeds the queue via native Pub/Sub SDK event listeners; ack/nack delegate to the SDK message |
+| `CloudPubsubPublisher`          | `Publisher`      | Production  | Publishes to a Pub/Sub topic                                                                 |
+| `FileSystemMessageBatch`        | `MessageBatch`   | Development | Reads every file in a directory into a batch                                                 |
+| `FileSystemMessageQueueFeeder`  | `MessageQueue`   | Development | Reads every file in a directory and offers each onto the queue                               |
+| `FileSystemPublisher`           | `Publisher`      | Development | Writes each published message to a timestamped file                                          |
+| `HttpServerMessageQueueFeeder`  | `MessageQueue`   | Production  | Push-based ingestion entry point — accepts messages over an HTTP POST route                  |
+| `InMemoryMessageQueue`          | `MessageQueue`   | Test        | In-memory queue used as a test double                                                        |
 
 Each adapter is imported via its own subpath export (e.g. `@news-research/core-messaging/adapters/FileSystemPublisher`) rather than the package root, so consumers only pull in the transport dependencies they actually use.
 
@@ -34,28 +34,29 @@ Each adapter is imported via its own subpath export (e.g. `@news-research/core-m
 
 ## Required environment variables
 
-| Variable                    | Used by                                                |
-| ---------------------------- | ------------------------------------------------------- |
-| `PUBSUB_SUBSCRIPTION_ID`      | `CloudPubsubMessageBatch`                                |
-| `MESSAGE_BATCH_SIZE`          | `CloudPubsubMessageBatch`                                |
-| `PUBSUB_SUBSCRIPTION_NAME`    | `CloudPubsubMessageQueueFeeder`                          |
-| `PUBSUB_TOPIC_NAME`           | `CloudPubsubPublisher`                                   |
-| `MESSAGE_QUEUE_INPUT_DIR`     | `FileSystemMessageBatch`, `FileSystemMessageQueueFeeder` |
-| `PUBLISHER_OUTPUT_DIR`        | `FileSystemPublisher`                                    |
-| `PORT`                        | `HttpServerMessageQueueFeeder`                           |
+| Variable                   | Used by                                                  |
+| -------------------------- | -------------------------------------------------------- |
+| `PUBSUB_SUBSCRIPTION_ID`   | `CloudPubsubMessageBatch`                                |
+| `MESSAGE_BATCH_SIZE`       | `CloudPubsubMessageBatch`                                |
+| `PUBSUB_SUBSCRIPTION_NAME` | `CloudPubsubMessageQueueFeeder`                          |
+| `PUBSUB_TOPIC_NAME`        | `CloudPubsubPublisher`                                   |
+| `MESSAGE_QUEUE_INPUT_DIR`  | `FileSystemMessageBatch`, `FileSystemMessageQueueFeeder` |
+| `PUBLISHER_OUTPUT_DIR`     | `FileSystemPublisher`                                    |
+| `PORT`                     | `HttpServerMessageQueueFeeder`                           |
 
 ## Project Structure
 
 ```
 projects/core-messaging/
 ├── src/
-│   ├── MessageBatch.ts           # Port: finite, pre-pulled batch
-│   ├── MessageQueue.ts           # Port: live, continuously-fed queue
-│   ├── Publisher.ts              # Port: outbound publish
-│   ├── MessageBody.ts            # Shared message shape
 │   ├── index.ts                  # Barrel export for ports (adapters are imported via subpath exports)
+│   ├── ports/
+│   │   ├── MessageBatch.ts       # Port: finite, pre-pulled batch
+│   │   ├── MessageQueue.ts       # Port: live, continuously-fed queue
+│   │   ├── Publisher.ts          # Port: outbound publish
+│   │   └── MessageBody.ts        # Shared message shape
+│   ├── internal/                 # Shared implementation helpers, not part of the public API
 │   └── adapters/
-│       ├── internal/             # Shared implementation helpers, not part of the public API
 │       ├── CloudPubsub*.ts       # GCP Pub/Sub adapters (production)
 │       ├── FileSystem*.ts        # Local filesystem adapters (development)
 │       ├── HttpServerMessageQueueFeeder.ts  # HTTP push ingestion entry point

@@ -2,7 +2,7 @@ import { Array, Config, Effect, Layer, Ref, Option } from 'effect'
 
 import * as PubsubSubscriberClient from '@news-research/core-vendor/cloud-pubsub/PubsubSubscriberClient'
 
-import { MessageBatch, BatchMessage } from '../MessageBatch'
+import { MessageBatch, BatchMessage } from '../ports/MessageBatch'
 
 function acquire(subscriptionId: string, maxMessages: number) {
   return Effect.gen(function* () {

@@ -3,7 +3,7 @@ import { Config, ConfigError, Effect, Layer } from 'effect'
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
 import * as PubsubTopic from '@news-research/core-vendor/cloud-pubsub/PubsubTopic'
 
-import { Publisher, PublisherError } from '../Publisher'
+import { Publisher, PublisherError } from '../ports/Publisher'
 
 export const make = Effect.gen(function* () {
   const { topic } = yield* PubsubTopic.PubsubTopic

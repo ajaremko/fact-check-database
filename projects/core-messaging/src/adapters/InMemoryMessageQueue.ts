@@ -1,6 +1,10 @@
 import { Effect, Queue, Layer } from 'effect'
 
-import { MessageQueue, QueueMessage, MessageQueueError } from '../MessageQueue'
+import {
+  MessageQueue,
+  QueueMessage,
+  MessageQueueError,
+} from '../ports/MessageQueue'
 
 const acquire = Effect.gen(function* () {
   const messages = yield* Queue.unbounded<QueueMessage>()
