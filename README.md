@@ -20,6 +20,14 @@ This project is intended to be legible to:
 - grant reviewers evaluating technical feasibility
 - policy or integrity-focused technical programs
 
+## TODOs
+
+- [] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
+- [] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
+- [] Rewrite project documentation
+- [] Remove `ingestion-replay` project
+- [] Sort fact checks feed on website using algolia queries rather than local sort
+
 ## Core Principles
 
 ### 1) Research-first infrastructure
