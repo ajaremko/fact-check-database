@@ -27,6 +27,7 @@ This project is intended to be legible to:
 - [] Rewrite project documentation
 - [] Remove `ingestion-replay` project
 - [] Sort fact checks feed on website using algolia queries rather than local sort
+- [] Verify fact checks are deduped correctly in ingestion and analysis slices
 
 ## Core Principles
 
