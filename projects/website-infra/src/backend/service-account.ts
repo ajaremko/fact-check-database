@@ -5,6 +5,7 @@ import { gcpProject, tag } from '../config'
 import { provider } from '../project'
 
 import { envoyConfig, htpasswdConfig, oauth2ProxyConfig } from './envoy'
+import { formSubmissionTopic } from './topic'
 
 export const websiteBackendServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-backend-sa`,
@@ -57,6 +58,16 @@ export const recaptchaEnterpriseAgent = new gcp.projects.IAMMember(
   { provider }
 )
 
+export const pubsubPublisher = new gcp.pubsub.TopicIAMMember(
+  `${tag}-backend-pubsub-publisher`,
+  {
+    topic: formSubmissionTopic.name,
+    role: 'roles/pubsub.publisher',
+    member: pulumi.interpolate`serviceAccount:${websiteBackendServiceAccount.email}`,
+  },
+  { provider }
+)
+
 export const cloudtraceAgent = new gcp.projects.IAMMember(
   `${tag}-backend-trace-agent`,
   {
@@ -92,6 +103,7 @@ export const iamMembers = [
   envoySecretAccessorBinding,
   htpasswdSecretAccessorBinding,
   oauth2ProxySecretAccessorBinding,
+  pubsubPublisher,
   cloudtraceAgent,
   telemetryTracesWriter,
   monitoringMetricWriter,
