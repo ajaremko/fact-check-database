@@ -7,6 +7,11 @@
   "types": "./dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
+    "./algolia/AlgoliaSearchClient": {
+      "types": "./dist/algolia/AlgoliaSearchClient.d.ts",
+      "import": "./dist/algolia/AlgoliaSearchClient.js",
+      "default": "./dist/algolia/AlgoliaSearchClient.js"
+    },
     "./bigquery/BigQueryClient": {
       "types": "./dist/bigquery/BigQueryClient.d.ts",
       "import": "./dist/bigquery/BigQueryClient.js",
@@ -64,6 +69,7 @@
     "@google-cloud/pubsub": "^5.2.2",
     "@google-cloud/storage": "^7.19.0",
     "@effect/platform-node": "^0.106.0",
+    "algoliasearch": "^5.53.0",
     "effect": "^3.21.0",
     "pino": "^10.3.1",
     "tslib": "^2.3.0"

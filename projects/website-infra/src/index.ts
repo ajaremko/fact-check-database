@@ -3,6 +3,7 @@ export * from './backend'
 export * from './emailer'
 export * from './recaptcha'
 export * from './redirect'
+export { deadletterBucketName } from './deadletter'
 
 export {
   gcpProject as websiteGcpProject,

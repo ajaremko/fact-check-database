@@ -5,8 +5,8 @@ import { websiteLabels, tag } from '../config'
 import { storageService } from '../services'
 import { provider } from '../project'
 
-export const submissionsDeadletterBucket = new gcp.storage.Bucket(
-  `${tag}-submissions-deadletter-bucket`,
+export const deadletterBucket = new gcp.storage.Bucket(
+  `${tag}-deadletter-bucket`,
   {
     location: gcpRegion,
     uniformBucketLevelAccess: true,

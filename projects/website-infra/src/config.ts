@@ -16,6 +16,13 @@ const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
 export const coreProject = coreStackRef.getOutput('gcpProject')
 export const coreRegion = coreStackRef.getOutput('gcpRegion')
 
+export const stagingStorageBucketName = coreStackRef.getOutput(
+  'stagingStorageBucketName'
+)
+export const stagingStorageTopicName = coreStackRef.getOutput(
+  'stagingStorageTopicName'
+)
+
 // Retrieve exported artifact registry details
 export const artifactRegistryLocation = coreStackRef.getOutput(
   'artifactRegistryLocation'
@@ -33,6 +40,68 @@ export const artifactRegistryRepositoryId = coreStackRef.getOutput(
  * website images are stored.
  */
 export const dockerTag = websiteConfig.get('tag')
+
+/**
+ * The number of days to retain deadletter logs in the staging bucket. This should
+ * unset in production to allow for indefinite retention, but can be set to a
+ * specific number of days in non-production
+ */
+export const deadletterRetentionDays = websiteConfig.getNumber(
+  'deadletterRetentionDays'
+)
+
+if (deadletterRetentionDays) {
+  console.warn(
+    `⚠️\tDeadletter log retention is set to ${deadletterRetentionDays} days. This should be unset in production to allow for indefinite retention.`
+  )
+}
+
+/**
+ * Whether to force destroy storage buckets when deleting the stack. This will permanently
+ * delete all data in the bucket, so it should be used with caution. It is recommended to
+ * set this to true in non-production environments for easier cleanup, and false in production
+ * to prevent accidental data loss.
+ */
+export const forceDestroyStorage =
+  websiteConfig.getBoolean('forceDestroyStorage') ?? false
+
+if (forceDestroyStorage) {
+  console.warn(
+    `⚠️\tForce destroy storage is enabled. This will permanently delete all data in storage buckets when the stack is deleted. It is recommended to set this to false in production to prevent accidental data loss.`
+  )
+}
+
+/**
+ * The number of days to retain soft-deleted objects in the deadletter bucket.
+ * In production, replayed events may be deleted after replay, but setting a
+ * retention period for soft-deleted objects allows for a recovery period in case
+ * of accidental deletion during replay.
+ */
+
+export const deadletterSoftDeleteDays = websiteConfig.getNumber(
+  'deadletterSoftDeleteDays'
+)
+
+if (!deadletterSoftDeleteDays) {
+  console.warn(
+    `⚠️\tDeadletter soft delete retention is unset. This should be set in production to allow for retention of soft-deleted objects.`
+  )
+}
+
+/**
+ * Whether to retain storage buckets when deleting the stack. If set to true, storage buckets
+ * will not be deleted when the stack is deleted, allowing for manual cleanup and preventing
+ * accidental data loss. It is recommended to set this to true in production, and it can be
+ * set to false in non-production environments for easier cleanup.
+ */
+export const retainStorageOnDelete =
+  websiteConfig.getBoolean('retainStorageOnDelete') ?? true
+
+if (!retainStorageOnDelete) {
+  console.warn(
+    `⚠️\tRetain storage on delete is disabled. Storage buckets will be deleted when the stack is deleted, allowing for easier cleanup but increasing the risk of accidental data loss. It is recommended to set this to true in production.`
+  )
+}
 
 /**
  * The log verbosity level for the ingestion pipeline components.

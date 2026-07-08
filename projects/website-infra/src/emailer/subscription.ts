@@ -5,9 +5,12 @@ import { websiteLabels, gcpRegion, tag } from '../config'
 import { provider, pubsubServiceAccountEmail } from '../project'
 import { pubsubService } from '../services'
 import { formSubmissionTopic } from '../backend/topic'
+import {
+  deadletterBucketName,
+  pubsubServiceAccountIamRoles,
+} from '../deadletter'
 
 import { emailerService } from './service'
-import { submissionsDeadletterBucket } from './storage'
 
 export const emailerInvokerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-emailer-push-sa`,
@@ -38,28 +41,6 @@ const emailerInvokerServiceAccountTokenCreator =
       member: pulumi.interpolate`serviceAccount:${emailerInvokerServiceAccount.email}`,
     },
     { provider }
-  )
-
-export const pubsubServiceAccountDeadletterBucketReader =
-  new gcp.storage.BucketIAMMember(
-    `${tag}-pubsub-sa-deadletter-bucket-reader`,
-    {
-      bucket: submissionsDeadletterBucket.name,
-      role: 'roles/storage.legacyBucketReader',
-      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
-    },
-    { provider, dependsOn: [pubsubService] }
-  )
-
-export const pubsubServiceAccountDeadletterObjectCreator =
-  new gcp.storage.BucketIAMMember(
-    `${tag}-pubsub-sa-deadletter-object-creator`,
-    {
-      bucket: submissionsDeadletterBucket.name,
-      role: 'roles/storage.objectCreator',
-      member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
-    },
-    { provider, dependsOn: [pubsubService] }
   )
 
 // create the deadletter topic to write failed messages to
@@ -110,8 +91,7 @@ export const submissionSubscription = new gcp.pubsub.Subscription(
     provider,
     dependsOn: [
       emailerInvokerServiceAccountTokenCreator,
-      pubsubServiceAccountDeadletterBucketReader,
-      pubsubServiceAccountDeadletterObjectCreator,
+      ...pubsubServiceAccountIamRoles,
       pubsubServiceAccountPublisher,
       emailerInvokerServiceAccountInvoker,
     ],
@@ -141,8 +121,7 @@ export const confirmationSubscription = new gcp.pubsub.Subscription(
     provider,
     dependsOn: [
       emailerInvokerServiceAccountTokenCreator,
-      pubsubServiceAccountDeadletterBucketReader,
-      pubsubServiceAccountDeadletterObjectCreator,
+      ...pubsubServiceAccountIamRoles,
       pubsubServiceAccountPublisher,
       emailerInvokerServiceAccountInvoker,
     ],
@@ -183,7 +162,7 @@ export const emailerDeadletterTopicArchiveSubscription =
       topic: emailerDeadletterTopic.name,
       messageRetentionDuration: '604800s', // 7 days
       cloudStorageConfig: {
-        bucket: submissionsDeadletterBucket.name,
+        bucket: deadletterBucketName,
         filenameDatetimeFormat: 'YYYY/MM/DD/hh_mm_ssZ',
         filenamePrefix: 'emailer-deadletter/',
         maxMessages: 1000,
@@ -195,8 +174,7 @@ export const emailerDeadletterTopicArchiveSubscription =
         pubsubServiceAccountPublisher,
         pubsubServiceAccountSubmissionSubscriber,
         pubsubServiceAccountConfirmationSubscriber,
-        pubsubServiceAccountDeadletterBucketReader,
-        pubsubServiceAccountDeadletterObjectCreator,
+        ...pubsubServiceAccountIamRoles,
       ],
       provider,
     }
