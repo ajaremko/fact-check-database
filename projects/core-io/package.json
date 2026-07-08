@@ -12,75 +12,15 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./adapters/CloudPubsubMessageBatch": {
-      "types": "./dist/adapters/CloudPubsubMessageBatch.d.ts",
-      "import": "./dist/adapters/CloudPubsubMessageBatch.js",
-      "default": "./dist/adapters/CloudPubsubMessageBatch.js"
+    "./adapters/*": {
+      "types": "./dist/adapters/*.d.ts",
+      "import": "./dist/adapters/*.js",
+      "default": "./dist/adapters/*.js"
     },
-    "./adapters/CloudPubsubMessageQueueFeeder": {
-      "types": "./dist/adapters/CloudPubsubMessageQueueFeeder.d.ts",
-      "import": "./dist/adapters/CloudPubsubMessageQueueFeeder.js",
-      "default": "./dist/adapters/CloudPubsubMessageQueueFeeder.js"
-    },
-    "./adapters/CloudPubsubPublisher": {
-      "types": "./dist/adapters/CloudPubsubPublisher.d.ts",
-      "import": "./dist/adapters/CloudPubsubPublisher.js",
-      "default": "./dist/adapters/CloudPubsubPublisher.js"
-    },
-    "./adapters/CloudStorageStorageReader": {
-      "types": "./dist/adapters/CloudStorageStorageReader.d.ts",
-      "import": "./dist/adapters/CloudStorageStorageReader.js",
-      "default": "./dist/adapters/CloudStorageStorageReader.js"
-    },
-    "./adapters/CloudStorageStorageWriter": {
-      "types": "./dist/adapters/CloudStorageStorageWriter.d.ts",
-      "import": "./dist/adapters/CloudStorageStorageWriter.js",
-      "default": "./dist/adapters/CloudStorageStorageWriter.js"
-    },
-    "./adapters/FileSystemMessageBatch": {
-      "types": "./dist/adapters/FileSystemMessageBatch.d.ts",
-      "import": "./dist/adapters/FileSystemMessageBatch.js",
-      "default": "./dist/adapters/FileSystemMessageBatch.js"
-    },
-    "./adapters/FileSystemMessageQueueFeeder": {
-      "types": "./dist/adapters/FileSystemMessageQueueFeeder.d.ts",
-      "import": "./dist/adapters/FileSystemMessageQueueFeeder.js",
-      "default": "./dist/adapters/FileSystemMessageQueueFeeder.js"
-    },
-    "./adapters/FileSystemPublisher": {
-      "types": "./dist/adapters/FileSystemPublisher.d.ts",
-      "import": "./dist/adapters/FileSystemPublisher.js",
-      "default": "./dist/adapters/FileSystemPublisher.js"
-    },
-    "./adapters/FileSystemStorageReader": {
-      "types": "./dist/adapters/FileSystemStorageReader.d.ts",
-      "import": "./dist/adapters/FileSystemStorageReader.js",
-      "default": "./dist/adapters/FileSystemStorageReader.js"
-    },
-    "./adapters/FileSystemStorageWriter": {
-      "types": "./dist/adapters/FileSystemStorageWriter.d.ts",
-      "import": "./dist/adapters/FileSystemStorageWriter.js",
-      "default": "./dist/adapters/FileSystemStorageWriter.js"
-    },
-    "./adapters/HttpServerMessageQueueFeeder": {
-      "types": "./dist/adapters/HttpServerMessageQueueFeeder.d.ts",
-      "import": "./dist/adapters/HttpServerMessageQueueFeeder.js",
-      "default": "./dist/adapters/HttpServerMessageQueueFeeder.js"
-    },
-    "./adapters/InMemoryMessageQueue": {
-      "types": "./dist/adapters/InMemoryMessageQueue.d.ts",
-      "import": "./dist/adapters/InMemoryMessageQueue.js",
-      "default": "./dist/adapters/InMemoryMessageQueue.js"
-    },
-    "./adapters/InMemoryStorageReader": {
-      "types": "./dist/adapters/InMemoryStorageReader.d.ts",
-      "import": "./dist/adapters/InMemoryStorageReader.js",
-      "default": "./dist/adapters/InMemoryStorageReader.js"
-    },
-    "./adapters/InMemoryStorageWriter": {
-      "types": "./dist/adapters/InMemoryStorageWriter.d.ts",
-      "import": "./dist/adapters/InMemoryStorageWriter.js",
-      "default": "./dist/adapters/InMemoryStorageWriter.js"
+    "./ports/*": {
+      "types": "./dist/ports/*.d.ts",
+      "import": "./dist/ports/*.js",
+      "default": "./dist/ports/*.js"
     }
   },
   "dependencies": {
