@@ -3,6 +3,11 @@ import { Config, Effect, Layer } from 'effect'
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 import { readDirectoryMessages } from '../internal/readDirectoryMessages'
 
+/**
+ * Reads every file in the `MESSAGE_QUEUE_INPUT_DIR` directory and offers
+ * each one onto an existing {@link MessageQueue} in turn, awaiting ack/nack
+ * before moving on to the next file.
+ */
 export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
 
@@ -22,4 +27,9 @@ export const make = Effect.gen(function* () {
   }
 })
 
+/**
+ * Layer that feeds an existing {@link MessageQueue} from a local directory.
+ * Development adapter. Provides no service of its own — it only has the
+ * side effect of enqueueing each file's contents while the layer builds.
+ */
 export const layer = Layer.effectDiscard(make)

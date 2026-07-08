@@ -3,10 +3,12 @@ import { FileSystem } from '@effect/platform'
 
 import { StorageWriteError, StorageWriter } from '../ports/StorageWriter'
 
+/** Returns the parent directory portion of a `/`-separated path. */
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
 }
 
+/** Returns `filePath` with its final extension replaced by `suffix`, or `filePath.suffix` if it has no extension. */
 function replaceExtension(filePath: string, suffix: string): string {
   const parts = filePath.split('.')
   if (parts.length < 2) {
@@ -16,6 +18,12 @@ function replaceExtension(filePath: string, suffix: string): string {
   return `${parts.join('.')}.${suffix}`
 }
 
+/**
+ * Builds a {@link StorageWriter} that writes to
+ * `{STORAGE_OUTPUT_DIR}/{path}`, creating parent directories as needed. If
+ * `meta` is provided, it's also written as a `*.meta.json` sidecar file
+ * alongside the object.
+ */
 export const make = Effect.gen(function* () {
   const outputDir = yield* Config.string('STORAGE_OUTPUT_DIR')
 
@@ -54,4 +62,5 @@ export const make = Effect.gen(function* () {
   })
 })
 
+/** Layer providing {@link StorageWriter} backed by the `STORAGE_OUTPUT_DIR` local directory. Development adapter. */
 export const layer = Layer.effect(StorageWriter, make)

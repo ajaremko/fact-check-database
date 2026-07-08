@@ -3,6 +3,10 @@ import { FileSystem } from '@effect/platform'
 
 import { StorageReadError, StorageReader } from '../ports/StorageReader'
 
+/**
+ * Builds a {@link StorageReader} that reads a file directly from the local
+ * filesystem, using the pointer's `object` field as the file path.
+ */
 export const make = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   yield* Effect.logTrace(`Creating filesystem reader`)
@@ -25,4 +29,5 @@ export const make = Effect.gen(function* () {
   })
 })
 
+/** Layer providing {@link StorageReader} backed by the local filesystem. Development adapter. */
 export const layer = Layer.effect(StorageReader, make)

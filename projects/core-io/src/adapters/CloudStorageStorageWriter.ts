@@ -5,6 +5,11 @@ import * as StorageClient from '@news-research/core-vendor/cloud-storage/Storage
 
 import { StorageWriteError, StorageWriter } from '../ports/StorageWriter'
 
+/**
+ * Builds a {@link StorageWriter} that writes to the current GCS bucket.
+ * Unlike the reader, the bucket is bound once at construction time (see
+ * {@link layer}), since a writer only ever targets its own output bucket.
+ */
 export const make = Effect.gen(function* () {
   const { bucket } = yield* StorageBucket.StorageBucket
   yield* Effect.logTrace(`Creating gcs writer for bucket: ${bucket.name}`)
@@ -33,6 +38,7 @@ export const make = Effect.gen(function* () {
   })
 })
 
+/** Layer providing {@link StorageWriter} backed by the `STORAGE_BUCKET_NAME` GCS bucket. Production adapter. */
 export const layer: Layer.Layer<
   StorageWriter,
   ConfigError.ConfigError,

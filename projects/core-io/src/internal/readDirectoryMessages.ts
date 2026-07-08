@@ -4,8 +4,11 @@ import type { PlatformError } from '@effect/platform/Error'
 
 import { MessageBody } from '../ports/MessageBody'
 
+/** A message read from a file, paired with the path it was read from. */
 export interface DirectoryMessage {
+  /** Path the file was read from, relative to the configured input directory. */
   readonly path: string
+  /** The file's contents, wrapped as a {@link MessageBody}. */
   readonly message: MessageBody
 }
 

@@ -17,6 +17,11 @@ import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 
 const decodeMessage = Schema.decodeUnknown(PubsubMessagePayload)
 
+/**
+ * Offers `message` onto the {@link MessageQueue} and awaits its outcome,
+ * responding 201 if acked or 500 if nacked so the caller knows whether to
+ * retry the HTTP request.
+ */
 function enqueueHttpMessage(message: MessageBody) {
   return enqueueAndAwaitOutcome({
     message,
@@ -31,6 +36,17 @@ function enqueueHttpMessage(message: MessageBody) {
   })
 }
 
+/**
+ * Builds a {@link MessageQueue} feeder layer that accepts messages via an
+ * HTTP POST route mounted at `path`. Production adapter — the push-based
+ * ingestion entry point for services that receive pushed events (e.g. a
+ * Pub/Sub push subscription) rather than pulling from one directly.
+ *
+ * The request body is decoded against the `PubsubMessagePayload` schema; a
+ * decode failure responds 400, a successful decode is forwarded to
+ * {@link enqueueHttpMessage}. Reads `PORT` to bind the underlying HTTP
+ * server.
+ */
 export function layer(path: HttpRouter.PathInput) {
   const router = HttpRouter.empty.pipe(
     HttpRouter.post(

@@ -3,9 +3,13 @@ import { Effect, Record } from 'effect'
 import { MessageQueue } from '../ports/MessageQueue'
 import { MessageBody } from '../ports/MessageBody'
 
+/** Options for {@link enqueueAndAwaitOutcome}. */
 export interface EnqueueAndAwaitOutcomeOptions<A, E = never> {
+  /** The message to offer onto the {@link MessageQueue}. */
   readonly message: MessageBody
+  /** Effect to resume with once the message is acked. */
   readonly onAck: Effect.Effect<A, E>
+  /** Effect to resume with once the message is nacked. */
   readonly onNack: Effect.Effect<A, E>
 }
 

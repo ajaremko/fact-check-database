@@ -3,6 +3,10 @@ import { FileSystem } from '@effect/platform'
 
 import { Publisher, PublisherError } from '../ports/Publisher'
 
+/**
+ * Builds a {@link Publisher} that writes each published message to its own
+ * timestamped file (`{PUBLISHER_OUTPUT_DIR}/{epochMillis}.json`).
+ */
 export const make = Effect.gen(function* () {
   const outputDir = yield* Config.string('PUBLISHER_OUTPUT_DIR')
 
@@ -31,4 +35,5 @@ export const make = Effect.gen(function* () {
   })
 })
 
+/** Layer providing {@link Publisher} backed by the `PUBLISHER_OUTPUT_DIR` local directory. Development adapter. */
 export const layer = Layer.effect(Publisher, make)

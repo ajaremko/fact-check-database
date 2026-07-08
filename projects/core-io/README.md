@@ -1,8 +1,8 @@
 # core-io
 
-Shared messaging and storage ports (`MessageBatch`, `MessageQueue`, `Publisher`, `StorageReader`, `StorageWriter`) and swappable adapters for moving data between pipeline stages, without binding business logic to a specific transport.
+Shared messaging and storage ports (`MessageBatch`, `MessageQueue`, `Publisher`, `StorageReader`, `StorageWriter`) and swappable adapters for moving data between applications, without binding business logic to a specific transport.
 
-Each consumer wires the adapters appropriate to their own environment (local filesystem/in-memory for development, GCP Pub/Sub, GCS, or HTTP for production).
+Each consumer application wires the adapters appropriate to their own environment (local filesystem/in-memory for development, GCP Pub/Sub, GCS, or HTTP for production).
 
 ## Ports
 

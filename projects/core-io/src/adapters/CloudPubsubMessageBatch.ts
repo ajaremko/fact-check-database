@@ -4,6 +4,13 @@ import * as PubsubSubscriberClient from '@news-research/core-vendor/cloud-pubsub
 
 import { MessageBatch, BatchMessage } from '../ports/MessageBatch'
 
+/**
+ * Pulls up to `maxMessages` from the given Pub/Sub subscription, filtering
+ * out any malformed messages. Each returned {@link BatchMessage}'s `ack`
+ * only records its ackId locally (via the returned `ackIds` ref) — the
+ * actual Pub/Sub acknowledge RPC is deferred to {@link release}, batching
+ * all acks into a single call at scope close.
+ */
 function acquire(subscriptionId: string, maxMessages: number) {
   return Effect.gen(function* () {
     yield* Effect.logTrace(
@@ -52,6 +59,11 @@ function acquire(subscriptionId: string, maxMessages: number) {
 
 type Resource = Effect.Effect.Success<ReturnType<typeof acquire>>
 
+/**
+ * Acknowledges every message pulled by {@link acquire} in a single Pub/Sub
+ * RPC when the batch's scope closes. Logs and no-ops if nothing was acked
+ * (e.g. an empty pull).
+ */
 function release(subscriptionId: string) {
   return function (resource: Resource) {
     return Effect.gen(function* () {
@@ -76,6 +88,11 @@ function release(subscriptionId: string) {
   }
 }
 
+/**
+ * Builds a {@link MessageBatch} by pulling `MESSAGE_BATCH_SIZE` messages
+ * from the `PUBSUB_SUBSCRIPTION_ID` subscription. The pulled messages are
+ * batch-acknowledged in one RPC when the surrounding scope closes.
+ */
 export const make = Effect.gen(function* () {
   const subscriptionId = yield* Config.string('PUBSUB_SUBSCRIPTION_ID')
   const maxMessages = yield* Config.number('MESSAGE_BATCH_SIZE')
@@ -86,4 +103,5 @@ export const make = Effect.gen(function* () {
   return MessageBatch.of(messages)
 })
 
+/** Layer providing {@link MessageBatch} via a scoped pull from GCP Pub/Sub. Production adapter. */
 export const layer = Layer.scoped(MessageBatch, make)

@@ -5,6 +5,12 @@ import * as StorageBucket from '@news-research/core-vendor/cloud-storage/Storage
 
 import { StorageReadError, StorageReader } from '../ports/StorageReader'
 
+/**
+ * Builds a {@link StorageReader} that reads from GCS. Re-derives the target
+ * bucket per call from the pointer being read (unlike the writer, which
+ * binds to one fixed bucket at construction time), since a read may need to
+ * target any bucket a pointer references.
+ */
 export const make = Effect.gen(function* () {
   const { client } = yield* StorageClient.StorageClient
   yield* Effect.logTrace('Creating gcs reader')
@@ -29,6 +35,7 @@ export const make = Effect.gen(function* () {
   })
 })
 
+/** Layer providing {@link StorageReader} backed by GCS. Production adapter. */
 export const layer: Layer.Layer<
   StorageReader,
   ConfigError.ConfigError,

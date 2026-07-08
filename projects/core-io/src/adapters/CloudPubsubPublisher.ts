@@ -5,6 +5,7 @@ import * as PubsubTopic from '@news-research/core-vendor/cloud-pubsub/PubsubTopi
 
 import { Publisher, PublisherError } from '../ports/Publisher'
 
+/** Builds a {@link Publisher} that publishes each message to the current Pub/Sub topic. */
 export const make = Effect.gen(function* () {
   const { topic } = yield* PubsubTopic.PubsubTopic
   yield* Effect.logTrace(`Creating pubsub publisher for topic: ${topic.name}`)
@@ -23,6 +24,7 @@ export const make = Effect.gen(function* () {
   })
 })
 
+/** Layer providing {@link Publisher} backed by the `PUBSUB_TOPIC_NAME` Pub/Sub topic. Production adapter. */
 export const layer: Layer.Layer<
   Publisher,
   ConfigError.ConfigError,
