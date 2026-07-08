@@ -34,9 +34,9 @@ const decodeIncoming = pipe(
 //   Schema.encode
 // )
 
-function processMessage(message: BatchMessage) {
+function processMessage(envelope: BatchMessage) {
   let effect = Effect.gen(function* () {
-    const incoming = yield* decodeIncoming(message.data)
+    const incoming = yield* decodeIncoming(envelope.message.data)
     const job = yield* JobContext
     const rows = yield* extractFactChecks({
       extractionId: job.runId,
@@ -44,16 +44,16 @@ function processMessage(message: BatchMessage) {
       pointer: incoming.pointer,
       extractedAt: job.startedAt,
     })
-    yield* message.ack
+    yield* envelope.ack
     return rows
   }).pipe(Effect.withSpan('processMessage'))
 
-  if (message.annotations) {
-    effect = Effect.annotateLogs(effect, message.annotations)
+  if (envelope.annotations) {
+    effect = Effect.annotateLogs(effect, envelope.annotations)
   }
 
-  if (message.span) {
-    effect = Effect.withParentSpan(effect, message.span)
+  if (envelope.span) {
+    effect = Effect.withParentSpan(effect, envelope.span)
   }
 
   return effect

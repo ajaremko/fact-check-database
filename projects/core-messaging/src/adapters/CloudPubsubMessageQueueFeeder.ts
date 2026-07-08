@@ -15,7 +15,12 @@ const acquire = Effect.gen(function* () {
       messages.offer({
         ack: Effect.sync(() => message.ack()),
         nack: Effect.sync(() => message.nack()),
-        data: message.data,
+        message: {
+          data: message.data,
+          attributes: {},
+          messageId: message.id,
+          publishTime: message.publishTime,
+        },
       })
     )
   }

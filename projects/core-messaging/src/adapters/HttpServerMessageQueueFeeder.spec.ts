@@ -22,9 +22,12 @@ describe('HttpServerMessageQueueFeeder', () => {
       ).pipe(
         HttpClientRequest.bodyJson({
           message: {
-            messageId: 'test-message-id',
             data: Buffer.from('test').toString('base64'),
+            attributes: { key: 'value' },
+            messageId: 'test-message-id',
+            publishTime: new Date().toISOString(),
           },
+          subscription: 'test-subscription',
         }),
         Effect.andThen(HttpClient.execute),
         Effect.fork
@@ -58,9 +61,12 @@ describe('HttpServerMessageQueueFeeder', () => {
       ).pipe(
         HttpClientRequest.bodyJson({
           message: {
-            messageId: 'test-message-id',
             data: Buffer.from('test').toString('base64'),
+            attributes: { key: 'value' },
+            messageId: 'test-message-id',
+            publishTime: new Date().toISOString(),
           },
+          subscription: 'test-subscription',
         }),
         Effect.andThen(HttpClient.execute),
         Effect.fork
@@ -127,9 +133,12 @@ describe('HttpServerMessageQueueFeeder', () => {
         ).pipe(
           HttpClientRequest.bodyJson({
             message: {
-              messageId: 'test-message-id',
               data: Buffer.from('test').toString('base64'),
+              attributes: { key: 'value' },
+              messageId: 'test-message-id',
+              publishTime: new Date().toISOString(),
             },
+            subscription: 'test-subscription',
           }),
           Effect.andThen(HttpClient.execute),
           Effect.fork

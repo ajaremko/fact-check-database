@@ -24,6 +24,9 @@
   ],
   "references": [
     {
+      "path": "../core-contracts/tsconfig.lib.json"
+    },
+    {
       "path": "../core-data/tsconfig.lib.json"
     },
     {

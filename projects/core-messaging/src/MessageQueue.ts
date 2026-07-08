@@ -1,12 +1,14 @@
 import { Context, Data, Effect, Queue, Record, Tracer } from 'effect'
 
+import { MessageBody } from './MessageBody'
+
 export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{
   readonly cause: unknown
   readonly message: string
 }> {}
 
 export interface QueueMessage {
-  readonly data: Buffer
+  readonly message: MessageBody
   readonly ack: Effect.Effect<void>
   readonly nack: Effect.Effect<void>
   readonly span?: Tracer.AnySpan

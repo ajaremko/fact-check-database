@@ -10,22 +10,14 @@ import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import * as Node from '@news-research/core-data/Node'
+import { PushMessage } from '@news-research/core-contracts'
 
 import { MessageQueue } from '../MessageQueue'
+import { MessageBody } from '../MessageBody'
 
-const decodeMessage = Schema.decodeUnknown(
-  Schema.Struct({
-    message: Schema.Struct({
-      messageId: Schema.String,
-      data: Schema.String.pipe(
-        Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' })
-      ),
-    }),
-  })
-)
+const decodeMessage = Schema.decodeUnknown(PushMessage)
 
-function process(data: Buffer) {
+function process(message: MessageBody) {
   return Effect.gen(function* () {
     const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
@@ -42,7 +34,7 @@ function process(data: Buffer) {
     >((resume) =>
       Effect.asVoid(
         messages.offer({
-          data,
+          message,
           ack: Effect.sync(() =>
             resume(
               HttpServerResponse.json(
@@ -80,7 +72,13 @@ export function layer(path: HttpRouter.PathInput) {
         const body = yield* req.json
         const { message } = yield* decodeMessage(body)
         const data = Buffer.from(message.data, 'utf-8')
-        return yield* process(data).pipe(
+        const messageBody: MessageBody = {
+          data,
+          attributes: message.attributes,
+          messageId: message.messageId,
+          publishTime: message.publishTime,
+        }
+        return yield* process(messageBody).pipe(
           Effect.withSpan('processHttpRequest'),
           Effect.annotateLogs({
             'request.url': req.url,

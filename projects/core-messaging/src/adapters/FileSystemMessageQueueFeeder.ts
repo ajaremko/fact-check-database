@@ -2,8 +2,9 @@ import { Config, Effect, Layer, Record } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { MessageQueue } from '../MessageQueue'
+import { MessageBody } from '../MessageBody'
 
-function process(data: Buffer) {
+function process(message: MessageBody) {
   return Effect.gen(function* () {
     const { messages } = yield* MessageQueue
     const span = yield* Effect.currentSpan
@@ -14,7 +15,7 @@ function process(data: Buffer) {
       (resume) =>
         Effect.asVoid(
           messages.offer({
-            data,
+            message,
             ack: Effect.sync(() => resume(Effect.void)),
             nack: Effect.sync(() => resume(Effect.void)),
             span,
@@ -36,7 +37,12 @@ const make = Effect.gen(function* () {
     const path = `${inputDir}/${file}`
     yield* Effect.logTrace(`Processing message: ${path}`)
     const data = yield* fs.readFile(path)
-    yield* process(Buffer.from(data)).pipe(
+    yield* process({
+      data: Buffer.from(data),
+      attributes: {},
+      messageId: file,
+      publishTime: new Date(),
+    }).pipe(
       Effect.withSpan('processMessage'),
       Effect.annotateLogs({ 'message.path': path })
     )

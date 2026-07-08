@@ -2,6 +2,7 @@ import { Config, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import { MessageBatch, BatchMessage } from '../MessageBatch'
+import { MessageBody } from '../MessageBody'
 
 const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
@@ -19,9 +20,15 @@ const make = Effect.gen(function* () {
     const annotations = {
       'message.path': path,
     }
-    messages.push({
-      ack: Effect.void,
+    const message: MessageBody = {
       data: Buffer.from(data),
+      attributes: {},
+      messageId: file,
+      publishTime: new Date(),
+    }
+    messages.push({
+      message,
+      ack: Effect.void,
       annotations,
       span,
     })

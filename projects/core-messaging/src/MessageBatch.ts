@@ -1,7 +1,9 @@
 import { Context, Effect, Tracer } from 'effect'
 
+import { MessageBody } from './MessageBody'
+
 export interface BatchMessage {
-  readonly data: Buffer
+  readonly message: MessageBody
   readonly ack: Effect.Effect<void>
   readonly span?: Tracer.AnySpan
   readonly annotations?: Record<string, unknown>

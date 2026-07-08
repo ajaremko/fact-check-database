@@ -26,10 +26,10 @@ const encodeOutgoing = pipe(
   Schema.encode
 )
 
-function processMessage(message: QueueMessage) {
+function processMessage(envelope: QueueMessage) {
   let effect = Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
-    const incoming = yield* decodeIncoming(message.data)
+    const incoming = yield* decodeIncoming(envelope.message.data)
     const timestamp = yield* Clock.currentTimeMillis
 
     yield* Effect.logInfo('Sanitizing observation')
@@ -42,23 +42,23 @@ function processMessage(message: QueueMessage) {
     const data = yield* encodeOutgoing(event)
     yield* publish(data)
 
-    yield* message.ack
+    yield* envelope.ack
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.catchTags({
-      ParseError: () => message.ack,
-      PublisherError: () => message.nack,
-      StorageReadError: () => message.nack,
-      StorageWriteError: () => message.nack,
+      ParseError: () => envelope.ack,
+      PublisherError: () => envelope.nack,
+      StorageReadError: () => envelope.nack,
+      StorageWriteError: () => envelope.nack,
     })
   )
 
-  if (message.annotations) {
-    effect = Effect.annotateLogs(effect, message.annotations)
+  if (envelope.annotations) {
+    effect = Effect.annotateLogs(effect, envelope.annotations)
   }
 
-  if (message.span) {
-    effect = Effect.withParentSpan(effect, message.span)
+  if (envelope.span) {
+    effect = Effect.withParentSpan(effect, envelope.span)
   }
 
   return effect

@@ -19,7 +19,13 @@ function acquire(subscriptionId: string, maxMessages: number) {
       receivedMessages,
       ({ message, ackId }) =>
         Effect.gen(function* () {
-          if (!message || !ackId || !message.data) {
+          if (
+            !message ||
+            !ackId ||
+            !message.data ||
+            !message.messageId ||
+            !message.publishTime
+          ) {
             return Option.none()
           }
           const span = yield* Effect.makeSpan(`processMessage`)
@@ -27,7 +33,12 @@ function acquire(subscriptionId: string, maxMessages: number) {
             'message.id': message.messageId,
           }
           return Option.some<BatchMessage>({
-            data: Buffer.from(message.data),
+            message: {
+              data: Buffer.from(message.data),
+              attributes: {},
+              messageId: message.messageId,
+              publishTime: new Date(Number(message.publishTime.nanos) / 1e6),
+            },
             ack: Ref.update(ackIds, (ids) => new Set(ids).add(ackId)),
             annotations,
             span,
