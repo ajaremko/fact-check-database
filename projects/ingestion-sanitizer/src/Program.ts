@@ -8,8 +8,8 @@ import {
 } from '@news-research/core-io'
 import { ObservationIngestedSchema } from '@news-research/ingestion-contracts'
 import * as Node from '@news-research/core-data/Node'
-import { sanitizeObservation } from '@news-research/ingestion-pipeline/sanitize'
 
+import { sanitizeObservation } from './sanitize'
 import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 
 const decodeIncoming = pipe(
