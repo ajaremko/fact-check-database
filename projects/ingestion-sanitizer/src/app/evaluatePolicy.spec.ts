@@ -4,7 +4,7 @@ import { TimestampBrand } from '@news-research/ingestion-contracts'
 
 import { evaluatePolicy, pickRule } from './evaluatePolicy'
 import { Observation } from './Observation'
-import { SanitizerPolicy } from './SanitizerPolicy'
+import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
 
 describe('evaluatePolicy', () => {
   it('quarantines with QUARANTINED_FETCH_FAILED when record is not data_fetched', () => {

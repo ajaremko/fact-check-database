@@ -1,6 +1,9 @@
 import { Source } from '@news-research/ingestion-contracts'
 
-import type { CollectionRule, SanitizerPolicy } from './SanitizerPolicy'
+import type {
+  CollectionRule,
+  SanitizerPolicy,
+} from '../contracts/SanitizerPolicy'
 import type { SanitizationAction, PolicyDecision } from './PolicyDecision'
 import type { Observation } from './Observation'
 

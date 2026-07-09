@@ -14,6 +14,8 @@ import {
   TimestampSchema,
 } from '@news-research/ingestion-contracts'
 
+import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
+
 import {
   SanitizedObservation,
   SanitizedObservationMetaSchema,
@@ -21,7 +23,6 @@ import {
   SanitizedObservationPathSchema,
   SanitizedObservationEventSchema,
 } from './SanitizedObservation'
-import { SanitizerPolicy } from './SanitizerPolicy'
 import { ObservationSchema } from './Observation'
 import { evaluatePolicy } from './evaluatePolicy'
 

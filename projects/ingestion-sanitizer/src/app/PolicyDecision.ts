@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { PolicyLabelSchema } from './SanitizerPolicy'
+import { PolicyLabelSchema } from '../contracts/SanitizerPolicy'
 
 /**
  * Traceable actions applied by the sanitizer. Multiple actions may be recorded

@@ -4,8 +4,8 @@ import { FileSystem } from '@effect/platform'
 import * as Node from '@news-research/core-data/Node'
 import * as Yaml from '@news-research/core-data/Yaml'
 
-import { SanitizerPolicy } from './sanitize'
-import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
+import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
+import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
 
 const decodePolicy = pipe(
   SanitizerPolicy,

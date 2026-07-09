@@ -1,16 +1,17 @@
 import { Clock, Effect, pipe, Schema } from 'effect'
 
+import * as Node from '@news-research/core-data/Node'
 import {
-  takeMessage,
-  takeError,
   QueueMessage,
   publish,
+  takeMessage,
+  takeError,
 } from '@news-research/core-io'
 import { ObservationIngestedSchema } from '@news-research/ingestion-contracts'
-import * as Node from '@news-research/core-data/Node'
 
-import { sanitizeObservation } from './sanitize'
-import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
+import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
+
+import { sanitizeObservation } from './sanitizeObservation'
 
 const decodeIncoming = pipe(
   ObservationIngestedSchema,
@@ -64,7 +65,7 @@ function processMessage(envelope: QueueMessage) {
   return effect
 }
 
-export const Program = Effect.gen(function* () {
+export const App = Effect.gen(function* () {
   const handleMessages = takeMessage.pipe(
     Effect.andThen(processMessage),
     Effect.forever

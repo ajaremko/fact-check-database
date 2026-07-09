@@ -24,9 +24,9 @@ import * as FileSystemStorageReader from '@news-research/core-io/adapters/FileSy
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
-import * as CloudStorageSanitizerPolicyDocument from './CloudStorageSanitizerPolicyDocument'
-import * as FileSystemSanitizerPolicyDocument from './FileSystemSanitizerPolicyDocument'
-import { Program } from './Program'
+import * as CloudStorageSanitizerPolicyDocument from './adapters/CloudStorageSanitizerPolicyDocument'
+import * as FileSystemSanitizerPolicyDocument from './adapters/FileSystemSanitizerPolicyDocument'
+import { App } from './app'
 
 const SanitizerPolicyModeConfig = Config.literal(
   'gcp',
@@ -225,7 +225,7 @@ function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
   })
 }
 
-withMessageQueueFeeder(Program).pipe(
+withMessageQueueFeeder(App).pipe(
   Effect.provide(sanitizerPolicy),
   Effect.provide(messaging),
   Effect.provide(storage),

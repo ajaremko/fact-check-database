@@ -13,8 +13,8 @@ import * as Yaml from '@news-research/core-data/Yaml'
 import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 
-import { SanitizerPolicy } from './sanitize'
-import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
+import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
+import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
 
 const decodeSources = pipe(
   SanitizerPolicy,
