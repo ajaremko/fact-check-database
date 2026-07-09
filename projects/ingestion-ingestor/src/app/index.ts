@@ -1,7 +1,4 @@
-import { Array, Clock, Context, Effect, Option, pipe, Schema } from 'effect'
-
-import * as Node from '@news-research/core-data/Node'
-import { publish } from '@news-research/core-io'
+import { Array, Clock, Context, Effect, Option } from 'effect'
 
 import { SourceList, Source } from '../ports/SourceList'
 import { logIngestionJobCompleted } from './logging'
@@ -16,13 +13,6 @@ export interface JobContext {
 
 export const JobContext = Context.GenericTag<JobContext>('JobContext')
 
-const encodeOutgoing = pipe(
-  Schema.Object,
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.encode
-)
-
 function processTarget(source: Source, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
@@ -30,14 +20,14 @@ function processTarget(source: Source, index: number) {
 
     // ingest from target and publish event
     yield* Effect.logDebug(`Requesting content from source ${index + 1}`)
-    const event = yield* ingestFromSource({
+    yield* ingestFromSource({
       ingestionId: job.runId,
       timestamp,
       source,
     })
 
-    const data = yield* encodeOutgoing(event)
-    yield* publish(data)
+    // const data = yield* encodeOutgoing(event)
+    // yield* publish(data)
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.annotateLogs({

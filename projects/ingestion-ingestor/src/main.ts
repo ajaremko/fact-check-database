@@ -20,7 +20,7 @@ import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-g
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import * as Node from '@news-research/core-data/Node'
 import * as CloudStorageStorageWriter from '@news-research/core-io/adapters/CloudStorageStorageWriter'
-import * as FileSystemStorageWriter from '@news-research/core-io/adapters/FileSystemStorageWriter'
+import * as FileSystemStorageWriterWithNotification from '@news-research/core-io/adapters/FileSystemStorageWriterWithNotification'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
@@ -68,7 +68,7 @@ const storage = Layer.unwrapEffect(
     if (storageMode === 'filesystem') {
       yield* Effect.logDebug('Using filesystem storage')
       return Layer.empty.pipe(
-        Layer.merge(FileSystemStorageWriter.layer),
+        Layer.merge(FileSystemStorageWriterWithNotification.layer('records')),
         Layer.provide(NodeFileSystem.layer)
       )
     }

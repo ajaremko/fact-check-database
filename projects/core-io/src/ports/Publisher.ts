@@ -15,7 +15,10 @@ export class PublisherError extends Data.TaggedError('PublisherError')<{
 export class Publisher extends Context.Tag('Publisher')<
   Publisher,
   {
-    readonly publish: (data: Buffer) => Effect.Effect<void, PublisherError>
+    readonly publish: (
+      data: Buffer,
+      attributes?: Record<string, string>
+    ) => Effect.Effect<void, PublisherError>
   }
 >() {}
 

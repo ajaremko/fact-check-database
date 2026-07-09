@@ -11,7 +11,7 @@ import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
 import {
-  PubsubMessagePayload,
+  PubsubMessageEnvelope,
   parsePubsubMessagePayloadData,
 } from '@news-research/core-contracts'
 
@@ -19,7 +19,7 @@ import { MessageBody } from '../ports/MessageBody'
 
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 
-const decodePubsubMessagePayload = Schema.decodeUnknown(PubsubMessagePayload)
+const decodePubsubMessagePayload = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodePubsubMessagePayloadData = Schema.String.pipe(
   parsePubsubMessagePayloadData,

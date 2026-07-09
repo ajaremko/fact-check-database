@@ -86,8 +86,8 @@ export const StorageObjectAttributesSchema = Schema.Struct({
   bucketId: Schema.String,
   eventTime: Schema.DateFromString,
   eventType: Schema.String,
-  notificationConfig: Schema.String,
-  objectGeneration: Schema.String,
+  notificationConfig: Schema.optional(Schema.String),
+  objectGeneration: Schema.optional(Schema.String),
   objectId: Schema.String,
   payloadFormat: Schema.String,
 })

@@ -1,6 +1,8 @@
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
-import type { PlatformError } from '@effect/platform/Error'
+
+import * as Node from '@news-research/core-data/Node'
+import { PubsubMessagePayload } from '@news-research/core-contracts'
 
 import { MessageBody } from '../ports/MessageBody'
 
@@ -12,17 +14,17 @@ export interface DirectoryMessage {
   readonly message: MessageBody
 }
 
+const decodePubsubMessagePayload = PubsubMessagePayload.pipe(
+  Node.parseJson(),
+  Node.parseUint8Array({ encoding: 'utf-8' }),
+  Schema.decode
+)
+
 /**
  * Reads every file in a directory into a MessageBody, paired with the
  * source path each message was read from.
  */
-export function readDirectoryMessages(
-  inputDir: string
-): Effect.Effect<
-  ReadonlyArray<DirectoryMessage>,
-  PlatformError,
-  FileSystem.FileSystem
-> {
+export function readDirectoryMessages(inputDir: string) {
   return Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const contents = yield* fs.readDirectory(inputDir)
@@ -31,13 +33,14 @@ export function readDirectoryMessages(
       Effect.gen(function* () {
         const path = `${inputDir}/${file}`
         const data = yield* fs.readFile(path)
+
+        const messagePayload = yield* decodePubsubMessagePayload(data)
+
         const message: MessageBody = {
-          data: Buffer.from(data),
-          attributes: {},
-          messageId: file,
-          publishTime: new Date(),
+          ...messagePayload,
+          data: Buffer.from(messagePayload.data),
         }
-        return { path, message }
+        return { path, message } as DirectoryMessage
       })
     )
   })

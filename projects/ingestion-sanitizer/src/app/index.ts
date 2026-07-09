@@ -7,17 +7,15 @@ import {
   takeMessage,
   takeError,
 } from '@news-research/core-io'
-import { ObservationIngestedSchema } from '@news-research/ingestion-contracts/events/v1'
+import { StorageObjectAttributesSchema } from '@news-research/core-contracts'
 
 import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
 
 import { sanitizeObservation } from './sanitizeObservation'
 
-const decodeIncoming = pipe(
-  ObservationIngestedSchema,
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.decode
+const decodeAttributes = StorageObjectAttributesSchema.pipe(
+  Schema.pick('bucketId', 'objectId'),
+  Schema.decodeUnknown
 )
 
 const encodeOutgoing = pipe(
@@ -30,12 +28,16 @@ const encodeOutgoing = pipe(
 function processMessage(envelope: QueueMessage) {
   let effect = Effect.gen(function* () {
     const policy = yield* SanitizerPolicyConfig
-    const incoming = yield* decodeIncoming(envelope.message.data)
+    console.log(envelope)
+    const incoming = yield* decodeAttributes(envelope.message.attributes)
     const timestamp = yield* Clock.currentTimeMillis
 
     yield* Effect.logInfo('Sanitizing observation')
     const event = yield* sanitizeObservation({
-      pointer: incoming.pointer,
+      pointer: {
+        bucket: incoming.bucketId,
+        object: incoming.objectId,
+      },
       policy,
       timestamp,
     })

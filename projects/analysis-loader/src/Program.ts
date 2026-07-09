@@ -14,7 +14,7 @@ import * as Node from '@news-research/core-data/Node'
 import { readFile } from '@news-research/core-io'
 import {
   StorageObjectAttributesSchema,
-  PubsubMessagePayload,
+  PubsubMessageEnvelope,
 } from '@news-research/core-contracts'
 
 import { loadBatch } from './loadBatch'
@@ -50,7 +50,7 @@ const provideSchemaReader = Effect.provideServiceEffect(
   makeSchemaReader
 )
 
-const decodeMessage = Schema.decodeUnknown(PubsubMessagePayload)
+const decodeMessage = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.pick('bucketId', 'objectId'),

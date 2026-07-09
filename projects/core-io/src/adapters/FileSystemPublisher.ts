@@ -1,7 +1,16 @@
-import { Clock, Config, Effect, Layer } from 'effect'
+import { Clock, Config, Effect, Layer, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
+import * as Node from '@news-research/core-data/Node'
+import { PubsubMessagePayload } from '@news-research/core-contracts'
+
 import { Publisher, PublisherError } from '../ports/Publisher'
+
+const encodePubsubMessagePayload = PubsubMessagePayload.pipe(
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
 
 /**
  * Builds a {@link Publisher} that writes each published message to its own
@@ -17,12 +26,23 @@ export const make = Effect.gen(function* () {
   yield* fs.makeDirectory(outputDir, { recursive: true })
 
   return Publisher.of({
-    publish: (data) =>
+    publish: (data, attributes) =>
       Effect.gen(function* () {
         const id = yield* Clock.currentTimeMillis
         const path = `${outputDir}/${id}.json`
+
         yield* Effect.logTrace(`Publishing message: ${path}`)
-        yield* fs.writeFile(path, data).pipe(
+
+        const message = yield* Effect.orDie(
+          encodePubsubMessagePayload({
+            data: data.toString('utf-8'),
+            attributes,
+            messageId: String(id),
+            publishTime: new Date(id),
+          })
+        )
+
+        yield* fs.writeFile(path, message).pipe(
           Effect.mapError(
             (cause) =>
               new PublisherError({
