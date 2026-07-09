@@ -50,7 +50,7 @@ const provideSchemaReader = Effect.provideServiceEffect(
   makeSchemaReader
 )
 
-const decodeMessage = Schema.decodeUnknown(PubsubMessageEnvelope)
+const decodePubsubMessageEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.pick('bucketId', 'objectId'),
@@ -70,7 +70,7 @@ const loadJobs = HttpRouter.post(
     const req = yield* HttpServerRequest.HttpServerRequest
 
     const body = yield* req.json
-    const { message } = yield* decodeMessage(body)
+    const { message } = yield* decodePubsubMessageEnvelope(body)
     const attributes = yield* decodeAttributes(message.attributes)
 
     const schema = yield* reader.read({

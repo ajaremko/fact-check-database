@@ -16,7 +16,7 @@ import * as AlgoliaSearchClient from '@news-research/core-vendor/algolia/Algolia
 import { StorageReader } from '@news-research/core-io'
 import {
   StorageObjectAttributesSchema,
-  PubsubMessagePayload,
+  PubsubMessageEnvelope,
   FactChecksTableRowSchema,
 } from '@news-research/core-contracts'
 
@@ -33,7 +33,7 @@ const decodeBatch = FactChecksTableRowSchema.pipe(
   Schema.decode
 )
 
-const decodeMessage = Schema.decodeUnknown(PubsubMessagePayload)
+const decodePubsubMessageEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.pick('bucketId', 'objectId'),
@@ -48,7 +48,7 @@ const loadJobs = HttpRouter.post(
     const req = yield* HttpServerRequest.HttpServerRequest
 
     const body = yield* req.json
-    const { message } = yield* decodeMessage(body)
+    const { message } = yield* decodePubsubMessageEnvelope(body)
     const attributes = yield* decodeAttributes(message.attributes)
 
     const data = yield* reader.read({
