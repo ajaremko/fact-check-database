@@ -11,36 +11,34 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    }
-  },
-  "nx": {
-    "name": "ingestion-contracts",
-    "targets": {
-      "build": {
-        "executor": "@nx/esbuild:esbuild",
-        "outputs": [
-          "{options.outputPath}"
-        ],
-        "options": {
-          "outputPath": "projects/ingestion-contracts/dist",
-          "main": "projects/ingestion-contracts/src/index.ts",
-          "tsConfig": "projects/ingestion-contracts/tsconfig.lib.json",
-          "format": [
-            "cjs"
-          ],
-          "declarationRootDir": "projects/ingestion-contracts/src",
-          "esbuildOptions": {
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
-      }
+    },
+    "./config/v1": {
+      "types": "./dist/lib/config/v1/index.d.ts",
+      "import": "./dist/lib/config/v1/index.js",
+      "default": "./dist/lib/config/v1/index.js"
+    },
+    "./events/v1": {
+      "types": "./dist/lib/events/v1/index.d.ts",
+      "import": "./dist/lib/events/v1/index.js",
+      "default": "./dist/lib/events/v1/index.js"
+    },
+    "./archive/v1": {
+      "types": "./dist/lib/archive/v1/index.d.ts",
+      "import": "./dist/lib/archive/v1/index.js",
+      "default": "./dist/lib/archive/v1/index.js"
+    },
+    "./shared/v1": {
+      "types": "./dist/lib/shared/v1/index.d.ts",
+      "import": "./dist/lib/shared/v1/index.js",
+      "default": "./dist/lib/shared/v1/index.js"
     }
   },
   "dependencies": {
     "@news-research/core-contracts": "0.0.1",
     "effect": "^3.21.0",
-    "vitest": "^3.2.4"
+    "tslib": "^2.3.0"
+  },
+  "nx": {
+    "name": "ingestion-contracts"
   }
 }

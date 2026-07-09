@@ -4,15 +4,15 @@ import { DeepMutable, Mutable } from 'effect/Types'
 import { omitNullKeys, omitNullableKeys } from '@news-research/core-data'
 
 import {
-  ArchivePathSchema,
   SanitizerRecordSchema,
   SanitizerRecord,
   SanitizerRecordMetadataSchema,
-  ObservationSanitizedSchema,
-  SourceSchema,
-  TimestampSchema,
-} from '@news-research/ingestion-contracts'
+  ArchivePathSchema,
+} from '@news-research/ingestion-contracts/archive/v1'
+import { SourceSchema } from '@news-research/ingestion-contracts/config/v1'
+import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 import { FilePointerSchema } from '@news-research/core-io'
+import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts/events/v1'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 

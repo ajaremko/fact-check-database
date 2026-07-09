@@ -12,7 +12,7 @@ import {
 import {
   TimestampEncoded,
   TimestampSchema,
-} from '@news-research/ingestion-contracts'
+} from '@news-research/ingestion-contracts/shared/v1'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
 

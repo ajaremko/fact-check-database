@@ -1,6 +1,6 @@
 import { Context, Data, Effect, Schema, flow } from 'effect'
 
-import { Timestamp } from '@news-research/ingestion-contracts'
+import { Timestamp } from '@news-research/ingestion-contracts/shared/v1'
 
 import { Source } from '../contracts/Source'
 

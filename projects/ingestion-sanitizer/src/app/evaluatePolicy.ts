@@ -1,4 +1,4 @@
-import { Source } from '@news-research/ingestion-contracts'
+import { Source } from '@news-research/ingestion-contracts/config/v1'
 
 import type {
   CollectionRule,

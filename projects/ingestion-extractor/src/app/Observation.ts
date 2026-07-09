@@ -1,10 +1,10 @@
 import { Schema, ParseResult } from 'effect'
 
+import { SanitizerRecordSchema } from '@news-research/ingestion-contracts/archive/v1'
 import {
-  SanitizerRecordSchema,
   SourceCollectionSchema,
   SourceSchema,
-} from '@news-research/ingestion-contracts'
+} from '@news-research/ingestion-contracts/config/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,

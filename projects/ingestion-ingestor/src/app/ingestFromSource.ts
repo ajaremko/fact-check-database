@@ -6,7 +6,7 @@ import * as Yaml from '@news-research/core-data/Yaml'
 import {
   TimestampEncoded,
   TimestampSchema,
-} from '@news-research/ingestion-contracts'
+} from '@news-research/ingestion-contracts/shared/v1'
 import { omitNullKeys } from '@news-research/core-data'
 import { writeFile } from '@news-research/core-io'
 

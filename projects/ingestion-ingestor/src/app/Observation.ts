@@ -1,18 +1,18 @@
 import { Schema, ParseResult } from 'effect'
 
-import { omitNullKeys } from '@news-research/core-data'
-
 import {
   IngestionRecordSchema,
   IngestionRecordMetadataSchema,
+} from '@news-research/ingestion-contracts/archive/v1'
+import {
   ArchivePathSchema,
-  ObservationIngestedSchema,
   TimestampSchema,
-} from '@news-research/ingestion-contracts'
+} from '@news-research/ingestion-contracts/shared/v1'
+import { ObservationIngestedSchema } from '@news-research/ingestion-contracts/events/v1'
 import { FilePointerSchema } from '@news-research/core-io'
+import { omitNullKeys } from '@news-research/core-data'
 
 import { SourceSchema } from '../contracts/Source'
-
 import { FetchResultSchema } from '../ports/Fetcher'
 
 export class Observation extends Schema.Class<Observation>('Observation')({

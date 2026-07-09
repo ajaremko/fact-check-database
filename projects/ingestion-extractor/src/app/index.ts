@@ -6,7 +6,7 @@ import {
   BatchMessage,
   // publish,
 } from '@news-research/core-io'
-import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts'
+import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts/events/v1'
 
 import { extractFactChecks } from './extractFactChecks'
 import { writeBatch } from './writeBatch'

@@ -7,7 +7,7 @@ import {
   takeMessage,
   takeError,
 } from '@news-research/core-io'
-import { ObservationIngestedSchema } from '@news-research/ingestion-contracts'
+import { ObservationIngestedSchema } from '@news-research/ingestion-contracts/events/v1'
 
 import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
 
