@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import { SourceSchema, FilePointerSchema } from '../../../shared/contracts/v1'
+import { SourceSchema, FilePointerSchema } from '../../shared/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

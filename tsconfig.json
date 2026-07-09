@@ -59,6 +59,9 @@
     },
     {
       "path": "./projects/website-loader"
+    },
+    {
+      "path": "./projects/ingestion-contracts"
     }
   ]
 }

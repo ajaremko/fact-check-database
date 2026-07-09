@@ -1,6 +1,6 @@
 import { Schema, ParseResult } from 'effect'
 
-import { SanitizerRecordSchema } from '../shared/contracts/v1'
+import { SanitizerRecordSchema } from '@news-research/ingestion-contracts'
 
 import { SourceCollectionSchema, SourceSchema } from '../shared'
 

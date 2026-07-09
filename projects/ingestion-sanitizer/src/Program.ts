@@ -6,7 +6,7 @@ import {
   QueueMessage,
   publish,
 } from '@news-research/core-io'
-import { ObservationIngestedSchema } from '@news-research/ingestion-pipeline/ingest/contracts/v1'
+import { ObservationIngestedSchema } from '@news-research/ingestion-contracts'
 import * as Node from '@news-research/core-data/Node'
 import { sanitizeObservation } from '@news-research/ingestion-pipeline/sanitize'
 

@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import { ContentLineageIdSchema } from '../shared/contracts/v1'
+import { ContentLineageIdSchema } from '@news-research/ingestion-contracts'
 
 import { SourceSchema, TimestampSchema } from '../shared'
 

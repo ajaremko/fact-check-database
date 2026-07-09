@@ -19,6 +19,9 @@
       "path": "../ingestion-pipeline/tsconfig.lib.json"
     },
     {
+      "path": "../ingestion-contracts/tsconfig.lib.json"
+    },
+    {
       "path": "../core-data/tsconfig.lib.json"
     }
   ]

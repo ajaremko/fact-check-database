@@ -4,25 +4,14 @@
     "rootDir": "src",
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
-    "emitDeclarationOnly": false,
+    "emitDeclarationOnly": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "references": [
     {
       "path": "../core-contracts/tsconfig.lib.json"
-    },
-    {
-      "path": "../core-io/tsconfig.lib.json"
-    },
-    {
-      "path": "../core-vendor/tsconfig.lib.json"
-    },
-    {
-      "path": "../core-data/tsconfig.lib.json"
-    },
-    {
-      "path": "../ingestion-contracts/tsconfig.lib.json"
     }
   ],
   "exclude": [

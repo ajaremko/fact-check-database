@@ -8,7 +8,7 @@ import { omitNullKeys } from '@news-research/core-data'
 
 import { FilePointerSchema } from '@news-research/core-io'
 
-import { ExtractionBatchReadySchema } from './contracts/v1'
+import { ExtractionBatchReadySchema } from '@news-research/ingestion-contracts'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

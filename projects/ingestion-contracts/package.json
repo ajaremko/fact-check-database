@@ -1,0 +1,46 @@
+{
+  "name": "@news-research/ingestion-contracts",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "name": "ingestion-contracts",
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "projects/ingestion-contracts/dist",
+          "main": "projects/ingestion-contracts/src/index.ts",
+          "tsConfig": "projects/ingestion-contracts/tsconfig.lib.json",
+          "format": [
+            "cjs"
+          ],
+          "declarationRootDir": "projects/ingestion-contracts/src",
+          "esbuildOptions": {
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@news-research/core-contracts": "0.0.1",
+    "effect": "^3.21.0",
+    "vitest": "^3.2.4"
+  }
+}

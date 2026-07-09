@@ -8,11 +8,11 @@ import {
   SanitizerRecordSchema,
   SanitizerRecord,
   SanitizerRecordMetadataSchema,
-} from '../shared/contracts/v1'
+  ObservationSanitizedSchema,
+} from '@news-research/ingestion-contracts'
 import { FilePointerSchema } from '@news-research/core-io'
 import { SourceSchema, TimestampSchema } from '../shared'
 
-import { ObservationSanitizedSchema } from './contracts/v1'
 import { PolicyDecisionSchema } from './PolicyDecision'
 
 export class SanitizedObservation extends Schema.Class<SanitizedObservation>(

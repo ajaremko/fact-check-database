@@ -1,14 +1,21 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema, SourceSchema } from '../../../shared/contracts/v1'
+import {
+  FilePointerSchema,
+  SourceSchema,
+  PolicyLabelSchema,
+  SanitizationActionSchema,
+} from '../../shared/v1'
 
 /**
- * Schema for the event published by the ingestor per fetch attempt.
+ * Schema for the event published by the sanitizer after processing an
+ * ingested observation.
  *
- * One event is emitted regardless of whether the fetch succeeded or failed.
- * The `observationId` is a deterministic hash of the fetch outcome, enabling
- * deduplication across runs. The `pointer` field references the archived
- * ingestor record in cloud storage.
+ * Carries the policy classification (`label`) assigned to the observation's
+ * content and the remediation `actions` applied while sanitizing it. The
+ * `content_lineage_id` correlates the event back to the originating
+ * ingestion event, and `pointer` references the archived sanitizer record
+ * in cloud storage.
  */
 export const ObservationSanitizedSchema = Schema.Struct({
   version: Schema.Literal(1),
@@ -19,8 +26,8 @@ export const ObservationSanitizedSchema = Schema.Struct({
   sanitized_at: Schema.Number,
   source: SourceSchema,
   error: Schema.optional(Schema.String),
-  label: Schema.String,
-  actions: Schema.Array(Schema.String),
+  label: PolicyLabelSchema,
+  actions: Schema.Array(SanitizationActionSchema),
   bytes_rewritten: Schema.optional(Schema.Boolean),
   content_sha256: Schema.optional(Schema.String),
   content_bytes: Schema.optional(Schema.Number),

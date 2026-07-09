@@ -1,6 +1,6 @@
 import { Schema, ParseResult } from 'effect'
 
-import { IngestionRecordSchema } from '../shared/contracts/v1'
+import { IngestionRecordSchema } from '@news-research/ingestion-contracts'
 
 import { FilePointerSchema } from '@news-research/core-io'
 import { SourceCollectionSchema, SourceSchema, TimestampSchema } from '../shared'

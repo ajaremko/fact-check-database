@@ -1,6 +1,6 @@
 import { Schema, ParseResult } from 'effect'
 
-import { ArchivePathSchema } from '../shared/contracts/v1'
+import { ArchivePathSchema } from '@news-research/ingestion-contracts'
 
 import { TimestampSchema } from '../shared'
 

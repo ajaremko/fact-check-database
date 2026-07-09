@@ -6,13 +6,13 @@ import {
   IngestionRecordSchema,
   IngestionRecordMetadataSchema,
   ArchivePathSchema,
-} from '../shared/contracts/v1'
+  ObservationIngestedSchema,
+} from '@news-research/ingestion-contracts'
 
 import { FilePointerSchema } from '@news-research/core-io'
 import { SourceSchema, TimestampSchema } from '../shared'
 
 import { FetchResultSchema } from './Fetcher'
-import { ObservationIngestedSchema } from './contracts/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,

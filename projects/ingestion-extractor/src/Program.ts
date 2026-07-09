@@ -10,7 +10,7 @@ import {
   BatchMessage,
   // publish,
 } from '@news-research/core-io'
-import { ObservationSanitizedSchema } from '@news-research/ingestion-pipeline/sanitize/contracts/v1'
+import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts'
 
 interface JobContext {
   runId: string
