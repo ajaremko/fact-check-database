@@ -4,9 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/ingestion-pipeline"
-    },
-    {
       "path": "./projects/ingestion-replay"
     },
     {
