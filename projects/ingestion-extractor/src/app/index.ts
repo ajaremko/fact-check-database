@@ -2,15 +2,14 @@ import { Array, Context, Effect, Option, Schema, pipe } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
 import {
-  extractFactChecks,
-  writeBatch,
-} from '@news-research/ingestion-pipeline/extract'
-import {
   MessageBatch,
   BatchMessage,
   // publish,
 } from '@news-research/core-io'
 import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts'
+
+import { extractFactChecks } from './extractFactChecks'
+import { writeBatch } from './writeBatch'
 
 interface JobContext {
   runId: string
