@@ -2,7 +2,6 @@ export * from './archive'
 export * from './assets'
 export * from './extractor'
 export * from './ingestor'
-export * from './replay'
 export * from './sanitizer'
 import { loggingBucketConfig } from './logging'
 
