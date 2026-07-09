@@ -10,6 +10,7 @@ import {
   ExtractionBatchEventSchema,
   ExtractionBatchPathSchema,
 } from './ExtractionBatch'
+import { logExtractionBatchWritten } from './logging'
 
 const encodeNdjson = pipe(
   Schema.Object,
@@ -51,13 +52,11 @@ export const writeBatch = Effect.fn('writeBatch')(
       pointer,
     })
 
-    yield* Effect.logInfo(`Batch written with ${input.rows.length} rows`).pipe(
-      Effect.annotateLogs({
-        event: 'batch_written',
-        'batch.path': path,
-        'batch.format': batch.sourceFormat,
-      })
-    )
+    yield* logExtractionBatchWritten({
+      event: 'batch_written',
+      'batch.path': path,
+      'batch.format': batch.sourceFormat,
+    })
 
     yield* Metric.increment(batchesWritten)
 

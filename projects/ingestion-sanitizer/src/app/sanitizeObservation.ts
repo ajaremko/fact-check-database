@@ -25,6 +25,7 @@ import {
 } from './SanitizedObservation'
 import { ObservationSchema } from './Observation'
 import { evaluatePolicy } from './evaluatePolicy'
+import { logRecordSanitized } from './logging'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -104,19 +105,18 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       error: decision.error,
     })
 
+    yield* logRecordSanitized({
+      event: 'record_sanitized',
+      'decision.label': decision.label,
+      'decision.error': decision.error,
+      'source.collection': observation.source.collection,
+      'source.id': observation.source.id,
+      'source.name': observation.source.name,
+      'source.url': observation.source.url,
+    })
+
     // Encode a record of the sanitization with a pointer
     // to the raw response and sanitized record if applicable.
-    yield* Effect.logInfo(`Writing sanitize record for observation`).pipe(
-      Effect.annotateLogs({
-        event: 'record_sanitized',
-        'decision.label': decision.label,
-        'decision.error': decision.error,
-        'source.collection': observation.source.collection,
-        'source.id': observation.source.id,
-        'source.name': observation.source.name,
-        'source.url': observation.source.url,
-      })
-    )
     const recordPath = yield* encodeSanitizedObservationPath(
       sanitizedObservation
     )

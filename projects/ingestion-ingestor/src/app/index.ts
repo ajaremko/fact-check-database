@@ -4,6 +4,7 @@ import * as Node from '@news-research/core-data/Node'
 import { publish } from '@news-research/core-io'
 
 import { SourceList, Source } from '../ports/SourceList'
+import { logIngestionJobCompleted } from './logging'
 import { ingestFromSource } from './ingestFromSource'
 
 export interface JobContext {
@@ -67,16 +68,14 @@ export const App = Effect.gen(function* () {
   const successRate = successes.length / sources.length
   const result = successRate >= ctx.successThreshold ? 'success' : 'failure'
 
-  yield* Effect.logInfo(`Ingestor job run ${ctx.runId} completed`).pipe(
-    Effect.annotateLogs({
-      event: 'ingestor_job_completed',
-      'job.successRate': successRate,
-      'job.tasks': tasks.length,
-      'job.successes': successes.length,
-      'job.failures': tasks.length - successes.length,
-      'job.result': result,
-    })
-  )
+  yield* logIngestionJobCompleted({
+    event: 'ingestor_job_completed',
+    'job.successRate': successRate,
+    'job.tasks': tasks.length,
+    'job.successes': successes.length,
+    'job.failures': tasks.length - successes.length,
+    'job.result': result,
+  })
 
   // fail if below threshold
   if (result === 'failure') {

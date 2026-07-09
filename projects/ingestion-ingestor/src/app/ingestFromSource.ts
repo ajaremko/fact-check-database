@@ -21,6 +21,7 @@ import {
   ObservationEventSchema,
 } from './Observation'
 import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
+import { logIngestionFailed, logIngestionSucceeded } from './logging'
 import { ObservationIdSchema } from './ObservationId'
 
 const encodeObservation = pipe(
@@ -70,12 +71,11 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     if (result._tag === 'FetchFailure') {
       // Record the failure for monitoring purposes
-      yield* Effect.logWarning('Fetch failed').pipe(
-        Effect.annotateLogs({
-          event: 'fetch_failure',
-          'result.error': String(result.error),
-        })
-      )
+      yield* logIngestionFailed({
+        event: 'fetch_failure',
+        'result.error': String(result.error),
+      })
+
       yield* Metric.increment(contentRequestResults).pipe(
         Effect.tagMetrics({
           result_status: 'Client Failure',
@@ -154,14 +154,13 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Write a record of the successful attempt, including a
     // pointer to the archived body
-    yield* Effect.logInfo('Writing fetch success record').pipe(
-      Effect.annotateLogs({
-        event: 'fetch_success',
-        'result.status': getReasonPhrase(result.status),
-        'result.status_code': result.status,
-        'result.content_type': result.contentType || 'unknown',
-      })
-    )
+    yield* logIngestionSucceeded({
+      event: 'fetch_success',
+      'result.status': getReasonPhrase(result.status),
+      'result.status_code': result.status,
+      'result.content_type': result.contentType || 'unknown',
+    })
+
     const recordPath = yield* encodeObservationPath(observation)
     const recordData = yield* encodeObservation(observation)
     const recordMeta = yield* encodeObservationMetadata(observation)

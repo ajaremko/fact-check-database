@@ -9,6 +9,7 @@ import {
 import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts/events/v1'
 
 import { extractFactChecks } from './extractFactChecks'
+import { logExtractionJobCompleted } from './logging'
 import { writeBatch } from './writeBatch'
 
 interface JobContext {
@@ -85,15 +86,13 @@ export const App = Effect.gen(function* () {
     return
   }
 
-  yield* Effect.logInfo(`Extractor job run ${job.runId} completed`).pipe(
-    Effect.annotateLogs({
-      event: 'extractor_job_completed',
-      'job.tasks': tasks.length,
-      'job.successes': successes.length,
-      'job.failures': tasks.length - successes.length,
-      'job.rowsExtracted': rows.length,
-    })
-  )
+  yield* logExtractionJobCompleted({
+    event: 'extractor_job_completed',
+    'job.tasks': tasks.length,
+    'job.successes': successes.length,
+    'job.failures': tasks.length - successes.length,
+    'job.rowsExtracted': rows.length,
+  })
 
   // publish message
   // const outgoing =

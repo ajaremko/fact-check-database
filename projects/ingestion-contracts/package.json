@@ -27,6 +27,11 @@
       "import": "./dist/lib/archive/v1/index.js",
       "default": "./dist/lib/archive/v1/index.js"
     },
+    "./logging/v1": {
+      "types": "./dist/lib/logging/v1/index.d.ts",
+      "import": "./dist/lib/logging/v1/index.js",
+      "default": "./dist/lib/logging/v1/index.js"
+    },
     "./shared/v1": {
       "types": "./dist/lib/shared/v1/index.d.ts",
       "import": "./dist/lib/shared/v1/index.js",

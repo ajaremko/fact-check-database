@@ -6,6 +6,7 @@ import * as Yaml from '@news-research/core-data/Yaml'
 import { FilePointer, readFile } from '@news-research/core-io'
 
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
+import { logExtractionSucceeded, logExtractionFailed } from './logging'
 import { ObservationSchema } from './Observation'
 import { extractors } from './extraction-strategy'
 
@@ -71,16 +72,6 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
         data: responseData,
       })
       .pipe(
-        Effect.tap((x) =>
-          Effect.logInfo(
-            `Extracted ${x.length} fact checks from observation`
-          ).pipe(
-            Effect.annotateLogs({
-              event: 'fact_checks_extracted',
-              count: x.length,
-            })
-          )
-        ),
         Effect.map(
           Array.map(
             (factCheck): FactCheckRow => ({
@@ -108,14 +99,18 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
             })
           )
         ),
+        Effect.tap((factChecks) =>
+          logExtractionSucceeded({
+            event: 'extraction_succeeded',
+            count: factChecks.length,
+          })
+        ),
         Effect.tapError((err) =>
-          Effect.logWarning(err).pipe(
-            Effect.annotateLogs({
-              event: 'extraction_error',
-              type: err._tag,
-              error: err.message,
-            })
-          )
+          logExtractionFailed({
+            event: 'extraction_failed',
+            type: err._tag,
+            error: err.message,
+          })
         ),
         Effect.catchAll(() => Effect.succeed([])),
         Effect.annotateLogs({

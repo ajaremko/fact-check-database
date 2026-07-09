@@ -62,7 +62,7 @@ const extractionResultsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'INFO'
-                AND JSON_VALUE(json_payload, '$.event') = 'fact_checks_extracted'
+                AND JSON_VALUE(json_payload, '$.event') = 'extraction_succeeded'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },
@@ -98,7 +98,7 @@ const extractionErrorsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'WARNING'
-                AND JSON_VALUE(json_payload, '$.event') = 'extraction_error'
+                AND JSON_VALUE(json_payload, '$.event') = 'extraction_failed'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },
