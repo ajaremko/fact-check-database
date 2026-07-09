@@ -3,11 +3,11 @@ import { Schema } from 'effect'
 import { describe } from 'vitest'
 
 import {
+  PubsubMessageEnvelope,
   parsePubsubMessagePayloadData,
-  PubsubMessagePayload,
-} from './PubsubMessagePayload'
+} from './PubsubMessageEnvelope'
 
-describe('PubsubMessagePayload', () => {
+describe('PubsubMessageEnvelope', () => {
   describe('parsePubsubMessagePayloadData', () => {
     it('can encode a string to a base64 string', () => {
       expect(
@@ -24,10 +24,10 @@ describe('PubsubMessagePayload', () => {
       ).toBe('Hello World!')
     })
   })
-  describe('PubsubMessagePayload', () => {
+  describe('PubsubMessageEnvelope', () => {
     it('can encode a gcp message', () => {
       expect(
-        Schema.encodeSync(PubsubMessagePayload)({
+        Schema.encodeSync(PubsubMessageEnvelope)({
           message: {
             attributes: {
               key1: 'value1',
@@ -56,7 +56,7 @@ describe('PubsubMessagePayload', () => {
     })
     it('can decode a gcp message', () => {
       expect(
-        Schema.decodeSync(PubsubMessagePayload)({
+        Schema.decodeSync(PubsubMessageEnvelope)({
           message: {
             attributes: {
               key1: 'value1',

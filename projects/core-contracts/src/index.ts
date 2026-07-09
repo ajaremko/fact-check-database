@@ -1,6 +1,6 @@
 export * from './lib/FactChecksTable'
 export * from './lib/NumberFromFormattedDate'
-export * from './lib/PubsubMessagePayload'
+export * from './lib/PubsubMessageEnvelope'
 export * from './lib/Source'
 export * from './lib/StagingPath'
 export * from './lib/StorageObjectData'
