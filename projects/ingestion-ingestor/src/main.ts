@@ -13,7 +13,6 @@ import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentele
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
-import * as HttpClientFetcher from '@news-research/ingestion-pipeline/ingest/adapters/HttpClientFetcher'
 import * as CloudPubsubPublisher from '@news-research/core-io/adapters/CloudPubsubPublisher'
 import * as FileSystemPublisher from '@news-research/core-io/adapters/FileSystemPublisher'
 import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
@@ -25,9 +24,10 @@ import * as FileSystemStorageWriter from '@news-research/core-io/adapters/FileSy
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
-import * as CloudStorageSourceList from './CloudStorageSourceList'
-import * as FileSystemSourceList from './FileSystemSourceList'
-import { Program, JobContext } from './Program'
+import * as CloudStorageSourceList from './adapters/CloudStorageSourceList'
+import * as FileSystemSourceList from './adapters/FileSystemSourceList'
+import * as HttpClientFetcher from './adapters/HttpClientFetcher'
+import { App, JobContext } from './app'
 
 const fetcher = Layer.empty.pipe(
   Layer.merge(HttpClientFetcher.layer),
@@ -246,7 +246,7 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   })
 }
 
-Program.pipe(
+App.pipe(
   Effect.provide(fetcher),
   Effect.provide(sourceList),
   Effect.provide(storage),

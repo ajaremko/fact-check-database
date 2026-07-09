@@ -1,0 +1,200 @@
+import { Schema, ParseResult } from 'effect'
+
+import { omitNullKeys } from '@news-research/core-data'
+
+import {
+  IngestionRecordSchema,
+  IngestionRecordMetadataSchema,
+  ArchivePathSchema,
+  ObservationIngestedSchema,
+  TimestampSchema,
+} from '@news-research/ingestion-contracts'
+import { FilePointerSchema } from '@news-research/core-io'
+
+import { SourceSchema } from '../contracts/Source'
+
+import { FetchResultSchema } from '../ports/Fetcher'
+
+export class Observation extends Schema.Class<Observation>('Observation')({
+  observationId: Schema.String,
+  ingestionId: Schema.String,
+  fetchedAt: TimestampSchema,
+  result: FetchResultSchema,
+  source: SourceSchema,
+  pointer: Schema.NullOr(FilePointerSchema),
+}) {}
+
+export const ObservationSchema = Schema.transformOrFail(
+  IngestionRecordSchema,
+  Observation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding Observations not implemented'
+        )
+      ),
+    encode: (input) => {
+      switch (input.result._tag) {
+        case 'FetchSuccess':
+          return ParseResult.succeed({
+            version: 1,
+            kind: 'fetch_attempt' as const,
+            outcome: 'data_fetched' as const,
+            content_lineage_id: input.observationId,
+            ingestion_batch_id: input.ingestionId,
+            fetched_at: input.fetchedAt,
+            source: input.source,
+            status: input.result.status,
+            headers: input.result.headers,
+            ...(input.result.contentType
+              ? { content_type: input.result.contentType }
+              : {}),
+            ...(input.result.etag ? { etag: input.result.etag } : {}),
+            ...(input.result.lastModified
+              ? { last_modified: input.result.lastModified }
+              : {}),
+            ...(input.pointer
+              ? {
+                  content: {
+                    sha256: input.result.sha256,
+                    bytes: input.result.bytes,
+                    raw: {
+                      bucket: input.pointer.bucket,
+                      object: input.pointer.object,
+                    },
+                  },
+                }
+              : {}),
+          })
+        case 'FetchFailure':
+          return ParseResult.succeed({
+            version: 1,
+            kind: 'fetch_attempt' as const,
+            outcome: 'no_response' as const,
+            content_lineage_id: input.observationId,
+            ingestion_batch_id: input.ingestionId,
+            fetched_at: input.fetchedAt,
+            source: input.source,
+            error: input.result.error,
+          })
+      }
+    },
+  }
+)
+
+export const ObservationMetadataSchema = Schema.transformOrFail(
+  IngestionRecordMetadataSchema,
+  Observation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ObservationMetadata not implemented'
+        )
+      ),
+    encode: (input) => {
+      return ParseResult.succeed({
+        observationId: input.observationId,
+        ingestionId: input.ingestionId,
+        fetchedAt: input.fetchedAt,
+        url: input.source.url,
+        sourceName: input.source.name,
+        sourceCollection: input.source.collection,
+      })
+    },
+  }
+)
+
+export type ObservationMetadata = Schema.Schema.Type<
+  typeof ObservationMetadataSchema
+>
+
+export const ObservationPathSchema = Schema.transformOrFail(
+  ArchivePathSchema,
+  Observation,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ArchivePath not implemented'
+        )
+      ),
+    encode: (input) =>
+      ParseResult.succeed({
+        version: 1 as const,
+        collectionName: 'records',
+        ext: `ingestion.yml`,
+        sourceName: input.source.name,
+        date: input.fetchedAt,
+        ingestionId: input.ingestionId,
+        observationId: input.observationId,
+      }),
+  }
+)
+
+export const ObservationEventSchema = Schema.transformOrFail(
+  ObservationIngestedSchema,
+  Schema.Struct({ observation: Observation, pointer: FilePointerSchema }),
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding ObservationEvent not implemented'
+        )
+      ),
+    encode: (input) => {
+      switch (input.observation.result._tag) {
+        case 'FetchSuccess':
+          return ParseResult.succeed(
+            ObservationIngestedSchema.make(
+              omitNullKeys({
+                version: 1,
+                content_lineage_id: input.observation.observationId,
+                ingestion_batch_id: input.observation.ingestionId,
+                fetched_at: input.observation.fetchedAt,
+                source: {
+                  id: input.observation.source.id,
+                  name: input.observation.source.name,
+                  url: input.observation.source.url,
+                  collection: input.observation.source.collection,
+                },
+                status: input.observation.result.status,
+                final_url: input.observation.result.finalUrl,
+                content_type: input.observation.result.contentType,
+                etag: input.observation.result.etag,
+                last_modified: input.observation.result.lastModified,
+                content_sha256: input.observation.result.sha256,
+                content_bytes: input.observation.result.bytes,
+                pointer: input.pointer,
+              })
+            )
+          )
+        case 'FetchFailure':
+          return ParseResult.succeed(
+            ObservationIngestedSchema.make({
+              version: 1,
+              content_lineage_id: input.observation.observationId,
+              ingestion_batch_id: input.observation.ingestionId,
+              fetched_at: input.observation.fetchedAt,
+              source: input.observation.source,
+              error: input.observation.result.error,
+              pointer: input.pointer,
+            })
+          )
+      }
+    },
+  }
+)

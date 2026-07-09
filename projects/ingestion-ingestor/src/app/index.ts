@@ -1,10 +1,10 @@
 import { Array, Clock, Context, Effect, Option, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
-import { ingestFromSource } from '@news-research/ingestion-pipeline/ingest'
 import { publish } from '@news-research/core-io'
 
-import { SourceList, Source } from './SourceList'
+import { SourceList, Source } from '../ports/SourceList'
+import { ingestFromSource } from './ingestFromSource'
 
 export interface JobContext {
   runId: string
@@ -46,15 +46,15 @@ function processTarget(source: Source, index: number) {
   )
 }
 
-export const Program = Effect.gen(function* () {
-  const job = yield* JobContext
+export const App = Effect.gen(function* () {
+  const ctx = yield* JobContext
   const { sources } = yield* SourceList
 
   // process all targets with configured concurrency
   yield* Effect.logDebug(`Processing ${sources.length} targets`)
   const tasks = Array.map(sources, processTarget)
   const results = yield* Effect.all(tasks, {
-    concurrency: job.concurrency,
+    concurrency: ctx.concurrency,
     mode: 'either', // 'either' ensures all tasks are attempted
   })
 
@@ -65,9 +65,9 @@ export const Program = Effect.gen(function* () {
   )
 
   const successRate = successes.length / sources.length
-  const result = successRate >= job.successThreshold ? 'success' : 'failure'
+  const result = successRate >= ctx.successThreshold ? 'success' : 'failure'
 
-  yield* Effect.logInfo(`Ingestor job run ${job.runId} completed`).pipe(
+  yield* Effect.logInfo(`Ingestor job run ${ctx.runId} completed`).pipe(
     Effect.annotateLogs({
       event: 'ingestor_job_completed',
       'job.successRate': successRate,
@@ -82,7 +82,7 @@ export const Program = Effect.gen(function* () {
   if (result === 'failure') {
     yield* Effect.fail(
       new Error(
-        `Success rate ${successRate} is below threshold ${job.successThreshold}`
+        `Success rate ${successRate} is below threshold ${ctx.successThreshold}`
       )
     )
   }

@@ -4,7 +4,7 @@ import { FileSystem } from '@effect/platform'
 import * as Node from '@news-research/core-data/Node'
 import * as Csv from '@news-research/core-data/Csv'
 
-import { SourceList, SourceSchema } from './SourceList'
+import { SourceList, SourceSchema } from '../ports/SourceList'
 
 const decodeSources = pipe(
   SourceSchema,
