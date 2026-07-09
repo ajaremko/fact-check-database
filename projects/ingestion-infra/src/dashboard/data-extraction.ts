@@ -1,5 +1,12 @@
 import { gcpProject } from '../config'
 
+import {
+  ExtractionBatchWrittenKey,
+  ExtractionSucceededKey,
+  ExtractionFailedKey,
+  ExtractionJobCompletedKey,
+} from '@news-research/ingestion-contracts/logging/v1'
+
 const timezone = 'America/Los_Angeles'
 
 const tabGroup = {
@@ -27,7 +34,7 @@ const extractorJobRunsWidget = {
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
-                AND JSON_VALUE(json_payload, '$.event') = 'extractor_job_completed'
+                AND JSON_VALUE(json_payload, '$.event') = '${ExtractionJobCompletedKey}'
               ORDER BY timestamp DESC
               LIMIT 50`,
           },
@@ -62,7 +69,7 @@ const extractionResultsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'INFO'
-                AND JSON_VALUE(json_payload, '$.event') = 'extraction_succeeded'
+                AND JSON_VALUE(json_payload, '$.event') = '${ExtractionSucceededKey}'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },
@@ -98,7 +105,7 @@ const extractionErrorsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'WARNING'
-                AND JSON_VALUE(json_payload, '$.event') = 'extraction_failed'
+                AND JSON_VALUE(json_payload, '$.event') = '${ExtractionFailedKey}'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },
@@ -131,7 +138,7 @@ const batchesWrittenWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
                 AND severity = 'INFO'
-                AND JSON_VALUE(json_payload, '$.event') = 'batch_written'
+                AND JSON_VALUE(json_payload, '$.event') = '${ExtractionBatchWrittenKey}'
               ORDER BY timestamp DESC
               LIMIT 100`,
           },

@@ -1,6 +1,8 @@
 import { Schema } from 'effect'
 
+export const IngestionFailedKey = 'fetch_failure'
+
 export const IngestionFailedSchema = Schema.Struct({
-  event: Schema.Literal('fetch_failure'),
+  event: Schema.Literal(IngestionFailedKey),
   'result.error': Schema.String,
 })

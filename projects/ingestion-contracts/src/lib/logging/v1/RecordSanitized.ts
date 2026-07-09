@@ -1,7 +1,9 @@
 import { Schema } from 'effect'
 
+export const RecordSanitizedKey = 'record_sanitized'
+
 export const RecordSanitizedSchema = Schema.Struct({
-  event: Schema.Literal('record_sanitized'),
+  event: Schema.Literal(RecordSanitizedKey),
   'decision.label': Schema.String,
   'decision.error': Schema.NullOr(Schema.String),
   'source.collection': Schema.String,

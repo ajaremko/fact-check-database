@@ -1,5 +1,12 @@
 import { gcpProject } from '../config'
 
+import {
+  IngestionFailedKey,
+  IngestionJobCompletedKey,
+  IngestionSucceededKey,
+  RecordSanitizedKey,
+} from '@news-research/ingestion-contracts/logging/v1'
+
 const timezone = 'America/Los_Angeles'
 
 const tabGroup = {
@@ -28,7 +35,7 @@ const ingestorJobRunsWidget = {
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
-                AND JSON_VALUE(json_payload, '$.event') = 'ingestor_job_completed'
+                AND JSON_VALUE(json_payload, '$.event') = '${IngestionJobCompletedKey}'
               ORDER BY timestamp DESC
               LIMIT 50`,
           },
@@ -64,7 +71,7 @@ const archivedRequestsWidget = {
               FROM \`${gcpProject}.global._Default._Default\`
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
-                AND JSON_VALUE(json_payload, '$.event') = 'fetch_success'
+                AND JSON_VALUE(json_payload, '$.event') = '${IngestionSucceededKey}'
                 AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-ingestor'
               GROUP BY Name, \`Source ID\`, Collection, URL, Status, Code, \`Content Type\`
               ORDER BY Date, Time, Name, Code
@@ -100,7 +107,7 @@ const failedRequestsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'WARNING'
-                AND JSON_VALUE(json_payload, '$.event') = 'fetch_failure'
+                AND JSON_VALUE(json_payload, '$.event') = '${IngestionFailedKey}'
                 AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-ingestor'
               GROUP BY Name, \`Source ID\`, Collection, URL, Error
               ORDER BY Name`,
@@ -135,7 +142,7 @@ const sanitizerDecisionsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'INFO'
-                AND JSON_VALUE(json_payload, '$.event') = 'record_sanitized'
+                AND JSON_VALUE(json_payload, '$.event') = '${RecordSanitizedKey}'
                 AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-sanitizer'
               GROUP BY Name, \`Source ID\`, Collection, URL, Decision
               ORDER BY Name, Decision`,
