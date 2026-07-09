@@ -1,12 +1,7 @@
-import { Array, Context, Effect, Option, Schema, pipe } from 'effect'
+import { Array, Context, Effect, Option, Schema } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
-import {
-  MessageBatch,
-  BatchMessage,
-  // publish,
-} from '@news-research/core-io'
-import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts/events/v1'
+import { MessageBatch, BatchMessage } from '@news-research/core-io'
+import { StorageObjectAttributesSchema } from '@news-research/core-contracts'
 
 import { extractFactChecks } from './extractFactChecks'
 import { logExtractionJobCompleted } from './logging'
@@ -20,28 +15,21 @@ interface JobContext {
 
 export const JobContext = Context.GenericTag<JobContext>('JobContext')
 
-const decodeIncoming = pipe(
-  ObservationSanitizedSchema,
-  Node.parseJson(),
-  Node.parseBuffer({ encoding: 'utf-8' }),
-  Schema.decode
+const decodeAttributes = StorageObjectAttributesSchema.pipe(
+  Schema.pick('bucketId', 'objectId'),
+  Schema.decodeUnknown
 )
-
-// const encodeOutgoing = pipe(
-//   Schema.Object,
-//   Node.parseJson(),
-//   Node.parseBuffer({ encoding: 'utf-8' }),
-//   Schema.encode
-// )
 
 function processMessage(envelope: BatchMessage) {
   let effect = Effect.gen(function* () {
-    const incoming = yield* decodeIncoming(envelope.message.data)
     const job = yield* JobContext
+    const incoming = yield* decodeAttributes(envelope.message.attributes)
     const rows = yield* extractFactChecks({
       extractionId: job.runId,
-      observationId: incoming.content_lineage_id,
-      pointer: incoming.pointer,
+      pointer: {
+        bucket: incoming.bucketId,
+        object: incoming.objectId,
+      },
       extractedAt: job.startedAt,
     })
     yield* envelope.ack

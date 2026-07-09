@@ -19,7 +19,7 @@ import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-g
 import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import * as CloudStorageStorageWriter from '@news-research/core-io/adapters/CloudStorageStorageWriter'
 import * as CloudStorageStorageReader from '@news-research/core-io/adapters/CloudStorageStorageReader'
-import * as FileSystemStorageWriter from '@news-research/core-io/adapters/FileSystemStorageWriter'
+import * as FileSystemStorageWriterWithNotification from '@news-research/core-io/adapters/FileSystemStorageWriterWithNotification'
 import * as FileSystemStorageReader from '@news-research/core-io/adapters/FileSystemStorageReader'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
@@ -67,7 +67,7 @@ const storage = Layer.unwrapEffect(
     if (storageMode === 'filesystem') {
       yield* Effect.logDebug('Using filesystem storage')
       return Layer.empty.pipe(
-        Layer.merge(FileSystemStorageWriter.layer),
+        Layer.merge(FileSystemStorageWriterWithNotification.layer('records')),
         Layer.merge(FileSystemStorageReader.layer),
         Layer.provide(NodeFileSystem.layer)
       )
@@ -227,8 +227,8 @@ function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
 
 withMessageQueueFeeder(App).pipe(
   Effect.provide(sanitizerPolicy),
-  Effect.provide(messaging),
   Effect.provide(storage),
+  Effect.provide(messaging),
   Effect.provide(otel),
   Effect.provide(logger),
   Effect.provide(InMemoryMessageQueue.layer),

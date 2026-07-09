@@ -24,7 +24,7 @@ const extractedFactCheckRows = Metric.counter('extracted_fact_check_rows')
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
     extractionId: string
-    observationId: string
+    // observationId: string
     pointer: FilePointer
     extractedAt: number
   }) {
@@ -76,7 +76,7 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
           Array.map(
             (factCheck): FactCheckRow => ({
               id: factCheck.sha256,
-              observationId: ctx.observationId,
+              observationId: observation.observationId,
               extractionId: ctx.extractionId,
               fetchedAt: observation.fetchedAt,
               extractedAt: ctx.extractedAt,
@@ -138,7 +138,6 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
   (effect, ctx) =>
     effect.pipe(
       Effect.annotateLogs({
-        'observation.id': ctx.observationId,
         'pointer.bucket': ctx.pointer.bucket,
         'pointer.object': ctx.pointer.object,
       })

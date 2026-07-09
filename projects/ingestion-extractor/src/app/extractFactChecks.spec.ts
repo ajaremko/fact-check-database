@@ -92,8 +92,6 @@ describe('extractFactChecks', () => {
       }
       const result = yield* extractFactChecks({
         extractionId: 'run-1',
-        observationId:
-          'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
         extractedAt: 0,
         pointer: {
           bucket: 'inmemory',
@@ -278,8 +276,6 @@ describe('extractFactChecks', () => {
       }
       const result = yield* extractFactChecks({
         extractionId: 'run-1',
-        observationId:
-          '8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4',
         extractedAt: 0,
         pointer: {
           bucket: 'inmemory',
@@ -323,7 +319,6 @@ describe('extractFactChecks', () => {
         }
         const result = yield* extractFactChecks({
           extractionId: 'run-1',
-          observationId: 'no-content-obs',
           extractedAt: 0,
           pointer: { bucket: 'inmemory', object: 'no-content.sanitize.yml' },
         }).pipe(
