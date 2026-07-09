@@ -24,6 +24,9 @@
   ],
   "references": [
     {
+      "path": "../core-data/tsconfig.lib.json"
+    },
+    {
       "path": "../core-vendor/tsconfig.lib.json"
     },
     {

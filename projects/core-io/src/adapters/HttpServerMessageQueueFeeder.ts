@@ -9,13 +9,27 @@ import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import { PubsubMessagePayload } from '@news-research/core-contracts'
+import * as Node from '@news-research/core-data/Node'
+import {
+  PubsubMessagePayload,
+  parsePubsubMessagePayloadData,
+} from '@news-research/core-contracts'
 
 import { MessageBody } from '../ports/MessageBody'
 
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 
-const decodeMessage = Schema.decodeUnknown(PubsubMessagePayload)
+const decodePubsubMessagePayload = Schema.decodeUnknown(PubsubMessagePayload)
+
+const decodePubsubMessagePayloadData = Schema.String.pipe(
+  parsePubsubMessagePayloadData,
+  Schema.decodeUnknown
+)
+
+const encodeMessageData = Schema.String.pipe(
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encodeUnknown
+)
 
 /**
  * Offers `message` onto the {@link MessageQueue} and awaits its outcome,
@@ -54,20 +68,23 @@ export function layer(path: HttpRouter.PathInput) {
       Effect.gen(function* () {
         const req = yield* HttpServerRequest.HttpServerRequest
         const body = yield* req.json
-        const { message } = yield* decodeMessage(body)
-        const data = Buffer.from(message.data, 'utf-8')
+        const payload = yield* decodePubsubMessagePayload(body)
+        const messageData = yield* decodePubsubMessagePayloadData(
+          payload.message.data
+        )
+        const data = yield* encodeMessageData(messageData)
         const messageBody: MessageBody = {
           data,
-          attributes: message.attributes,
-          messageId: message.messageId,
-          publishTime: message.publishTime,
+          attributes: payload.message.attributes,
+          messageId: payload.message.messageId,
+          publishTime: payload.message.publishTime,
         }
         return yield* enqueueHttpMessage(messageBody).pipe(
           Effect.withSpan('processHttpRequest'),
           Effect.annotateLogs({
             'request.url': req.url,
             'request.method': req.method,
-            'message.id': message.messageId,
+            'message.id': payload.message.messageId,
           })
         )
       }).pipe(

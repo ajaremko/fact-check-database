@@ -31,6 +31,7 @@
     "@effect/platform-node": "^0.106.0",
     "@google-cloud/pubsub": "^5.2.2",
     "@news-research/core-contracts": "0.0.1",
+    "@news-research/core-data": "0.0.1",
     "@news-research/core-vendor": "0.0.1"
   },
   "nx": {
