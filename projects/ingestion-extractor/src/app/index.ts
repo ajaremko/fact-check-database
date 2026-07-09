@@ -59,7 +59,7 @@ function processMessage(envelope: BatchMessage) {
   return effect
 }
 
-export const Program = Effect.gen(function* () {
+export const App = Effect.gen(function* () {
   const job = yield* JobContext
   const messages = yield* MessageBatch
 

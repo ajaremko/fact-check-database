@@ -25,7 +25,7 @@ import * as FileSystemStorageReader from '@news-research/core-io/adapters/FileSy
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
-import { Program, JobContext } from './Program'
+import { App, JobContext } from './app'
 
 const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')
 
@@ -199,7 +199,7 @@ function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   })
 }
 
-Program.pipe(
+App.pipe(
   Effect.provide(storage),
   Effect.provide(messaging),
   Effect.provide(otel),
