@@ -1,6 +1,6 @@
 import { Context, Data, Effect, flow } from 'effect'
 
-import { FormSubmission } from '@news-research/website-contracts'
+import { FormSubmission } from '@news-research/website-contracts/form-submissions/v1'
 
 export class EmailerError extends Data.TaggedError('EmailerError')<{
   readonly cause: unknown

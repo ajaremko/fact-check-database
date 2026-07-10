@@ -3,6 +3,12 @@
 import { useSearchBox, useHits } from 'react-instantsearch'
 import { useMemo } from 'react'
 import styled from 'styled-components'
+import { Schema, Either } from 'effect'
+
+import {
+  SearchResultSchema,
+  type SearchResult,
+} from '@news-research/website-contracts/search/v1'
 
 import { C, mono } from '@/lib/theme'
 
@@ -62,6 +68,18 @@ const VerdictBadge = styled.span<{ verdict: string }>`
   color: ${({ verdict }) => VERDICT_STYLES[verdict]?.color ?? '#374151'};
 `
 
+const CollectionBadge = styled.span`
+  font-family: ${mono};
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: ${C.textMuted};
+  background-color: ${C.bgSurface};
+  border: 1px solid ${C.borderSubtle};
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
+`
+
 const ResultMeta = styled.div`
   display: flex;
   align-items: center;
@@ -83,57 +101,66 @@ const EmptyState = styled.div`
 
 // --- Algolia ---
 
-interface SearchHit {
-  objectID: string
-  source_name: string
-  title: string
-  claim: string
-  summary: string
-  verdict: string | null
-  published_at: string | null
-  raw_published_at: string | null
-  canonical_url: string | null
-  language: string | null
-  collection: string
+const decodeSearchResult = Schema.decodeUnknownEither(SearchResultSchema)
+
+function decodeHits(hits: readonly unknown[]): SearchResult[] {
+  const results: SearchResult[] = []
+  for (const hit of hits) {
+    const decoded = decodeSearchResult(hit)
+    if (Either.isRight(decoded)) results.push(decoded.right)
+    else console.error('Failed to decode search result hit', decoded.left)
+  }
+  return results
 }
 
 function formatDate(
-  published_at: string | null,
-  raw_published_at: string | null
+  publishedAtNormalized: string | undefined,
+  publishedAtRaw: Date | undefined
 ): string {
-  const dateStr = published_at ?? raw_published_at
-  if (!dateStr) return ''
-  try {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+  if (publishedAtNormalized) return publishedAtNormalized
+  if (publishedAtRaw) {
+    return publishedAtRaw.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     })
-  } catch {
-    return dateStr
   }
+  return ''
 }
 
 type SortOption = 'newest' | 'oldest' | 'verdict'
 
-function getTimestamp(hit: SearchHit): number {
-  const dateStr = hit.published_at ?? hit.raw_published_at
-  if (!dateStr) return 0
-  const t = new Date(dateStr).getTime()
-  return isNaN(t) ? 0 : t
+function resolveVerdict(hit: SearchResult): string | undefined {
+  return hit.verdict_normalized ?? hit.verdict_raw
 }
 
-function sortHits(hits: readonly SearchHit[], sort: SortOption): SearchHit[] {
+function getTimestamp(hit: SearchResult): number {
+  // published_at_raw is a real Date post-decode and sorts reliably; normalized
+  // is a display string that's only parsed as a fallback.
+  if (hit.published_at_raw) return hit.published_at_raw.getTime()
+  if (hit.published_at_normalized) {
+    const t = new Date(hit.published_at_normalized).getTime()
+    return isNaN(t) ? 0 : t
+  }
+  return 0
+}
+
+function sortHits(
+  hits: readonly SearchResult[],
+  sort: SortOption
+): SearchResult[] {
   const copy = [...hits]
   if (sort === 'newest')
     return copy.sort((a, b) => getTimestamp(b) - getTimestamp(a))
   if (sort === 'oldest')
     return copy.sort((a, b) => getTimestamp(a) - getTimestamp(b))
   return copy.sort((a, b) => {
-    if (!a.verdict && !b.verdict) return 0
-    if (!a.verdict) return 1
-    if (!b.verdict) return -1
-    return a.verdict.localeCompare(b.verdict)
+    const av = resolveVerdict(a)
+    const bv = resolveVerdict(b)
+    if (!av && !bv) return 0
+    if (!av) return 1
+    if (!bv) return -1
+    return av.localeCompare(bv)
   })
 }
 
@@ -142,12 +169,14 @@ export function ResultListItem({
   title,
   verdict,
   source,
+  collection,
   publishedAt,
 }: {
   href?: string
   title: string
   verdict?: string
   source?: string
+  collection?: string
   publishedAt?: string
 }) {
   return (
@@ -166,6 +195,7 @@ export function ResultListItem({
       </ResultHeader>
       <ResultMeta>
         <ResultSource>{source}</ResultSource>
+        {collection && <CollectionBadge>{collection}</CollectionBadge>}
         <span>{publishedAt}</span>
       </ResultMeta>
     </ResultItem>
@@ -181,6 +211,7 @@ export function HitsWidget({
     title: string
     verdict?: string
     source?: string
+    collection?: string
     publishedAt?: string
   }[]
 }) {
@@ -193,6 +224,7 @@ export function HitsWidget({
           title={item.title}
           verdict={item.verdict}
           source={item.source}
+          collection={item.collection}
           publishedAt={item.publishedAt}
         />
       ))}
@@ -201,9 +233,9 @@ export function HitsWidget({
 }
 
 export function HitsWidgetLive({ sort }: { sort: SortOption }) {
-  const { hits } = useHits<SearchHit>()
+  const { hits } = useHits()
   const { query } = useSearchBox()
-  const sorted = useMemo(() => sortHits(hits, sort), [hits, sort])
+  const sorted = useMemo(() => sortHits(decodeHits(hits), sort), [hits, sort])
 
   if (sorted.length === 0) {
     return (
@@ -218,12 +250,13 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
   return (
     <HitsWidget
       items={sorted.map((hit) => ({
-        id: hit.objectID,
-        href: hit.canonical_url ?? undefined,
-        title: hit.title,
-        verdict: hit.verdict ?? undefined,
+        id: hit.ObjectID,
+        href: hit.canonical_url,
+        title: hit.title ?? hit.claim ?? 'Untitled',
+        verdict: resolveVerdict(hit),
         source: hit.source_name,
-        publishedAt: formatDate(hit.published_at, hit.raw_published_at),
+        collection: hit.source_collection,
+        publishedAt: formatDate(hit.published_at_normalized, hit.published_at_raw),
       }))}
     />
   )

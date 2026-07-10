@@ -24,31 +24,10 @@
     }
   },
   "nx": {
-    "name": "website-contracts",
-    "targets": {
-      "build": {
-        "executor": "@nx/esbuild:esbuild",
-        "outputs": [
-          "{options.outputPath}"
-        ],
-        "options": {
-          "outputPath": "projects/website-contracts/dist",
-          "main": "projects/website-contracts/src/index.ts",
-          "tsConfig": "projects/website-contracts/tsconfig.lib.json",
-          "format": [
-            "cjs"
-          ],
-          "declarationRootDir": "projects/website-contracts/src",
-          "esbuildOptions": {
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
-      }
-    }
+    "name": "website-contracts"
   },
   "dependencies": {
-    "effect": "^3.21.0"
+    "effect": "^3.21.0",
+    "tslib": "^2.3.0"
   }
 }

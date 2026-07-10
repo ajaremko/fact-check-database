@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { Effect } from 'effect'
 
-import { AccessRequestSchema } from '@news-research/website-contracts'
+import { AccessRequestSchema } from '@news-research/website-contracts/form-submissions/v1'
 import { publish } from '@news-research/core-io'
 
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'

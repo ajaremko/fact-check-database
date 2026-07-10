@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import { Effect, Config, Layer } from 'effect'
 
-import { FormSubmission } from '@news-research/website-contracts'
+import { FormSubmission } from '@news-research/website-contracts/form-submissions/v1'
 
 import { Emailer, EmailerError } from './Emailer'
 

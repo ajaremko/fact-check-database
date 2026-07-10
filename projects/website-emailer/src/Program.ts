@@ -11,7 +11,7 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
-import { FormSubmissionSchema } from '@news-research/website-contracts'
+import { FormSubmissionSchema } from '@news-research/website-contracts/form-submissions/v1'
 
 import { sendConfirmationEmail, sendNotificationEmail } from './Emailer'
 
