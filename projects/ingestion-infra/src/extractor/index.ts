@@ -9,8 +9,7 @@ export const extractorDeadletterTopicName = extractorDeadletterTopic.name
 export const extractorDeadletterTopicArchiveSubscriptionName =
   extractorDeadletterTopicArchiveSubscription.name
 
-import { extractorJobScheduler } from './scheduler'
-export const extractorJobSchedulerName = extractorJobScheduler.name
+export * from './scheduler'
 
 import { extractorJob } from './job'
 export const extractorJobName = extractorJob.name

@@ -62,13 +62,25 @@ export const dockerTag = ingestionConfig.get('tag')
  * The schedule for the ingestor job in cron format. This determines how
  * often the ingestor runs to kick off the pipeline.
  */
-export const ingestorSchedule = ingestionConfig.require('ingestorSchedule')
+export const ingestorSchedule = ingestionConfig.get('ingestorSchedule')
+
+if (!ingestorSchedule) {
+  console.warn(
+    `⚠️\tIngestor schedule is not set. Ingestor job must be run manually.`
+  )
+}
 
 /**
  * The schedule for the extractor job in cron format. This determines how
  * often the extractor runs to process sanitized records.
  */
-export const extractorSchedule = ingestionConfig.require('extractorSchedule')
+export const extractorSchedule = ingestionConfig.get('extractorSchedule')
+
+if (!extractorSchedule) {
+  console.warn(
+    `⚠️\tExtractor schedule is not set. Extractor job must be run manually.`
+  )
+}
 
 /**
  * The log verbosity level for the ingestion pipeline components.

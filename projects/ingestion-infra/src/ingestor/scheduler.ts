@@ -7,32 +7,46 @@ import { provider, schedulerServiceAgentEmail } from '../project'
 
 import { ingestorJob } from './job'
 
-export const {
-  serviceAccount: ingestorInvokerServiceAccount,
-  serviceAccountInvoker: ingestorInvokerServiceAccountInvoker,
-} = createInvokerServiceAccount({
-  name: 'ingestor-push',
-  serviceName: ingestorJob.name,
-  displayName: 'Ingestion Ingestor Invoker',
-  type: 'job',
-})
+function getIngestorJobSchedulerName(schedule: string | undefined) {
+  if (!schedule) {
+    return {
+      ingestorJobSchedulerName: pulumi.output('none'),
+      ingestorInvokerServiceAccountEmail: pulumi.output('none'),
+    }
+  }
 
-const schedulerTokenCreator = new gcp.serviceaccount.IAMMember(
-  `${tag}-ingestor-scheduler-token-creator`,
-  {
-    serviceAccountId: ingestorInvokerServiceAccount.name,
-    role: 'roles/iam.serviceAccountTokenCreator',
-    member: pulumi.interpolate`serviceAccount:${schedulerServiceAgentEmail}`,
-  },
-  { provider }
-)
+  const { serviceAccount: ingestorInvokerServiceAccount } =
+    createInvokerServiceAccount({
+      name: 'ingestor-push',
+      serviceName: ingestorJob.name,
+      displayName: 'Ingestion Ingestor Invoker',
+      type: 'job',
+    })
 
-export const ingestorJobScheduler = createJobScheduler({
-  name: 'ingestor-job-scheduler',
-  description: 'Trigger Ingestor Cloud RunJob on configured schedule',
-  schedule: ingestorSchedule,
-  serviceName: ingestorJob.name,
-  serviceAccountName: ingestorInvokerServiceAccount.name,
-  serviceAccountEmail: ingestorInvokerServiceAccount.email,
-  dependsOn: [schedulerTokenCreator],
-})
+  const schedulerTokenCreator = new gcp.serviceaccount.IAMMember(
+    `${tag}-ingestor-scheduler-token-creator`,
+    {
+      serviceAccountId: ingestorInvokerServiceAccount.name,
+      role: 'roles/iam.serviceAccountTokenCreator',
+      member: pulumi.interpolate`serviceAccount:${schedulerServiceAgentEmail}`,
+    },
+    { provider }
+  )
+
+  const ingestorJobScheduler = createJobScheduler({
+    name: 'ingestor-job-scheduler',
+    description: 'Trigger Ingestor Cloud RunJob on configured schedule',
+    schedule,
+    serviceName: ingestorJob.name,
+    serviceAccountName: ingestorInvokerServiceAccount.name,
+    serviceAccountEmail: ingestorInvokerServiceAccount.email,
+    dependsOn: [schedulerTokenCreator],
+  })
+
+  const ingestorJobSchedulerName = ingestorJobScheduler.name
+  const ingestorInvokerServiceAccountEmail = ingestorInvokerServiceAccount.email
+  return { ingestorJobSchedulerName, ingestorInvokerServiceAccountEmail }
+}
+
+export const { ingestorJobSchedulerName, ingestorInvokerServiceAccountEmail } =
+  getIngestorJobSchedulerName(ingestorSchedule)

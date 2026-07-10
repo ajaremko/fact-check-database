@@ -14,14 +14,7 @@ import { ingestorJob } from './job'
 
 export const ingestorJobName = ingestorJob.name
 
-import {
-  ingestorJobScheduler,
-  ingestorInvokerServiceAccount,
-} from './scheduler'
-
-export const ingestorJobSchedulerName = ingestorJobScheduler.name
-export const ingestorInvokerServiceAccountEmail =
-  ingestorInvokerServiceAccount.email
+export * from './scheduler'
 
 import { ingestorContentRequestResultsCounterMetric } from './metrics'
 
