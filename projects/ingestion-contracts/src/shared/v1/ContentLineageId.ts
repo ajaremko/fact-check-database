@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import { NumberFromFormattedDate } from '@news-research/core-contracts'
+import { NumberFromFormattedDate } from '@news-research/core-contracts/shared/v1'
 
 export const ContentLineageIdSchema = Schema.transformOrFail(
   Schema.String,

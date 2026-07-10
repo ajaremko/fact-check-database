@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import { NumberFromFormattedDate } from '@news-research/core-contracts'
+import { NumberFromFormattedDate } from '@news-research/core-contracts/shared/v1'
 
 /**
  * Schema for the GCS object path where a sanitizer record is stored. Encodes the

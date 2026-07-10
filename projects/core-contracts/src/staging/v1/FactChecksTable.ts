@@ -1,7 +1,5 @@
 import { Schema } from 'effect'
 
-import { SourceSchema } from './Source'
-
 // Using STUCT instead of RECORD or X instead of INTEGER causes pulumi to redeploy table
 // on every update. Add this to list of problems/mitigations in documentation about
 // BigQuery and Pulumi.
@@ -71,7 +69,12 @@ export const FactChecksTableRowSchema = Schema.Struct({
   fetched_at: Schema.Date,
   ingestion_id: Schema.String,
   extraction_id: Schema.String,
-  source: SourceSchema,
+  source: Schema.Struct({
+    id: Schema.String,
+    name: Schema.String,
+    url: Schema.String,
+    collection: Schema.String,
+  }),
   extractor_id: Schema.String,
   extractor_version: Schema.Number,
   fact_check: Schema.Struct({

@@ -11,38 +11,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./gcp/v1": {
+      "types": "./dist/gcp/v1/index.d.ts",
+      "import": "./dist/gcp/v1/index.js",
+      "default": "./dist/gcp/v1/index.js"
+    },
+    "./staging/v1": {
+      "types": "./dist/staging/v1/index.d.ts",
+      "import": "./dist/staging/v1/index.js",
+      "default": "./dist/staging/v1/index.js"
+    },
+    "./shared/v1": {
+      "types": "./dist/shared/v1/index.d.ts",
+      "import": "./dist/shared/v1/index.js",
+      "default": "./dist/shared/v1/index.js"
     }
   },
   "nx": {
-    "name": "core-contracts",
-    "targets": {
-      "build": {
-        "executor": "@nx/esbuild:esbuild",
-        "outputs": [
-          "{options.outputPath}"
-        ],
-        "options": {
-          "outputPath": "projects/core-contracts/dist",
-          "main": "projects/core-contracts/src/index.ts",
-          "tsConfig": "projects/core-contracts/tsconfig.lib.json",
-          "format": [
-            "cjs"
-          ],
-          "declarationRootDir": "projects/core-contracts/src",
-          "esbuildOptions": {
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
-      }
-    }
+    "name": "core-contracts"
   },
   "dependencies": {
     "@news-research/core-data": "0.0.1",
     "@google/events": "^5.4.0",
     "date-fns": "^4.1.0",
     "effect": "^3.21.0",
-    "vitest": "^3.2.4"
+    "tslib": "^2.3.0"
   }
 }

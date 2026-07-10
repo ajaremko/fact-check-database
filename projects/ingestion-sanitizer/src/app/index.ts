@@ -1,7 +1,7 @@
 import { Clock, Effect, Schema } from 'effect'
 
 import { QueueMessage, takeMessage, takeError } from '@news-research/core-io'
-import { StorageObjectAttributesSchema } from '@news-research/core-contracts'
+import { StorageObjectAttributesSchema } from '@news-research/core-contracts/gcp/v1'
 
 import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
 

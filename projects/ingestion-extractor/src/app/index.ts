@@ -1,7 +1,7 @@
 import { Array, Context, Effect, Option, Schema } from 'effect'
 
 import { MessageBatch, BatchMessage } from '@news-research/core-io'
-import { StorageObjectAttributesSchema } from '@news-research/core-contracts'
+import { StorageObjectAttributesSchema } from '@news-research/core-contracts/gcp/v1'
 
 import { extractFactChecks } from './extractFactChecks'
 import { logExtractionJobCompleted } from './logging'

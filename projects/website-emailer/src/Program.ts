@@ -11,20 +11,12 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
+import { PubsubMessageEnvelope } from '@news-research/core-contracts/gcp/v1'
 import { FormSubmissionSchema } from '@news-research/website-contracts/form-submissions/v1'
 
 import { sendConfirmationEmail, sendNotificationEmail } from './Emailer'
 
-const decodeMessage = Schema.decodeUnknown(
-  Schema.Struct({
-    message: Schema.Struct({
-      messageId: Schema.String,
-      data: Schema.String.pipe(
-        Node.parseBufferEncoded({ decode: 'utf-8', encode: 'base64' })
-      ),
-    }),
-  })
-)
+const decodePubsubMessageEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodeFormSubmission = FormSubmissionSchema.pipe(
   Node.parseJson(),
@@ -35,7 +27,7 @@ const decodeFormSubmission = FormSubmissionSchema.pipe(
 const accessFormSubmission = Effect.gen(function* () {
   const req = yield* HttpServerRequest.HttpServerRequest
   const body = yield* req.json
-  const { message } = yield* decodeMessage(body)
+  const { message } = yield* decodePubsubMessageEnvelope(body)
   const data = Buffer.from(message.data, 'utf-8')
   return yield* decodeFormSubmission(data)
 })

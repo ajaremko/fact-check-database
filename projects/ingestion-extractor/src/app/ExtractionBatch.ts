@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import { StagingPathSchema } from '@news-research/core-contracts'
+import { StagingPathSchema } from '@news-research/core-contracts/staging/v1'
 import { FilePointerSchema } from '@news-research/core-io'
 
 /**

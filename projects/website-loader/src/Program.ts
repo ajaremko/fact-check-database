@@ -14,7 +14,7 @@ import * as AlgoliaSearchClient from '@news-research/core-vendor/algolia/Algolia
 import {
   StorageObjectAttributesSchema,
   PubsubMessageEnvelope,
-} from '@news-research/core-contracts'
+} from '@news-research/core-contracts/gcp/v1'
 import { StorageReader } from '@news-research/core-io'
 
 import { transcodeBatch } from './transcodeBatch'

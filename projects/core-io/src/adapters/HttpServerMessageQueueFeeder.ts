@@ -13,7 +13,7 @@ import * as Node from '@news-research/core-data/Node'
 import {
   PubsubMessageEnvelope,
   parsePubsubMessagePayloadData,
-} from '@news-research/core-contracts'
+} from '@news-research/core-contracts/gcp/v1'
 
 import { MessageBody } from '../ports/MessageBody'
 

@@ -2,7 +2,7 @@ import { Effect, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
 import * as Node from '@news-research/core-data/Node'
-import { PubsubMessagePayload } from '@news-research/core-contracts'
+import { PubsubMessagePayload } from '@news-research/core-contracts/gcp/v1'
 
 import { MessageBody } from '../ports/MessageBody'
 

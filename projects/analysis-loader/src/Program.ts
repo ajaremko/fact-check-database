@@ -11,11 +11,11 @@ import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
 import * as Node from '@news-research/core-data/Node'
-import { readFile } from '@news-research/core-io'
 import {
   StorageObjectAttributesSchema,
   PubsubMessageEnvelope,
-} from '@news-research/core-contracts'
+} from '@news-research/core-contracts/gcp/v1'
+import { readFile } from '@news-research/core-io'
 
 import { loadBatch } from './loadBatch'
 

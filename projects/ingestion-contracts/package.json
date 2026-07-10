@@ -34,7 +34,6 @@
     }
   },
   "dependencies": {
-    "@news-research/core-contracts": "0.0.1",
     "effect": "^3.21.0",
     "tslib": "^2.3.0"
   },

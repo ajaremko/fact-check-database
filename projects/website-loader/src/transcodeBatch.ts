@@ -2,7 +2,7 @@ import { Effect, flow, ParseResult, Schema } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
 import * as Ndjson from '@news-research/core-data/Ndjson'
-import { FactChecksTableRowSchema } from '@news-research/core-contracts'
+import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
 import { SearchResultSchema } from '@news-research/website-contracts/search/v1'
 
 const decodeBatch = Schema.transformOrFail(
