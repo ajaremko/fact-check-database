@@ -2,12 +2,16 @@ import { ParseResult, Schema } from 'effect'
 
 import { NumberFromFormattedDate } from '@news-research/core-contracts'
 
+export function archivePathPrefix(collection: string, version: number): string {
+  return `v${version}/${collection}`
+}
+
 /**
  * Schema for the GCS object path where a sanitizer record is stored. Encodes the
  * `collectionName`, `sourceName`, `date`, `ingestionId`, `observationId`, and `ext` fields into a structured path for
  * queryable organization in GCS.
  *
- * Example path: `v1/records/source=example_source/date=2024-01-01/ingestion_id=abc123/observation_id.sanitizer.yml`
+ * Example path: `v1/records/ingestion/source=example_source/date=2024-01-01/ingestion_id=abc123/observation_id.sanitizer.yml`
  */
 export const ArchivePathSchema = Schema.transformOrFail(
   Schema.String,
@@ -24,8 +28,7 @@ export const ArchivePathSchema = Schema.transformOrFail(
     strict: true,
     encode: (input) => {
       const output = [
-        `v${input.version}`,
-        input.collectionName,
+        archivePathPrefix(input.collectionName, input.version),
         `source=${input.sourceName}`,
         `date=${input.date}`,
         `ingestion_id=${input.ingestionId}`,

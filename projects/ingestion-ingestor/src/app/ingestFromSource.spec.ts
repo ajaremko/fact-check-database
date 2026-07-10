@@ -49,7 +49,7 @@ describe('ingestFromSourceTarget', () => {
           pointer: {
             bucket: 'inmemory',
             object:
-              'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.ingestion.yml',
+              'v1/records/ingestion/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.yml',
           },
           error: 'Transport error (GET https://baddata.com/rss.xml)',
         })
@@ -58,7 +58,7 @@ describe('ingestFromSourceTarget', () => {
           'v1/raw/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.ingestion.yml'
+          'v1/records/ingestion/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.yml'
         )
       })
   )
@@ -129,7 +129,7 @@ describe('ingestFromSourceTarget', () => {
           pointer: {
             bucket: 'inmemory',
             object:
-              'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml',
+              'v1/records/ingestion/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.yml',
           },
         })
 
@@ -137,7 +137,7 @@ describe('ingestFromSourceTarget', () => {
           'v1/raw/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml'
+          'v1/records/ingestion/source=politifact.com/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.yml'
         )
       })
   )

@@ -178,8 +178,8 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
     encode: (input) =>
       ParseResult.succeed({
         version: 1 as const,
-        collectionName: 'records',
-        ext: `sanitize.yml`,
+        collectionName: 'records/sanitizer',
+        ext: `yml`,
         sourceName: input.source.name,
         date: input.fetchedAt,
         ingestionId: input.ingestionId,

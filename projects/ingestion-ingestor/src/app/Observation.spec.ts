@@ -176,7 +176,7 @@ describe('ObservationPathSchema', () => {
         pointer: null,
       })
     ).toBe(
-      'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.ingestion.yml'
+      'v1/records/ingestion/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.yml'
     )
   })
 
@@ -191,7 +191,7 @@ describe('ObservationPathSchema', () => {
         pointer: null,
       })
     ).toBe(
-      'v1/records/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.ingestion.yml'
+      'v1/records/ingestion/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.yml'
     )
   })
 })

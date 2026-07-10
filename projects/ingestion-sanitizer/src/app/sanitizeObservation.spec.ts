@@ -12,7 +12,7 @@ describe('sanitizeObservation', () => {
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
-          '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.sanitize.yml': `
+          '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.yml': `
             version: 1
             kind: fetch_attempt
             outcome: no_response
@@ -44,7 +44,7 @@ describe('sanitizeObservation', () => {
           pointer: {
             bucket: 'inmemory',
             object:
-              '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.sanitize.yml',
+              '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.yml',
           },
           timestamp: 0,
         }).pipe(
@@ -70,7 +70,7 @@ describe('sanitizeObservation', () => {
           pointer: {
             bucket: 'inmemory',
             object:
-              'v1/records/source=baddata.com/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1.sanitize.yml',
+              'v1/records/sanitizer/source=baddata.com/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1.yml',
           },
         })
       })
@@ -155,7 +155,7 @@ describe('sanitizeObservation', () => {
           pointer: {
             bucket: 'inmemory',
             object:
-              'v1/records/source=factcheck.org/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.sanitize.yml',
+              'v1/records/sanitizer/source=factcheck.org/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.yml',
           },
         })
       })
