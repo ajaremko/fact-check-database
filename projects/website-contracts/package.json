@@ -11,6 +11,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./form-submissions/v1": {
+      "types": "./dist/form-submissions/v1/index.d.ts",
+      "import": "./dist/form-submissions/v1/index.js",
+      "default": "./dist/form-submissions/v1/index.js"
+    },
+    "./search/v1": {
+      "types": "./dist/search/v1/index.d.ts",
+      "import": "./dist/search/v1/index.js",
+      "default": "./dist/search/v1/index.js"
     }
   },
   "nx": {
