@@ -21,7 +21,6 @@ import {
   SanitizedObservationMetaSchema,
   SanitizedObservationSchema,
   SanitizedObservationPathSchema,
-  SanitizedObservationEventSchema,
 } from './SanitizedObservation'
 import { ObservationSchema } from './Observation'
 import { evaluatePolicy } from './evaluatePolicy'
@@ -46,9 +45,6 @@ const encodeSanitizedObservationMeta = Schema.encode(
 )
 const encodeSanitizedObservationPath = Schema.encode(
   SanitizedObservationPathSchema
-)
-const encodeSanitizedObservationEvent = Schema.encode(
-  SanitizedObservationEventSchema
 )
 
 const decodeArgs = Schema.decodeSync(
@@ -131,11 +127,7 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       meta: recordMetadata,
     })
 
-    // return the encoded event data
-    return yield* encodeSanitizedObservationEvent({
-      observation: sanitizedObservation,
-      pointer: recordPointer,
-    })
+    return recordPointer
   },
   (effect, args) =>
     effect.pipe(

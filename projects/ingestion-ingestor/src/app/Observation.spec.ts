@@ -2,13 +2,13 @@ import { describe, it } from 'vitest'
 import { Schema } from 'effect'
 import { expect } from '@effect/vitest'
 
+import { FetchSuccessSchema, FetchFailureSchema } from '../ports/Fetcher'
+
 import {
   ObservationSchema,
   ObservationMetadataSchema,
   ObservationPathSchema,
-  ObservationEventSchema,
 } from './Observation'
-import { FetchSuccessSchema, FetchFailureSchema } from '../ports/Fetcher'
 
 const source = {
   id: 'politifact',
@@ -193,85 +193,5 @@ describe('ObservationPathSchema', () => {
     ).toBe(
       'v1/records/ingestion/source=politifact.com/date=1970-01-01/ingestion_id=run-1/obs-1.yml'
     )
-  })
-})
-
-describe('buildEventFromObservation', () => {
-  it('builds a success event including all optional fields', () => {
-    expect(
-      Schema.encodeUnknownSync(ObservationEventSchema)({
-        observation: {
-          observationId: 'obs-1',
-          ingestionId: 'run-1',
-          result: fetchSuccess,
-          fetchedAt: 0,
-          source,
-          pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
-        },
-        pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
-      })
-    ).toStrictEqual({
-      version: 1,
-      content_lineage_id: 'obs-1',
-      ingestion_batch_id: 'run-1',
-      fetched_at: 0,
-      source,
-      status: 200,
-      final_url: 'https://www.politifact.com/rss/all/',
-      content_type: 'application/rss+xml; charset=utf-8',
-      etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
-      last_modified: 'Wed, 29 Apr 2026 16:20:04 GMT',
-      content_sha256: 'abc123sha256',
-      content_bytes: 1024,
-      pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
-    })
-  })
-
-  it('omits content_type, etag, and last_modified from event when null', () => {
-    const event = Schema.encodeUnknownSync(ObservationEventSchema)({
-      observation: {
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
-        fetchedAt: 0,
-        result: {
-          ...fetchSuccess,
-          contentType: null,
-          etag: null,
-          lastModified: null,
-        },
-        source,
-        pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
-      },
-      pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
-    })
-    expect(event).not.toHaveProperty('content_type')
-    expect(event).not.toHaveProperty('etag')
-    expect(event).not.toHaveProperty('last_modified')
-    expect(event.content_sha256).toBe('abc123sha256')
-    expect(event.content_bytes).toBe(1024)
-  })
-
-  it('builds a failure event with error and no content fields', () => {
-    expect(
-      Schema.encodeUnknownSync(ObservationEventSchema)({
-        observation: {
-          observationId: 'obs-1',
-          ingestionId: 'run-1',
-          fetchedAt: 0,
-          result: fetchFailure,
-          source,
-          pointer: null,
-        },
-        pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
-      })
-    ).toStrictEqual({
-      version: 1,
-      content_lineage_id: 'obs-1',
-      ingestion_batch_id: 'run-1',
-      fetched_at: 0,
-      source,
-      error: 'Transport error (GET https://www.politifact.com/rss/all/)',
-      pointer: { bucket: 'records-bucket', object: 'path/to/record.yml' },
-    })
   })
 })

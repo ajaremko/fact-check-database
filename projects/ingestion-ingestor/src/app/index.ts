@@ -17,17 +17,13 @@ function processTarget(source: Source, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
     const timestamp = yield* Clock.currentTimeMillis
-
-    // ingest from target and publish event
     yield* Effect.logDebug(`Requesting content from source ${index + 1}`)
+
     yield* ingestFromSource({
       ingestionId: job.runId,
       timestamp,
       source,
     })
-
-    // const data = yield* encodeOutgoing(event)
-    // yield* publish(data)
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
     Effect.annotateLogs({

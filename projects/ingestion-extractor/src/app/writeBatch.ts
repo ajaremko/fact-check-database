@@ -7,7 +7,6 @@ import { writeFile } from '@news-research/core-io'
 
 import {
   ExtractionBatchSchema,
-  ExtractionBatchEventSchema,
   ExtractionBatchPathSchema,
 } from './ExtractionBatch'
 import { logExtractionBatchWritten } from './logging'
@@ -19,7 +18,6 @@ const encodeNdjson = pipe(
   Schema.encode
 )
 
-const encodeExtractionBatchEvent = Schema.encode(ExtractionBatchEventSchema)
 const encodeExtractionBatchPath = Schema.encode(ExtractionBatchPathSchema)
 
 const batchesWritten = Metric.counter('extracted_batches_written')
@@ -36,6 +34,7 @@ export const writeBatch = Effect.fn('writeBatch')(
       extractedAt: input.timestamp,
       type: input.type,
     })
+
     const data = yield* encodeNdjson(input.rows)
     const pointer = yield* writeFile({
       path,
@@ -60,7 +59,7 @@ export const writeBatch = Effect.fn('writeBatch')(
 
     yield* Metric.increment(batchesWritten)
 
-    return yield* encodeExtractionBatchEvent(batch)
+    return batch
   },
   (effect, input) =>
     effect.pipe(

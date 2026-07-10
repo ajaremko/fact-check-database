@@ -18,7 +18,6 @@ import {
   ObservationSchema,
   ObservationMetadataSchema,
   ObservationPathSchema,
-  ObservationEventSchema,
 } from './Observation'
 import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
 import { logIngestionFailed, logIngestionSucceeded } from './logging'
@@ -34,7 +33,6 @@ const encodeObservation = pipe(
 const encodeObservationMetadata = Schema.encode(ObservationMetadataSchema)
 const encodeObservationPath = Schema.encode(ObservationPathSchema)
 const encodeFetchedBodyPath = Schema.encode(FetchedBodyPathSchema)
-const encodeObservationEvent = Schema.encode(ObservationEventSchema)
 
 const encodeHashedObservationId = flow(
   Schema.encode(ObservationIdSchema),
@@ -109,13 +107,8 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
         contentType: 'application/yaml',
       })
 
-      // Return an `ObservationIngested` event with error details
-      // and pointer to the attempt record, but no content fields
-      // since there is no body to archive
-      return yield* encodeObservationEvent({
-        observation,
-        pointer: recordPointer,
-      })
+      // Return a pointer to the attempt record, since there is no body to archive
+      return recordPointer
     }
 
     // For a successful fetch, we need to archive the body
@@ -183,13 +176,9 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       })
     )
 
-    // Return an `IngestionAttempted` event with details of
-    // the attempt and pointer to the attempt record, which
+    // Return a pointer to the attempt record, which
     // references the archived body
-    return yield* encodeObservationEvent({
-      observation,
-      pointer: recordPointer,
-    })
+    return recordPointer
   },
   (effect, args) =>
     effect.pipe(

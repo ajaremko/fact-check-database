@@ -1,7 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 import { DeepMutable, Mutable } from 'effect/Types'
 
-import { omitNullKeys, omitNullableKeys } from '@news-research/core-data'
+import { omitNullKeys } from '@news-research/core-data'
 
 import {
   SanitizerRecordSchema,
@@ -11,8 +11,6 @@ import {
 } from '@news-research/ingestion-contracts/archive/v1'
 import { SourceSchema } from '@news-research/ingestion-contracts/config/v1'
 import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
-import { FilePointerSchema } from '@news-research/core-io'
-import { ObservationSanitizedSchema } from '@news-research/ingestion-contracts/events/v1'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 
@@ -185,49 +183,5 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
         ingestionId: input.ingestionId,
         observationId: input.observationId,
       }),
-  }
-)
-
-export const SanitizedObservationEventSchema = Schema.transformOrFail(
-  ObservationSanitizedSchema,
-  Schema.Struct({
-    observation: SanitizedObservation,
-    pointer: FilePointerSchema,
-  }),
-  {
-    strict: true,
-    decode: (input, _, ast) =>
-      ParseResult.fail(
-        new ParseResult.Forbidden(
-          ast,
-          input,
-          'Decoding ObservationEvent not implemented'
-        )
-      ),
-    encode: (input) => {
-      return ParseResult.succeed(
-        ObservationSanitizedSchema.make(
-          omitNullableKeys({
-            version: 1,
-            content_lineage_id: input.observation.observationId,
-            ingestion_batch_id: input.observation.ingestionId,
-            fetched_at: input.observation.fetchedAt,
-            sanitized_at: input.observation.sanitizedAt,
-            source: {
-              id: input.observation.source.id,
-              name: input.observation.source.name,
-              url: input.observation.source.url,
-              collection: input.observation.source.collection,
-            },
-            error: input.observation.outcome.decision.error,
-            label: input.observation.outcome.decision.label,
-            actions: input.observation.outcome.decision.actions,
-            content_sha256: input.observation.content?.sha256,
-            content_bytes: input.observation.content?.bytes,
-            pointer: input.pointer,
-          })
-        )
-      )
-    },
   }
 )

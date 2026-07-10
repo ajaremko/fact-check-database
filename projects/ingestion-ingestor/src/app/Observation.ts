@@ -8,9 +8,7 @@ import {
   ArchivePathSchema,
   TimestampSchema,
 } from '@news-research/ingestion-contracts/shared/v1'
-import { ObservationIngestedSchema } from '@news-research/ingestion-contracts/events/v1'
 import { FilePointerSchema } from '@news-research/core-io'
-import { omitNullKeys } from '@news-research/core-data'
 
 import { SourceSchema } from '../contracts/Source'
 import { FetchResultSchema } from '../ports/Fetcher'
@@ -139,62 +137,5 @@ export const ObservationPathSchema = Schema.transformOrFail(
         ingestionId: input.ingestionId,
         observationId: input.observationId,
       }),
-  }
-)
-
-export const ObservationEventSchema = Schema.transformOrFail(
-  ObservationIngestedSchema,
-  Schema.Struct({ observation: Observation, pointer: FilePointerSchema }),
-  {
-    strict: true,
-    decode: (input, _, ast) =>
-      ParseResult.fail(
-        new ParseResult.Forbidden(
-          ast,
-          input,
-          'Decoding ObservationEvent not implemented'
-        )
-      ),
-    encode: (input) => {
-      switch (input.observation.result._tag) {
-        case 'FetchSuccess':
-          return ParseResult.succeed(
-            ObservationIngestedSchema.make(
-              omitNullKeys({
-                version: 1,
-                content_lineage_id: input.observation.observationId,
-                ingestion_batch_id: input.observation.ingestionId,
-                fetched_at: input.observation.fetchedAt,
-                source: {
-                  id: input.observation.source.id,
-                  name: input.observation.source.name,
-                  url: input.observation.source.url,
-                  collection: input.observation.source.collection,
-                },
-                status: input.observation.result.status,
-                final_url: input.observation.result.finalUrl,
-                content_type: input.observation.result.contentType,
-                etag: input.observation.result.etag,
-                last_modified: input.observation.result.lastModified,
-                content_sha256: input.observation.result.sha256,
-                content_bytes: input.observation.result.bytes,
-                pointer: input.pointer,
-              })
-            )
-          )
-        case 'FetchFailure':
-          return ParseResult.succeed(
-            ObservationIngestedSchema.make({
-              version: 1,
-              content_lineage_id: input.observation.observationId,
-              ingestion_batch_id: input.observation.ingestionId,
-              fetched_at: input.observation.fetchedAt,
-              source: input.observation.source,
-              error: input.observation.result.error,
-              pointer: input.pointer,
-            })
-          )
-      }
-    },
   }
 )

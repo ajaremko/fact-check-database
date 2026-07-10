@@ -53,25 +53,9 @@ describe('sanitizeObservation', () => {
         )
 
         expect(result).toStrictEqual({
-          version: 1,
-          content_lineage_id:
-            '526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1',
-          ingestion_batch_id: '738aceb2-3212-4c1f-bcc4-3142f18396fb',
-          fetched_at: 1777751768896,
-          sanitized_at: 0,
-          source: {
-            id: 'baddata',
-            name: 'baddata.com',
-            url: 'https://baddata.com/rss.xml',
-            collection: 'rss',
-          },
-          label: 'QUARANTINED',
-          actions: ['QUARANTINED_FETCH_FAILED'],
-          pointer: {
-            bucket: 'inmemory',
-            object:
-              'v1/records/sanitizer/source=baddata.com/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1.yml',
-          },
+          bucket: 'inmemory',
+          object:
+            'v1/records/sanitizer/source=baddata.com/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1.yml',
         })
       })
   )
@@ -135,28 +119,9 @@ describe('sanitizeObservation', () => {
         )
 
         expect(result).toStrictEqual({
-          version: 1,
-          content_lineage_id:
-            '50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a',
-          ingestion_batch_id: '738aceb2-3212-4c1f-bcc4-3142f18396fb',
-          fetched_at: 1777751768881,
-          sanitized_at: 0,
-          source: {
-            id: 'factcheck',
-            name: 'factcheck.org',
-            url: 'https://www.factcheck.org/feed/',
-            collection: 'rss',
-          },
-          label: 'SAFE_PUBLIC',
-          actions: [],
-          content_sha256:
-            '64916224466c53b233ca3de8ba1f055d157801216f030221afc03b4caf16dae0',
-          content_bytes: 256,
-          pointer: {
-            bucket: 'inmemory',
-            object:
-              'v1/records/sanitizer/source=factcheck.org/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.yml',
-          },
+          bucket: 'inmemory',
+          object:
+            'v1/records/sanitizer/source=factcheck.org/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.yml',
         })
       })
   )

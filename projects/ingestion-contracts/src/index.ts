@@ -1,9 +1,4 @@
-export * from './lib/shared/v1'
-export * from './lib/ingest/v1'
-export * from './lib/sanitize/v1'
-export * from './lib/extract/v1'
-
-export * as Shared from './lib/shared/v1'
-export * as Ingest from './lib/ingest/v1'
-export * as Sanitize from './lib/sanitize/v1'
-export * as Extract from './lib/extract/v1'
+export * as archiveV1 from './archive/v1'
+export * as configV1 from './config/v1'
+export * as loggingV1 from './logging/v1'
+export * as sharedV1 from './shared/v1'

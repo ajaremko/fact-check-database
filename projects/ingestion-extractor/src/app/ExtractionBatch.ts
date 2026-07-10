@@ -1,12 +1,7 @@
 import { ParseResult, Schema } from 'effect'
 
-import {
-  FactChecksTableDBSchema,
-  StagingPathSchema,
-} from '@news-research/core-contracts'
-import { omitNullKeys } from '@news-research/core-data'
+import { StagingPathSchema } from '@news-research/core-contracts'
 import { FilePointerSchema } from '@news-research/core-io'
-import { ExtractionBatchReadySchema } from '@news-research/ingestion-contracts/events/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -52,37 +47,6 @@ export const ExtractionBatchPathSchema = Schema.transformOrFail(
         date: input.extractedAt,
         extractionId: input.batchId,
       })
-    },
-  }
-)
-
-export const ExtractionBatchEventSchema = Schema.transformOrFail(
-  ExtractionBatchReadySchema,
-  ExtractionBatchSchema,
-  {
-    strict: true,
-    decode: (input, _, ast) =>
-      ParseResult.fail(
-        new ParseResult.Forbidden(
-          ast,
-          input,
-          'Decoding ExtractionBatchEvent not implemented'
-        )
-      ),
-    encode: (input) => {
-      return ParseResult.succeed(
-        ExtractionBatchReadySchema.make(
-          omitNullKeys({
-            version: 1,
-            extraction_batch_id: input.batchId,
-            extracted_at: input.extractedAt,
-            source_format: input.sourceFormat,
-            pointer: input.pointer,
-            type: input.type,
-            schema: FactChecksTableDBSchema,
-          })
-        )
-      )
     },
   }
 )

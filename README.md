@@ -22,10 +22,10 @@ This project is intended to be legible to:
 
 ## TODOs
 
-- [] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
-- [] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
+- [x] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
+- [x] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
 - [] Rewrite project documentation
-- [] Remove `ingestion-replay` project
+- [x] Remove `ingestion-replay` project
 - [] Sort fact checks feed on website using algolia queries rather than local sort
 - [] Verify fact checks are deduped correctly in ingestion and analysis slices
 

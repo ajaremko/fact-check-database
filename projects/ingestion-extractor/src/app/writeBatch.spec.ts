@@ -1,7 +1,6 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import { FactChecksTableDBSchema } from '@news-research/core-contracts'
 import * as InMemoryStorageWriter from '@news-research/core-io/adapters/InMemoryStorageWriter'
 
 import { writeBatch } from './writeBatch'
@@ -69,12 +68,10 @@ describe('writeBatch', () => {
         ).toBeDefined()
 
         expect(event).toStrictEqual({
-          version: 1,
-          extraction_batch_id: 'run-001',
-          extracted_at: 1_000,
-          source_format: 'NEWLINE_DELIMITED_JSON',
+          batchId: 'run-001',
+          extractedAt: 1_000,
+          sourceFormat: 'NEWLINE_DELIMITED_JSON',
           type: 'fact_checks',
-          schema: FactChecksTableDBSchema,
           pointer: {
             bucket: 'inmemory',
             object: 'v1/type=fact_checks/date=1970-01-01/run-001.batch.ndjson',

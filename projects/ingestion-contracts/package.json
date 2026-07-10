@@ -13,29 +13,24 @@
       "default": "./dist/index.js"
     },
     "./config/v1": {
-      "types": "./dist/lib/config/v1/index.d.ts",
-      "import": "./dist/lib/config/v1/index.js",
-      "default": "./dist/lib/config/v1/index.js"
-    },
-    "./events/v1": {
-      "types": "./dist/lib/events/v1/index.d.ts",
-      "import": "./dist/lib/events/v1/index.js",
-      "default": "./dist/lib/events/v1/index.js"
+      "types": "./dist/config/v1/index.d.ts",
+      "import": "./dist/config/v1/index.js",
+      "default": "./dist/config/v1/index.js"
     },
     "./archive/v1": {
-      "types": "./dist/lib/archive/v1/index.d.ts",
-      "import": "./dist/lib/archive/v1/index.js",
-      "default": "./dist/lib/archive/v1/index.js"
+      "types": "./dist/archive/v1/index.d.ts",
+      "import": "./dist/archive/v1/index.js",
+      "default": "./dist/archive/v1/index.js"
     },
     "./logging/v1": {
-      "types": "./dist/lib/logging/v1/index.d.ts",
-      "import": "./dist/lib/logging/v1/index.js",
-      "default": "./dist/lib/logging/v1/index.js"
+      "types": "./dist/logging/v1/index.d.ts",
+      "import": "./dist/logging/v1/index.js",
+      "default": "./dist/logging/v1/index.js"
     },
     "./shared/v1": {
-      "types": "./dist/lib/shared/v1/index.d.ts",
-      "import": "./dist/lib/shared/v1/index.js",
-      "default": "./dist/lib/shared/v1/index.js"
+      "types": "./dist/shared/v1/index.d.ts",
+      "import": "./dist/shared/v1/index.js",
+      "default": "./dist/shared/v1/index.js"
     }
   },
   "dependencies": {
