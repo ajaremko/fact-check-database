@@ -7,7 +7,7 @@ export const ContactSubmissionSchema = Schema.Struct({
   email: Schema.String,
   topic: Schema.String,
   message: Schema.String,
-  submitted_at: Schema.String,
+  submitted_at: Schema.DateFromString,
 })
 
 export type ContactSubmission = Schema.Schema.Type<
@@ -21,7 +21,7 @@ export const AccessRequestSchema = Schema.Struct({
   email: Schema.String,
   affiliation: Schema.String,
   project_description: Schema.String,
-  submitted_at: Schema.String,
+  submitted_at: Schema.DateFromString,
 })
 
 export type AccessRequest = Schema.Schema.Type<typeof AccessRequestSchema>
@@ -34,7 +34,7 @@ export const TipSubmissionSchema = Schema.Struct({
   url: Schema.String,
   email: Schema.optional(Schema.String),
   context: Schema.optional(Schema.String),
-  submitted_at: Schema.String,
+  submitted_at: Schema.DateFromString,
 })
 
 export type TipSubmission = Schema.Schema.Type<typeof TipSubmissionSchema>

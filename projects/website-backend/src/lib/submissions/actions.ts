@@ -1,8 +1,9 @@
 'use server'
 
+import { Clock, Effect, Schema } from 'effect'
 import { redirect } from 'next/navigation'
-import { Effect } from 'effect'
 
+import * as Node from '@news-research/core-data/Node'
 import { TipSubmissionSchema } from '@news-research/website-contracts/form-submissions/v1'
 import { publish } from '@news-research/core-io'
 
@@ -18,29 +19,32 @@ export type SubmissionsFormData = {
   recaptchaToken: string
 }
 
-export async function submitTip(data: SubmissionsFormData): Promise<void> {
+const encodeContactSubmission = TipSubmissionSchema.pipe(
+  Node.parseJson(),
+  Node.parseBuffer({ encoding: 'utf-8' }),
+  Schema.encode
+)
+
+export async function submitTip(formData: SubmissionsFormData): Promise<void> {
   const result = await Effect.runPromise(
     Effect.gen(function* () {
-      yield* verifyRecaptcha(data.recaptchaToken, 'tip_submission')
-      yield* publish(
-        Buffer.from(
-          JSON.stringify(
-            TipSubmissionSchema.make({
-              kind: 'tip_submission',
-              version: 1,
-              claim: data.claim,
-              organization: data.organization,
-              url: data.url,
-              context: data.context,
-              email: data.email,
-              submitted_at: new Date().toISOString(),
-            })
-          )
-        )
-      )
-      yield* Effect.logInfo('Tip submitted').pipe(
-        Effect.annotateLogs({ organization: data.organization, url: data.url })
-      )
+      yield* Effect.logInfo('Tip form submitted')
+      const timestamp = yield* Clock.currentTimeMillis
+      yield* verifyRecaptcha(formData.recaptchaToken, 'tip_submission')
+
+      const data = yield* encodeContactSubmission({
+        kind: 'tip_submission',
+        version: 1,
+        submitted_at: new Date(timestamp),
+        claim: formData.claim,
+        organization: formData.organization,
+        url: formData.url,
+        context: formData.context,
+        email: formData.email,
+      })
+
+      yield* publish(data)
+
       return { success: true as const }
     }).pipe(
       Effect.tapErrorCause(Effect.logError),
