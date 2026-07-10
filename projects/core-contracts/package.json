@@ -21,11 +21,6 @@
       "types": "./dist/staging/v1/index.d.ts",
       "import": "./dist/staging/v1/index.js",
       "default": "./dist/staging/v1/index.js"
-    },
-    "./shared/v1": {
-      "types": "./dist/shared/v1/index.d.ts",
-      "import": "./dist/shared/v1/index.js",
-      "default": "./dist/shared/v1/index.js"
     }
   },
   "nx": {

@@ -1,6 +1,6 @@
 import { ParseResult, Schema } from 'effect'
 
-import { NumberFromFormattedDate } from '../../shared/v1'
+import { NumberFromFormattedDate } from './NumberFromFormattedDate'
 
 export function stagingPathPrefix(type: string, version: number): string {
   return `v${version}/type=${type}`

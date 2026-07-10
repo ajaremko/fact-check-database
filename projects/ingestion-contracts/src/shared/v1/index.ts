@@ -1,7 +1,3 @@
-export * from './ArchivePath'
-export * from './ContentLineageId'
 export * from './FilePointer'
-export * from './IngestionRecord'
-export * from './SanitizerRecord'
 export * from './Source'
 export * from './Timestamp'

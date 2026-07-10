@@ -1,9 +1,7 @@
 import { Schema, ParseResult } from 'effect'
 
-import {
-  ArchivePathSchema,
-  TimestampSchema,
-} from '@news-research/ingestion-contracts/shared/v1'
+import { ArchivePathSchema } from '@news-research/ingestion-contracts/archive/v1'
+import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 
 export const FetchedBodySchema = Schema.Struct({
   observationId: Schema.String,

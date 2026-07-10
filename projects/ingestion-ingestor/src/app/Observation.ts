@@ -1,13 +1,11 @@
 import { Schema, ParseResult } from 'effect'
 
 import {
+  ArchivePathSchema,
   IngestionRecordSchema,
   IngestionRecordMetadataSchema,
 } from '@news-research/ingestion-contracts/archive/v1'
-import {
-  ArchivePathSchema,
-  TimestampSchema,
-} from '@news-research/ingestion-contracts/shared/v1'
+import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 import { FilePointerSchema } from '@news-research/core-io'
 
 import { SourceSchema } from '../contracts/Source'

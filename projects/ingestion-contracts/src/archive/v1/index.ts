@@ -1,3 +1,5 @@
 export * from './ArchivePath'
+export * from './ContentLineageId'
 export * from './IngestionRecord'
+export * from './NumberFromFormattedDate'
 export * from './SanitizerRecord'

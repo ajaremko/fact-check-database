@@ -1,9 +1,7 @@
 import { ParseResult, Schema } from 'effect'
 
-import {
-  ContentLineageIdSchema,
-  TimestampSchema,
-} from '@news-research/ingestion-contracts/shared/v1'
+import { ContentLineageIdSchema } from '@news-research/ingestion-contracts/archive/v1'
+import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 
 import { FetchResultSchema } from '../ports/Fetcher'
 import { SourceSchema } from '../contracts/Source'
