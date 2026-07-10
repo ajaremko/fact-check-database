@@ -35,13 +35,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npx nx affected -t lint
-
-      - run: npx nx affected -t test
-
-      - run: npx nx affected -t build
-
-      - run: npx nx affected -t docker:build
+      - run: npx nx affected -t lint,test,build
 
   release:
     name: Release Dev Images
