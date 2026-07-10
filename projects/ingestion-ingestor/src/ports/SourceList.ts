@@ -1,17 +1,10 @@
-import { Context, Schema } from 'effect'
+import { Context } from 'effect'
 
-export const SourceSchema = Schema.Struct({
-  id: Schema.String,
-  name: Schema.String,
-  url: Schema.String,
-  collection: Schema.Literal('rss', 'atom'),
-})
-
-export type Source = Schema.Schema.Type<typeof SourceSchema>
+import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
 
 export class SourceList extends Context.Tag('SourceList')<
   SourceList,
   {
-    sources: readonly Source[]
+    sources: readonly SourceConfig[]
   }
 >() {}

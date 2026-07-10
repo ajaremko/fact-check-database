@@ -1,8 +1,7 @@
 import { Context, Data, Effect, Schema, flow } from 'effect'
 
 import { Timestamp } from '@news-research/ingestion-contracts/shared/v1'
-
-import { Source } from '../contracts/Source'
+import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
 
 export const FetchFailureSchema = Schema.TaggedStruct('FetchFailure', {
   error: Schema.String,
@@ -30,7 +29,7 @@ export type FetchResult = Schema.Schema.Type<typeof FetchResultSchema>
 
 export class FetcherError extends Data.TaggedError('FetcherError')<{
   readonly cause: unknown
-  readonly source: Source
+  readonly source: SourceConfig
   readonly message: string
 }> {}
 
@@ -38,7 +37,7 @@ export class Fetcher extends Context.Tag('Fetcher')<
   Fetcher,
   {
     readonly fetch: (
-      source: Source,
+      source: SourceConfig,
       timestamp: Timestamp
     ) => Effect.Effect<FetchResult, FetcherError>
   }

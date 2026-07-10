@@ -7,10 +7,13 @@ import {
   TimestampEncoded,
   TimestampSchema,
 } from '@news-research/ingestion-contracts/shared/v1'
+import {
+  SourceConfigEncoded,
+  SourceConfigSchema,
+} from '@news-research/ingestion-contracts/config/v1'
 import { omitNullKeys } from '@news-research/core-data'
 import { writeFile } from '@news-research/core-io'
 
-import { SourceEncoded, SourceSchema } from '../contracts/Source'
 import { fetch } from '../ports/Fetcher'
 
 import {
@@ -42,7 +45,7 @@ const encodeHashedObservationId = flow(
 const decodeContext = Schema.decodeUnknownSync(
   Schema.Struct({
     ingestionId: Schema.String,
-    source: SourceSchema,
+    source: SourceConfigSchema,
     timestamp: TimestampSchema,
   })
 )
@@ -53,7 +56,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
     ingestionId: string
     timestamp: TimestampEncoded
-    source: SourceEncoded
+    source: SourceConfigEncoded
   }) {
     const ctx = decodeContext(args)
 

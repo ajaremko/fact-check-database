@@ -1,6 +1,9 @@
 import { Array, Clock, Context, Effect, Option } from 'effect'
 
-import { SourceList, Source } from '../ports/SourceList'
+import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
+
+import { SourceList } from '../ports/SourceList'
+
 import { logIngestionJobCompleted } from './logging'
 import { ingestFromSource } from './ingestFromSource'
 
@@ -13,7 +16,7 @@ export interface JobContext {
 
 export const JobContext = Context.GenericTag<JobContext>('JobContext')
 
-function processTarget(source: Source, index: number) {
+function processTarget(source: SourceConfig, index: number) {
   return Effect.gen(function* () {
     const job = yield* JobContext
     const timestamp = yield* Clock.currentTimeMillis

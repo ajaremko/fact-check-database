@@ -6,9 +6,9 @@ import {
   IngestionRecordSchema,
   IngestionRecordMetadataSchema,
 } from '@news-research/ingestion-contracts/archive/v1'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
 import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 
-import { SourceSchema } from '../contracts/Source'
 import { FetchResultSchema } from '../ports/Fetcher'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
@@ -16,7 +16,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   ingestionId: Schema.String,
   fetchedAt: TimestampSchema,
   result: FetchResultSchema,
-  source: SourceSchema,
+  source: SourceConfigSchema,
   pointer: Schema.NullOr(FilePointerSchema),
 }) {}
 

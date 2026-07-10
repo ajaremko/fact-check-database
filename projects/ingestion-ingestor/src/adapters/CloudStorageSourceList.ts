@@ -5,11 +5,12 @@ import * as StorageClient from '@news-research/core-vendor/cloud-storage/Storage
 import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
 import * as Node from '@news-research/core-data/Node'
 import * as Csv from '@news-research/core-data/Csv'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
 
-import { SourceList, SourceSchema } from '../ports/SourceList'
+import { SourceList } from '../ports/SourceList'
 
 const decodeSources = pipe(
-  SourceSchema,
+  SourceConfigSchema,
   Csv.parseCsv({
     parse: {
       columns: true,

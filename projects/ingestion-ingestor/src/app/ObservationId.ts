@@ -1,17 +1,18 @@
 import { ParseResult, Schema } from 'effect'
 
 import { ContentLineageIdSchema } from '@news-research/ingestion-contracts/archive/v1'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
+
 import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 
 import { FetchResultSchema } from '../ports/Fetcher'
-import { SourceSchema } from '../contracts/Source'
 
 export const ObservationIdSchema = Schema.transformOrFail(
   ContentLineageIdSchema,
   Schema.Struct({
     fetchedAt: TimestampSchema,
     result: FetchResultSchema,
-    source: SourceSchema,
+    source: SourceConfigSchema,
   }),
   {
     strict: true,
