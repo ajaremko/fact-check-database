@@ -1,7 +1,7 @@
 config:
   website:project: fact-check-database-website
   website:region: us-central1
-  website:tag: local_1783493480-07.08.26-f9a50d6
+  website:tag: 374-07.10.26-2bf3017
   website:coreStackName: alfredsyoung/fact-check-database-core
   website:logLevel: debug
   website:verifiedOwner: alfredsyoung@gmail.com
