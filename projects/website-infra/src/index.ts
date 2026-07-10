@@ -1,4 +1,4 @@
-export * from './algolia'
+export * from './search'
 export * from './backend'
 export * from './emailer'
 export * from './recaptcha'

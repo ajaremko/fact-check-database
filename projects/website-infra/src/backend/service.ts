@@ -14,7 +14,7 @@ import {
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../getImageUrl'
-import { algoliaFactChecksIndexName } from '../algolia'
+import { algoliaFactChecksIndexName } from '../search'
 import { recaptchaApiKeyName } from '../recaptcha'
 import { cloudRunArtifactRegistryReader } from '../iam'
 
