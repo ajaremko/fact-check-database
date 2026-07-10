@@ -6,8 +6,6 @@ import { tag, gcpProject } from '../config'
 import { provider } from '../project'
 import { assetsBucketName } from '../assets'
 
-import { ingestorTopic } from './topic'
-
 export const ingestorServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-ingestion-sa`,
   {
@@ -32,16 +30,6 @@ export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
   {
     bucket: archiveBucketName,
     role: 'roles/storage.objectCreator',
-    member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
-  },
-  { provider }
-)
-
-export const ingestorTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-ingestor-topic-publisher`,
-  {
-    topic: ingestorTopic.name,
-    role: 'roles/pubsub.publisher',
     member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
   },
   { provider }

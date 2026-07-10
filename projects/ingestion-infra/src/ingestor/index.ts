@@ -1,8 +1,14 @@
-import { ingestorTopic, ingestorTopicArchiveSubscription } from './topic'
+import {
+  ingestorTopic,
+  ingestorTopicArchiveSubscription,
+  ingestorStorageUploadNotification,
+} from './topic'
 
 export const ingestorTopicName = ingestorTopic.name
 export const ingestorTopicArchiveSubscriptionName =
   ingestorTopicArchiveSubscription.name
+export const ingestorStorageUploadNotificationId =
+  ingestorStorageUploadNotification.id
 
 import { ingestorJob } from './job'
 

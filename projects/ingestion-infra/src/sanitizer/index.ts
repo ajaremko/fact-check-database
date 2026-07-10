@@ -1,8 +1,14 @@
-import { sanitizerTopic, sanitizerTopicArchiveSubscription } from './topic'
+import {
+  sanitizerTopic,
+  sanitizerTopicArchiveSubscription,
+  sanitizerStorageUploadNotification,
+} from './topic'
 
 export const sanitizerTopicName = sanitizerTopic.name
 export const sanitizerTopicArchiveSubscriptionName =
   sanitizerTopicArchiveSubscription.name
+export const sanitizerStorageUploadNotificationId =
+  sanitizerStorageUploadNotification.id
 
 import {
   sanitizerSubscription,

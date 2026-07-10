@@ -6,8 +6,6 @@ import { provider } from '../project'
 import { archiveBucketName } from '../archive'
 import { gcpProject, tag } from '../config'
 
-import { sanitizerTopic } from './topic'
-
 export const sanitizerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-sanitizer-sa`,
   {
@@ -32,16 +30,6 @@ export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   {
     bucket: archiveBucketName,
     role: 'roles/storage.objectAdmin',
-    member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
-  },
-  { provider }
-)
-
-export const sanitizerTopicPublisher = new gcp.pubsub.TopicIAMMember(
-  `${tag}-sanitizer-topic-publisher`,
-  {
-    topic: sanitizerTopic.name,
-    role: 'roles/pubsub.publisher',
     member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
   },
   { provider }

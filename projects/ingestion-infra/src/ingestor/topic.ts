@@ -3,10 +3,10 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { archivePathPrefix } from '@news-research/ingestion-contracts/archive/v1'
 
-import { tag, gcpProject } from '../config'
+import { provider, gcsAccount } from '../project'
 import { archiveBucketName } from '../archive'
 import { createArchivedTopic } from '../shared'
-import { provider, gcsAccount } from '../project'
+import { tag } from '../config'
 
 export const {
   topic: ingestorTopic,
@@ -22,7 +22,7 @@ export const {
   },
 })
 
-const stagingUploadsTopicPublisher = new gcp.pubsub.TopicIAMMember(
+const ingestorTopicGcsPublisher = new gcp.pubsub.TopicIAMMember(
   `${tag}-ingestor-topic-publisher`,
   {
     topic: ingestorTopic.id,
@@ -32,8 +32,8 @@ const stagingUploadsTopicPublisher = new gcp.pubsub.TopicIAMMember(
   { provider }
 )
 
-export const stagingStorageUploadNofication = new gcp.storage.Notification(
-  `${tag}-staging-uploads-notification`,
+export const ingestorStorageUploadNotification = new gcp.storage.Notification(
+  `${tag}-ingestor-record-notification`,
   {
     bucket: archiveBucketName,
     payloadFormat: 'JSON_API_V1',
@@ -43,6 +43,6 @@ export const stagingStorageUploadNofication = new gcp.storage.Notification(
   },
   {
     provider,
-    dependsOn: [stagingUploadsTopicPublisher],
+    dependsOn: [ingestorTopicGcsPublisher],
   }
 )
