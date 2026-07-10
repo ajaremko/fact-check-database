@@ -2,8 +2,8 @@ import { Schema, ParseResult } from 'effect'
 
 import { SanitizerRecordSchema } from '@news-research/ingestion-contracts/archive/v1'
 import {
-  SourceCollectionSchema,
-  SourceSchema,
+  SourceCollectionConfigSchema,
+  SourceConfigSchema,
 } from '@news-research/ingestion-contracts/config/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
@@ -25,7 +25,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
     })
   ),
   error: Schema.NullOr(Schema.String),
-  source: SourceSchema,
+  source: SourceConfigSchema,
   http: Schema.NullOr(
     Schema.Struct({
       finalUrl: Schema.NullOr(Schema.String),
@@ -44,7 +44,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   ),
 }) {}
 
-const isSourceCollection = Schema.is(SourceCollectionSchema)
+const isSourceCollection = Schema.is(SourceCollectionConfigSchema)
 
 export const ObservationSchema = Schema.transformOrFail(
   SanitizerRecordSchema,

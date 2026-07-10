@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema } from '@news-research/core-io'
-import { SourceSchema } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
+import { FilePointerSchema } from '@news-research/ingestion-contracts/archive/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
@@ -18,7 +18,7 @@ export class ObservationSanitized extends Schema.Class<ObservationSanitized>(
   ingestionId: Schema.String,
   fetchedAt: Schema.Number,
   error: Schema.optional(Schema.String),
-  source: SourceSchema,
+  source: SourceConfigSchema,
   http: Schema.optional(
     Schema.Struct({
       status: Schema.Number,

@@ -2,17 +2,15 @@ import { Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
 import * as Yaml from '@news-research/core-data/Yaml'
-
 import {
   FilePointer,
   FilePointerSchema,
-  readFile,
-  writeFile,
-} from '@news-research/core-io'
+} from '@news-research/ingestion-contracts/archive/v1'
 import {
   TimestampEncoded,
   TimestampSchema,
 } from '@news-research/ingestion-contracts/shared/v1'
+import { readFile, writeFile } from '@news-research/core-io'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
 

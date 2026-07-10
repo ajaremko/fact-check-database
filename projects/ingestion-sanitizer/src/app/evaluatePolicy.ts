@@ -1,4 +1,4 @@
-import { Source } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
 
 import type {
   CollectionRule,
@@ -16,7 +16,7 @@ const collectionRuleDefaults: Partial<CollectionRule> = {
 
 export function pickRule(
   policy: SanitizerPolicy,
-  source: Pick<Source, 'collection' | 'name'>
+  source: Pick<SourceConfig, 'collection' | 'name'>
 ): CollectionRule {
   const base =
     policy.collections.find((c) => c.collection === source.collection) ??

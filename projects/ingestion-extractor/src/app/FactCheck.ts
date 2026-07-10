@@ -1,7 +1,7 @@
 import { ParseResult, Schema } from 'effect'
 
 import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
-import { SourceSchema } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
 import { omitNullKeys } from '@news-research/core-data'
 
 import {
@@ -54,7 +54,7 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         Schema.Record({ key: Schema.String, value: Schema.String })
       ),
     }),
-    source: SourceSchema,
+    source: SourceConfigSchema,
   }),
   {
     strict: true,

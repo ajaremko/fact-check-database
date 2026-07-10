@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 
-import { FilePointerSchema, SourceSchema } from '../../shared/v1'
+import { FilePointerSchema } from './FilePointer'
+import { SourceSchema } from './Source'
 
 /**
  * High-level access classification assigned to each sanitized record.

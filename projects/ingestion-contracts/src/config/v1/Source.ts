@@ -1,18 +1,22 @@
 import { Schema } from 'effect'
 
-export const SourceCollectionSchema = Schema.Literal('atom', 'rss')
+export const SourceCollectionConfigSchema = Schema.Literal('atom', 'rss')
 
-export type SourceCollection = Schema.Schema.Type<typeof SourceCollectionSchema>
+export type SourceCollectionConfig = Schema.Schema.Type<
+  typeof SourceCollectionConfigSchema
+>
 
 /**
- * An ingestion source.
+ * Configuration for an ingestion source.
  */
-export const SourceSchema = Schema.Struct({
+export const SourceConfigSchema = Schema.Struct({
   id: Schema.String,
   name: Schema.String,
   url: Schema.String,
-  collection: SourceCollectionSchema,
+  collection: SourceCollectionConfigSchema,
 })
 
-export type Source = Schema.Schema.Type<typeof SourceSchema>
-export type SourceEncoded = Schema.Schema.Encoded<typeof SourceSchema>
+export type SourceConfig = Schema.Schema.Type<typeof SourceConfigSchema>
+export type SourceConfigEncoded = Schema.Schema.Encoded<
+  typeof SourceConfigSchema
+>

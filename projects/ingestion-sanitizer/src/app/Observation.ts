@@ -1,11 +1,13 @@
 import { Schema, ParseResult } from 'effect'
 
 import {
-  SourceCollectionSchema,
-  SourceSchema,
+  SourceCollectionConfigSchema,
+  SourceConfigSchema,
 } from '@news-research/ingestion-contracts/config/v1'
-import { FilePointerSchema } from '@news-research/core-io'
-import { IngestionRecordSchema } from '@news-research/ingestion-contracts/archive/v1'
+import {
+  FilePointerSchema,
+  IngestionRecordSchema,
+} from '@news-research/ingestion-contracts/archive/v1'
 import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
@@ -13,7 +15,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   ingestionId: Schema.String,
   fetchedAt: TimestampSchema,
   error: Schema.NullOr(Schema.String),
-  source: SourceSchema,
+  source: SourceConfigSchema,
   raw: Schema.NullOr(
     Schema.Struct({
       http: Schema.Struct({
@@ -33,7 +35,7 @@ export class Observation extends Schema.Class<Observation>('Observation')({
   ),
 }) {}
 
-const isSourceCollection = Schema.is(SourceCollectionSchema)
+const isSourceCollection = Schema.is(SourceCollectionConfigSchema)
 
 export const ObservationSchema = Schema.transformOrFail(
   IngestionRecordSchema,

@@ -1,7 +1,7 @@
 import { ParseResult, Schema } from 'effect'
 
 import { StagingPathSchema } from '@news-research/core-contracts/staging/v1'
-import { FilePointerSchema } from '@news-research/core-io'
+import { FilePointerSchema } from '@news-research/ingestion-contracts/archive/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.

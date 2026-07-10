@@ -1,3 +1,10 @@
-export * from './FilePointer'
-export * from './Source'
-export * from './Timestamp'
+import { Brand, Schema } from 'effect'
+
+export const TimestampSchema = Schema.NonNegative.pipe(
+  Schema.brand('Timestamp')
+)
+
+export type Timestamp = Schema.Schema.Type<typeof TimestampSchema>
+export type TimestampEncoded = Schema.Schema.Encoded<typeof TimestampSchema>
+
+export const TimestampBrand = Brand.nominal<Timestamp>()

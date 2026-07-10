@@ -9,7 +9,7 @@ import {
   SanitizerRecordMetadataSchema,
   ArchivePathSchema,
 } from '@news-research/ingestion-contracts/archive/v1'
-import { SourceSchema } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
 import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
@@ -30,7 +30,7 @@ export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
       })
     ),
   }),
-  source: SourceSchema,
+  source: SourceConfigSchema,
   http: Schema.NullOr(
     Schema.Struct({
       finalUrl: Schema.NullOr(Schema.String),
