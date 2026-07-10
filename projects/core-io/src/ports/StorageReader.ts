@@ -1,6 +1,6 @@
 import { Context, Data, Effect, flow } from 'effect'
 
-import { FilePointer } from './FilePointer'
+import { FilePointer } from './types/FilePointer'
 
 /** Error raised when a {@link StorageReader} adapter fails to read the object at a given {@link FilePointer}. */
 export class StorageReadError extends Data.TaggedError('StorageReadError')<{

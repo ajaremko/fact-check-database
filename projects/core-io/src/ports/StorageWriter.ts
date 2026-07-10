@@ -1,6 +1,6 @@
 import { Context, Data, Effect, flow } from 'effect'
 
-import { FilePointer } from './FilePointer'
+import { FilePointer } from './types/FilePointer'
 
 /** Error raised when a {@link StorageWriter} adapter fails to write an object. */
 export class StorageWriteError extends Data.TaggedError('StorageWriteError')<{

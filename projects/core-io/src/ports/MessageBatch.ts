@@ -1,6 +1,6 @@
 import { Context, Effect, Tracer } from 'effect'
 
-import { MessageBody } from './MessageBody'
+import { MessageBody } from './types/MessageBody'
 
 /**
  * A single message within a {@link MessageBatch}.

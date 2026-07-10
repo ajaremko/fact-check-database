@@ -15,7 +15,7 @@ import {
   parsePubsubMessagePayloadData,
 } from '@news-research/core-contracts/gcp/v1'
 
-import { MessageBody } from '../ports/MessageBody'
+import { MessageBody } from '../ports/types/MessageBody'
 
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 

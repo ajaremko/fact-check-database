@@ -1,6 +1,6 @@
 import { Context, Data, Effect, Queue, Record, Tracer } from 'effect'
 
-import { MessageBody } from './MessageBody'
+import { MessageBody } from './types/MessageBody'
 
 /** Out-of-band error reported by a {@link MessageQueue} adapter (e.g. a lost subscription connection), independent of any single message. */
 export class MessageQueueError extends Data.TaggedError('MessageQueueError')<{

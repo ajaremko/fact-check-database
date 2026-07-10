@@ -1,7 +1,7 @@
 import { Effect, Record } from 'effect'
 
 import { MessageQueue } from '../ports/MessageQueue'
-import { MessageBody } from '../ports/MessageBody'
+import { MessageBody } from '../ports/types/MessageBody'
 
 /** Options for {@link enqueueAndAwaitOutcome}. */
 export interface EnqueueAndAwaitOutcomeOptions<A, E = never> {
