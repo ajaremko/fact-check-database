@@ -14,7 +14,7 @@ import * as StorageClient from '@news-research/core-vendor/cloud-storage/Storage
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
-import { Program, ServiceContext } from './Program'
+import { App } from './app'
 
 const LoggingLevelConfig = Config.logLevel('LOGGING_LEVEL')
 
@@ -86,22 +86,11 @@ const otel = Layer.unwrapEffect(
   })
 )
 
-const service = Layer.effect(
-  ServiceContext,
-  Effect.gen(function* () {
-    const projectId = yield* Config.string('PROJECT_ID')
-    const datasetId = yield* Config.string('BIGQUERY_DATASET')
-    const tableId = yield* Config.string('BIGQUERY_TABLE')
-    return { projectId, datasetId, tableId }
-  })
-)
-
-Program.pipe(
+App.pipe(
   Effect.provide(BigQueryClient.layer()),
   Effect.provide(storage),
   Effect.provide(otel),
   Effect.provide(logger),
-  Effect.provide(service),
   withMinimumLogLevel,
   NodeRuntime.runMain({ disablePrettyLogger: true })
 )

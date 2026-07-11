@@ -3,7 +3,7 @@ import { Effect, Config, Layer } from 'effect'
 
 import { FormSubmission } from '@news-research/website-contracts/form-submissions/v1'
 
-import { Emailer, EmailerError } from './Emailer'
+import { Emailer, EmailerError } from '../ports/Emailer'
 
 export const make = Effect.gen(function* () {
   const apiKey = yield* Config.string('RESEND_API_KEY')

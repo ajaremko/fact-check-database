@@ -11,12 +11,10 @@ export class Emailer extends Context.Tag('Emailer')<
   Emailer,
   {
     readonly sendConfirmation: (
-      source: FormSubmission,
-      timestamp: Date
+      source: FormSubmission
     ) => Effect.Effect<void, EmailerError>
     readonly sendNotification: (
-      source: FormSubmission,
-      timestamp: Date
+      source: FormSubmission
     ) => Effect.Effect<void, EmailerError>
   }
 >() {}

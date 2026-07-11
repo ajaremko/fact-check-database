@@ -5,50 +5,19 @@ import {
   HttpServerResponse,
   HttpMiddleware,
 } from '@effect/platform'
-import { Config, Context, Effect, Layer, Schema, flow } from 'effect'
+import { Config, Effect, Layer, Schema } from 'effect'
 import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import * as Node from '@news-research/core-data/Node'
 import {
   StorageObjectAttributesSchema,
   PubsubMessageEnvelope,
 } from '@news-research/core-contracts/gcp/v1'
-import { readFile } from '@news-research/core-io'
 
+import { ServiceContext, provideServiceContext } from './config'
+import { readSchema, provideSchemaReader } from './readSchema'
 import { loadBatch } from './loadBatch'
-
-export interface ServiceContext {
-  projectId: string
-  datasetId: string
-  tableId: string
-}
-
-export const ServiceContext =
-  Context.GenericTag<ServiceContext>('ServiceContext')
-
-const decodeSchema = Schema.Object.pipe(
-  Node.parseJson(),
-  Node.parseUint8Array({ encoding: 'utf-8' }),
-  Schema.decode
-)
-
-const makeSchemaReader = Effect.map(
-  Effect.cachedFunction(
-    flow(readFile, Effect.andThen(decodeSchema), Effect.withSpan('readSchema'))
-  ),
-  (read) => ({ read })
-)
-
-type SchemaReader = Effect.Effect.Success<typeof makeSchemaReader>
-
-const SchemaReader = Context.GenericTag<SchemaReader>('SchemaReader')
-
-const provideSchemaReader = Effect.provideServiceEffect(
-  SchemaReader,
-  makeSchemaReader
-)
 
 const decodePubsubMessageEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
@@ -66,14 +35,13 @@ const loadJobs = HttpRouter.post(
   '/load-jobs',
   Effect.gen(function* () {
     const ctx = yield* ServiceContext
-    const reader = yield* SchemaReader
     const req = yield* HttpServerRequest.HttpServerRequest
 
     const body = yield* req.json
     const { message } = yield* decodePubsubMessageEnvelope(body)
     const attributes = yield* decodeAttributes(message.attributes)
 
-    const schema = yield* reader.read({
+    const schema = yield* readSchema({
       object: attributes.schemaObjectId,
       bucket: attributes.bucketId,
     })
@@ -126,8 +94,9 @@ const server = Layer.unwrapEffect(
   })
 )
 
-export const Program = Layer.provide(app, server).pipe(
+export const App = Layer.provide(app, server).pipe(
   Layer.launch,
   provideSchemaReader,
+  provideServiceContext,
   Effect.tapErrorCause(Effect.logError)
 )

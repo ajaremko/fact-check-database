@@ -13,6 +13,9 @@
       "path": "../core-vendor/tsconfig.lib.json"
     },
     {
+      "path": "../core-io/tsconfig.lib.json"
+    },
+    {
       "path": "../core-contracts/tsconfig.lib.json"
     },
     {

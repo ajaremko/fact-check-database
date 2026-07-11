@@ -1,5 +1,5 @@
 import { Config, Effect, Logger, Layer, LogLevel } from 'effect'
-import { NodeRuntime } from '@effect/platform-node'
+import { NodeRuntime, NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
@@ -9,13 +9,16 @@ import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentele
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
+import * as CloudStorageStorageReader from '@news-research/core-io/adapters/CloudStorageStorageReader'
+import * as FileSystemStorageReader from '@news-research/core-io/adapters/FileSystemStorageReader'
 import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
+import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
 import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
 import { pinoLogger } from '@news-research/core-vendor/pino'
 
-import * as LoggerEmailer from './LoggerEmailer'
-import * as ResendEmailer from './ResendEmailer'
-import { Program } from './Program'
+import * as LoggerEmailer from './adapters/LoggerEmailer'
+import * as ResendEmailer from './adapters/ResendEmailer'
+import { App } from './app'
 
 const EmailerModeConfig = Config.literal('resend', 'logger')('EMAILER_MODE')
 
@@ -34,6 +37,26 @@ const emailer = Layer.unwrapEffect(
     // necessary to merge layer error types correctly
     Effect.map(Layer.mergeAll)
   )
+)
+
+const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')
+
+const storage = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const storageMode = yield* Config.withDefault(StorageModeConfig, 'gcp')
+    if (storageMode === 'filesystem') {
+      yield* Effect.logDebug('Using filesystem storage')
+      return Layer.empty.pipe(
+        Layer.merge(FileSystemStorageReader.layer),
+        Layer.provide(NodeFileSystem.layer)
+      )
+    }
+    yield* Effect.logDebug('Using gcs storage')
+    return Layer.empty.pipe(
+      Layer.merge(CloudStorageStorageReader.layer),
+      Layer.provide(StorageClient.layer())
+    )
+  })
 )
 
 const OtelModeConfig = Config.literal('gcp', 'local')('OTEL_MODE')
@@ -130,8 +153,9 @@ const logger = Layer.unwrapEffect(
   })
 )
 
-Program.pipe(
+App.pipe(
   Effect.provide(emailer),
+  Effect.provide(storage),
   Effect.provide(otel),
   Effect.provide(logger),
   withMinimumLogLevel,

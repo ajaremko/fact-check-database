@@ -1,6 +1,6 @@
 import { Effect, Layer } from 'effect'
 
-import { Emailer } from './Emailer'
+import { Emailer } from '../ports/Emailer'
 
 export const layer = Layer.sync(Emailer, () =>
   Emailer.of({
