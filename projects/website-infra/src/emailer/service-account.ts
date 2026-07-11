@@ -2,6 +2,7 @@ import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
 import { gcpProject, tag } from '../config'
+import { backendBucketName } from '../backend'
 import { provider } from '../project'
 
 import { resendApiKey } from './resend'
@@ -14,6 +15,17 @@ export const emailerServiceAccount = new gcp.serviceaccount.Account(
   },
   { provider }
 )
+
+export const backendBucketObjectCreatorBinding =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-emailer-backend-bucket-object-viewer`,
+    {
+      bucket: backendBucketName,
+      role: 'roles/storage.objectViewer',
+      member: pulumi.interpolate`serviceAccount:${emailerServiceAccount.email}`,
+    },
+    { provider }
+  )
 
 export const secretAccessorBinding = new gcp.secretmanager.SecretIamMember(
   `${tag}-emailer-secret-accessor`,

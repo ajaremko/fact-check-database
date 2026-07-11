@@ -14,6 +14,11 @@ export const pubsubServiceAccountEmail = pulumi.interpolate`service-${project.nu
 
 export const cloudRunServiceAgentEmail = pulumi.interpolate`service-${project.number}@serverless-robot-prod.iam.gserviceaccount.com`
 
+export const gcsAccount = gcp.storage.getProjectServiceAccountOutput(
+  {},
+  { provider }
+)
+
 export const coreProvider = new gcp.Provider(`${tag}-core-provider`, {
   project: coreProject,
   region: coreRegion,

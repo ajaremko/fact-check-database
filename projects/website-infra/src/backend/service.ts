@@ -25,8 +25,8 @@ import {
   oauth2ProxyConfig,
   oauth2ProxyConfigVersion,
 } from './envoy'
-import { iamMembers, websiteBackendServiceAccount } from './service-account'
-import { formSubmissionTopic } from './topic'
+import { iamBindings, websiteBackendServiceAccount } from './service-account'
+import { backendBucket } from './storage'
 
 const htpasswdSecretVolume = htpasswdSecretVersion
   ? [
@@ -180,8 +180,8 @@ export const websiteService = new gcp.cloudrun.Service(
                 value: gcpProject,
               },
               {
-                name: 'PUBSUB_TOPIC_NAME',
-                value: formSubmissionTopic.name,
+                name: 'STORAGE_BUCKET_NAME',
+                value: backendBucket.name,
               },
             ],
           },
@@ -190,7 +190,11 @@ export const websiteService = new gcp.cloudrun.Service(
     },
   },
   {
-    dependsOn: [cloudRunService, cloudRunArtifactRegistryReader, ...iamMembers],
+    dependsOn: [
+      cloudRunService,
+      cloudRunArtifactRegistryReader,
+      ...iamBindings,
+    ],
     provider,
   }
 )

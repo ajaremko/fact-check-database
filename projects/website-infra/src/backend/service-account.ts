@@ -6,6 +6,7 @@ import { provider } from '../project'
 
 import { envoyConfig, htpasswdConfig, oauth2ProxyConfig } from './envoy'
 import { formSubmissionTopic } from './topic'
+import { backendBucket } from './storage'
 
 export const websiteBackendServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-backend-sa`,
@@ -15,6 +16,17 @@ export const websiteBackendServiceAccount = new gcp.serviceaccount.Account(
   },
   { provider }
 )
+
+export const backendBucketObjectCreatorBinding =
+  new gcp.storage.BucketIAMMember(
+    `${tag}-backend-bucket-object-creator`,
+    {
+      bucket: backendBucket.name,
+      role: 'roles/storage.objectCreator',
+      member: pulumi.interpolate`serviceAccount:${websiteBackendServiceAccount.email}`,
+    },
+    { provider }
+  )
 
 export const envoySecretAccessorBinding = new gcp.secretmanager.SecretIamMember(
   `${tag}-backend-envoy-secret-accessor`,
@@ -98,7 +110,8 @@ export const monitoringMetricWriter = new gcp.projects.IAMMember(
   { provider }
 )
 
-export const iamMembers = [
+export const iamBindings = [
+  backendBucketObjectCreatorBinding,
   recaptchaEnterpriseAgent,
   envoySecretAccessorBinding,
   htpasswdSecretAccessorBinding,

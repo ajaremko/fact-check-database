@@ -2,6 +2,7 @@ import { Effect, Schema } from 'effect'
 import { HttpServerRequest } from '@effect/platform'
 
 import * as Node from '@news-research/core-data/Node'
+import * as Yaml from '@news-research/core-data/Yaml'
 import {
   PubsubMessageEnvelope,
   StorageObjectAttributesSchema,
@@ -17,7 +18,7 @@ const decodeAttributes = StorageObjectAttributesSchema.pipe(
 )
 
 const decodeFormSubmission = FormSubmissionSchema.pipe(
-  Node.parseJson(),
+  Yaml.parseYaml(),
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
