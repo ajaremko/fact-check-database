@@ -4,11 +4,12 @@ import { Clock, Effect, Schema } from 'effect'
 import { redirect } from 'next/navigation'
 
 import * as Node from '@news-research/core-data/Node'
+import * as Yaml from '@news-research/core-data/Yaml'
 import { AccessRequestSchema } from '@news-research/website-contracts/form-submissions/v1'
-import { publish } from '@news-research/core-io'
+import { writeFile } from '@news-research/core-io'
 
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
-import { appLayer } from '@/lib/pubsub/app-layer'
+import { appLayer } from '@/lib/effect/app-layer'
 
 export type AccessFormData = {
   name: string
@@ -19,7 +20,7 @@ export type AccessFormData = {
 }
 
 const encodeAccessRequest = AccessRequestSchema.pipe(
-  Node.parseJson(),
+  Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
@@ -33,6 +34,8 @@ export async function submitAccessRequest(
       const timestamp = yield* Clock.currentTimeMillis
       yield* verifyRecaptcha(formData.recaptchaToken, 'access_request')
 
+      const id = yield* Node.generateUUID()
+
       const data = yield* encodeAccessRequest({
         kind: 'access_request',
         version: 1,
@@ -43,7 +46,11 @@ export async function submitAccessRequest(
         project_description: formData.projectDescription,
       })
 
-      yield* publish(data)
+      yield* writeFile({
+        path: `submissions/access-request-${id}.yml`,
+        contentType: 'application/yaml',
+        data,
+      })
 
       return { success: true as const }
     }).pipe(

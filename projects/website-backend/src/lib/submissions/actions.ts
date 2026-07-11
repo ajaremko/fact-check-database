@@ -4,11 +4,12 @@ import { Clock, Effect, Schema } from 'effect'
 import { redirect } from 'next/navigation'
 
 import * as Node from '@news-research/core-data/Node'
+import * as Yaml from '@news-research/core-data/Yaml'
 import { TipSubmissionSchema } from '@news-research/website-contracts/form-submissions/v1'
-import { publish } from '@news-research/core-io'
+import { writeFile } from '@news-research/core-io'
 
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
-import { appLayer } from '@/lib/pubsub/app-layer'
+import { appLayer } from '@/lib/effect/app-layer'
 
 export type SubmissionsFormData = {
   claim: string
@@ -20,7 +21,7 @@ export type SubmissionsFormData = {
 }
 
 const encodeContactSubmission = TipSubmissionSchema.pipe(
-  Node.parseJson(),
+  Yaml.parseYaml(),
   Node.parseBuffer({ encoding: 'utf-8' }),
   Schema.encode
 )
@@ -31,6 +32,8 @@ export async function submitTip(formData: SubmissionsFormData): Promise<void> {
       yield* Effect.logInfo('Tip form submitted')
       const timestamp = yield* Clock.currentTimeMillis
       yield* verifyRecaptcha(formData.recaptchaToken, 'tip_submission')
+
+      const id = yield* Node.generateUUID()
 
       const data = yield* encodeContactSubmission({
         kind: 'tip_submission',
@@ -43,7 +46,11 @@ export async function submitTip(formData: SubmissionsFormData): Promise<void> {
         email: formData.email,
       })
 
-      yield* publish(data)
+      yield* writeFile({
+        path: `submissions/tip-${id}.yml`,
+        contentType: 'application/yaml',
+        data,
+      })
 
       return { success: true as const }
     }).pipe(
