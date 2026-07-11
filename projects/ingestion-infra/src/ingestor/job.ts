@@ -14,7 +14,6 @@ import {
   ingestorServiceAccount,
   ingestorAssetBucketViewer,
   ingestorRawArchiveBucketCreator,
-  ingestorTopicPublisher,
   cloudtraceAgent,
 } from './service-account'
 
@@ -78,7 +77,6 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
       cloudRunService,
       ingestorAssetBucketViewer,
       ingestorRawArchiveBucketCreator,
-      ingestorTopicPublisher,
       cloudtraceAgent,
       cloudRunArtifactRegistryReader,
     ],

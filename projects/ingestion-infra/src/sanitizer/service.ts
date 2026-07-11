@@ -12,7 +12,6 @@ import {
   sanitizerAssetBucketViewer,
   sanitizerRawArchiveBucketAdmin,
   sanitizerServiceAccount,
-  sanitizerTopicPublisher,
 } from './service-account'
 import { sanitizerTopic } from './topic'
 
@@ -61,7 +60,6 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
       cloudRunService,
       sanitizerAssetBucketViewer,
       sanitizerRawArchiveBucketAdmin,
-      sanitizerTopicPublisher,
       cloudRunArtifactRegistryReader,
     ],
     provider,
