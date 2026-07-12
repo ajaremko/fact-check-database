@@ -45,6 +45,17 @@ const ResultTitle = styled.p`
   flex: 1;
 `
 
+const ResultSummary = styled.p`
+  font-size: 0.8125rem;
+  color: ${C.textSecondary};
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`
+
 const VERDICT_STYLES: Record<string, { bg: string; color: string }> = {
   true: { bg: '#dcfce7', color: '#166534' },
   false: { bg: '#fee2e2', color: '#991b1b' },
@@ -110,6 +121,7 @@ function decodeHits(hits: readonly unknown[]): SearchResult[] {
     if (Either.isRight(decoded)) results.push(decoded.right)
     else console.error('Failed to decode search result hit', decoded.left)
   }
+  console.log('hits', JSON.stringify(results, null, 2))
   return results
 }
 
@@ -167,6 +179,7 @@ function sortHits(
 export function ResultListItem({
   href,
   title,
+  summary,
   verdict,
   source,
   collection,
@@ -174,6 +187,7 @@ export function ResultListItem({
 }: {
   href?: string
   title: string
+  summary?: string
   verdict?: string
   source?: string
   collection?: string
@@ -193,6 +207,7 @@ export function ResultListItem({
         </ResultTitle>
         {verdict && <VerdictBadge verdict={verdict}>{verdict}</VerdictBadge>}
       </ResultHeader>
+      {summary && <ResultSummary>{summary}</ResultSummary>}
       <ResultMeta>
         <ResultSource>{source}</ResultSource>
         {collection && <CollectionBadge>{collection}</CollectionBadge>}
@@ -209,6 +224,7 @@ export function HitsWidget({
     id: string
     href?: string
     title: string
+    summary?: string
     verdict?: string
     source?: string
     collection?: string
@@ -222,6 +238,7 @@ export function HitsWidget({
           key={item.id}
           href={item.href}
           title={item.title}
+          summary={item.summary}
           verdict={item.verdict}
           source={item.source}
           collection={item.collection}
@@ -251,12 +268,16 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
     <HitsWidget
       items={sorted.map((hit) => ({
         id: hit.ObjectID,
-        href: hit.canonical_url,
+        href: hit.canonical_url ?? hit.link,
         title: hit.title ?? hit.claim ?? 'Untitled',
+        summary: hit.summary,
         verdict: resolveVerdict(hit),
         source: hit.source_name,
         collection: hit.source_collection,
-        publishedAt: formatDate(hit.published_at_normalized, hit.published_at_raw),
+        publishedAt: formatDate(
+          hit.published_at_normalized,
+          hit.published_at_raw
+        ),
       }))}
     />
   )
