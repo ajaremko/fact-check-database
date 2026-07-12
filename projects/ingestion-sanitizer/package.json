@@ -5,6 +5,7 @@
   "nx": {
     "name": "ingestion-sanitizer",
     "targets": {
+      "run-script": {},
       "build": {
         "executor": "@nx/esbuild:esbuild",
         "outputs": [

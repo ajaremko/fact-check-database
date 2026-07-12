@@ -5,6 +5,7 @@
   "nx": {
     "name": "ingestion-ingestor",
     "targets": {
+      "run-script": {},
       "build": {
         "executor": "@nx/esbuild:esbuild",
         "outputs": [

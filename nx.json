@@ -110,6 +110,16 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "run-script": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "{projectName}:build",
+        "watch": false
+      },
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": false
     }
   },
   "release": {

@@ -1,15 +1,18 @@
 import { Config, Effect, Layer } from 'effect'
 
+import { MessageQueue } from '../ports/MessageQueue'
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 import { readDirectoryMessages } from '../internal/readDirectoryMessages'
 
 /**
  * Reads every file in the `MESSAGE_QUEUE_INPUT_DIR` directory and offers
  * each one onto an existing {@link MessageQueue} in turn, awaiting ack/nack
- * before moving on to the next file.
+ * before moving on to the next file. Interrupts the queue once all files
+ * have been processed, causing consumers to exit gracefully.
  */
 export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
+  const { messages } = yield* MessageQueue
 
   yield* Effect.logTrace(`Processing messages in directory: ${inputDir}`)
   const entries = yield* readDirectoryMessages(inputDir)
@@ -25,6 +28,13 @@ export const make = Effect.gen(function* () {
       Effect.annotateLogs({ 'message.path': path })
     )
   }
+
+  // Interrupt the queue so that the consumer can exit gracefully
+  // once all messages have been processed
+
+  // In production, the http message queue feeder will not shut
+  // down the queue, but will instead run indefinitely
+  yield* messages.shutdown
 })
 
 /**
