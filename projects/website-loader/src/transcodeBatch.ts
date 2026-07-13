@@ -12,7 +12,7 @@ const decodeBatch = Schema.transformOrFail(
     strict: true,
     decode: (input, _, __, encoded) =>
       ParseResult.succeed({
-        ObjectID: input.content_lineage_id,
+        objectID: input.content_lineage_id,
         content_type: input.http.content_type,
         content_length: input.http.etag,
         final_url: input.http.final_url,
@@ -21,6 +21,7 @@ const decodeBatch = Schema.transformOrFail(
         source_id: input.source.id,
         source_url: input.source.url,
         source_name: input.source.name,
+        image_url: input.fact_check.image_url,
         canonical_url: input.fact_check.canonical_url,
         language: input.fact_check.language,
         link: input.fact_check.link,
@@ -30,6 +31,8 @@ const decodeBatch = Schema.transformOrFail(
         title: input.fact_check.title,
         verdict_normalized: input.fact_check.verdict_normalized,
         verdict_raw: input.fact_check.verdict_raw,
+        author: input.fact_check.author,
+        categories: input.fact_check.categories,
       }),
     encode: (input, _, ast) =>
       ParseResult.fail(

@@ -88,9 +88,7 @@ const otel = Layer.unwrapEffect(
 
 const service = Layer.effect(
   ServiceContext,
-  Config.all({
-    indexName: Config.string('ALGOLIA_INDEX_NAME'),
-  })
+  Config.all({ indexName: Config.string('ALGOLIA_INDEX_NAME') })
 )
 
 Program.pipe(

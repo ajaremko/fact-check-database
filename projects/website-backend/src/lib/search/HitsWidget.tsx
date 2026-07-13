@@ -29,6 +29,26 @@ const ResultItem = styled.li`
   }
 `
 
+const ResultRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+`
+
+const ResultThumbnail = styled.img`
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid ${C.borderSubtle};
+  flex-shrink: 0;
+`
+
+const ResultContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`
+
 const ResultHeader = styled.div`
   display: flex;
   align-items: flex-start;
@@ -45,6 +65,12 @@ const ResultTitle = styled.p`
   flex: 1;
 `
 
+const ResultAuthor = styled.p`
+  font-size: 0.8125rem;
+  color: ${C.textMuted};
+  margin: 0 0 0.35rem;
+`
+
 const ResultSummary = styled.p`
   font-size: 0.8125rem;
   color: ${C.textSecondary};
@@ -54,6 +80,22 @@ const ResultSummary = styled.p`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+`
+
+const CategoryList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+`
+
+const CategoryTag = styled.span`
+  font-size: 0.7rem;
+  color: ${C.textSecondary};
+  background-color: ${C.bgSurface};
+  border: 1px solid ${C.borderSubtle};
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
 `
 
 const VERDICT_STYLES: Record<string, { bg: string; color: string }> = {
@@ -101,6 +143,10 @@ const ResultMeta = styled.div`
 
 const ResultSource = styled.span`
   font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `
 
 const EmptyState = styled.div`
@@ -135,9 +181,20 @@ function formatDate(
       year: 'numeric',
       month: 'short',
       day: 'numeric',
+      timeZone: 'UTC',
     })
   }
   return ''
+}
+
+function formatExtractedAt(extractedAt: Date | undefined): string {
+  if (!extractedAt) return ''
+  return extractedAt.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
 }
 
 type SortOption = 'newest' | 'oldest' | 'verdict'
@@ -182,37 +239,77 @@ export function ResultListItem({
   summary,
   verdict,
   source,
+  sourceUrl,
   collection,
   publishedAt,
+  imageUrl,
+  language,
+  author,
+  categories,
+  extractedAt,
 }: {
   href?: string
   title: string
   summary?: string
   verdict?: string
   source?: string
+  sourceUrl?: string
   collection?: string
   publishedAt?: string
+  imageUrl?: string
+  language?: string
+  author?: string
+  categories?: readonly string[]
+  extractedAt?: string
 }) {
   return (
     <ResultItem>
-      <ResultHeader>
-        <ResultTitle>
-          {href ? (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {title}
-            </a>
-          ) : (
-            title
+      <ResultRow>
+        {imageUrl && <ResultThumbnail src={imageUrl} alt="" />}
+        <ResultContent>
+          <ResultHeader>
+            <ResultTitle>
+              {href ? (
+                <a href={href} target="_blank" rel="noopener noreferrer">
+                  {title}
+                </a>
+              ) : (
+                title
+              )}
+            </ResultTitle>
+            {verdict && (
+              <VerdictBadge verdict={verdict}>{verdict}</VerdictBadge>
+            )}
+          </ResultHeader>
+          {author && <ResultAuthor>By {author}</ResultAuthor>}
+          {summary && <ResultSummary>{summary}</ResultSummary>}
+          {categories && categories.length > 0 && (
+            <CategoryList>
+              {categories.map((category) => (
+                <CategoryTag key={category}>{category}</CategoryTag>
+              ))}
+            </CategoryList>
           )}
-        </ResultTitle>
-        {verdict && <VerdictBadge verdict={verdict}>{verdict}</VerdictBadge>}
-      </ResultHeader>
-      {summary && <ResultSummary>{summary}</ResultSummary>}
-      <ResultMeta>
-        <ResultSource>{source}</ResultSource>
-        {collection && <CollectionBadge>{collection}</CollectionBadge>}
-        <span>{publishedAt}</span>
-      </ResultMeta>
+          <ResultMeta>
+            {sourceUrl ? (
+              <ResultSource
+                as="a"
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {source}
+              </ResultSource>
+            ) : (
+              <ResultSource>{source}</ResultSource>
+            )}
+            {collection && <CollectionBadge>{collection}</CollectionBadge>}
+            {language && <CollectionBadge>{language}</CollectionBadge>}
+            <span>{publishedAt}</span>
+            {extractedAt && <span>checked {extractedAt}</span>}
+          </ResultMeta>
+        </ResultContent>
+      </ResultRow>
     </ResultItem>
   )
 }
@@ -227,8 +324,14 @@ export function HitsWidget({
     summary?: string
     verdict?: string
     source?: string
+    sourceUrl?: string
     collection?: string
     publishedAt?: string
+    imageUrl?: string
+    language?: string
+    author?: string
+    categories?: readonly string[]
+    extractedAt?: string
   }[]
 }) {
   return (
@@ -241,8 +344,14 @@ export function HitsWidget({
           summary={item.summary}
           verdict={item.verdict}
           source={item.source}
+          sourceUrl={item.sourceUrl}
           collection={item.collection}
           publishedAt={item.publishedAt}
+          imageUrl={item.imageUrl}
+          language={item.language}
+          author={item.author}
+          categories={item.categories}
+          extractedAt={item.extractedAt}
         />
       ))}
     </ResultList>
@@ -267,17 +376,23 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
   return (
     <HitsWidget
       items={sorted.map((hit) => ({
-        id: hit.ObjectID,
+        id: hit.objectID,
         href: hit.canonical_url ?? hit.link,
         title: hit.title ?? 'Untitled',
         summary: hit.summary,
         verdict: resolveVerdict(hit),
         source: hit.source_name,
+        sourceUrl: hit.source_url,
         collection: hit.source_collection,
         publishedAt: formatDate(
           hit.published_at_normalized,
           hit.published_at_raw
         ),
+        imageUrl: hit.image_url,
+        language: hit.language,
+        author: hit.author,
+        categories: hit.categories,
+        extractedAt: formatExtractedAt(hit.extracted_at),
       }))}
     />
   )
