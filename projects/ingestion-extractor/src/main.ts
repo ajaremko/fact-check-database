@@ -84,6 +84,7 @@ function withMinimumLogLevel<A, E, R>(self: Effect.Effect<A, E, R>) {
     Effect.andThen((level) => Logger.withMinimumLogLevel(self, level))
   )
 }
+
 const logger = Layer.unwrapEffect(
   Effect.gen(function* () {
     const loggingMode = yield* Config.withDefault(LoggingModeConfig, 'gcp')
@@ -204,8 +205,8 @@ App.pipe(
   Effect.provide(messaging),
   Effect.provide(otel),
   withJobAnnotations,
-  Effect.provide(logger),
   Effect.provide(job),
+  Effect.provide(logger),
   withMinimumLogLevel,
   NodeRuntime.runMain({ disablePrettyLogger: true })
 )
