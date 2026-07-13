@@ -74,4 +74,75 @@ describe('RssExtractor', () => {
       content: null,
     })
   })
+
+  it('decodes the rest of the feed when one item has an empty, attribute-only <guid>', async () => {
+    // Real shape seen from Rappler: `<guid isPermaLink="false"></guid>` has no
+    // text content at all, so fast-xml-parser omits '#text' entirely. Before
+    // '#text' was made optional, this failed the whole document's decode —
+    // zeroing out every item in the feed, not just this one.
+    const feed = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <item>
+      <title>First claim</title>
+      <link>https://example.com/first</link>
+      <guid isPermaLink="false"></guid>
+    </item>
+    <item>
+      <title>Second claim</title>
+      <link>https://example.com/second</link>
+      <guid>https://example.com/second</guid>
+    </item>
+  </channel>
+</rss>`
+
+    const factChecks = await Effect.runPromise(
+      RssExtractor.extractor({
+        timestamp: 0,
+        record: null as never,
+        data: new TextEncoder().encode(feed),
+      })
+    )
+
+    expect(factChecks).toHaveLength(2)
+    expect(factChecks[0]).toMatchObject({
+      guid: null,
+      link: 'https://example.com/first',
+      canonicalUrl: 'https://example.com/first',
+    })
+    expect(factChecks[1]).toMatchObject({
+      guid: 'https://example.com/second',
+      canonicalUrl: 'https://example.com/second',
+    })
+  })
+
+  it('extracts enclosure, media image, and channel-level language', async () => {
+    const feed = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <language>el</language>
+    <item>
+      <title>Claim with evidence media</title>
+      <link>https://example.com/article</link>
+      <enclosure url="https://example.com/evidence.mp4" length="123" type="video/mp4" />
+      <media:thumbnail url="https://example.com/thumb.jpg" />
+      <media:content url="https://example.com/full.jpg" medium="image" />
+    </item>
+  </channel>
+</rss>`
+
+    const [factCheck] = await Effect.runPromise(
+      RssExtractor.extractor({
+        timestamp: 0,
+        record: null as never,
+        data: new TextEncoder().encode(feed),
+      })
+    )
+
+    expect(factCheck).toMatchObject({
+      enclosureUrl: 'https://example.com/evidence.mp4',
+      imageUrl: 'https://example.com/thumb.jpg',
+      language: 'el',
+    })
+  })
 })

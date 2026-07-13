@@ -38,6 +38,8 @@ export interface FactCheckValues {
   summary: string | null
   content: string | null
   language: string | null
+  enclosureUrl: string | null
+  imageUrl: string | null
   verdictRaw: string | null
   publishedAtRaw: string | null
 }
@@ -68,6 +70,8 @@ export function buildFactCheck(values: FactCheckValues) {
       summary: values.summary,
       content: values.content,
       language: values.language,
+      enclosureUrl: values.enclosureUrl,
+      imageUrl: values.imageUrl,
       verdictRaw: values.verdictRaw,
       verdictNormalized: extractVerdict(values.verdictRaw),
       publishedAtRaw: values.publishedAtRaw,

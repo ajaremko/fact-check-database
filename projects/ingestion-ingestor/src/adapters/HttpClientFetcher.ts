@@ -28,7 +28,12 @@ const pickLastModified = pickHeaders(['last-modified', 'lastmodified'])
 const pickContentType = pickHeaders(['content-type', 'contenttype'])
 
 export const make = Effect.gen(function* () {
-  const client = yield* HttpClient.HttpClient
+  // The base client does not follow redirects on its own; several sources
+  // (feed URLs that moved) return a 301 whose body is a tiny redirect stub,
+  // not the real feed, unless this is applied.
+  const client = (yield* HttpClient.HttpClient).pipe(
+    HttpClient.followRedirects()
+  )
   const headers = {
     'User-Agent':
       'FactCheckDatabaseIngestor/1.0 (+https://factcheckdatabase.com)',

@@ -78,4 +78,32 @@ describe('AtomExtractor', () => {
       language: null,
     })
   })
+
+  it('extracts content when <content> carries a type attribute', async () => {
+    // Real shape seen from Demagog.cz: every entry sets `type="html"` on
+    // <content>, which makes fast-xml-parser produce { type, '#text' }
+    // instead of a plain string. A naive `typeof === 'string'` guard drops
+    // this to null for 100% of that source's items.
+    const feed = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <id>https://example.com/typed-content</id>
+    <title>Claim with typed content</title>
+    <link href="https://example.com/typed-content"/>
+    <content type="html">The full fact-check body text.</content>
+  </entry>
+</feed>`
+
+    const [factCheck] = await Effect.runPromise(
+      AtomExtractor.extractor({
+        timestamp: 0,
+        record: null as never,
+        data: new TextEncoder().encode(feed),
+      })
+    )
+
+    expect(factCheck).toMatchObject({
+      content: 'The full fact-check body text.',
+    })
+  })
 })

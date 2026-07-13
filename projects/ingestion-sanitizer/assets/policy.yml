@@ -20,6 +20,16 @@ collections:
     defaultLabel: SAFE_PUBLIC
     rewriteBody: false
 
+  - collection: atom
+    allowedContentTypeSubstrings:
+      - xml
+      - rss
+      - atom
+    onMissingContentType: ALLOW
+    maxBytes: 8000000
+    defaultLabel: SAFE_PUBLIC
+    rewriteBody: false
+
   - collection: api
     allowedContentTypeSubstrings:
       - json

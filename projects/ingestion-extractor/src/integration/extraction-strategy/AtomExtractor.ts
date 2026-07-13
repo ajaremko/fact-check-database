@@ -65,6 +65,22 @@ function categoryText(category: typeof AtomCategorySchema.Type): string | null {
   return category.term ?? category.label ?? null
 }
 
+// <content type="html">...</content> parses to { type: 'html', '#text': '...' }
+// once any attribute is present, not a plain string — a type-only guard drops
+// the entire body for feeds like Demagog.cz, which set `type` on every entry.
+function unwrapContent(content: unknown): string | null {
+  if (typeof content === 'string') return content
+  if (
+    content &&
+    typeof content === 'object' &&
+    '#text' in content &&
+    typeof (content as { '#text': unknown })['#text'] === 'string'
+  ) {
+    return (content as { '#text': string })['#text']
+  }
+  return null
+}
+
 export const AtomExtractor = makeExtractionStrategy({
   id: 'atom',
   version: 1,
@@ -89,8 +105,10 @@ export const AtomExtractor = makeExtractionStrategy({
           author: item.author?.name ?? null,
           categories,
           summary: item.summary ?? null,
-          content: typeof item.content === 'string' ? item.content : null,
+          content: unwrapContent(item.content),
           language: item['xml:lang'] ?? null,
+          enclosureUrl: null,
+          imageUrl: null,
           verdictRaw: item.verdict ?? null,
           publishedAtRaw: item.published ?? item.updated ?? null,
         })

@@ -91,8 +91,21 @@ export function evaluatePolicy(
 
   const rule = pickRule(policy, observation.source)
 
-  // Size gate
+  // Empty-body gate: a 0-byte body (e.g. an unfollowed HTTP redirect that
+  // inherited the target's content-type header) can otherwise pass every
+  // other gate and be labeled safe, then silently extract nothing.
   const bytes = observation.raw.content?.bytes
+  if (bytes === 0) {
+    actions.push('QUARANTINED_EMPTY_BODY')
+    return {
+      label: 'QUARANTINED',
+      actions,
+      error: 'Empty response body',
+      rewriteBody: false,
+    }
+  }
+
+  // Size gate
   if (typeof bytes === 'number' && bytes > rule.maxBytes) {
     actions.push('QUARANTINED_TOO_LARGE')
     return {

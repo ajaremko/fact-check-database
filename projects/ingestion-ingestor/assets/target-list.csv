@@ -9,23 +9,19 @@ newsverifyafrica,News Verifier Africa,rss,https://newsverifierafrica.com/feed/
 factcheckhub,FactCheckHub,rss,https://factcheckhub.com/feed/
 factcheckghana,Fact-Check Ghana,rss,https://www.fact-checkghana.com/feed/
 factspace,FactSpace West Africa,rss,https://factspace.org/feed/
-hoaxslayer,Hoax Slayer,rss,https://www.hoax-slayer.com/feed/
 factwatch,FactWatch (Bangladesh),rss,https://www.fact-watch.org/feed/
 rumorscanner,Rumor Scanner Bangladesh,rss,https://rumorscanner.com/feed/
 dismislab,Dismislab,rss,https://en.dismislab.com/feed/
 annielab,Annie Lab,rss,https://annielab.org/feed/
-chinafactcheck,China Fact Check,rss,https://chinafactcheck.com/feed/
 factchecklab,Factcheck Lab (Hong Kong),rss,https://www.factchecklab.org/feed/
 telugupost,Telugupost.com,rss,https://www.telugupost.com/feed/
 boomlive,Boomlive.in,rss,https://www.boomlive.in/feed/
-youturn,Youturn.in,rss,https://www.youturn.in/feed/
 factly,Factly.in,rss,https://factly.in/feed/
 thipmedia,thip.media,rss,https://thip.media/feed/
 medicaldialogues,medicaldialogues.in,rss,https://medicaldialogues.in/feed/
 pressoneph,PressOne.PH,rss,https://pressone.ph/feed/
 rappler,Rappler,rss,https://www.rappler.com/feed/
 tsekph,Tsek.ph,rss,https://www.tsek.ph/feed/
-verafiles,Vera Files,rss,https://verafiles.org/feed
 taiwanfactcheck,Taiwan FactCheck Center,rss,https://tfc-taiwan.org.tw/feed/
 factcheckbg,Factcheck.bg,rss,https://factcheck.bg/feed/
 faktograf,Faktograf.hr,rss,https://faktograf.hr/feed/
@@ -38,15 +34,12 @@ factreview,FactReview,rss,https://factreview.gr/feed/
 ellinikahoaxes,Ellinikahoaxes.gr,rss,https://www.ellinikahoaxes.gr/feed/
 check4facts,Check4facts.gr,rss,https://check4facts.gr/feed/
 recheck,Re:Check (Re:Baltica),rss,https://rebaltica.lv/feed/
-demaskuok,Demaskuok.lt,rss,https://demaskuok.lt/feed/
 bellingcat,Bellingcat,rss,https://www.bellingcat.com/feed/
 fakenewspl,FakeNews.pl,rss,https://fakenews.pl/feed/
 factualro,Factual.ro,rss,https://factual.ro/feed/
 provereno,Provereno.Media,rss,https://provereno.media/feed/
 maldita,Maldita.es,rss,https://maldita.es/feed/
-miniver,Miniver.org,rss,https://miniver.org/feed/
 newtral,Newtral,rss,https://www.newtral.es/feed/
-comprobado,Comprobado (hosted by Maldita.es),rss,https://maldita.es/feed/
 verificat,Verificat.cat,rss,https://www.verificat.cat/feed/
 fullfact,Full Fact,rss,https://fullfact.org/feed/
 factcheckni,FactCheckNI,rss,https://factcheckni.org/feed/
@@ -58,6 +51,5 @@ factcheckorg,FactCheck.org,rss,https://www.factcheck.org/feed/
 leadstories,Lead Stories,atom,https://leadstories.com/atom.xml
 mediabiasfactcheck,Media Bias/Fact Check,rss,https://mediabiasfactcheck.com/feed/
 nprfactcheck,NPR Fact Check,rss,https://feeds.npr.org/1001/rss.xml
-snopes,Snopes,rss,https://www.snopes.com/feed/
 vietfactcheck,VietFactCheck,rss,https://vietfactcheck.org/feed/
 demagogcz,Demagog.cz,atom,https://demagog.cz/rss/index.atom

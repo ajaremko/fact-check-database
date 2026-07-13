@@ -14,7 +14,10 @@ const encodePubsubMessagePayload = PubsubMessagePayload.pipe(
 
 /**
  * Builds a {@link Publisher} that writes each published message to its own
- * timestamped file (`{PUBLISHER_OUTPUT_DIR}/{epochMillis}.json`).
+ * file (`{PUBLISHER_OUTPUT_DIR}/{messageId}.json`), keyed by a UUID rather
+ * than a timestamp — callers publish concurrently, and two messages landing
+ * in the same millisecond would otherwise collide on filename and silently
+ * overwrite one another (no error, no warning, message just disappears).
  */
 export const make = Effect.gen(function* () {
   const outputDir = yield* Config.string('PUBLISHER_OUTPUT_DIR')
@@ -28,8 +31,9 @@ export const make = Effect.gen(function* () {
   return Publisher.of({
     publish: (data, attributes) =>
       Effect.gen(function* () {
-        const id = yield* Clock.currentTimeMillis
-        const path = `${outputDir}/${id}.json`
+        const publishedAtMillis = yield* Clock.currentTimeMillis
+        const messageId = yield* Node.generateUUID()
+        const path = `${outputDir}/${messageId}.json`
 
         yield* Effect.logTrace(`Publishing message: ${path}`)
 
@@ -37,8 +41,8 @@ export const make = Effect.gen(function* () {
           encodePubsubMessagePayload({
             data: data.toString('utf-8'),
             attributes,
-            messageId: String(id),
-            publishTime: new Date(id),
+            messageId,
+            publishTime: new Date(publishedAtMillis),
           })
         )
 
