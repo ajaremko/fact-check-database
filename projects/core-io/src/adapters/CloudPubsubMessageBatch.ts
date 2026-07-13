@@ -22,6 +22,9 @@ function acquire(subscriptionId: string, maxMessages: number) {
       maxMessages
     )
     const receivedMessages = response.receivedMessages ?? []
+    yield* Effect.logTrace(
+      `Received ${receivedMessages.length} messages from pubsub subscription: ${subscriptionId}`
+    )
     const messages = yield* Effect.forEach(
       receivedMessages,
       ({ message, ackId }) =>
@@ -33,6 +36,9 @@ function acquire(subscriptionId: string, maxMessages: number) {
             !message.messageId ||
             !message.publishTime
           ) {
+            yield* Effect.logWarning(
+              'Received malformed message from pubsub subscription'
+            )
             return Option.none()
           }
           const span = yield* Effect.makeSpan(`processMessage`)
@@ -52,6 +58,10 @@ function acquire(subscriptionId: string, maxMessages: number) {
           })
         })
     ).pipe(Effect.map(Array.getSomes))
+
+    yield* Effect.logTrace(
+      `Parsed ${messages.length} processable messages from pubsub subscription: ${subscriptionId}`
+    )
 
     return { messages, ackIds }
   })
