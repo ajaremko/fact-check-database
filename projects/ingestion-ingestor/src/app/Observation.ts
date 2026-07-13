@@ -130,7 +130,7 @@ export const ObservationPathSchema = Schema.transformOrFail(
         version: 1 as const,
         collectionName: 'records/ingestion',
         ext: `yml`,
-        sourceName: input.source.name,
+        sourceId: input.source.id,
         date: input.fetchedAt,
         ingestionId: input.ingestionId,
         observationId: input.observationId,

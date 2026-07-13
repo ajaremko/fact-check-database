@@ -19,7 +19,7 @@ export const ArchivePathSchema = Schema.transformOrFail(
     version: Schema.Literal(1),
     collectionName: Schema.String,
     ext: Schema.String,
-    sourceName: Schema.String,
+    sourceId: Schema.String,
     date: NumberFromFormattedDate('yyyy-MM-dd'),
     ingestionId: Schema.String,
     observationId: Schema.String,
@@ -29,7 +29,7 @@ export const ArchivePathSchema = Schema.transformOrFail(
     encode: (input) => {
       const output = [
         archivePathPrefix(input.collectionName, input.version),
-        `source=${input.sourceName}`,
+        `source=${input.sourceId}`,
         `date=${input.date}`,
         `ingestion_id=${input.ingestionId}`,
         `${input.observationId}.${input.ext}`,

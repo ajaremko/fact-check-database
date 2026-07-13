@@ -7,7 +7,7 @@ export const FetchedBodySchema = Schema.Struct({
   observationId: Schema.String,
   ingestionId: Schema.String,
   body: Schema.instanceOf(Uint8Array),
-  sourceName: Schema.String,
+  sourceId: Schema.String,
   fetchedAt: TimestampSchema,
   contentType: Schema.NullOr(Schema.String),
 })
@@ -30,7 +30,7 @@ export const FetchedBodyPathSchema = Schema.transformOrFail(
         version: 1 as const,
         collectionName: 'raw',
         ext: `bin`,
-        sourceName: input.sourceName,
+        sourceId: input.sourceId,
         date: input.fetchedAt,
         ingestionId: input.ingestionId,
         observationId: input.observationId,

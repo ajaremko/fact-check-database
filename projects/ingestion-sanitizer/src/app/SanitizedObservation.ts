@@ -178,7 +178,7 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
         version: 1 as const,
         collectionName: 'records/sanitizer',
         ext: `yml`,
-        sourceName: input.source.name,
+        sourceId: input.source.id,
         date: input.fetchedAt,
         ingestionId: input.ingestionId,
         observationId: input.observationId,

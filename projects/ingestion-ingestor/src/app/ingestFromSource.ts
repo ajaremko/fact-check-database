@@ -119,7 +119,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       observationId,
       ingestionId: ctx.ingestionId,
       fetchedAt: ctx.timestamp,
-      sourceName: ctx.source.name,
+      sourceId: ctx.source.id,
       body: result.body,
       contentType: result.contentType,
     })

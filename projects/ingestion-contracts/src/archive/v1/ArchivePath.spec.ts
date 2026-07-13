@@ -10,14 +10,14 @@ describe('ArchivePath', () => {
       Schema.encodeSync(ArchivePathSchema)({
         version: 1,
         collectionName: 'test_collection',
-        ext: 'sanitizer.yml',
-        sourceName: 'https://test-rss.com/rss',
+        ext: 'yml',
+        sourceId: 'test-rss',
         date: 1704067200000,
         ingestionId: 'run-1',
         observationId: 'obs-1',
       })
     ).toBe(
-      'v1/test_collection/source=https://test-rss.com/rss/date=2024-01-01/ingestion_id=run-1/obs-1.sanitizer.yml'
+      'v1/test_collection/source=test-rss/date=2024-01-01/ingestion_id=run-1/obs-1.yml'
     )
   })
 })
