@@ -132,7 +132,8 @@
     "docker": {
       "versionSchemes": {
         "production": "{env.BUILD_NUMBER}-{currentDate|MM.DD.YY}-{shortCommitSha}",
-        "dev": "dev-{env.BUILD_NUMBER}"
+        "dev": "dev-{env.BUILD_NUMBER}",
+        "hotfix": "hotfix_{currentDate|MM.DD.YY}_{env.BUILD_NUMBER}"
       },
       "preVersionCommand": "npx nx run-many --target=docker:build --configuration=production"
     },

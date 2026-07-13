@@ -82,13 +82,7 @@ esac
 
 echo "Running nx release command..."
 
-VERSION_SCHEME=$STACK_NAME
-
-if [ $VERSION_SCHEME == "prod" ]; then
-    VERSION_SCHEME=production
-fi
-
-nx release --dockerVersionScheme=$VERSION_SCHEME --yes --verbose
+nx release --dockerVersionScheme=hotfix --yes --verbose
 
 echo "Release completed successfully for build number $BUILD_NUMBER."
 
