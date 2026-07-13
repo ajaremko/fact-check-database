@@ -42,7 +42,7 @@ function acquire(subscriptionId: string, maxMessages: number) {
           return Option.some<BatchMessage>({
             message: {
               data: Buffer.from(message.data),
-              attributes: {},
+              attributes: message.attributes ?? {},
               messageId: message.messageId,
               publishTime: new Date(Number(message.publishTime.nanos) / 1e6),
             },
