@@ -22,7 +22,6 @@ const decodeBatch = Schema.transformOrFail(
         source_url: input.source.url,
         source_name: input.source.name,
         canonical_url: input.fact_check.canonical_url,
-        claim: input.fact_check.claim,
         language: input.fact_check.language,
         link: input.fact_check.link,
         published_at_normalized: encoded.fact_check.published_at_normalized,

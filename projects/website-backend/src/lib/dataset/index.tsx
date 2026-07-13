@@ -268,12 +268,6 @@ const SCHEMA_FIELDS: SchemaField[] = [
     description: 'Headline or title of the fact-check article',
   },
   {
-    field: 'claim',
-    type: 'string',
-    description:
-      'The specific claim being evaluated, when extractable from the feed',
-  },
-  {
     field: 'link',
     type: 'string',
     description: 'Canonical URL of the original fact-check article',
@@ -320,7 +314,6 @@ const SCHEMA_FIELDS: SchemaField[] = [
 
 const SAMPLE_JSON = `{
   "title": "No, WHO did not declare a 'global health emergency' over a new mpox strain in January 2026",
-  "claim": "The WHO declared a global health emergency over a new mpox strain in January 2026.",
   "link": "https://factcheck.afp.com/doc.afp.com.36UE3JE",
   "verdict_raw": "False",
   "verdict_normalized": "false",

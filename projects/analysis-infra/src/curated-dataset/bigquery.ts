@@ -43,7 +43,6 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
       { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },
       { name: 'language', type: 'STRING', mode: 'NULLABLE' },
       { name: 'title', type: 'STRING', mode: 'NULLABLE' },
-      { name: 'claim', type: 'STRING', mode: 'NULLABLE' },
       { name: 'summary', type: 'STRING', mode: 'NULLABLE' },
       { name: 'verdict', type: 'STRING', mode: 'NULLABLE' },
       { name: 'raw_verdict', type: 'STRING', mode: 'NULLABLE' },

@@ -105,7 +105,7 @@ describe('extractFactChecks', () => {
       expect(result).toStrictEqual([
         {
           content_lineage_id:
-            '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
+            '6597af61a95f5ca913e15968845f4dabf650985779b184ca3b14c85e0e1e4c4a',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           extracted_at: '1970-01-01T00:00:00.000Z',
@@ -121,12 +121,14 @@ describe('extractFactChecks', () => {
             url: 'https://www.politifact.com/rss/all/',
           },
           fact_check: {
-            claim:
-              "Ron DeSantis - Florida redistricting: DeSantis overstates voters' shift from Democrats to Republicans",
+            canonical_url:
+              'http://www.politifact.com/factchecks/2026/apr/29/ron-desantis/florida-redistricting-republican-democrat-majority/',
+            guid: 'http://www.politifact.com/factchecks/2026/apr/29/ron-desantis/florida-redistricting-republican-democrat-majority/',
             link: 'http://www.politifact.com/factchecks/2026/apr/29/ron-desantis/florida-redistricting-republican-democrat-majority/',
+            published_at_normalized: '2026-04-29T16:20:04.000Z',
             published_at_raw: 'Wed, 29 Apr 2026 16:20:04 +0000',
             sha256:
-              '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
+              '6597af61a95f5ca913e15968845f4dabf650985779b184ca3b14c85e0e1e4c4a',
             summary:
               'Since the 2020 census, Florida has "moved from a Democrat majority to a 1.5 million Republican advantage."',
             title:
@@ -148,7 +150,7 @@ describe('extractFactChecks', () => {
         },
         {
           content_lineage_id:
-            'b57bd898c37fb7c83370fd211b5cc39502722446a7b0df7e1be464ff0b180eb6',
+            'bf6b131e156e368694c7645d4cf61d07e0dece19e02dadf1c6e31372e5acd5b6',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           extracted_at: '1970-01-01T00:00:00.000Z',
@@ -158,11 +160,14 @@ describe('extractFactChecks', () => {
           fetched_at: '1970-01-01T00:00:00.000Z',
           ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           fact_check: {
-            claim: `Fact-checking claims about missing, dead scientists: Were they researching UFOs, nuclear weapons?`,
+            canonical_url:
+              'http://www.politifact.com/article/2026/apr/28/missing-dead-scientists-nuclear-weapons-ufos/',
+            guid: 'http://www.politifact.com/article/2026/apr/28/missing-dead-scientists-nuclear-weapons-ufos/',
             link: 'http://www.politifact.com/article/2026/apr/28/missing-dead-scientists-nuclear-weapons-ufos/',
+            published_at_normalized: '2026-04-28T22:38:37.000Z',
             published_at_raw: 'Tue, 28 Apr 2026 22:38:37 +0000',
             sha256:
-              'b57bd898c37fb7c83370fd211b5cc39502722446a7b0df7e1be464ff0b180eb6',
+              'bf6b131e156e368694c7645d4cf61d07e0dece19e02dadf1c6e31372e5acd5b6',
             summary: 'Fact-checking claims about missing and dead scientists',
             title: `Fact-checking claims about missing, dead scientists: Were they researching UFOs, nuclear weapons?`,
           },
@@ -188,7 +193,7 @@ describe('extractFactChecks', () => {
         },
         {
           content_lineage_id:
-            '61aa2ee326e48ce2dace6aee2ba72ccf85d32d2030bfa68694d3d9d151121852',
+            '23df0d2afc82f242d5a7807315cdb46936a5a05ffc15ebaf99cdbad1041afc1a',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
@@ -204,12 +209,14 @@ describe('extractFactChecks', () => {
             url: 'https://www.politifact.com/rss/all/',
           },
           fact_check: {
-            claim:
-              "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",
+            canonical_url:
+              'http://www.politifact.com/article/2026/apr/27/Florida-drought-hurricane-season-active/',
+            guid: 'http://www.politifact.com/article/2026/apr/27/Florida-drought-hurricane-season-active/',
             link: 'http://www.politifact.com/article/2026/apr/27/Florida-drought-hurricane-season-active/',
+            published_at_normalized: '2026-04-27T21:14:57.000Z',
             published_at_raw: 'Mon, 27 Apr 2026 21:14:57 +0000',
             sha256:
-              '61aa2ee326e48ce2dace6aee2ba72ccf85d32d2030bfa68694d3d9d151121852',
+              '23df0d2afc82f242d5a7807315cdb46936a5a05ffc15ebaf99cdbad1041afc1a',
             summary: "What Florida's drought means for hurricane season",
             title:
               "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",

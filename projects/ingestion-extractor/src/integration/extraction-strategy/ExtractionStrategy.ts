@@ -1,12 +1,11 @@
 import { Effect } from 'effect'
 
-import { Observation } from '../Observation'
-import { FactCheck } from '../FactCheck'
+import { Observation } from '../../app/Observation'
+import { FactCheck } from '../../app/FactCheck'
 
 export interface ExtractionStrategy<E, R> {
   id: string
   version: number
-  canHandle: (source: { collection: string; name: string }) => boolean
   extractor: (input: {
     timestamp: number
     record: Observation

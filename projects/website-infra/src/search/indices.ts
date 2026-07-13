@@ -11,7 +11,6 @@ export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
     searchableAttributes: [
       'source_name',
       'title',
-      'claim',
       'summary',
       'verdict_normalized',
       'verdict_raw',
@@ -30,7 +29,6 @@ export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
       'source_url',
       'source_name',
       'canonical_url',
-      'claim',
       'language',
       'link',
       'published_at_normalized',

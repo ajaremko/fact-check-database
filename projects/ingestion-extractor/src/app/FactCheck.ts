@@ -14,11 +14,15 @@ import { NumberFromDate } from './NumberFromDate'
 
 export const FactCheckSchema = Schema.Struct({
   sha256: Schema.String,
+  guid: Schema.NullOr(Schema.String),
   canonicalUrl: Schema.NullOr(Schema.String),
   title: Schema.NullOr(NormalizedTextMediumSchema),
-  claim: Schema.NullOr(NormalizedTextMediumSchema),
   link: Schema.NullOr(Schema.String),
+  author: Schema.NullOr(NormalizedTextSmallSchema),
+  categories: Schema.NullOr(Schema.Array(Schema.String)),
   summary: Schema.NullOr(NormalizedTextXxlSchema),
+  content: Schema.NullOr(NormalizedTextXxlSchema),
+  language: Schema.NullOr(NormalizedTextTinySchema),
   verdictRaw: Schema.NullOr(NormalizedTextSmallSchema),
   verdictNormalized: Schema.NullOr(
     Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
@@ -85,10 +89,14 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         },
         fact_check: omitNullKeys({
           sha256: input.factCheck.sha256,
+          guid: input.factCheck.guid,
           canonical_url: input.factCheck.canonicalUrl,
           title: input.factCheck.title,
-          claim: input.factCheck.claim,
+          author: input.factCheck.author,
+          categories: input.factCheck.categories,
           summary: input.factCheck.summary,
+          content: input.factCheck.content,
+          language: input.factCheck.language,
           link: input.factCheck.link,
           verdict_raw: input.factCheck.verdictRaw,
           verdict_normalized: input.factCheck.verdictNormalized,

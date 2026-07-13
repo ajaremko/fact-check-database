@@ -8,7 +8,7 @@ import { FilePointer, readFile } from '@news-research/core-io'
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
 import { logExtractionSucceeded, logExtractionFailed } from './logging'
 import { ObservationSchema } from './Observation'
-import { extractors } from './extraction-strategy'
+import { extractors } from '../integration/extraction-strategy'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -37,19 +37,7 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
       return []
     }
 
-    const extractor = extractors.find((e) =>
-      e.canHandle({
-        collection: observation.source.collection,
-        name: observation.source.name,
-      })
-    )
-
-    if (!extractor) {
-      yield* Effect.logWarning(
-        `No extractor available for observation, skipping extraction`
-      )
-      return []
-    }
+    const extractor = extractors[observation.source.collection]
 
     const responsePointer = observation.sanitized ?? observation.raw
 

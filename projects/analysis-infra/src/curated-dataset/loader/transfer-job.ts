@@ -28,7 +28,7 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             TO_HEX(SHA256(CONCAT(
               source.id,
               IFNULL(fact_check.canonical_url, source.url),
-              IFNULL(fact_check.claim, '')
+              IFNULL(fact_check.title, '')
             ))) AS fact_check_id,
             
             content_lineage_id,
@@ -49,7 +49,6 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             fact_check.canonical_url,
             
             fact_check.title,
-            fact_check.claim,
             fact_check.summary,
             
             fact_check.verdict_raw as raw_verdict,
@@ -76,7 +75,6 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           final_url,
           canonical_url,
           title,
-          claim,
           summary,
           raw_verdict,
           verdict,
@@ -99,7 +97,6 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           S.final_url,
           S.canonical_url,
           S.title,
-          S.claim,
           S.summary,
           S.raw_verdict,
           S.verdict,

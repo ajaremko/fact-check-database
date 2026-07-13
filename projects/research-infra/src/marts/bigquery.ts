@@ -43,14 +43,13 @@ export const martsFactChecksTable = new gcp.bigquery.Table(
           raw_published_at,
           published_at,
           title,
-          claim,
           summary,
           raw_verdict,
           verdict,
           language,
           canonical_url
         FROM \`${curatedTableRef}\`
-        WHERE claim IS NOT NULL
+        WHERE title IS NOT NULL
       `,
     },
   },

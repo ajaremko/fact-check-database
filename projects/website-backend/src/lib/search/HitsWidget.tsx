@@ -258,7 +258,7 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
     return (
       <EmptyState>
         {query.trim()
-          ? `No records match "${query}". Try a different claim, source, or verdict.`
+          ? `No records match "${query}". Try a different title, source, or verdict.`
           : 'No records found.'}
       </EmptyState>
     )
@@ -269,7 +269,7 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
       items={sorted.map((hit) => ({
         id: hit.ObjectID,
         href: hit.canonical_url ?? hit.link,
-        title: hit.title ?? hit.claim ?? 'Untitled',
+        title: hit.title ?? 'Untitled',
         summary: hit.summary,
         verdict: resolveVerdict(hit),
         source: hit.source_name,

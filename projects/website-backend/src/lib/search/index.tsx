@@ -58,7 +58,7 @@ export function Search({ appId, searchKey, indexName, serverState }: Props) {
           <Headline>Search the Fact-Check Database</Headline>
           <Subtitle>
             Explore thousands of verified fact-checks from leading international
-            organizations. Filter by claim, source, or verdict.
+            organizations. Filter by title, source, or verdict.
           </Subtitle>
         </Container>
       </Hero>

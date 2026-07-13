@@ -11,7 +11,6 @@ export const SearchResultSchema = Schema.Struct({
   source_url: Schema.String,
   source_name: Schema.String,
   canonical_url: Schema.optional(Schema.String),
-  claim: Schema.optional(Schema.String),
   language: Schema.optional(Schema.String),
   link: Schema.optional(Schema.String),
   published_at_normalized: Schema.optional(Schema.String),
