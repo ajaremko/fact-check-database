@@ -1,6 +1,9 @@
 import * as gcp from '@pulumi/gcp'
 
-import { assetsBucketName, sanitizerPolicyObjectName } from '../assets'
+import {
+  sanitizerPolicySecretId,
+  sanitizerPolicySecretVersionNumber,
+} from '../assets'
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
@@ -9,9 +12,8 @@ import { archiveBucketName } from '../archive'
 import { cloudRunArtifactRegistryReader } from '../iam'
 
 import {
-  sanitizerAssetBucketViewer,
-  sanitizerRawArchiveBucketAdmin,
   sanitizerServiceAccount,
+  sanitizerServiceAccountIamBindings,
 } from './service-account'
 import { sanitizerTopic } from './topic'
 
@@ -22,17 +24,37 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
     deletionProtection: false,
     template: {
       serviceAccount: sanitizerServiceAccount.email,
+      volumes: [
+        {
+          name: 'sanitizer-policy-config-volume',
+          secret: {
+            secret: sanitizerPolicySecretId,
+            items: [
+              {
+                version: sanitizerPolicySecretVersionNumber,
+                path: 'sanitizer-policy.yml',
+              },
+            ],
+          },
+        },
+      ],
       containers: [
         {
           image: getImageUrl('ingestion-sanitizer', dockerTag),
+          volumeMounts: [
+            {
+              name: 'sanitizer-policy-config-volume',
+              mountPath: '/config',
+            },
+          ],
           envs: [
             {
-              name: 'ASSETS_BUCKET_NAME',
-              value: assetsBucketName,
+              name: 'SANITIZER_POLICY_MODE',
+              value: 'filesystem',
             },
             {
-              name: 'SANITIZER_POLICY_URI',
-              value: sanitizerPolicyObjectName,
+              name: 'SANITIZER_POLICY_PATH',
+              value: '/config/sanitizer-policy.yml',
             },
             {
               name: 'PUBSUB_TOPIC_NAME',
@@ -58,9 +80,8 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
   {
     dependsOn: [
       cloudRunService,
-      sanitizerAssetBucketViewer,
-      sanitizerRawArchiveBucketAdmin,
       cloudRunArtifactRegistryReader,
+      ...sanitizerServiceAccountIamBindings,
     ],
     provider,
   }

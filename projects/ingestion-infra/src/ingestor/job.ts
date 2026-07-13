@@ -1,21 +1,18 @@
 import * as gcp from '@pulumi/gcp'
 
+import { sourceListSecretId, sourceListSecretVersionNumber } from '../assets'
 import { gcpRegion, dockerTag, tag, logLevel } from '../config'
-import { assetsBucketName, ingestionSourcesObjectName } from '../assets'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { archiveBucketName } from '../archive'
 import { getImageUrl } from '../shared'
 import { cloudRunArtifactRegistryReader } from '../iam'
 
-import { ingestorTopic } from './topic'
-
 import {
   ingestorServiceAccount,
-  ingestorAssetBucketViewer,
-  ingestorRawArchiveBucketCreator,
-  cloudtraceAgent,
+  ingestorServiceAccountIamBindings,
 } from './service-account'
+import { ingestorTopic } from './topic'
 
 export const ingestorJob = new gcp.cloudrunv2.Job(
   `${tag}-ingestor-job`,
@@ -25,18 +22,38 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
     template: {
       template: {
         maxRetries: 0,
+        volumes: [
+          {
+            name: 'source-config-volume',
+            secret: {
+              secret: sourceListSecretId,
+              items: [
+                {
+                  version: sourceListSecretVersionNumber,
+                  path: 'sources.csv',
+                },
+              ],
+            },
+          },
+        ],
         serviceAccount: ingestorServiceAccount.email,
         containers: [
           {
             image: getImageUrl('ingestion-ingestor', dockerTag),
+            volumeMounts: [
+              {
+                name: 'source-config-volume',
+                mountPath: '/config',
+              },
+            ],
             envs: [
               {
-                name: 'TARGET_LIST_BUCKET_NAME',
-                value: assetsBucketName,
+                name: 'SOURCE_LIST_MODE',
+                value: 'filesystem',
               },
               {
-                name: 'TARGET_LIST_URI',
-                value: ingestionSourcesObjectName,
+                name: 'TARGET_LIST_PATH',
+                value: '/config/sources.csv',
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',
@@ -75,10 +92,8 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
   {
     dependsOn: [
       cloudRunService,
-      ingestorAssetBucketViewer,
-      ingestorRawArchiveBucketCreator,
-      cloudtraceAgent,
       cloudRunArtifactRegistryReader,
+      ...ingestorServiceAccountIamBindings,
     ],
     provider,
   }

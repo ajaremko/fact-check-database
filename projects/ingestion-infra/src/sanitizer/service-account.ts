@@ -1,10 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { assetsBucketName } from '../assets'
 import { provider } from '../project'
 import { archiveBucketName } from '../archive'
 import { gcpProject, tag } from '../config'
+import { sanitizerPolicySecretId } from '../assets'
 
 export const sanitizerServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-sanitizer-sa`,
@@ -15,17 +15,18 @@ export const sanitizerServiceAccount = new gcp.serviceaccount.Account(
   { provider }
 )
 
-export const sanitizerAssetBucketViewer = new gcp.storage.BucketIAMMember(
-  `${tag}-sanitizer-asset-bucket-viewer`,
-  {
-    bucket: assetsBucketName,
-    role: 'roles/storage.objectViewer',
-    member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
-  },
-  { provider }
-)
+const sanitizerPolicySecretAccessorBinding =
+  new gcp.secretmanager.SecretIamMember(
+    `${tag}-sanitizer-policy-secret-accessor`,
+    {
+      secretId: sanitizerPolicySecretId,
+      role: 'roles/secretmanager.secretAccessor',
+      member: pulumi.interpolate`serviceAccount:${sanitizerServiceAccount.email}`,
+    },
+    { provider }
+  )
 
-export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
+const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   `${tag}-sanitizer-raw-archive-bucket-admin`,
   {
     bucket: archiveBucketName,
@@ -35,7 +36,7 @@ export const sanitizerRawArchiveBucketAdmin = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-export const cloudtraceAgent = new gcp.projects.IAMMember(
+const cloudtraceAgent = new gcp.projects.IAMMember(
   `${tag}-sanitizer-trace-agent`,
   {
     project: gcpProject,
@@ -45,7 +46,7 @@ export const cloudtraceAgent = new gcp.projects.IAMMember(
   { provider }
 )
 
-export const telemetryTracesWriter = new gcp.projects.IAMMember(
+const telemetryTracesWriter = new gcp.projects.IAMMember(
   `${tag}-sanitizer-telemetry-traces-writer`,
   {
     project: gcpProject,
@@ -55,7 +56,7 @@ export const telemetryTracesWriter = new gcp.projects.IAMMember(
   { provider }
 )
 
-export const monitoringMetricWriter = new gcp.projects.IAMMember(
+const monitoringMetricWriter = new gcp.projects.IAMMember(
   `${tag}-sanitizer-monitoring-metric-writer`,
   {
     project: gcpProject,
@@ -64,3 +65,11 @@ export const monitoringMetricWriter = new gcp.projects.IAMMember(
   },
   { provider }
 )
+
+export const sanitizerServiceAccountIamBindings = [
+  sanitizerPolicySecretAccessorBinding,
+  sanitizerRawArchiveBucketAdmin,
+  cloudtraceAgent,
+  telemetryTracesWriter,
+  monitoringMetricWriter,
+]

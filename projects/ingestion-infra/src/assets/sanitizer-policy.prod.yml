@@ -1,0 +1,43 @@
+version: 1
+stripQueryParams:
+  - utm_
+  - fbclid
+  - gclid
+  - mc_cid
+  - mc_eid
+dropHeaders:
+  - set-cookie
+  - cookie
+  - authorization
+collections:
+  - collection: rss
+    allowedContentTypeSubstrings:
+      - xml
+      - rss
+      - atom
+    onMissingContentType: ALLOW
+    maxBytes: 8000000
+    defaultLabel: SAFE_PUBLIC
+    rewriteBody: false
+
+  - collection: api
+    allowedContentTypeSubstrings:
+      - json
+    onMissingContentType: RESTRICT
+    maxBytes: 16000000
+    defaultLabel: SAFE_PUBLIC
+    rewriteBody: false
+
+  - collection: html
+    allowedContentTypeSubstrings:
+      - html
+    onMissingContentType: RESTRICT
+    maxBytes: 20000000
+    defaultLabel: RESTRICTED
+    rewriteBody: false
+
+  - collection: default
+    maxBytes: 1000000
+    defaultLabel: RESTRICTED
+    onMissingContentType: RESTRICT
+    rewriteBody: false

@@ -1,10 +1,10 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { archiveBucketName } from '../archive'
 import { tag, gcpProject } from '../config'
+import { archiveBucketName } from '../archive'
 import { provider } from '../project'
-import { assetsBucketName } from '../assets'
+import { sourceListSecretId } from '../assets'
 
 export const ingestorServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-ingestion-sa`,
@@ -15,17 +15,17 @@ export const ingestorServiceAccount = new gcp.serviceaccount.Account(
   { provider }
 )
 
-export const ingestorAssetBucketViewer = new gcp.storage.BucketIAMMember(
-  `${tag}-ingestor-asset-bucket-viewer`,
+const sourceListSecretAccessorBinding = new gcp.secretmanager.SecretIamMember(
+  `${tag}-ingestor-source-list-secret-accessor`,
   {
-    bucket: assetsBucketName,
-    role: 'roles/storage.objectViewer',
+    secretId: sourceListSecretId,
+    role: 'roles/secretmanager.secretAccessor',
     member: pulumi.interpolate`serviceAccount:${ingestorServiceAccount.email}`,
   },
   { provider }
 )
 
-export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
+const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
   `${tag}-ingestor-raw-archive-bucket-creator`,
   {
     bucket: archiveBucketName,
@@ -35,7 +35,7 @@ export const ingestorRawArchiveBucketCreator = new gcp.storage.BucketIAMMember(
   { provider }
 )
 
-export const cloudtraceAgent = new gcp.projects.IAMMember(
+const cloudtraceAgent = new gcp.projects.IAMMember(
   `${tag}-ingestor-trace-agent`,
   {
     project: gcpProject,
@@ -45,7 +45,7 @@ export const cloudtraceAgent = new gcp.projects.IAMMember(
   { provider }
 )
 
-export const telemetryTracesWriter = new gcp.projects.IAMMember(
+const telemetryTracesWriter = new gcp.projects.IAMMember(
   `${tag}-ingestor-telemetry-traces-writer`,
   {
     project: gcpProject,
@@ -55,7 +55,7 @@ export const telemetryTracesWriter = new gcp.projects.IAMMember(
   { provider }
 )
 
-export const monitoringMetricWriter = new gcp.projects.IAMMember(
+const monitoringMetricWriter = new gcp.projects.IAMMember(
   `${tag}-ingestor-monitoring-metric-writer`,
   {
     project: gcpProject,
@@ -64,3 +64,11 @@ export const monitoringMetricWriter = new gcp.projects.IAMMember(
   },
   { provider }
 )
+
+export const ingestorServiceAccountIamBindings = [
+  sourceListSecretAccessorBinding,
+  ingestorRawArchiveBucketCreator,
+  cloudtraceAgent,
+  telemetryTracesWriter,
+  monitoringMetricWriter,
+]
