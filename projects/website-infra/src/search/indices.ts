@@ -12,8 +12,6 @@ export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
       'source_name',
       'title',
       'summary',
-      'verdict_normalized',
-      'verdict_raw',
       'published_at_normalized',
     ],
     attributesForFacetings: [],
@@ -35,12 +33,11 @@ export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
       'published_at_raw',
       'summary',
       'title',
-      'verdict_normalized',
-      'verdict_raw',
     ],
   },
   rankingConfig: {
     rankings: ['words', 'proximity'],
+    customRankings: ['desc(published_at_raw)'],
   },
   facetingConfig: {
     maxValuesPerFacet: 50,
@@ -50,3 +47,15 @@ export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
   //   removeStopWordsFors: ['en'],
   // },
 })
+
+export const factChecksOldestIndex = new algolia.Index(
+  `${tag}-fact-checks-oldest-index`,
+  {
+    name: `${tag}_fact_checks_oldest_${stackName}`,
+    primaryIndexName: factChecksIndex.name,
+    deletionProtection: false,
+    rankingConfig: {
+      customRankings: ['asc(published_at_raw)'],
+    },
+  }
+)

@@ -1,16 +1,22 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import styled from 'styled-components'
-import { InstantSearch, InstantSearchSSRProvider } from 'react-instantsearch'
+import {
+  Configure,
+  InstantSearch,
+  InstantSearchSSRProvider,
+} from 'react-instantsearch'
 import type { InstantSearchServerState } from 'react-instantsearch'
 import { liteClient as algoliasearch } from 'algoliasearch/lite'
 
 import { C } from '@/lib/theme'
 
 import { SearchBoxWidgetLive } from './SearchBoxWidget'
-import { SearchBarRowLive } from './SearchBarRow'
-import { HitsWidgetLive } from './HitsWidget'
+import { SearchBarRowLive, type SortItem } from './SearchBarRow'
+import { HitsWidgetLive, PaginationWidgetLive } from './HitsWidget'
+
+const HITS_PER_PAGE = 20
 
 // --- Layout ---
 
@@ -40,14 +46,13 @@ const EmptyState = styled.div`
   font-size: 0.9375rem;
 `
 
-type SortOption = 'newest' | 'oldest' | 'verdict'
-
 // --- Component ---
 
 interface Props {
   appId: string
   searchKey: string
   indexName: string
+  oldestIndexName: string
   serverState?: InstantSearchServerState
 }
 
@@ -55,9 +60,17 @@ export default function FactCheckSearch({
   appId,
   searchKey,
   indexName,
+  oldestIndexName,
   serverState,
 }: Props) {
-  const [sort, setSort] = useState<SortOption>('newest')
+  const sortItems: SortItem[] = useMemo(
+    () =>
+      [
+        { value: indexName, label: 'Newest' },
+        { value: oldestIndexName, label: 'Oldest' },
+      ].filter((item) => item.value),
+    [indexName, oldestIndexName]
+  )
 
   function acquireSearchClient() {
     try {
@@ -81,15 +94,17 @@ export default function FactCheckSearch({
   return (
     <InstantSearchSSRProvider {...(serverState ?? {})}>
       <InstantSearch searchClient={searchClient} indexName={indexName}>
+        <Configure hitsPerPage={HITS_PER_PAGE} />
         <SearchSection>
           <Container>
             <SearchBoxWidgetLive />
-            <SearchBarRowLive sort={sort} onSortChange={setSort} />
+            <SearchBarRowLive sortItems={sortItems} />
           </Container>
         </SearchSection>
         <ResultsSection>
           <Container>
-            <HitsWidgetLive sort={sort} />
+            <HitsWidgetLive />
+            <PaginationWidgetLive />
           </Container>
         </ResultsSection>
       </InstantSearch>

@@ -46,10 +46,17 @@ interface Props {
   appId: string
   searchKey: string
   indexName: string
+  oldestIndexName: string
   serverState?: InstantSearchServerState
 }
 
-export function Search({ appId, searchKey, indexName, serverState }: Props) {
+export function Search({
+  appId,
+  searchKey,
+  indexName,
+  oldestIndexName,
+  serverState,
+}: Props) {
   return (
     <PageWrapper>
       <Hero>
@@ -58,7 +65,7 @@ export function Search({ appId, searchKey, indexName, serverState }: Props) {
           <Headline>Search the Fact-Check Database</Headline>
           <Subtitle>
             Explore thousands of verified fact-checks from leading international
-            organizations. Filter by title, source, or verdict.
+            organizations. Filter by title or source.
           </Subtitle>
         </Container>
       </Hero>
@@ -67,6 +74,7 @@ export function Search({ appId, searchKey, indexName, serverState }: Props) {
         appId={appId}
         searchKey={searchKey}
         indexName={indexName}
+        oldestIndexName={oldestIndexName}
         serverState={serverState}
       />
 

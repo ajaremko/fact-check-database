@@ -14,7 +14,7 @@ The extractor turns fetched, sanitized RSS/Atom feed content into structured `Fa
 
 - Fetch content from the network (the [ingestor](../ingestion-ingestor/README.md)'s job)
 - Apply content policy or sanitization (the sanitizer's job)
-- Perform verdict/claim classification beyond opportunistic pattern matching on an explicit `<verdict>` element, if a feed happens to include one — no known real-world feed does, so `verdict_raw`/`verdict_normalized` are usually absent
+- Perform verdict/claim classification
 - Parse HTML/XHTML article bodies into structured content — `content` is captured as-is (may include raw markup) when the feed exposes it as plain text; structurally nested content (e.g. Atom `type="xhtml"`) is left unparsed
 
 ## Supported feed fields
@@ -33,7 +33,6 @@ Both extraction strategies populate the same `FactCheck` shape from format-speci
 | `content` | `<content:encoded>` | `<content>` (plain-text only) |
 | `language` | not populated | `xml:lang` attribute on the entry, if present |
 | `publishedAtRaw` / `publishedAtNormalized` | `<pubDate>` | `<published>`, falling back to `<updated>` |
-| `verdictRaw` / `verdictNormalized` | `<verdict>`, if present (non-standard) | `<verdict>`, if present (non-standard) |
 
 Strategy selection is a direct lookup keyed by `source.collection` (see `src/integration/extraction-strategy/index.ts`) — there is exactly one strategy per collection type, so there's no ambiguity to resolve at runtime.
 
@@ -59,7 +58,6 @@ projects/ingestion-extractor/
 │           ├── AtomExtractor.ts
 │           ├── buildFactCheck.ts        # Shared hash + FactCheck construction
 │           ├── decodeFeedXml.ts         # Shared XML decode pipeline
-│           ├── verdict.ts               # Shared opportunistic verdict pattern matching
 │           └── index.ts                 # Strategy registry, keyed by collection type
 └── .env.template                        # Required environment variables for local runs
 ```

@@ -50,10 +50,7 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
             
             fact_check.title,
             fact_check.summary,
-            
-            fact_check.verdict_raw as raw_verdict,
-            fact_check.verdict_normalized as verdict,
-            
+
             fact_check.language,
             
             fact_check.published_at_raw as raw_published_at,
@@ -76,8 +73,6 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           canonical_url,
           title,
           summary,
-          raw_verdict,
-          verdict,
           language,
           raw_published_at,
           published_at,
@@ -98,8 +93,6 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           S.canonical_url,
           S.title,
           S.summary,
-          S.raw_verdict,
-          S.verdict,
           S.language,
           S.raw_published_at,
           S.published_at,

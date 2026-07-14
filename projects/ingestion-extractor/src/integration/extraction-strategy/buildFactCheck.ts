@@ -4,8 +4,6 @@ import * as Node from '@news-research/core-data/Node'
 
 import { FactCheckSchema } from '../../app/FactCheck'
 
-import { extractVerdict } from './verdict'
-
 const decodeDate = Schema.decodeUnknownOption(Schema.Date)
 const decodeFactCheck = Schema.decodeUnknown(FactCheckSchema)
 
@@ -40,7 +38,6 @@ export interface FactCheckValues {
   language: string | null
   enclosureUrl: string | null
   imageUrl: string | null
-  verdictRaw: string | null
   publishedAtRaw: string | null
 }
 
@@ -72,8 +69,6 @@ export function buildFactCheck(values: FactCheckValues) {
       language: values.language,
       enclosureUrl: values.enclosureUrl,
       imageUrl: values.imageUrl,
-      verdictRaw: values.verdictRaw,
-      verdictNormalized: extractVerdict(values.verdictRaw),
       publishedAtRaw: values.publishedAtRaw,
       publishedAtNormalized: parsePublishedAt(values.publishedAtRaw),
     })

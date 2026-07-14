@@ -58,7 +58,7 @@ export function SearchBoxWidget({
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search claims, verdicts, or sources…"
+        placeholder="Search claims or sources…"
         autoFocus
         autoComplete="off"
         spellCheck={false}

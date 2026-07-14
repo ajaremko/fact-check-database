@@ -29,8 +29,6 @@ const decodeBatch = Schema.transformOrFail(
         published_at_raw: input.fact_check.published_at_raw,
         summary: input.fact_check.summary,
         title: input.fact_check.title,
-        verdict_normalized: input.fact_check.verdict_normalized,
-        verdict_raw: input.fact_check.verdict_raw,
         author: input.fact_check.author,
         categories: input.fact_check.categories,
       }),

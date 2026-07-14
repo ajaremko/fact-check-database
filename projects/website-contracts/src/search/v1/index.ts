@@ -18,8 +18,6 @@ export const SearchResultSchema = Schema.Struct({
   published_at_raw: Schema.optional(Schema.DateFromString),
   summary: Schema.optional(Schema.String),
   title: Schema.optional(Schema.String),
-  verdict_normalized: Schema.optional(Schema.String),
-  verdict_raw: Schema.optional(Schema.String),
   author: Schema.optional(Schema.String),
   categories: Schema.optional(Schema.Array(Schema.String)),
 })

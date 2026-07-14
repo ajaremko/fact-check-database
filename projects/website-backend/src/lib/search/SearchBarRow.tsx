@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import styled from 'styled-components'
-import { useSearchBox, useStats } from 'react-instantsearch'
-import { ReactNode } from 'react'
+import { useSearchBox, useStats, useSortBy } from 'react-instantsearch'
+import { Fragment, ReactNode } from 'react'
 
 import { C } from '@/lib/theme'
 
@@ -57,15 +57,24 @@ const SortButton = styled.button<{ $active: boolean }>`
   }
 `
 
-type SortOption = 'newest' | 'oldest' | 'verdict'
+export interface SortItem {
+  value: string
+  label: string
+}
 
 interface Props {
   caption: ReactNode
-  sort: SortOption
-  onSortChange: (s: SortOption) => void
+  currentRefinement: string
+  options: SortItem[]
+  onRefine: (value: string) => void
 }
 
-export function SearchBarRow({ caption, sort, onSortChange }: Props) {
+export function SearchBarRow({
+  caption,
+  currentRefinement,
+  options,
+  onRefine,
+}: Props) {
   return (
     <SearchMeta>
       <span>
@@ -77,41 +86,37 @@ export function SearchBarRow({ caption, sort, onSortChange }: Props) {
       </span>
       <SortControls>
         <SortLabel>Sort:</SortLabel>
-        <SortButton
-          $active={sort === 'newest'}
-          onClick={() => onSortChange('newest')}
-        >
-          Newest
-        </SortButton>
-        <span>·</span>
-        <SortButton
-          $active={sort === 'oldest'}
-          onClick={() => onSortChange('oldest')}
-        >
-          Oldest
-        </SortButton>
-        <span>·</span>
-        <SortButton
-          $active={sort === 'verdict'}
-          onClick={() => onSortChange('verdict')}
-        >
-          By verdict
-        </SortButton>
+        {options.map((option, index) => (
+          <Fragment key={option.value}>
+            {index > 0 && <span>·</span>}
+            <SortButton
+              $active={option.value === currentRefinement}
+              onClick={() => onRefine(option.value)}
+            >
+              {option.label}
+            </SortButton>
+          </Fragment>
+        ))}
       </SortControls>
     </SearchMeta>
   )
 }
 
-export function SearchBarRowLive({
-  sort,
-  onSortChange,
-}: Omit<Props, 'caption'>) {
+export function SearchBarRowLive({ sortItems }: { sortItems: SortItem[] }) {
   const { query } = useSearchBox()
   const { nbHits } = useStats()
+  const { currentRefinement, options, refine } = useSortBy({
+    items: sortItems,
+  })
   const caption = query.trim()
     ? `${nbHits} result${nbHits !== 1 ? 's' : ''} for "${query.trim()}".`
     : `${nbHits.toLocaleString()} records indexed.`
   return (
-    <SearchBarRow caption={caption} onSortChange={onSortChange} sort={sort} />
+    <SearchBarRow
+      caption={caption}
+      currentRefinement={currentRefinement}
+      options={options}
+      onRefine={refine}
+    />
   )
 }

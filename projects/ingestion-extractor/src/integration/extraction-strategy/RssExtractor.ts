@@ -46,7 +46,6 @@ const RssItemSchema = Schema.Struct({
   category: Schema.optional(
     Schema.Union(CategorySchema, Schema.Array(CategorySchema))
   ),
-  verdict: Schema.optional(Schema.String),
   description: Schema.optional(Schema.String),
   'content:encoded': Schema.optional(Schema.String),
   pubDate: Schema.optional(Schema.String),
@@ -163,7 +162,6 @@ export const RssExtractor = makeExtractionStrategy({
           language: channelLanguage,
           enclosureUrl: pickEnclosureUrl(item.enclosure),
           imageUrl: pickImageUrl(item['media:thumbnail'], item['media:content']),
-          verdictRaw: item.verdict ?? null,
           publishedAtRaw: item.pubDate ?? null,
         })
         extractedFactChecks.push(factCheck)

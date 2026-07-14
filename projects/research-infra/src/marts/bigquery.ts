@@ -44,8 +44,6 @@ export const martsFactChecksTable = new gcp.bigquery.Table(
           published_at,
           title,
           summary,
-          raw_verdict,
-          verdict,
           language,
           canonical_url
         FROM \`${curatedTableRef}\`

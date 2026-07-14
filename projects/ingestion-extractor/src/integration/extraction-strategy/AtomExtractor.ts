@@ -21,7 +21,6 @@ const AtomCategorySchema = Schema.Struct({
 const AtomEntrySchema = Schema.Struct({
   id: Schema.optional(Schema.String),
   title: Schema.optional(Schema.String),
-  verdict: Schema.optional(Schema.String),
   link: Schema.optional(
     Schema.Union(AtomLinkSchema, Schema.Array(AtomLinkSchema))
   ),
@@ -109,7 +108,6 @@ export const AtomExtractor = makeExtractionStrategy({
           language: item['xml:lang'] ?? null,
           enclosureUrl: null,
           imageUrl: null,
-          verdictRaw: item.verdict ?? null,
           publishedAtRaw: item.published ?? item.updated ?? null,
         })
         extractedFactChecks.push(factCheck)

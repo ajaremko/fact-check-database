@@ -12,6 +12,8 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = metadataBase
 
+const HITS_PER_PAGE = 20
+
 function makeBrowseFetcher(
   appId: string,
   searchKey: string,
@@ -20,7 +22,9 @@ function makeBrowseFetcher(
   return unstable_cache(
     async () => {
       const client = algoliasearch(appId, searchKey)
-      return client.search([{ indexName, params: {} }])
+      return client.search([
+        { indexName, params: { hitsPerPage: HITS_PER_PAGE } },
+      ])
     },
     ['algolia-browse', indexName],
     { revalidate: 21600 } // 6 hours — index is updated twice daily
@@ -31,6 +35,7 @@ export default async function HomePage() {
   const appId = process.env.ALGOLIA_APP_ID ?? ''
   const searchKey = process.env.ALGOLIA_SEARCH_KEY ?? ''
   const indexName = process.env.ALGOLIA_INDEX_NAME ?? ''
+  const oldestIndexName = process.env.ALGOLIA_INDEX_NAME_OLDEST ?? ''
 
   let serverState: InstantSearchServerState | undefined
 
@@ -59,6 +64,7 @@ export default async function HomePage() {
       appId={appId}
       searchKey={searchKey}
       indexName={indexName}
+      oldestIndexName={oldestIndexName}
       serverState={serverState}
     />
   )

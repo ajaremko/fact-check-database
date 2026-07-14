@@ -30,9 +30,7 @@ describe('writeBatch', () => {
                 sha256:
                   '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
                 title: 'A false claim about something',
-                verdictRaw: 'false',
                 link: 'https://example.com/fact-check-1',
-                verdictNormalized: 'false',
                 summary: 'The claim is false.',
                 publishedAtRaw: 'Wed, 01 Jan 2026 00:00:00 +0000',
                 publishedAtNormalized: new Date(

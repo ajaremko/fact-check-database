@@ -273,18 +273,6 @@ const SCHEMA_FIELDS: SchemaField[] = [
     description: 'Canonical URL of the original fact-check article',
   },
   {
-    field: 'verdict_raw',
-    type: 'string',
-    description:
-      'Original verdict label as published by the source organization',
-  },
-  {
-    field: 'verdict_normalized',
-    type: 'enum',
-    description:
-      'Standardized verdict: true | false | misleading | unsupported | exaggerated',
-  },
-  {
     field: 'published_at_normalized',
     type: 'timestamp',
     description: 'Publication datetime normalized to UTC ISO 8601',
@@ -315,8 +303,6 @@ const SCHEMA_FIELDS: SchemaField[] = [
 const SAMPLE_JSON = `{
   "title": "No, WHO did not declare a 'global health emergency' over a new mpox strain in January 2026",
   "link": "https://factcheck.afp.com/doc.afp.com.36UE3JE",
-  "verdict_raw": "False",
-  "verdict_normalized": "false",
   "published_at_normalized": "2026-01-14T09:22:00Z",
   "source": {
     "name": "AFP Fact Check",
@@ -354,10 +340,6 @@ export function Dataset() {
             <StatLabel>Sources</StatLabel>
           </StatItem>
           <StatItem>
-            <StatValue>5</StatValue>
-            <StatLabel>Verdict Categories</StatLabel>
-          </StatItem>
-          <StatItem>
             <StatValue>Daily</StatValue>
             <StatLabel>Ingestion Cadence</StatLabel>
           </StatItem>
@@ -376,16 +358,15 @@ export function Dataset() {
           <BodyText>
             This dataset aggregates fact-check records published by leading
             international fact-checking organizations. Each record captures the
-            original claim, the organization&apos;s verdict, a normalized
-            verdict label, and publication metadata. New data is ingested daily
-            through automated RSS feed parsing.
+            original claim, source attribution, and publication metadata. New
+            data is ingested daily through automated RSS feed parsing.
           </BodyText>
           <BodyText>
             The dataset is designed for researchers studying misinformation
-            patterns, claim lifecycles, cross-source verdict consistency, and
-            the temporal dynamics of false information. Records reflect the
-            judgments of the source organizations and are preserved as-is to
-            support comparative and longitudinal analysis.
+            patterns, claim lifecycles, and the temporal dynamics of false
+            information. Records reflect the reporting of the source
+            organizations and are preserved as-is to support comparative and
+            longitudinal analysis.
           </BodyText>
           <BodyText>
             Coverage spans seven organizations across multiple geographies and

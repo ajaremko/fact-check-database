@@ -41,8 +41,6 @@ export const FactChecksTableDBSchema = {
         { name: 'enclosure_url', type: 'STRING', mode: 'NULLABLE' },
         { name: 'image_url', type: 'STRING', mode: 'NULLABLE' },
         { name: 'link', type: 'STRING', mode: 'NULLABLE' },
-        { name: 'verdict_raw', type: 'STRING', mode: 'NULLABLE' },
-        { name: 'verdict_normalized', type: 'STRING', mode: 'NULLABLE' },
         { name: 'published_at_raw', type: 'STRING', mode: 'NULLABLE' },
         {
           name: 'published_at_normalized',
@@ -93,8 +91,6 @@ export const FactChecksTableRowSchema = Schema.Struct({
     enclosure_url: Schema.optional(Schema.String),
     image_url: Schema.optional(Schema.String),
     link: Schema.optional(Schema.String),
-    verdict_raw: Schema.optional(Schema.String),
-    verdict_normalized: Schema.optional(Schema.String),
     published_at_raw: Schema.optional(Schema.String),
     published_at_normalized: Schema.optional(Schema.Date),
     canonical_url: Schema.optional(Schema.String),
@@ -117,8 +113,8 @@ export const FactChecksTableRowSchema = Schema.Struct({
   identifier: 'v1FactChecksTableRow',
   title: 'FactChecksTableRow',
   description: `
-    A row in the fact checks table, representing a fact check extracted 
-    from an observation along with its metadata and verdict.`,
+    A row in the fact checks table, representing a fact check extracted
+    from an observation along with its metadata.`,
 })
 
 export type FactChecksTableRow = Schema.Schema.Type<

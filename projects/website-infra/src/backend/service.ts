@@ -14,7 +14,10 @@ import {
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../getImageUrl'
-import { algoliaFactChecksIndexName } from '../search'
+import {
+  algoliaFactChecksIndexName,
+  algoliaFactChecksOldestIndexName,
+} from '../search'
 import { recaptchaApiKeyName } from '../recaptcha'
 import { cloudRunArtifactRegistryReader } from '../iam'
 
@@ -170,6 +173,10 @@ export const websiteService = new gcp.cloudrun.Service(
               {
                 name: 'ALGOLIA_INDEX_NAME',
                 value: algoliaFactChecksIndexName,
+              },
+              {
+                name: 'ALGOLIA_INDEX_NAME_OLDEST',
+                value: algoliaFactChecksOldestIndexName,
               },
               {
                 name: 'RECAPTCHA_SITE_KEY',

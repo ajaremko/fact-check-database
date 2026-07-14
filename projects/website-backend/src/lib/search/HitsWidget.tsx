@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchBox, useHits } from 'react-instantsearch'
+import { useSearchBox, useHits, usePagination } from 'react-instantsearch'
 import { useMemo } from 'react'
 import styled from 'styled-components'
 import { Schema, Either } from 'effect'
@@ -106,29 +106,6 @@ const CategoryTag = styled.span`
   padding: 0.15em 0.5em;
 `
 
-const VERDICT_STYLES: Record<string, { bg: string; color: string }> = {
-  true: { bg: '#dcfce7', color: '#166534' },
-  false: { bg: '#fee2e2', color: '#991b1b' },
-  misleading: { bg: '#fef3c7', color: '#92400e' },
-  unsupported: { bg: '#f3f4f6', color: '#374151' },
-  exaggerated: { bg: '#ffedd5', color: '#9a3412' },
-}
-
-const VerdictBadge = styled.span<{ verdict: string }>`
-  display: inline-block;
-  flex-shrink: 0;
-  font-family: ${mono};
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.2em 0.55em;
-  border-radius: 4px;
-  background-color: ${({ verdict }) =>
-    VERDICT_STYLES[verdict]?.bg ?? '#f3f4f6'};
-  color: ${({ verdict }) => VERDICT_STYLES[verdict]?.color ?? '#374151'};
-`
-
 const CollectionBadge = styled.span`
   font-family: ${mono};
   font-size: 0.7rem;
@@ -164,6 +141,38 @@ const EmptyState = styled.div`
   font-size: 0.9375rem;
 `
 
+// --- Pagination ---
+
+const PaginationNav = styled.nav`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding-top: 1.5rem;
+`
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  background: none;
+  border: none;
+  padding: 0.15em 0.4em;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: ${({ $active }) => ($active ? C.accent : C.textMuted)};
+  font-weight: ${({ $active }) => ($active ? '600' : '400')};
+  text-decoration: ${({ $active }) => ($active ? 'underline' : 'none')};
+  text-underline-offset: 3px;
+
+  &:disabled {
+    color: ${C.borderSubtle};
+    cursor: default;
+  }
+
+  &:not(:disabled):hover {
+    color: ${C.textSecondary};
+  }
+`
+
 // --- Algolia ---
 
 const decodeSearchResult = Schema.decodeUnknownEither(SearchResultSchema)
@@ -175,7 +184,6 @@ function decodeHits(hits: readonly unknown[]): SearchResult[] {
     if (Either.isRight(decoded)) results.push(decoded.right)
     else console.error('Failed to decode search result hit', decoded.left)
   }
-  console.log('hits', JSON.stringify(results, null, 2))
   return results
 }
 
@@ -205,47 +213,10 @@ function formatExtractedAt(extractedAt: Date | undefined): string {
   })
 }
 
-type SortOption = 'newest' | 'oldest' | 'verdict'
-
-function resolveVerdict(hit: SearchResult): string | undefined {
-  return hit.verdict_normalized ?? hit.verdict_raw
-}
-
-function getTimestamp(hit: SearchResult): number {
-  // published_at_raw is a real Date post-decode and sorts reliably; normalized
-  // is a display string that's only parsed as a fallback.
-  if (hit.published_at_raw) return hit.published_at_raw.getTime()
-  if (hit.published_at_normalized) {
-    const t = new Date(hit.published_at_normalized).getTime()
-    return isNaN(t) ? 0 : t
-  }
-  return 0
-}
-
-function sortHits(
-  hits: readonly SearchResult[],
-  sort: SortOption
-): SearchResult[] {
-  const copy = [...hits]
-  if (sort === 'newest')
-    return copy.sort((a, b) => getTimestamp(b) - getTimestamp(a))
-  if (sort === 'oldest')
-    return copy.sort((a, b) => getTimestamp(a) - getTimestamp(b))
-  return copy.sort((a, b) => {
-    const av = resolveVerdict(a)
-    const bv = resolveVerdict(b)
-    if (!av && !bv) return 0
-    if (!av) return 1
-    if (!bv) return -1
-    return av.localeCompare(bv)
-  })
-}
-
 export function ResultListItem({
   href,
   title,
   summary,
-  verdict,
   source,
   sourceUrl,
   collection,
@@ -259,7 +230,6 @@ export function ResultListItem({
   href?: string
   title: string
   summary?: string
-  verdict?: string
   source?: string
   sourceUrl?: string
   collection?: string
@@ -285,9 +255,6 @@ export function ResultListItem({
                 title
               )}
             </ResultTitle>
-            {verdict && (
-              <VerdictBadge verdict={verdict}>{verdict}</VerdictBadge>
-            )}
           </ResultHeader>
           {author && <ResultAuthor>By {author}</ResultAuthor>}
           {summary && <ResultSummary>{summary}</ResultSummary>}
@@ -330,7 +297,6 @@ export function HitsWidget({
     href?: string
     title: string
     summary?: string
-    verdict?: string
     source?: string
     sourceUrl?: string
     collection?: string
@@ -350,7 +316,6 @@ export function HitsWidget({
           href={item.href}
           title={item.title}
           summary={item.summary}
-          verdict={item.verdict}
           source={item.source}
           sourceUrl={item.sourceUrl}
           collection={item.collection}
@@ -366,16 +331,16 @@ export function HitsWidget({
   )
 }
 
-export function HitsWidgetLive({ sort }: { sort: SortOption }) {
+export function HitsWidgetLive() {
   const { hits } = useHits()
   const { query } = useSearchBox()
-  const sorted = useMemo(() => sortHits(decodeHits(hits), sort), [hits, sort])
+  const decoded = useMemo(() => decodeHits(hits), [hits])
 
-  if (sorted.length === 0) {
+  if (decoded.length === 0) {
     return (
       <EmptyState>
         {query.trim()
-          ? `No records match "${query}". Try a different title, source, or verdict.`
+          ? `No records match "${query}". Try a different title or source.`
           : 'No records found.'}
       </EmptyState>
     )
@@ -383,12 +348,11 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
 
   return (
     <HitsWidget
-      items={sorted.map((hit) => ({
+      items={decoded.map((hit) => ({
         id: hit.objectID,
         href: hit.canonical_url ?? hit.link,
         title: hit.title ?? 'Untitled',
         summary: hit.summary,
-        verdict: resolveVerdict(hit),
         source: hit.source_name,
         sourceUrl: hit.source_url,
         collection: hit.source_collection,
@@ -403,5 +367,44 @@ export function HitsWidgetLive({ sort }: { sort: SortOption }) {
         extractedAt: formatExtractedAt(hit.extracted_at),
       }))}
     />
+  )
+}
+
+export function PaginationWidgetLive() {
+  const { pages, currentRefinement, nbPages, isFirstPage, isLastPage, refine } =
+    usePagination({ padding: 2 })
+
+  if (nbPages <= 1) return null
+
+  return (
+    <PaginationNav aria-label="Search results pages">
+      <PageButton disabled={isFirstPage} onClick={() => refine(0)}>
+        First
+      </PageButton>
+      <PageButton
+        disabled={isFirstPage}
+        onClick={() => refine(currentRefinement - 1)}
+      >
+        Prev
+      </PageButton>
+      {pages.map((page) => (
+        <PageButton
+          key={page}
+          $active={page === currentRefinement}
+          onClick={() => refine(page)}
+        >
+          {page + 1}
+        </PageButton>
+      ))}
+      <PageButton
+        disabled={isLastPage}
+        onClick={() => refine(currentRefinement + 1)}
+      >
+        Next
+      </PageButton>
+      <PageButton disabled={isLastPage} onClick={() => refine(nbPages - 1)}>
+        Last
+      </PageButton>
+    </PaginationNav>
   )
 }

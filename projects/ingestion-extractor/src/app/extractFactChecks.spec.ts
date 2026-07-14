@@ -105,7 +105,7 @@ describe('extractFactChecks', () => {
       expect(result).toStrictEqual([
         {
           content_lineage_id:
-            'e1b77ef85d59d73c7701edc336a18142a5cb314a68523487fabb13445efa0c78',
+            'a5083d02d4e0e0a8f99d12fba822cc0f6bc71cd83a8c9b158b4b6e8c4cfa7baa',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           extracted_at: '1970-01-01T00:00:00.000Z',
@@ -129,7 +129,7 @@ describe('extractFactChecks', () => {
             published_at_normalized: '2026-04-29T16:20:04.000Z',
             published_at_raw: 'Wed, 29 Apr 2026 16:20:04 +0000',
             sha256:
-              'e1b77ef85d59d73c7701edc336a18142a5cb314a68523487fabb13445efa0c78',
+              'a5083d02d4e0e0a8f99d12fba822cc0f6bc71cd83a8c9b158b4b6e8c4cfa7baa',
             summary:
               'Since the 2020 census, Florida has "moved from a Democrat majority to a 1.5 million Republican advantage."',
             title:
@@ -151,7 +151,7 @@ describe('extractFactChecks', () => {
         },
         {
           content_lineage_id:
-            'd5c8b06da062dfeb3464626359fe05914faea90b5ee97722aebbfd134879dc1d',
+            'bf42f8ac30fc5dcea481f971bc2a9ed4c1e58ca61c67e11392063e4f16b64552',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           extracted_at: '1970-01-01T00:00:00.000Z',
@@ -169,7 +169,7 @@ describe('extractFactChecks', () => {
             published_at_normalized: '2026-04-28T22:38:37.000Z',
             published_at_raw: 'Tue, 28 Apr 2026 22:38:37 +0000',
             sha256:
-              'd5c8b06da062dfeb3464626359fe05914faea90b5ee97722aebbfd134879dc1d',
+              'bf42f8ac30fc5dcea481f971bc2a9ed4c1e58ca61c67e11392063e4f16b64552',
             summary: 'Fact-checking claims about missing and dead scientists',
             title: `Fact-checking claims about missing, dead scientists: Were they researching UFOs, nuclear weapons?`,
           },
@@ -195,7 +195,7 @@ describe('extractFactChecks', () => {
         },
         {
           content_lineage_id:
-            'd8ad56ab43869a59fa23728ea46e328ced6e90f256ff8073ede3cb45d2c7c6df',
+            'b4702ac341d644a67c43cd00170d4689c66aa76ebd2f059bc57200542845f95b',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
@@ -219,7 +219,7 @@ describe('extractFactChecks', () => {
             published_at_normalized: '2026-04-27T21:14:57.000Z',
             published_at_raw: 'Mon, 27 Apr 2026 21:14:57 +0000',
             sha256:
-              'd8ad56ab43869a59fa23728ea46e328ced6e90f256ff8073ede3cb45d2c7c6df',
+              'b4702ac341d644a67c43cd00170d4689c66aa76ebd2f059bc57200542845f95b',
             summary: "What Florida's drought means for hurricane season",
             title:
               "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",

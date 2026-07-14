@@ -25,10 +25,6 @@ export const FactCheckSchema = Schema.Struct({
   language: Schema.NullOr(NormalizedTextTinySchema),
   enclosureUrl: Schema.NullOr(Schema.String),
   imageUrl: Schema.NullOr(Schema.String),
-  verdictRaw: Schema.NullOr(NormalizedTextSmallSchema),
-  verdictNormalized: Schema.NullOr(
-    Schema.Literal('true', 'false', 'misleading', 'unsupported', 'exaggerated')
-  ),
   publishedAtRaw: Schema.NullOr(NormalizedTextTinySchema),
   publishedAtNormalized: Schema.NullOr(Schema.instanceOf(Date)),
 })
@@ -102,8 +98,6 @@ export const FactCheckRowSchema = Schema.transformOrFail(
           enclosure_url: input.factCheck.enclosureUrl,
           image_url: input.factCheck.imageUrl,
           link: input.factCheck.link,
-          verdict_raw: input.factCheck.verdictRaw,
-          verdict_normalized: input.factCheck.verdictNormalized,
           published_at_raw: input.factCheck.publishedAtRaw,
           published_at_normalized: input.factCheck.publishedAtNormalized,
         }),

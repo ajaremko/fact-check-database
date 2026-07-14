@@ -94,10 +94,10 @@ export function Mission() {
 
           <PrincipleHeading>Neutrality</PrincipleHeading>
           <BodyText>
-            This platform does not rank, score, or editorialize. It collects and
-            normalizes verdicts as reported by the source organizations. Any
-            analytical judgments belong to downstream researchers, not this
-            pipeline.
+            This platform does not rank, score, or editorialize. It collects
+            and reproduces fact-check records as published by the source
+            organizations. Any analytical judgments belong to downstream
+            researchers, not this pipeline.
           </BodyText>
         </Container>
       </ContentSection>

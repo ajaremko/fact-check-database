@@ -97,7 +97,7 @@ export function Terms() {
             The dataset is provided as-is. We make reasonable efforts to ensure
             accuracy and completeness but do not warrant that records are free
             of error or that ingestion is continuous without interruption.
-            Verdicts reflect the position of the originating organization at
+            Records reflect the position of the originating organization at
             time of publication, not an independent editorial determination by
             this platform.
           </BodyText>
