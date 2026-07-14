@@ -1,6 +1,6 @@
 import { Brand, Schema } from 'effect'
 
-import * as Unicode from '@news-research/core-data/Unicode'
+import * as Html from '@news-research/core-data/Html'
 
 function normalizeText(maxLength: number) {
   return (text: string) =>
@@ -13,6 +13,13 @@ function normalizeText(maxLength: number) {
       .slice(0, maxLength)
 }
 
+/**
+ * For short, single-line fields (title, author, language, publishedAtRaw).
+ * Collapses all whitespace/newlines to a single space and truncates — these
+ * fields are never expected to carry block-level HTML, only occasional bare
+ * entity references (e.g. `&#246;`), which are decoded rather than
+ * transliterated so original-language text (non-Latin scripts) is preserved.
+ */
 export function NormalizedTextSSchema<S extends number>(size: S) {
   return Schema.transform(
     Schema.String,
@@ -25,8 +32,39 @@ export function NormalizedTextSSchema<S extends number>(size: S) {
       decode: normalizeText(size),
       encode: normalizeText(size),
     }
-  ).pipe(Unicode.parseUnicode())
+  ).pipe(Html.decodeHtmlEntities())
 }
+
+function normalizeMarkdown(text: string) {
+  return text
+    .normalize('NFC')
+    .replace(/^[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+/**
+ * For fields that carry HTML from feed content (summary, content). Converts
+ * HTML to Markdown (preserving paragraphs, lists, links, headings — and
+ * decoding entities as part of that conversion) rather than collapsing to a
+ * single line, and applies no length cap: slicing Markdown at a fixed
+ * character count can truncate mid-syntax (mid-link, mid-emphasis marker)
+ * and produce broken output. Downstream storage (`FactChecksTableDBSchema`)
+ * types these fields as unconstrained `STRING`, so nothing depends on a cap.
+ */
+export const NormalizedMarkdownSchema = Schema.transform(
+  Schema.String,
+  Schema.String.pipe(Schema.brand('NormalizedMarkdown')),
+  {
+    strict: true,
+    decode: normalizeMarkdown,
+    encode: normalizeMarkdown,
+  }
+).pipe(Html.htmlToMarkdown())
+
+export type NormalizedMarkdown = string & Brand.Brand<'NormalizedMarkdown'>
+export const NormalizedMarkdownBrand =
+  Brand.nominal<NormalizedMarkdown>()
 
 export function NormalizedTextSBrand<S extends number>(_: S) {
   return Brand.nominal<string & Brand.Brand<`NormalizedText${S}`>>()

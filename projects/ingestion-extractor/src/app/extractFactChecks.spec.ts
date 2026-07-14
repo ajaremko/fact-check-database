@@ -133,7 +133,7 @@ describe('extractFactChecks', () => {
             summary:
               'Since the 2020 census, Florida has "moved from a Democrat majority to a 1.5 million Republican advantage."',
             title:
-              "Ron DeSantis - Florida redistricting: DeSantis overstates voters' shift from Democrats to Republicans",
+              'Ron DeSantis - Florida redistricting: DeSantis overstates voters’ shift from Democrats to Republicans',
           },
           http: {
             content_type: 'application/rss+xml; charset=utf-8',
@@ -220,9 +220,9 @@ describe('extractFactChecks', () => {
             published_at_raw: 'Mon, 27 Apr 2026 21:14:57 +0000',
             sha256:
               'b4702ac341d644a67c43cd00170d4689c66aa76ebd2f059bc57200542845f95b',
-            summary: "What Florida's drought means for hurricane season",
+            summary: 'What Florida’s drought means for hurricane season',
             title:
-              "DeSantis said Florida's drought could bring a quieter hurricane season. Is that true?",
+              'DeSantis said Florida’s drought could bring a quieter hurricane season. Is that true?',
           },
           http: {
             content_type: 'application/rss+xml; charset=utf-8',

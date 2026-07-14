@@ -7,7 +7,7 @@ import { omitNullKeys } from '@news-research/core-data'
 import {
   NormalizedTextMediumSchema,
   NormalizedTextTinySchema,
-  NormalizedTextXxlSchema,
+  NormalizedMarkdownSchema,
   NormalizedTextSmallSchema,
 } from './NormalizedText'
 import { NumberFromDate } from './NumberFromDate'
@@ -20,8 +20,8 @@ export const FactCheckSchema = Schema.Struct({
   link: Schema.NullOr(Schema.String),
   author: Schema.NullOr(NormalizedTextSmallSchema),
   categories: Schema.NullOr(Schema.Array(Schema.String)),
-  summary: Schema.NullOr(NormalizedTextXxlSchema),
-  content: Schema.NullOr(NormalizedTextXxlSchema),
+  summary: Schema.NullOr(NormalizedMarkdownSchema),
+  content: Schema.NullOr(NormalizedMarkdownSchema),
   language: Schema.NullOr(NormalizedTextTinySchema),
   enclosureUrl: Schema.NullOr(Schema.String),
   imageUrl: Schema.NullOr(Schema.String),

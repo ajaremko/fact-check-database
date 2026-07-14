@@ -17,6 +17,11 @@
       "import": "./dist/Csv.js",
       "default": "./dist/Csv.js"
     },
+    "./Html": {
+      "types": "./dist/Html.d.ts",
+      "import": "./dist/Html.js",
+      "default": "./dist/Html.js"
+    },
     "./Ndjson": {
       "types": "./dist/Ndjson.d.ts",
       "import": "./dist/Ndjson.js",
@@ -48,7 +53,9 @@
     "csv-stringify": "^6.6.0",
     "effect": "^3.21.0",
     "fast-xml-parser": "^5.5.11",
+    "he": "^1.2.0",
     "tslib": "^2.3.0",
+    "turndown": "^7.2.4",
     "unidecode": "^1.1.0",
     "yaml": "^2.8.2"
   },
