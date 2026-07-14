@@ -48,7 +48,7 @@ export const extractorJob = new gcp.cloudrunv2.Job(
               },
               {
                 name: 'MESSAGE_BATCH_SIZE',
-                value: '1000',
+                value: '100',
               },
               {
                 name: 'MAX_CONCURRENCY',
