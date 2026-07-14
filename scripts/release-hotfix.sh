@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# This script is used to release the docker images for the specified stack (dev or prod).
-# Usage: ./release.prod.sh [dev|prod]
+# This script is used to release hotfix docker images for the specified stack (dev or prod) from the dev environment.
+
+# Usage: ./release-hotfix.sh [dev|prod]
 
 # Parse command line argument
 
