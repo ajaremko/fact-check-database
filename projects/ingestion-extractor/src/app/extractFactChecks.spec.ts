@@ -241,6 +241,84 @@ describe('extractFactChecks', () => {
       ])
     })
   )
+  it.effect(
+    'writes full Markdown content to blob storage and stores a plain-text preview in the row',
+    () =>
+      Effect.gen(function* () {
+        const storage: Record<string, string> = {
+          'content-blob-test.sanitize.yml': `
+          version: 1
+          kind: sanitized_record
+          content_lineage_id: content-blob-test
+          ingestion_batch_id: ing-1
+          fetched_at: 0
+          sanitized_at: 0
+          source:
+            id: politifact
+            name: politifact.com
+            url: https://www.politifact.com/rss/all/
+            collection: rss
+          input:
+            record:
+              bucket: local
+              object: record.yml
+          label: SAFE_PUBLIC
+          actions: []
+          http:
+            status_code: 200
+            content_type: application/rss+xml
+          content:
+            sha256: content-blob-test-sha256
+            bytes: 1
+            sanitized:
+              bucket: local
+              object: content-blob-test.bin`,
+          'content-blob-test.bin': `
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0">
+            <channel>
+              <title>Test Feed</title>
+              <link>http://example.com/</link>
+              <description>Test feed</description>
+              <language>en</language>
+              <item>
+                <title>Item with full content</title>
+                <link>http://example.com/item-1</link>
+                <guid>http://example.com/item-1</guid>
+                <description>Short summary</description>
+                <content:encoded><![CDATA[<p>A <a href="https://example.com">link</a> and <strong>bold</strong> text.</p>]]></content:encoded>
+                <pubDate>Wed, 29 Apr 2026 16:20:04 +0000</pubDate>
+              </item>
+            </channel>
+          </rss>`,
+        }
+        const result = yield* extractFactChecks({
+          extractionId: 'run-1',
+          extractedAt: 0,
+          pointer: {
+            bucket: 'inmemory',
+            object: 'content-blob-test.sanitize.yml',
+          },
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
+
+        expect(result).toHaveLength(1)
+        const row = result[0]
+
+        // The row stores a short plain-text preview, not the full Markdown.
+        expect(row.fact_check.content).toBe('A link and bold text.')
+
+        // The full Markdown (with intact link/emphasis syntax — this also
+        // guards against the Html.ts encode-direction regression) is
+        // written to a content-addressable blob keyed by fact_check.sha256.
+        const blobPath = `v1/type=fact_checks_content/sha256=${row.fact_check.sha256}.md`
+        expect(storage[blobPath]).toBe(
+          'A [link](https://example.com) and **bold** text.'
+        )
+      })
+  )
   it.effect('when observation is quarantined, returns an empty array', () =>
     Effect.gen(function* () {
       const storage = {

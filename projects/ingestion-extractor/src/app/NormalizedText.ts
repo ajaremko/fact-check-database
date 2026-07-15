@@ -1,16 +1,19 @@
 import { Brand, Schema } from 'effect'
 
 import * as Html from '@news-research/core-data/Html'
+import { stripMarkdown } from '@news-research/core-data/Markdown'
+
+function collapseWhitespace(text: string): string {
+  return text
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter((word) => word !== '')
+    .join(' ')
+}
 
 function normalizeText(maxLength: number) {
   return (text: string) =>
-    text
-      .normalize('NFC')
-      .split(/\s+/)
-      .map((line) => line.trim())
-      .filter((line) => line !== '')
-      .join(' ')
-      .slice(0, maxLength)
+    collapseWhitespace(text.normalize('NFC')).slice(0, maxLength)
 }
 
 /**
@@ -65,6 +68,33 @@ export const NormalizedMarkdownSchema = Schema.transform(
 export type NormalizedMarkdown = string & Brand.Brand<'NormalizedMarkdown'>
 export const NormalizedMarkdownBrand =
   Brand.nominal<NormalizedMarkdown>()
+
+const CONTENT_PREVIEW_MAX_LENGTH = 500
+
+function truncateAtWordBoundary(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text
+  const sliced = text.slice(0, maxLength)
+  const lastSpace = sliced.lastIndexOf(' ')
+  const trimmed = lastSpace > 0 ? sliced.slice(0, lastSpace) : sliced
+  return `${trimmed}…`
+}
+
+/**
+ * A short, plain-text preview of Markdown content, safe to store inline
+ * even where the full Markdown (uncapped, via `NormalizedMarkdownSchema`)
+ * would exceed a downstream document-size limit — the full text is stored
+ * separately as a content-addressable blob (see `ContentBlob.ts`) and
+ * referenced by `fact_check.sha256`. Plain text has no syntax left to
+ * break, so truncating it (unlike Markdown) is safe.
+ */
+export function contentPreview(markdown: string): NormalizedMarkdown {
+  return NormalizedMarkdownBrand(
+    truncateAtWordBoundary(
+      collapseWhitespace(stripMarkdown(markdown)),
+      CONTENT_PREVIEW_MAX_LENGTH
+    )
+  )
+}
 
 export function NormalizedTextSBrand<S extends number>(_: S) {
   return Brand.nominal<string & Brand.Brand<`NormalizedText${S}`>>()

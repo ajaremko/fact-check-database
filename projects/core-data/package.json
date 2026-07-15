@@ -22,6 +22,11 @@
       "import": "./dist/Html.js",
       "default": "./dist/Html.js"
     },
+    "./Markdown": {
+      "types": "./dist/Markdown.d.ts",
+      "import": "./dist/Markdown.js",
+      "default": "./dist/Markdown.js"
+    },
     "./Ndjson": {
       "types": "./dist/Ndjson.d.ts",
       "import": "./dist/Ndjson.js",
@@ -54,6 +59,7 @@
     "effect": "^3.21.0",
     "fast-xml-parser": "^5.5.11",
     "he": "^1.2.0",
+    "remove-markdown": "^0.6.4",
     "tslib": "^2.3.0",
     "turndown": "^7.2.4",
     "unidecode": "^1.1.0",

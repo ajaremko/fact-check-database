@@ -1,12 +1,14 @@
-import { Array, Effect, Metric, pipe, Schema } from 'effect'
+import { Effect, Metric, pipe, Schema } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
 import * as Yaml from '@news-research/core-data/Yaml'
 
-import { FilePointer, readFile } from '@news-research/core-io'
+import { FilePointer, readFile, writeFile } from '@news-research/core-io'
 
+import { contentBlobPath } from './ContentBlob'
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
 import { logExtractionSucceeded, logExtractionFailed } from './logging'
+import { contentPreview } from './NormalizedText'
 import { ObservationSchema } from './Observation'
 import { extractors } from '../integration/extraction-strategy'
 
@@ -18,8 +20,17 @@ const decodeObservation = pipe(
 )
 
 const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
+const encodeUtf8 = Schema.encode(
+  pipe(Schema.String, Node.parseUint8Array({ encoding: 'utf-8' }))
+)
 
 const extractedFactCheckRows = Metric.counter('extracted_fact_check_rows')
+
+/**
+ * Bounds how many content blobs are written concurrently for a single
+ * observation's fact checks (a feed poll can yield up to ~1000 items).
+ */
+const CONTENT_BLOB_WRITE_CONCURRENCY = 10
 
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
@@ -60,31 +71,48 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
         data: responseData,
       })
       .pipe(
-        Effect.map(
-          Array.map(
-            (factCheck): FactCheckRow => ({
-              id: factCheck.sha256,
-              observationId: observation.observationId,
-              extractionId: ctx.extractionId,
-              fetchedAt: observation.fetchedAt,
-              extractedAt: ctx.extractedAt,
-              ingestionId: observation.ingestionId,
-              factCheck,
-              extractor: {
-                id: extractor.id,
-                version: extractor.version,
-              },
-              http: {
-                contentSha256: content.sha256,
-                finalUrl: http.finalUrl,
-                status: http.status,
-                contentType: http.contentType,
-                etag: http.etag,
-                lastModified: http.lastModified,
-                headers: http.headers,
-              },
-              source: observation.source,
-            })
+        Effect.flatMap((factChecks) =>
+          Effect.forEach(
+            factChecks,
+            (factCheck) =>
+              Effect.gen(function* () {
+                if (factCheck.content) {
+                  const data = yield* encodeUtf8(factCheck.content)
+                  yield* writeFile({
+                    path: contentBlobPath(factCheck.sha256),
+                    data,
+                    contentType: 'text/markdown',
+                  })
+                }
+
+                const row: FactCheckRow = {
+                  id: factCheck.sha256,
+                  observationId: observation.observationId,
+                  extractionId: ctx.extractionId,
+                  fetchedAt: observation.fetchedAt,
+                  extractedAt: ctx.extractedAt,
+                  ingestionId: observation.ingestionId,
+                  factCheck: factCheck.content
+                    ? { ...factCheck, content: contentPreview(factCheck.content) }
+                    : factCheck,
+                  extractor: {
+                    id: extractor.id,
+                    version: extractor.version,
+                  },
+                  http: {
+                    contentSha256: content.sha256,
+                    finalUrl: http.finalUrl,
+                    status: http.status,
+                    contentType: http.contentType,
+                    etag: http.etag,
+                    lastModified: http.lastModified,
+                    headers: http.headers,
+                  },
+                  source: observation.source,
+                }
+                return row
+              }),
+            { concurrency: CONTENT_BLOB_WRITE_CONCURRENCY }
           )
         ),
         Effect.tap((factChecks) =>

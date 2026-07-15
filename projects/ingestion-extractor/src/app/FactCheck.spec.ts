@@ -90,4 +90,53 @@ describe('FactCheckRowSchema', () => {
       },
     })
   })
+
+  it('does not corrupt Markdown syntax in summary/content when encoding', () => {
+    const result = Schema.encodeUnknownSync(FactCheckRowSchema)({
+      id: 'lineage-id',
+      observationId: 'obs-id',
+      ingestionId: 'ing-id',
+      extractionId: 'ext-id',
+      extractedAt: 0,
+      fetchedAt: 0,
+      extractor: { id: 'extractor-id', version: 1 },
+      factCheck: {
+        sha256: 'abc123',
+        guid: null,
+        title: null,
+        author: null,
+        categories: null,
+        link: null,
+        summary: 'A [link](https://example.com) and *bold* text',
+        content: '## Heading\n\nA [link](https://example.com) and *bold* text',
+        language: null,
+        enclosureUrl: null,
+        imageUrl: null,
+        publishedAtRaw: null,
+        publishedAtNormalized: null,
+        canonicalUrl: null,
+      },
+      http: {
+        contentSha256: 'sha256abc',
+        status: 200,
+        finalUrl: null,
+        contentType: null,
+        etag: null,
+        lastModified: null,
+        headers: null,
+      },
+      source: {
+        id: 'source-id',
+        name: 'Example Source',
+        url: 'https://example.com/feed',
+        collection: 'rss',
+      },
+    })
+    expect(result.fact_check.summary).toBe(
+      'A [link](https://example.com) and *bold* text'
+    )
+    expect(result.fact_check.content).toBe(
+      '## Heading\n\nA [link](https://example.com) and *bold* text'
+    )
+  })
 })

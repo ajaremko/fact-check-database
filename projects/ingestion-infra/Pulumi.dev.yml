@@ -3,8 +3,8 @@ config:
   ingestion:region: us-central1
   ingestion:coreStackName: alfredsyoung/fact-check-database-core
   ingestion:archiveLocation: US
-  ingestion:ingestorSchedule: '0 */4 * * *'
-  ingestion:extractorSchedule: '0 */12 * * *'
+  # ingestion:ingestorSchedule: '0 */4 * * *'
+  # ingestion:extractorSchedule: '0 */12 * * *'
   ingestion:tag: dev-388
   ingestion:logLevel: trace
   ingestion:logRetentionDays: 1

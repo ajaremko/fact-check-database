@@ -29,6 +29,11 @@ function toMarkdown(input: string): string {
  * Preserves paragraphs, lists, links, emphasis, and headings via `turndown`.
  * Plain (tag-free) input passes through as text with entities decoded.
  *
+ * `encode` is a pass-through, not an inverse conversion: by the time a value
+ * is encoded it is already Markdown, not HTML, and re-running HTML→Markdown
+ * conversion on Markdown text corrupts it (turndown escapes literal `[`/`]`
+ * etc. it doesn't recognize as its own output).
+ *
  * @example
  * const decode = pipe(Schema.String, htmlToMarkdown(), Schema.decodeSync)
  * const result = decode('<p>Hello <a href="https://example.com">world</a></p>')
@@ -43,11 +48,7 @@ export function htmlToMarkdown() {
           try: () => toMarkdown(input),
           catch: () => new ParseResult.Unexpected(ast, input),
         }),
-      encode: (input, _, ast) =>
-        ParseResult.try({
-          try: () => toMarkdown(input),
-          catch: () => new ParseResult.Unexpected(ast, input),
-        }),
+      encode: (input) => ParseResult.succeed(input),
     })
   }
 }
@@ -60,6 +61,9 @@ export function htmlToMarkdown() {
  * Intended for short, single-line fields that may carry a bare entity
  * reference but no markup — use `htmlToMarkdown` for fields that may
  * contain block-level HTML.
+ *
+ * `encode` is a pass-through: a decoded value has no entity references left
+ * to decode, so there's nothing meaningful to re-run.
  *
  * @example
  * const decode = pipe(Schema.String, decodeHtmlEntities(), Schema.decodeSync)
@@ -75,11 +79,7 @@ export function decodeHtmlEntities() {
           try: () => decodeEntities(input),
           catch: () => new ParseResult.Unexpected(ast, input),
         }),
-      encode: (input, _, ast) =>
-        ParseResult.try({
-          try: () => decodeEntities(input),
-          catch: () => new ParseResult.Unexpected(ast, input),
-        }),
+      encode: (input) => ParseResult.succeed(input),
     })
   }
 }

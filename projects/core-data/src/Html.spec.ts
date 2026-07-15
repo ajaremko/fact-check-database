@@ -47,6 +47,12 @@ describe('htmlToMarkdown', () => {
     const result = decode('<p>Говорил ли Нильс Бор?</p>')
     expect(result).toBe('Говорил ли Нильс Бор?')
   })
+
+  it('encode passes already-Markdown text through unchanged (does not re-convert it)', () => {
+    const encode = pipe(Schema.String, htmlToMarkdown(), Schema.encodeSync)
+    const markdown = 'A [link](https://example.com) and *bold* text'
+    expect(encode(markdown)).toBe(markdown)
+  })
 })
 
 describe('decodeHtmlEntities', () => {
