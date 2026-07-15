@@ -3,16 +3,19 @@ name: Build LibreTranslate
 on:
   workflow_dispatch:
     inputs:
-      languages:
-        description: 'Languages to build'
+      environment:
+        description: 'Deployment environment'
         required: true
-        type: string
+        type: choice
+        options:
+          - dev
+          - prod
 
 permissions:
   contents: read
   id-token: write
 
-run-name: Build LibreTranslate (${{ github.event.inputs.languages }})
+run-name: Build LibreTranslate
 
 jobs:
   main:
@@ -41,7 +44,7 @@ jobs:
           cd projects/core-infra
 
           # Pull outputs as JSON, then extract the values we need
-          OUT="$(pulumi stack output --json --stack=dev)"
+          OUT="$(pulumi stack output --json --stack=${{ github.event.inputs.environment }})"
 
           echo "gcp_project_id=$(echo "$OUT" | jq -r '.gcpProject')" >> "$GITHUB_OUTPUT"
           echo "wif_provider=$(echo "$OUT" | jq -r '.githubActionIdentityPoolProviderName')" >> "$GITHUB_OUTPUT"
@@ -85,5 +88,8 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            with_models=true
           tags: |
-            ${{ steps.bootstrap.outputs.artifact_registry_uri }}/libretranslate:${{ github.event.inputs.languages }}-${{ github.sha }}
+            ${{ steps.bootstrap.outputs.artifact_registry_uri }}/ingestion-libretranslate:${{ github.sha }}
+            ${{ steps.bootstrap.outputs.artifact_registry_uri }}/ingestion-libretranslate:latest
