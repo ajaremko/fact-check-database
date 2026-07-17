@@ -34,15 +34,12 @@ services:
     volumes:
       - otel-lgtm-data:/data
     restart: unless-stopped
-  redis:
-    image: redis/redis-stack:latest
-    restart: unless-stopped
-    ports:
-      - '6379:6379'
-      - '8001:8001' # Web GUI
-    volumes:
-      - redis-data:/data
+  # github-runner:
+  #   image: myoung34/github-runner:latest
+  #   environment:
+  #     RUNNER_NAME: $GITHUB_RUNNER_NAME
+  #     REPO_URL: $GITHUB_REPO_URL
+  #     ACCESS_TOKEN: $GITHUB_TOKEN
 
 volumes:
   otel-lgtm-data:
-  redis-data:
