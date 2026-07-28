@@ -11,6 +11,19 @@
         "cwd": "{projectRoot}"
       }
     },
+    "download": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run argospm install translate",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "upload": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "gsutil -m cp -r ~/.local/share/argos-translate/packages gs://analysis-translation-models-bucket-41aff73/argos-models"
+      }
+    },
     "lock": {
       "executor": "@nxlv/python:lock",
       "options": {
