@@ -4,6 +4,7 @@
 dist
 tmp
 out-tsc
+__pycache__
 
 # dependencies
 node_modules
@@ -28,6 +29,7 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+/reports
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
