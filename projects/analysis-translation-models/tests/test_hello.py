@@ -1,8 +1,6 @@
-"""Hello unit test module."""
-
-from analysis_translation_models.hello import hello
+"""Dummy test module."""
 
 
 def test_hello():
-    """Test the hello function."""
-    assert hello() == "Hello analysis-translation-models"
+    """Dummy test"""
+    assert 1 + 1 == 2

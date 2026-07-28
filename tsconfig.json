@@ -49,7 +49,7 @@
       "path": "./projects/core-contracts"
     },
     {
-      "path": "./projects/website-backend"
+      "path": "./projects/website-fact-check-database"
     },
     {
       "path": "./projects/website-loader"

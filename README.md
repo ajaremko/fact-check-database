@@ -107,15 +107,15 @@ Dockerized applications (API services, workers, scheduled jobs) live in `project
 
 See further documentation for individual services:
 
-| Service             | Documentation                                         |
-| ------------------- | ----------------------------------------------------- |
-| ingestion-ingestor  | [README.md](./projects/ingestion-ingestor/README.md)  |
-| ingestion-sanitizer | [README.md](./projects/ingestion-sanitizer/README.md) |
-| ingestion-extractor | [README.md](./projects/ingestion-extractor/README.md) |
-| analysis-loader     | [README.md](./projects/analysis-loader/README.md)     |
-| website-backend     | [README.md](./projects/website-backend/README.md)     |
-| website-emailer     | [README.md](./projects/website-emailer/README.md)     |
-| website-loader      | [README.md](./projects/website-loader/README.md)      |
+| Service                     | Documentation                                                 |
+| --------------------------- | ------------------------------------------------------------- |
+| ingestion-ingestor          | [README.md](./projects/ingestion-ingestor/README.md)          |
+| ingestion-sanitizer         | [README.md](./projects/ingestion-sanitizer/README.md)         |
+| ingestion-extractor         | [README.md](./projects/ingestion-extractor/README.md)         |
+| analysis-loader             | [README.md](./projects/analysis-loader/README.md)             |
+| website-fact-check-database | [README.md](./projects/website-fact-check-database/README.md) |
+| website-emailer             | [README.md](./projects/website-emailer/README.md)             |
+| website-loader              | [README.md](./projects/website-loader/README.md)              |
 
 ## Key Technologies
 

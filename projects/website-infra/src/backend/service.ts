@@ -146,7 +146,7 @@ export const websiteService = new gcp.cloudrun.Service(
           },
           ...authContainer,
           {
-            image: getImageUrl('website-backend', dockerTag),
+            image: getImageUrl('website-fact-check-database', dockerTag),
             name: 'backend',
             startupProbe: {
               initialDelaySeconds: 10,

@@ -1,14 +1,14 @@
 {
-  "name": "@news-research/website-backend",
+  "name": "@news-research/website-fact-check-database",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "website-backend",
+    "name": "website-fact-check-database",
     "targets": {
       "serve": {
         "executor": "@nx/next:server",
         "options": {
-          "buildTarget": "website-backend:build",
+          "buildTarget": "website-fact-check-database:build",
           "dev": true,
           "port": 4200
         }
@@ -22,7 +22,7 @@
     },
     "release": {
       "docker": {
-        "repositoryName": "website-backend"
+        "repositoryName": "website-fact-check-database"
       }
     }
   },
