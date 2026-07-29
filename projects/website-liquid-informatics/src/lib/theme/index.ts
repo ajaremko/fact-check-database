@@ -10,7 +10,7 @@ export const C = {
   accentHover: '#111111',
   error: '#c0392b',
   success: '#27ae60',
-  bgDark: '#0d3b2c',
+  bgDark: '#111111',
   textInverse: '#ffffff',
 } as const
 

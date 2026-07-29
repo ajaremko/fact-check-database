@@ -15,7 +15,7 @@ const SOLID_CELL = 2
 // Uniform bulk water color, in place of the original's blue-water palette,
 // so the sim reads as part of the site's dark green hero rather than a
 // contrasting demo accent.
-const BULK_COLOR: readonly [number, number, number] = [0.05, 0.45, 0.35]
+const BULK_COLOR: readonly [number, number, number] = [0.03, 0.14, 0.12]
 
 function clamp(x: number, min: number, max: number): number {
   if (x < min) return min
