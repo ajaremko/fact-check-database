@@ -6,6 +6,8 @@
 // Adapted here as a framework-agnostic WebGL engine (no DOM globals, no
 // debug UI, no draggable obstacle) so it can run as an ambient background.
 
+import { perlin2D } from './perlin'
+
 const FLUID_CELL = 0
 const AIR_CELL = 1
 const SOLID_CELL = 2
@@ -548,8 +550,6 @@ const SIM_HEIGHT = 3.0
 // rendered, so the solid walls — and the air-leaking-along-the-wall
 // artifact that appears near them — stay cropped out of view.
 const RES = 10
-const REL_WATER_WIDTH = 0.98
-const REL_WATER_HEIGHT = 0.9
 
 // The tank is simulated this much larger than the visible viewport in each
 // dimension; only the centered `OVERSCAN`-fraction crop is ever rendered.
@@ -558,8 +558,8 @@ const OVERSCAN = 1.25
 // Metaball rendering: particles are splatted as soft, oversized sprites into
 // a reduced-resolution density framebuffer, then a full-screen pass
 // thresholds that density field into a single merged liquid silhouette.
-const SPLAT_SIZE_SCALE = 2.2
-const DENSITY_THRESHOLD = 0.4
+const SPLAT_SIZE_SCALE = 4 // 2.2
+const DENSITY_THRESHOLD = 0.9
 const THRESHOLD_SOFTNESS = 0.15
 const SPLAT_RESOLUTION_SCALE = 0.5
 
@@ -568,33 +568,44 @@ const SPLAT_RESOLUTION_SCALE = 0.5
 // settling into a static arrangement once gravity/packing equilibrate.
 const TURBULENCE_STRENGTH = 0.1 // velocity nudge amplitude (sim-units/sec)
 const TURBULENCE_FREQUENCY = 2.0 // spatial frequency — smaller = larger eddies
-const TURBULENCE_SPEED = 0.5 // how fast the flow pattern drifts over time
+const TURBULENCE_SPEED = 0.15 // how fast the flow pattern drifts over time
+
+// Initial particle placement: an even grid spanning the fill extent, with
+// each point nudged off-center by Perlin noise instead of hex-packed into a
+// single block, so the tank starts full but organic rather than one clump.
+const PLACEMENT_NOISE_FREQUENCY = 0.9 // larger = finer, less-correlated jitter
+const PLACEMENT_JITTER_STRENGTH = 1 // fraction of grid spacing particles may wander
 
 function setupScene(tankWidth: number, tankHeight: number): FlipFluid {
   const h = tankHeight / RES
   const density = 1000.0
 
-  const relWaterHeight = REL_WATER_HEIGHT
-  const relWaterWidth = REL_WATER_WIDTH
-
   const r = 0.3 * h
-  const dx = 2.0 * r
-  const dy = (Math.sqrt(3.0) / 2.0) * dx
+  const spacing = 2.4 * r
 
-  const numX = Math.floor((relWaterWidth * tankWidth - 2.0 * h - 2.0 * r) / dx)
-  const numY = Math.floor(
-    (relWaterHeight * tankHeight - 2.0 * h - 2.0 * r) / dy
-  )
+  const numX = Math.floor((tankWidth - 2.0 * h - 2.0 * r) / spacing)
+  const numY = Math.floor((tankHeight - 2.0 * h - 2.0 * r) / spacing)
   const maxParticles = numX * numY
 
   const f = new FlipFluid(density, tankWidth, tankHeight, h, r, maxParticles)
 
   f.numParticles = numX * numY
+  const jitter = spacing * PLACEMENT_JITTER_STRENGTH
   let p = 0
   for (let i = 0; i < numX; i++) {
     for (let j = 0; j < numY; j++) {
-      f.particlePos[p++] = h + r + dx * i + (j % 2 === 0 ? 0.0 : r)
-      f.particlePos[p++] = h + r + dy * j
+      const cellX = h + r + spacing * (i + 0.5)
+      const cellY = h + r + spacing * (j + 0.5)
+      const nx = perlin2D(
+        cellX * PLACEMENT_NOISE_FREQUENCY,
+        cellY * PLACEMENT_NOISE_FREQUENCY
+      )
+      const ny = perlin2D(
+        cellX * PLACEMENT_NOISE_FREQUENCY + 100,
+        cellY * PLACEMENT_NOISE_FREQUENCY + 100
+      )
+      f.particlePos[p++] = cellX + nx * jitter
+      f.particlePos[p++] = cellY + ny * jitter
     }
   }
 
@@ -799,7 +810,7 @@ export function createFluidBackground(
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
   const dt = 1.0 / 60.0
-  const gravity = -0.5
+  const gravity = -0.1
   const flipRatio = 0.9
   const numPressureIters = 30
   const numParticleIters = 2
