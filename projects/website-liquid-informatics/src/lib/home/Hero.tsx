@@ -4,7 +4,11 @@ import styled from 'styled-components'
 
 import { C, mono, serif } from '@/lib/theme'
 
+import { FluidBackground } from './FluidBackground'
+
 const HeroSection = styled.section`
+  position: relative;
+  overflow: hidden;
   min-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
@@ -16,6 +20,15 @@ const HeroSection = styled.section`
   background-color: ${C.bgDark};
   color: ${C.textInverse};
   font-family: ${serif};
+`
+
+const Content = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 `
 
 const Heading = styled.h1`
@@ -34,11 +47,14 @@ const Subheading = styled.p`
 export function Hero() {
   return (
     <HeroSection>
-      <Heading>Liquid Informatics</Heading>
-      <Subheading>
-        Bespoke data collection and extraction for media researchers,
-        journalists, and academics.
-      </Subheading>
+      <FluidBackground />
+      <Content>
+        <Heading>The News is Liquid</Heading>
+        <Subheading>
+          A content archival and data extraction platform for longitudinal media
+          research.
+        </Subheading>
+      </Content>
     </HeroSection>
   )
 }
