@@ -112,9 +112,8 @@ class FlipFluid {
     this.numParticles = 0
   }
 
-  integrateParticles(dt: number, gravity: number) {
+  integrateParticles(dt: number) {
     for (let i = 0; i < this.numParticles; i++) {
-      this.particleVel[2 * i + 1] += dt * gravity
       this.particlePos[2 * i] += this.particleVel[2 * i] * dt
       this.particlePos[2 * i + 1] += this.particleVel[2 * i + 1] * dt
     }
@@ -522,14 +521,13 @@ class FlipFluid {
 
   simulate(
     dt: number,
-    gravity: number,
     flipRatio: number,
     numPressureIters: number,
     numParticleIters: number,
     overRelaxation: number,
     time: number
   ) {
-    this.integrateParticles(dt, gravity)
+    this.integrateParticles(dt)
     this.applyTurbulence(dt, time)
     this.pushParticlesApart(numParticleIters)
     this.handleWallCollisions()
@@ -548,7 +546,7 @@ const SIM_HEIGHT = 3.0
 // The simulated tank is built larger than the visible viewport (see
 // `OVERSCAN_X`/`OVERSCAN_Y` below) and only its central portion is rendered,
 // so the solid walls stay cropped out of view.
-const RES = 10
+const RES = 6
 
 // The tank is simulated larger than the visible viewport in each dimension;
 // only the centered crop is ever rendered. Horizontal and vertical margins
@@ -556,8 +554,8 @@ const RES = 10
 // near the side walls, while Y needs enough that the floor-collision effect
 // (particles compressing/bouncing on the bottom wall) fully dissipates
 // before it would enter the visible area.
-const OVERSCAN_X = 1.25
-const OVERSCAN_Y = 1.6
+const OVERSCAN_X = 1.5
+const OVERSCAN_Y = 2
 
 // Metaball rendering: particles are splatted as soft, oversized sprites into
 // a reduced-resolution density framebuffer, then a full-screen pass
@@ -814,7 +812,6 @@ export function createFluidBackground(
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
   const dt = 1.0 / 60.0
-  const gravity = -0.1
   const flipRatio = 0.9
   const numPressureIters = 30
   const numParticleIters = 2
@@ -911,7 +908,6 @@ export function createFluidBackground(
     time += dt
     fluid.simulate(
       dt,
-      gravity,
       flipRatio,
       numPressureIters,
       numParticleIters,

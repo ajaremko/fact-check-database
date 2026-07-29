@@ -9,7 +9,7 @@ function buildPermutation(): Uint8Array {
   const table = new Uint8Array(PERMUTATION_SIZE)
   for (let i = 0; i < PERMUTATION_SIZE; i++) table[i] = i
 
-  let seed = 1337
+  let seed = Date.now() % 4294967296 // deterministic but different each page load
   const nextRandom = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0
     return seed / 4294967296

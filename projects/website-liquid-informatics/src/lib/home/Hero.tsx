@@ -9,7 +9,8 @@ import { FluidBackground } from './FluidBackground'
 const HeroSection = styled.section`
   position: relative;
   overflow: hidden;
-  min-height: calc(100vh - 60px);
+  min-height: 100vh;
+  margin-top: -60px;
   display: flex;
   flex-direction: column;
   align-items: center;
