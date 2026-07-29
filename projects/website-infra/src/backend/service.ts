@@ -88,8 +88,8 @@ const authContainer: pulumi.Input<
       ]
     : []
 
-export const websiteService = new gcp.cloudrun.Service(
-  `${tag}-backend-service`,
+export const factCheckDatabaseBackendService = new gcp.cloudrun.Service(
+  `${tag}-fact-check-database-backend-service`,
   {
     location: gcpRegion,
     metadata: {
@@ -206,13 +206,128 @@ export const websiteService = new gcp.cloudrun.Service(
   }
 )
 
-export const publicAccess = new gcp.cloudrunv2.ServiceIamMember(
-  `${tag}-backend-service-public-access`,
+export const factCheckDatabasePublicAccess =
+  new gcp.cloudrunv2.ServiceIamMember(
+    `${tag}-fact-check-database-backend-service-public-access`,
+    {
+      name: factCheckDatabaseBackendService.name,
+      location: gcpRegion,
+      role: 'roles/run.invoker',
+      member: 'allUsers',
+    },
+    { provider }
+  )
+
+export const liquidInformaticsBackendService = new gcp.cloudrun.Service(
+  `${tag}-liquid-informatics-backend-service`,
   {
-    name: websiteService.name,
     location: gcpRegion,
-    role: 'roles/run.invoker',
-    member: 'allUsers',
+    metadata: {
+      namespace: gcpProject,
+      annotations: {
+        // 'run.googleapis.com/container-dependencies': '{"proxy":["backend"]}',
+      },
+    },
+    template: {
+      spec: {
+        serviceAccountName: websiteBackendServiceAccount.email,
+        volumes: [
+          {
+            name: 'envoy-config-volume',
+            secret: {
+              secretName: envoyConfig.secretId, // The Secret Manager secret name
+              items: [
+                {
+                  key: envoyConfigVersion.version, // Version to fetch
+                  path: 'envoy.yaml',
+                },
+              ],
+            },
+          },
+          {
+            name: 'oauth2-proxy-config-volume',
+            secret: {
+              secretName: oauth2ProxyConfig.secretId, // The Secret Manager secret name
+              items: [
+                {
+                  key: oauth2ProxyConfigVersion.version, // Version to fetch
+                  path: 'oauth2-proxy.cfg',
+                },
+              ],
+            },
+          },
+          ...htpasswdSecretVolume,
+        ],
+        containers: [
+          {
+            image: 'envoyproxy/envoy:v1.30.0',
+            name: 'proxy',
+            ports: [
+              {
+                containerPort: 8080,
+              },
+            ],
+            volumeMounts: [
+              {
+                name: 'envoy-config-volume',
+                mountPath: '/etc/envoy',
+              },
+            ],
+          },
+          ...authContainer,
+          {
+            image: getImageUrl('website-liquid-informatics', dockerTag),
+            name: 'backend',
+            startupProbe: {
+              initialDelaySeconds: 10,
+              periodSeconds: 5,
+              failureThreshold: 3,
+              timeoutSeconds: 3,
+              httpGet: {
+                path: '/health',
+              },
+            },
+            envs: [
+              {
+                name: 'PORT',
+                value: '3000',
+              },
+              {
+                name: 'RECAPTCHA_SITE_KEY',
+                value: recaptchaApiKeyName,
+              },
+              {
+                name: 'RECAPTCHA_PROJECT_ID',
+                value: gcpProject,
+              },
+              {
+                name: 'STORAGE_BUCKET_NAME',
+                value: backendBucket.name,
+              },
+            ],
+          },
+        ],
+      },
+    },
   },
-  { provider }
+  {
+    dependsOn: [
+      cloudRunService,
+      cloudRunArtifactRegistryReader,
+      ...iamBindings,
+    ],
+    provider,
+  }
 )
+
+export const liquidInformaticsPublicAccess =
+  new gcp.cloudrunv2.ServiceIamMember(
+    `${tag}-liquid-informatics-backend-service-public-access`,
+    {
+      name: liquidInformaticsBackendService.name,
+      location: gcpRegion,
+      role: 'roles/run.invoker',
+      member: 'allUsers',
+    },
+    { provider }
+  )

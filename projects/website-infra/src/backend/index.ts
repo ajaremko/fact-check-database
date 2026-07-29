@@ -1,7 +1,15 @@
-import { websiteService } from './service'
+import {
+  liquidInformaticsBackendService,
+  factCheckDatabaseBackendService,
+} from './service'
 
-export const websiteBackendUrl = websiteService.statuses[0].url
-export const websiteBackendName = websiteService.name
+export const factCheckDatabaseBackendUrl =
+  factCheckDatabaseBackendService.statuses[0].url
+export const factCheckDatabaseBackendName = factCheckDatabaseBackendService.name
+
+export const liquidInformaticsBackendUrl =
+  liquidInformaticsBackendService.statuses[0].url
+export const liquidInformaticsBackendName = liquidInformaticsBackendService.name
 
 import { backendBucket } from './storage'
 

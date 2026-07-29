@@ -1,7 +1,7 @@
 config:
   website:project: fact-check-database-dev
   website:region: us-central1
-  website:tag: dev-388
+  website:tag: dev-392
   website:coreStackName: alfredsyoung/fact-check-database-core
   website:logLevel: debug
   website:verifiedOwner: alfredsyoung@gmail.com

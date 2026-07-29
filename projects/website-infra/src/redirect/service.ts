@@ -3,14 +3,14 @@ import * as gcp from '@pulumi/gcp'
 import { gcpProject, gcpRegion, tag, mainDomain, stackName } from '../config'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
-import { websiteBackendUrl } from '../backend'
+import { factCheckDatabaseBackendUrl } from '../backend'
 
 const envs =
   stackName === 'dev'
     ? [
         {
           name: 'REDIRECT_TARGET',
-          value: websiteBackendUrl,
+          value: factCheckDatabaseBackendUrl,
         },
       ]
     : [
