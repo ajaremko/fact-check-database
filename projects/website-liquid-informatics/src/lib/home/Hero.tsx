@@ -2,7 +2,7 @@
 
 import styled from 'styled-components'
 
-import { C, serif } from '@/lib/theme'
+import { C, mono, serif } from '@/lib/theme'
 
 const HeroSection = styled.section`
   min-height: calc(100vh - 60px);
@@ -19,8 +19,9 @@ const HeroSection = styled.section`
 `
 
 const Heading = styled.h1`
+  font-family: ${mono};
   font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
+  font-weight: 400;
   margin: 0;
 `
 
@@ -33,8 +34,11 @@ const Subheading = styled.p`
 export function Hero() {
   return (
     <HeroSection>
-      <Heading>Your headline goes here</Heading>
-      <Subheading>Placeholder subheading text.</Subheading>
+      <Heading>Liquid Informatics</Heading>
+      <Subheading>
+        Bespoke data collection and extraction for media researchers,
+        journalists, and academics.
+      </Subheading>
     </HeroSection>
   )
 }

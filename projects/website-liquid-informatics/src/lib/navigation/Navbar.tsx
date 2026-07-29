@@ -4,13 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styled from 'styled-components'
 
-import { C, bp, serif } from '@/lib/theme'
+import { C, bp, mono } from '@/lib/theme'
 
 const Bar = styled.nav`
   position: sticky;
   top: 0;
   z-index: 50;
-  font-family: ${serif};
+  font-family: ${mono};
 `
 
 const Inner = styled.div`
@@ -24,7 +24,7 @@ const Inner = styled.div`
 const LogoLink = styled(Link)`
   text-decoration: none;
   font-size: 1.125rem;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.01em;
   color: ${C.textInverse};
 `
@@ -41,7 +41,7 @@ const NavLinks = styled.div`
 
 const NavLink = styled(Link)<{ $active: boolean }>`
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: none;
   color: ${({ $active }) => ($active ? C.textInverse : 'rgba(255, 255, 255, 0.7)')};
   transition: color 0.15s ease;

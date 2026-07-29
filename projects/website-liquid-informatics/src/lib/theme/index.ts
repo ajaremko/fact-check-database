@@ -17,4 +17,4 @@ export const C = {
 export const bp = { md: '@media (min-width: 768px)' } as const
 
 export const serif = `var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`
-export const mono = `ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace`
+export const mono = `var(--font-red-hat-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace`

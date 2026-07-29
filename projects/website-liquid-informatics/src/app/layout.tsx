@@ -2,7 +2,7 @@ import './global.css'
 
 import { Navbar } from '@/lib/navigation'
 import { AnalyticsScript } from '@/lib/analytics'
-import { plusJakartaSans } from '@/lib/theme/font'
+import { plusJakartaSans, redHatMono } from '@/lib/theme/font'
 import { GlobalStyle } from '@/lib/theme/GlobalStyle'
 
 import { StyledComponentsRegistry } from './registry'
@@ -19,7 +19,10 @@ export default function RootLayout({
 }) {
   return (
     <StyledComponentsRegistry>
-      <html lang="en" className={plusJakartaSans.variable}>
+      <html
+        lang="en"
+        className={`${plusJakartaSans.variable} ${redHatMono.variable}`}
+      >
         <body>
           <GlobalStyle />
           <AnalyticsScript />
