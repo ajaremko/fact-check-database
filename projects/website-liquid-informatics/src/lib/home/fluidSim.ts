@@ -546,14 +546,18 @@ class FlipFluid {
 const SIM_HEIGHT = 3.0
 
 // The simulated tank is built larger than the visible viewport (see
-// `OVERSCAN` in createFluidBackground) and only its central portion is
-// rendered, so the solid walls — and the air-leaking-along-the-wall
-// artifact that appears near them — stay cropped out of view.
+// `OVERSCAN_X`/`OVERSCAN_Y` below) and only its central portion is rendered,
+// so the solid walls stay cropped out of view.
 const RES = 10
 
-// The tank is simulated this much larger than the visible viewport in each
-// dimension; only the centered `OVERSCAN`-fraction crop is ever rendered.
-const OVERSCAN = 1.25
+// The tank is simulated larger than the visible viewport in each dimension;
+// only the centered crop is ever rendered. Horizontal and vertical margins
+// are tuned independently: X only needs enough to hide the wall artifact
+// near the side walls, while Y needs enough that the floor-collision effect
+// (particles compressing/bouncing on the bottom wall) fully dissipates
+// before it would enter the visible area.
+const OVERSCAN_X = 1.25
+const OVERSCAN_Y = 1.6
 
 // Metaball rendering: particles are splatted as soft, oversized sprites into
 // a reduced-resolution density framebuffer, then a full-screen pass
@@ -755,8 +759,8 @@ export function createFluidBackground(
   let cScale = canvas.height / SIM_HEIGHT
   let simWidth = canvas.width / cScale
 
-  const tankWidth = simWidth * OVERSCAN
-  const tankHeight = SIM_HEIGHT * OVERSCAN
+  const tankWidth = simWidth * OVERSCAN_X
+  const tankHeight = SIM_HEIGHT * OVERSCAN_Y
   const fluid = setupScene(tankWidth, tankHeight)
 
   const splatShader = createShader(gl, pointVertexShader, splatFragmentShader)
