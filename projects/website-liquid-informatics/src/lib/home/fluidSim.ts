@@ -10,11 +10,10 @@ const FLUID_CELL = 0
 const AIR_CELL = 1
 const SOLID_CELL = 2
 
-// Bulk water color and near-surface/foam highlight, in place of the
-// original's blue-water palette, so the sim reads as part of the site's
-// dark green hero rather than a contrasting demo accent.
+// Uniform bulk water color, in place of the original's blue-water palette,
+// so the sim reads as part of the site's dark green hero rather than a
+// contrasting demo accent.
 const BULK_COLOR: readonly [number, number, number] = [0.05, 0.45, 0.35]
-const FOAM_COLOR: readonly [number, number, number] = [0.75, 0.95, 0.85]
 
 function clamp(x: number, min: number, max: number): number {
   if (x < min) return min
@@ -487,6 +486,9 @@ class FlipFluid {
   }
 
   updateParticleColors() {
+    // Every particle settles toward the same bulk water color — no
+    // density-based foam/highlight recolor, so low-density (near-surface)
+    // regions don't stand out as separate white blobs against the water.
     const step = 0.01
 
     for (let i = 0; i < this.numParticles; i++) {
@@ -497,23 +499,6 @@ class FlipFluid {
         if (c < target) this.particleColor[idx] = clamp(c + step, 0, target)
         else if (c > target)
           this.particleColor[idx] = clamp(c - step, target, 1)
-      }
-
-      const h1 = this.fInvSpacing
-      const x = this.particlePos[2 * i]
-      const y = this.particlePos[2 * i + 1]
-      const xi = clamp(Math.floor(x * h1), 1, this.fNumX - 1)
-      const yi = clamp(Math.floor(y * h1), 1, this.fNumY - 1)
-      const cellNr = xi * this.fNumY + yi
-
-      const d0 = this.particleRestDensity
-      if (d0 > 0.0) {
-        const relDensity = this.particleDensity[cellNr] / d0
-        if (relDensity < 0.7) {
-          this.particleColor[3 * i] = FOAM_COLOR[0]
-          this.particleColor[3 * i + 1] = FOAM_COLOR[1]
-          this.particleColor[3 * i + 2] = FOAM_COLOR[2]
-        }
       }
     }
   }
@@ -545,13 +530,21 @@ const SIM_HEIGHT = 3.0
 // `OVERSCAN` in createFluidBackground) and only its central portion is
 // rendered, so the solid walls — and the air-leaking-along-the-wall
 // artifact that appears near them — stay cropped out of view.
-const RES = 45
+const RES = 10
 const REL_WATER_WIDTH = 0.96
-const REL_WATER_HEIGHT = 0.8
+const REL_WATER_HEIGHT = 0.96
 
 // The tank is simulated this much larger than the visible viewport in each
 // dimension; only the centered `OVERSCAN`-fraction crop is ever rendered.
 const OVERSCAN = 1.25
+
+// Metaball rendering: particles are splatted as soft, oversized sprites into
+// a reduced-resolution density framebuffer, then a full-screen pass
+// thresholds that density field into a single merged liquid silhouette.
+const SPLAT_SIZE_SCALE = 2.2
+const DENSITY_THRESHOLD = 0.4
+const THRESHOLD_SOFTNESS = 0.15
+const SPLAT_RESOLUTION_SCALE = 0.5
 
 function setupScene(tankWidth: number, tankHeight: number): FlipFluid {
   const h = tankHeight / RES
@@ -585,7 +578,7 @@ function setupScene(tankWidth: number, tankHeight: number): FlipFluid {
   for (let i = 0; i < f.fNumX; i++) {
     for (let j = 0; j < f.fNumY; j++) {
       let s = 1.0 // fluid
-      if (i === 0 || i === f.fNumX - 1 || j === 0) s = 0.0 // solid walls/floor, open top
+      if (i === 0 || i === f.fNumX - 1 || j === 0 || j === f.fNumY - 1) s = 0.0 // solid: fully enclosed tank
       f.s[i * n + j] = s
     }
   }
@@ -615,16 +608,49 @@ const pointVertexShader = `
   }
 `
 
-const pointFragmentShader = `
+// Splat pass: soft radial falloff instead of a hard disc, output premultiplied
+// by weight so overlapping splats accumulate correctly under additive
+// blending (weight itself accumulates in alpha, giving a density field).
+const splatFragmentShader = `
   precision mediump float;
   varying vec3 fragColor;
 
   void main() {
     float rx = 0.5 - gl_PointCoord.x;
     float ry = 0.5 - gl_PointCoord.y;
-    float r2 = rx * rx + ry * ry;
-    if (r2 > 0.25) discard;
-    gl_FragColor = vec4(fragColor, 1.0);
+    float r = length(vec2(rx, ry)) * 2.0;
+    float weight = smoothstep(1.0, 0.0, r);
+    gl_FragColor = vec4(fragColor * weight, weight);
+  }
+`
+
+// Composite pass: a full-screen quad that samples the accumulated density
+// field and thresholds it into a single merged liquid silhouette.
+const quadVertexShader = `
+  attribute vec2 attrPosition;
+  varying vec2 vUv;
+
+  void main() {
+    vUv = attrPosition * 0.5 + 0.5;
+    gl_Position = vec4(attrPosition, 0.0, 1.0);
+  }
+`
+
+const compositeFragmentShader = `
+  precision mediump float;
+  varying vec2 vUv;
+  uniform sampler2D densityTexture;
+  uniform float threshold;
+  uniform float softness;
+
+  void main() {
+    vec4 sample = texture2D(densityTexture, vUv);
+    float density = sample.a;
+    if (density <= 0.0001) discard;
+    vec3 color = sample.rgb / density;
+    float alpha = smoothstep(threshold - softness, threshold + softness, density);
+    if (alpha <= 0.001) discard;
+    gl_FragColor = vec4(color, alpha);
   }
 `
 
@@ -659,6 +685,27 @@ export interface FluidBackground {
   resize(): void
 }
 
+function resizeDensityTexture(
+  gl: WebGLRenderingContext,
+  texture: WebGLTexture,
+  width: number,
+  height: number
+) {
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    width,
+    height,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    null
+  )
+  gl.bindTexture(gl.TEXTURE_2D, null)
+}
+
 export function createFluidBackground(
   canvas: HTMLCanvasElement
 ): FluidBackground | null {
@@ -677,9 +724,55 @@ export function createFluidBackground(
   const tankHeight = SIM_HEIGHT * OVERSCAN
   const fluid = setupScene(tankWidth, tankHeight)
 
-  const pointShader = createShader(gl, pointVertexShader, pointFragmentShader)
+  const splatShader = createShader(gl, pointVertexShader, splatFragmentShader)
+  const compositeShader = createShader(
+    gl,
+    quadVertexShader,
+    compositeFragmentShader
+  )
+
   const pointVertexBuffer = gl.createBuffer()
   const pointColorBuffer = gl.createBuffer()
+
+  const quadVertexBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadVertexBuffer)
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+    gl.STATIC_DRAW
+  )
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  let densityWidth = Math.max(
+    1,
+    Math.round(canvas.width * SPLAT_RESOLUTION_SCALE)
+  )
+  let densityHeight = Math.max(
+    1,
+    Math.round(canvas.height * SPLAT_RESOLUTION_SCALE)
+  )
+
+  const densityTexture = gl.createTexture()
+  if (!densityTexture) throw new Error('Failed to create density texture')
+  resizeDensityTexture(gl, densityTexture, densityWidth, densityHeight)
+  gl.bindTexture(gl.TEXTURE_2D, densityTexture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.bindTexture(gl.TEXTURE_2D, null)
+
+  const densityFramebuffer = gl.createFramebuffer()
+  if (!densityFramebuffer) throw new Error('Failed to create framebuffer')
+  gl.bindFramebuffer(gl.FRAMEBUFFER, densityFramebuffer)
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT0,
+    gl.TEXTURE_2D,
+    densityTexture,
+    0
+  )
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
   const dt = 1.0 / 60.0
   const gravity = -1.5
@@ -691,44 +784,87 @@ export function createFluidBackground(
   let rafHandle: number | null = null
 
   function draw() {
+    // Pass 1: splat particles as soft, oversized sprites into the
+    // reduced-resolution density framebuffer, additively.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, densityFramebuffer)
+    gl.viewport(0, 0, densityWidth, densityHeight)
     gl.clearColor(0.0, 0.0, 0.0, 0.0)
     gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.viewport(0, 0, canvas.width, canvas.height)
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.ONE, gl.ONE)
 
-    const pointSize = ((2.0 * fluid.particleRadius) / simWidth) * canvas.width
+    const splatPointSize =
+      ((2.0 * fluid.particleRadius) / simWidth) *
+      densityWidth *
+      SPLAT_SIZE_SCALE
 
-    gl.useProgram(pointShader)
+    gl.useProgram(splatShader)
     gl.uniform2f(
-      gl.getUniformLocation(pointShader, 'domainSize'),
+      gl.getUniformLocation(splatShader, 'domainSize'),
       simWidth,
       SIM_HEIGHT
     )
     gl.uniform2f(
-      gl.getUniformLocation(pointShader, 'viewOffset'),
+      gl.getUniformLocation(splatShader, 'viewOffset'),
       (tankWidth - simWidth) / 2,
       (tankHeight - SIM_HEIGHT) / 2
     )
-    gl.uniform1f(gl.getUniformLocation(pointShader, 'pointSize'), pointSize)
+    gl.uniform1f(
+      gl.getUniformLocation(splatShader, 'pointSize'),
+      splatPointSize
+    )
 
     gl.bindBuffer(gl.ARRAY_BUFFER, pointVertexBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, fluid.particlePos, gl.DYNAMIC_DRAW)
 
-    const posLoc = gl.getAttribLocation(pointShader, 'attrPosition')
-    gl.enableVertexAttribArray(posLoc)
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
+    const splatPosLoc = gl.getAttribLocation(splatShader, 'attrPosition')
+    gl.enableVertexAttribArray(splatPosLoc)
+    gl.vertexAttribPointer(splatPosLoc, 2, gl.FLOAT, false, 0, 0)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, pointColorBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, fluid.particleColor, gl.DYNAMIC_DRAW)
 
-    const colorLoc = gl.getAttribLocation(pointShader, 'attrColor')
-    gl.enableVertexAttribArray(colorLoc)
-    gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0)
+    const splatColorLoc = gl.getAttribLocation(splatShader, 'attrColor')
+    gl.enableVertexAttribArray(splatColorLoc)
+    gl.vertexAttribPointer(splatColorLoc, 3, gl.FLOAT, false, 0, 0)
 
     gl.drawArrays(gl.POINTS, 0, fluid.numParticles)
 
-    gl.disableVertexAttribArray(posLoc)
-    gl.disableVertexAttribArray(colorLoc)
+    gl.disableVertexAttribArray(splatPosLoc)
+    gl.disableVertexAttribArray(splatColorLoc)
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+    // Pass 2: composite the density field onto the canvas, thresholding it
+    // into a single merged liquid silhouette.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.viewport(0, 0, canvas.width, canvas.height)
+    gl.clearColor(0.0, 0.0, 0.0, 0.0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+    gl.useProgram(compositeShader)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, densityTexture)
+    gl.uniform1i(gl.getUniformLocation(compositeShader, 'densityTexture'), 0)
+    gl.uniform1f(
+      gl.getUniformLocation(compositeShader, 'threshold'),
+      DENSITY_THRESHOLD
+    )
+    gl.uniform1f(
+      gl.getUniformLocation(compositeShader, 'softness'),
+      THRESHOLD_SOFTNESS
+    )
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadVertexBuffer)
+    const quadPosLoc = gl.getAttribLocation(compositeShader, 'attrPosition')
+    gl.enableVertexAttribArray(quadPosLoc)
+    gl.vertexAttribPointer(quadPosLoc, 2, gl.FLOAT, false, 0, 0)
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+
+    gl.disableVertexAttribArray(quadPosLoc)
+    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    gl.bindTexture(gl.TEXTURE_2D, null)
   }
 
   function tick() {
@@ -757,16 +893,30 @@ export function createFluidBackground(
     dispose() {
       if (rafHandle !== null) cancelAnimationFrame(rafHandle)
       rafHandle = null
-      gl.deleteProgram(pointShader)
+      gl.deleteProgram(splatShader)
+      gl.deleteProgram(compositeShader)
       gl.deleteBuffer(pointVertexBuffer)
       gl.deleteBuffer(pointColorBuffer)
+      gl.deleteBuffer(quadVertexBuffer)
+      gl.deleteTexture(densityTexture)
+      gl.deleteFramebuffer(densityFramebuffer)
     },
     resize() {
-      // Only the viewport-to-simulation mapping is recomputed here — the
-      // fluid's own grid/particle domain is not rebuilt, matching the
-      // original demo's behavior of not handling resize either.
+      // Only the viewport-to-simulation mapping (and the density
+      // framebuffer's pixel size) is recomputed here — the fluid's own
+      // grid/particle domain is not rebuilt, matching the original demo's
+      // behavior of not handling resize either.
       cScale = canvas.height / SIM_HEIGHT
       simWidth = canvas.width / cScale
+      densityWidth = Math.max(
+        1,
+        Math.round(canvas.width * SPLAT_RESOLUTION_SCALE)
+      )
+      densityHeight = Math.max(
+        1,
+        Math.round(canvas.height * SPLAT_RESOLUTION_SCALE)
+      )
+      resizeDensityTexture(gl, densityTexture, densityWidth, densityHeight)
     },
   }
 }
