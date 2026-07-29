@@ -28,11 +28,9 @@ export const SiteFooter = styled.footer`
 export function SiteFooterMeta() {
   return (
     <Container>
-      The Fact Check Database 2026
+      Liquid Informatics 2026
       <br />
       Build #{process.env.NEXT_PUBLIC_BUILD_NUMBER}
-      <br />
-      <span>Created and maintained by Alfred Young &middot; </span>
     </Container>
   )
 }

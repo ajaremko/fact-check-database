@@ -35,14 +35,14 @@ export const Input = styled.input<{ $hasError?: boolean }>`
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
   border: 1px solid
-    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+    ${({ $hasError }) => ($hasError ? C.error : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.15s ease;
 
   &:focus {
-    border-color: ${({ $hasError }) => ($hasError ? '#c0392b' : C.accent)};
+    border-color: ${({ $hasError }) => ($hasError ? C.error : C.accent)};
   }
 
   &::placeholder {
@@ -57,7 +57,7 @@ export const Select = styled.select<{ $hasError?: boolean }>`
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
   border: 1px solid
-    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+    ${({ $hasError }) => ($hasError ? C.error : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -66,7 +66,7 @@ export const Select = styled.select<{ $hasError?: boolean }>`
   transition: border-color 0.15s ease;
 
   &:focus {
-    border-color: ${({ $hasError }) => ($hasError ? '#c0392b' : C.accent)};
+    border-color: ${({ $hasError }) => ($hasError ? C.error : C.accent)};
   }
 `
 
@@ -80,7 +80,7 @@ export const Textarea = styled.textarea<{
   color: ${C.textPrimary};
   background-color: ${C.bgBase};
   border: 1px solid
-    ${({ $hasError }) => ($hasError ? '#c0392b' : C.borderSubtle)};
+    ${({ $hasError }) => ($hasError ? C.error : C.borderSubtle)};
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
@@ -91,7 +91,7 @@ export const Textarea = styled.textarea<{
   transition: border-color 0.15s ease;
 
   &:focus {
-    border-color: ${({ $hasError }) => ($hasError ? '#c0392b' : C.accent)};
+    border-color: ${({ $hasError }) => ($hasError ? C.error : C.accent)};
   }
 
   &::placeholder {
@@ -123,28 +123,28 @@ export const CheckboxRow = styled.label`
 
 export const ErrorText = styled.span`
   font-size: 0.8125rem;
-  color: #c0392b;
+  color: ${C.error};
 `
 
 export const FormError = styled.div`
   background-color: ${C.bgSurface};
   border: 1px solid ${C.borderSubtle};
-  border-left: 3px solid #c0392b;
+  border-left: 3px solid ${C.error};
   border-radius: 0 6px 6px 0;
   padding: 1rem 1.5rem;
   font-size: 0.9375rem;
-  color: #c0392b;
+  color: ${C.error};
   line-height: 1.6;
 `
 
 export const FormSuccess = styled.div`
   background-color: ${C.bgSurface};
   border: 1px solid ${C.borderSubtle};
-  border-left: 3px solid #27ae60;
+  border-left: 3px solid ${C.success};
   border-radius: 0 6px 6px 0;
   padding: 1rem 1.5rem;
   font-size: 0.9375rem;
-  color: #27ae60;
+  color: ${C.success};
   line-height: 1.6;
 `
 

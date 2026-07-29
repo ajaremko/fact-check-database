@@ -2,13 +2,14 @@ import './global.css'
 
 import { Navbar } from '@/lib/navigation'
 import { AnalyticsScript } from '@/lib/analytics'
+import { plusJakartaSans } from '@/lib/theme/font'
+import { GlobalStyle } from '@/lib/theme/GlobalStyle'
 
 import { StyledComponentsRegistry } from './registry'
 
 export const metadata = {
-  title: 'Fact-Check Research Dataset',
-  description:
-    'A continuously-updated, research-grade dataset aggregating fact-check records from 7+ international organizations. Encrypted at rest, daily ingestion.',
+  title: 'Liquid Informatics',
+  description: 'Liquid Informatics — data management consultancy.',
 }
 
 export default function RootLayout({
@@ -18,8 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <StyledComponentsRegistry>
-      <html lang="en">
+      <html lang="en" className={plusJakartaSans.variable}>
         <body>
+          <GlobalStyle />
           <AnalyticsScript />
           <Navbar />
           {children}

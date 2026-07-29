@@ -7,9 +7,8 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   ...metadataBase,
-  title: 'FCDB | Contact',
-  description:
-    'Get in touch with the Fact Check Database team — dataset access requests, press inquiries, tips, or general feedback.',
+  title: 'Liquid Informatics | Contact',
+  description: 'Get in touch with Liquid Informatics.',
 }
 
 export default function ContactPage() {

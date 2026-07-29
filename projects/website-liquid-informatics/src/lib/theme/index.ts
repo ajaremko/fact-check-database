@@ -1,16 +1,20 @@
 export const C = {
-  bgBase: '#faf8f4',
-  bgSurface: '#f0ede6',
-  bgCode: '#e8e4dc',
-  borderSubtle: '#d6d0c4',
-  textPrimary: '#1c1917',
-  textSecondary: '#57534e',
-  textMuted: '#a8a29e',
-  accent: '#1e3a5f',
-  accentHover: '#16305a',
+  bgBase: '#ffffff',
+  bgSurface: '#f5f5f5',
+  bgCode: '#ececec',
+  borderSubtle: '#dddddd',
+  textPrimary: '#111111',
+  textSecondary: '#555555',
+  textMuted: '#999999',
+  accent: '#333333',
+  accentHover: '#111111',
+  error: '#c0392b',
+  success: '#27ae60',
+  bgDark: '#0d3b2c',
+  textInverse: '#ffffff',
 } as const
 
 export const bp = { md: '@media (min-width: 768px)' } as const
 
-export const serif = `Georgia, Cambria, 'Times New Roman', serif`
+export const serif = `var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`
 export const mono = `ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace`
