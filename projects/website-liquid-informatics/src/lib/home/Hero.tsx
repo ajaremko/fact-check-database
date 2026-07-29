@@ -49,7 +49,7 @@ export function Hero() {
     <HeroSection>
       <FluidBackground />
       <Content>
-        <Heading>The News is Liquid</Heading>
+        <Heading>The Shape of the News is Liquid</Heading>
         <Subheading>
           A content archival and data extraction platform for longitudinal media
           research.

@@ -313,7 +313,8 @@ class FlipFluid {
         const xi = clamp(Math.floor(x * h1), 0, this.fNumX - 1)
         const yi = clamp(Math.floor(y * h1), 0, this.fNumY - 1)
         const cellNr = xi * n + yi
-        if (this.cellType[cellNr] === AIR_CELL) this.cellType[cellNr] = FLUID_CELL
+        if (this.cellType[cellNr] === AIR_CELL)
+          this.cellType[cellNr] = FLUID_CELL
       }
     }
 
@@ -418,7 +419,10 @@ class FlipFluid {
         for (let i = 0; i < this.fNumX; i++) {
           for (let j = 0; j < this.fNumY; j++) {
             const solid = this.cellType[i * n + j] === SOLID_CELL
-            if (solid || (i > 0 && this.cellType[(i - 1) * n + j] === SOLID_CELL))
+            if (
+              solid ||
+              (i > 0 && this.cellType[(i - 1) * n + j] === SOLID_CELL)
+            )
               this.u[i * n + j] = this.prevU[i * n + j]
             if (solid || (j > 0 && this.cellType[i * n + j - 1] === SOLID_CELL))
               this.v[i * n + j] = this.prevV[i * n + j]
@@ -491,7 +495,8 @@ class FlipFluid {
         const target = BULK_COLOR[k]
         const c = this.particleColor[idx]
         if (c < target) this.particleColor[idx] = clamp(c + step, 0, target)
-        else if (c > target) this.particleColor[idx] = clamp(c - step, target, 1)
+        else if (c > target)
+          this.particleColor[idx] = clamp(c - step, target, 1)
       }
 
       const h1 = this.fInvSpacing
@@ -536,18 +541,24 @@ class FlipFluid {
 
 const SIM_HEIGHT = 3.0
 
-function setupScene(canvasWidth: number, canvasHeight: number): FlipFluid {
-  const cScale = canvasHeight / SIM_HEIGHT
-  const simWidth = canvasWidth / cScale
+// The simulated tank is built larger than the visible viewport (see
+// `OVERSCAN` in createFluidBackground) and only its central portion is
+// rendered, so the solid walls — and the air-leaking-along-the-wall
+// artifact that appears near them — stay cropped out of view.
+const RES = 45
+const REL_WATER_WIDTH = 0.96
+const REL_WATER_HEIGHT = 0.8
 
-  const res = 70
-  const tankHeight = SIM_HEIGHT
-  const tankWidth = simWidth
-  const h = tankHeight / res
+// The tank is simulated this much larger than the visible viewport in each
+// dimension; only the centered `OVERSCAN`-fraction crop is ever rendered.
+const OVERSCAN = 1.25
+
+function setupScene(tankWidth: number, tankHeight: number): FlipFluid {
+  const h = tankHeight / RES
   const density = 1000.0
 
-  const relWaterHeight = 0.8
-  const relWaterWidth = 0.6
+  const relWaterHeight = REL_WATER_HEIGHT
+  const relWaterWidth = REL_WATER_WIDTH
 
   const r = 0.3 * h
   const dx = 2.0 * r
@@ -588,6 +599,7 @@ const pointVertexShader = `
   attribute vec2 attrPosition;
   attribute vec3 attrColor;
   uniform vec2 domainSize;
+  uniform vec2 viewOffset;
   uniform float pointSize;
 
   varying vec3 fragColor;
@@ -596,7 +608,7 @@ const pointVertexShader = `
     vec4 screenTransform =
       vec4(2.0 / domainSize.x, 2.0 / domainSize.y, -1.0, -1.0);
     gl_Position =
-      vec4(attrPosition * screenTransform.xy + screenTransform.zw, 0.0, 1.0);
+      vec4((attrPosition - viewOffset) * screenTransform.xy + screenTransform.zw, 0.0, 1.0);
 
     gl_PointSize = pointSize;
     fragColor = attrColor;
@@ -660,14 +672,17 @@ export function createFluidBackground(
 
   let cScale = canvas.height / SIM_HEIGHT
   let simWidth = canvas.width / cScale
-  const fluid = setupScene(canvas.width, canvas.height)
+
+  const tankWidth = simWidth * OVERSCAN
+  const tankHeight = SIM_HEIGHT * OVERSCAN
+  const fluid = setupScene(tankWidth, tankHeight)
 
   const pointShader = createShader(gl, pointVertexShader, pointFragmentShader)
   const pointVertexBuffer = gl.createBuffer()
   const pointColorBuffer = gl.createBuffer()
 
   const dt = 1.0 / 60.0
-  const gravity = -9.81
+  const gravity = -1.5
   const flipRatio = 0.9
   const numPressureIters = 30
   const numParticleIters = 2
@@ -687,6 +702,11 @@ export function createFluidBackground(
       gl.getUniformLocation(pointShader, 'domainSize'),
       simWidth,
       SIM_HEIGHT
+    )
+    gl.uniform2f(
+      gl.getUniformLocation(pointShader, 'viewOffset'),
+      (tankWidth - simWidth) / 2,
+      (tankHeight - SIM_HEIGHT) / 2
     )
     gl.uniform1f(gl.getUniformLocation(pointShader, 'pointSize'), pointSize)
 
