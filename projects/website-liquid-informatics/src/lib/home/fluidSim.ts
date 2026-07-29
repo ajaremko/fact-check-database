@@ -485,6 +485,21 @@ class FlipFluid {
     }
   }
 
+  applyTurbulence(dt: number, time: number) {
+    for (let i = 0; i < this.numParticles; i++) {
+      const x = this.particlePos[2 * i]
+      const y = this.particlePos[2 * i + 1]
+      const vx =
+        Math.sin(y * TURBULENCE_FREQUENCY + time * TURBULENCE_SPEED) *
+        TURBULENCE_STRENGTH
+      const vy =
+        Math.cos(x * TURBULENCE_FREQUENCY - time * TURBULENCE_SPEED) *
+        TURBULENCE_STRENGTH
+      this.particleVel[2 * i] += vx * dt
+      this.particleVel[2 * i + 1] += vy * dt
+    }
+  }
+
   updateParticleColors() {
     // Every particle settles toward the same bulk water color — no
     // density-based foam/highlight recolor, so low-density (near-surface)
@@ -509,9 +524,11 @@ class FlipFluid {
     flipRatio: number,
     numPressureIters: number,
     numParticleIters: number,
-    overRelaxation: number
+    overRelaxation: number,
+    time: number
   ) {
     this.integrateParticles(dt, gravity)
+    this.applyTurbulence(dt, time)
     this.pushParticlesApart(numParticleIters)
     this.handleWallCollisions()
     this.transferVelocities(true)
@@ -531,8 +548,8 @@ const SIM_HEIGHT = 3.0
 // rendered, so the solid walls — and the air-leaking-along-the-wall
 // artifact that appears near them — stay cropped out of view.
 const RES = 10
-const REL_WATER_WIDTH = 0.96
-const REL_WATER_HEIGHT = 0.96
+const REL_WATER_WIDTH = 0.98
+const REL_WATER_HEIGHT = 0.9
 
 // The tank is simulated this much larger than the visible viewport in each
 // dimension; only the centered `OVERSCAN`-fraction crop is ever rendered.
@@ -545,6 +562,13 @@ const SPLAT_SIZE_SCALE = 2.2
 const DENSITY_THRESHOLD = 0.4
 const THRESHOLD_SOFTNESS = 0.15
 const SPLAT_RESOLUTION_SCALE = 0.5
+
+// A small swirling force applied to every particle each frame (see
+// `FlipFluid.applyTurbulence`), so the fluid keeps drifting instead of
+// settling into a static arrangement once gravity/packing equilibrate.
+const TURBULENCE_STRENGTH = 0.1 // velocity nudge amplitude (sim-units/sec)
+const TURBULENCE_FREQUENCY = 2.0 // spatial frequency — smaller = larger eddies
+const TURBULENCE_SPEED = 0.5 // how fast the flow pattern drifts over time
 
 function setupScene(tankWidth: number, tankHeight: number): FlipFluid {
   const h = tankHeight / RES
@@ -775,12 +799,13 @@ export function createFluidBackground(
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
   const dt = 1.0 / 60.0
-  const gravity = -1.5
+  const gravity = -0.5
   const flipRatio = 0.9
   const numPressureIters = 30
   const numParticleIters = 2
   const overRelaxation = 1.9
 
+  let time = 0
   let rafHandle: number | null = null
 
   function draw() {
@@ -868,13 +893,15 @@ export function createFluidBackground(
   }
 
   function tick() {
+    time += dt
     fluid.simulate(
       dt,
       gravity,
       flipRatio,
       numPressureIters,
       numParticleIters,
-      overRelaxation
+      overRelaxation,
+      time
     )
     draw()
     rafHandle = requestAnimationFrame(tick)
