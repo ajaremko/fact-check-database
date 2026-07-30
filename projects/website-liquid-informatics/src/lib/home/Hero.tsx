@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
 
 import { C, mono, serif } from '@/lib/theme'
@@ -77,28 +78,6 @@ const fadeIn = keyframes`
   }
 `
 
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`
-
-const fadeInDown = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`
-
 const flash = keyframes`
   0%,
   100% {
@@ -171,6 +150,39 @@ const Subheading = styled.p<{ $delay: number }>`
   }
 `
 
+const ScrollButton = styled.button<{ $delay: number }>`
+  position: absolute;
+  left: 50%;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(48px);
+  -webkit-backdrop-filter: blur(48px);
+  box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.3);
+  color: ${C.textInverse};
+  cursor: pointer;
+  opacity: 0;
+  animation: ${fadeIn} 2.4s ease forwards;
+  animation-delay: ${({ $delay }) => $delay}s;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 1;
+  }
+`
+
 // --- Stats Bar ---
 
 const StatsBar = styled.div`
@@ -215,6 +227,12 @@ const StatLabel = styled.span`
 `
 
 export function Hero() {
+  const nextSectionRef = useRef<HTMLDivElement>(null)
+
+  const scrollToNextSection = () => {
+    nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <PageWrapper>
       <HeroSection>
@@ -243,8 +261,26 @@ export function Hero() {
             media research and analysis.
           </Subheading>
         </Content>
+        <ScrollButton
+          $delay={subheadingDelay}
+          onClick={scrollToNextSection}
+          aria-label="Scroll to learn more"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </ScrollButton>
       </HeroSection>
-      <StatsBar>
+      <StatsBar ref={nextSectionRef}>
         <StatsInner>
           <StatItem>
             <StatValue>10,000+</StatValue>
