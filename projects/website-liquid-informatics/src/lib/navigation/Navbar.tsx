@@ -56,7 +56,9 @@ const NavLink = styled(Link)<{ $active: boolean }>`
 `
 
 const NAV_ITEMS = [
-  { label: 'Dataset', href: '/dataset' },
+  { label: 'Services', href: '/services' },
+  { label: 'Datasets', href: '/datasets' },
+  { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ] as const
 
@@ -66,7 +68,7 @@ export function Navbar() {
   return (
     <Bar>
       <Inner>
-        <LogoLink href="/">Liquid Informatics</LogoLink>
+        <LogoLink href="/">LiquidInformatics</LogoLink>
         <NavLinks>
           {NAV_ITEMS.map(({ label, href }) => (
             <NavLink key={href} href={href} $active={pathname === href}>

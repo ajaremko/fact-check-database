@@ -568,8 +568,8 @@ const SPLAT_RESOLUTION_SCALE = 0.5
 // A small swirling force applied to every particle each frame (see
 // `FlipFluid.applyTurbulence`), so the fluid keeps drifting instead of
 // settling into a static arrangement once gravity/packing equilibrate.
-const TURBULENCE_STRENGTH = 0.1 // velocity nudge amplitude (sim-units/sec)
-const TURBULENCE_FREQUENCY = 2.0 // spatial frequency — smaller = larger eddies
+const TURBULENCE_STRENGTH = 0.5 // velocity nudge amplitude (sim-units/sec)
+const TURBULENCE_FREQUENCY = 1.5 // spatial frequency — smaller = larger eddies
 const TURBULENCE_SPEED = 0.15 // how fast the flow pattern drifts over time
 
 // Initial particle placement: an even grid spanning the fill extent, with

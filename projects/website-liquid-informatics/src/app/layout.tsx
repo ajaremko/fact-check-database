@@ -4,6 +4,7 @@ import { Navbar } from '@/lib/navigation'
 import { AnalyticsScript } from '@/lib/analytics'
 import { plusJakartaSans, redHatMono } from '@/lib/theme/font'
 import { GlobalStyle } from '@/lib/theme/GlobalStyle'
+import { PageFadeIn } from '@/lib/theme/PageFadeIn'
 
 import { StyledComponentsRegistry } from './registry'
 
@@ -26,8 +27,10 @@ export default function RootLayout({
         <body>
           <GlobalStyle />
           <AnalyticsScript />
-          <Navbar />
-          {children}
+          <PageFadeIn>
+            <Navbar />
+            {children}
+          </PageFadeIn>
         </body>
       </html>
     </StyledComponentsRegistry>
