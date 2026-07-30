@@ -555,7 +555,7 @@ const RES = 6
 // (particles compressing/bouncing on the bottom wall) fully dissipates
 // before it would enter the visible area.
 const OVERSCAN_X = 1.5
-const OVERSCAN_Y = 2
+const OVERSCAN_Y = 3
 
 // Metaball rendering: particles are splatted as soft, oversized sprites into
 // a reduced-resolution density framebuffer, then a full-screen pass

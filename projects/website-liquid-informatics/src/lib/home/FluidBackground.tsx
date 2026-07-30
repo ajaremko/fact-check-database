@@ -15,6 +15,12 @@ const Canvas = styled.canvas`
 
 const MAX_DEVICE_PIXEL_RATIO = 2
 const RESIZE_DEBOUNCE_MS = 200
+const PARALLAX_FACTOR = 0.7 // fraction of scroll speed the background trails at
+const PARALLAX_MAX_OFFSET = 1000 // px, clamps the shift at scroll extremes
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value))
+}
 
 export function FluidBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -65,9 +71,31 @@ export function FluidBackground() {
     )
     intersectionObserver.observe(canvas)
 
+    let parallaxRafHandle: number | null = null
+    let ticking = false
+    const updateParallax = () => {
+      ticking = false
+      const heroTop = canvas.parentElement?.getBoundingClientRect().top ?? 0
+      const offset = clamp(
+        -heroTop * PARALLAX_FACTOR,
+        -PARALLAX_MAX_OFFSET,
+        PARALLAX_MAX_OFFSET
+      )
+      canvas.style.transform = `translateY(${offset}px)`
+    }
+    const handleScroll = () => {
+      if (ticking) return
+      ticking = true
+      parallaxRafHandle = requestAnimationFrame(updateParallax)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    updateParallax()
+
     return () => {
       if (resizeTimeout) clearTimeout(resizeTimeout)
+      if (parallaxRafHandle !== null) cancelAnimationFrame(parallaxRafHandle)
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('scroll', handleScroll)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       intersectionObserver.disconnect()
       sim.dispose()

@@ -6,7 +6,10 @@ import styled, { keyframes } from 'styled-components'
 import { C, mono, serif } from '@/lib/theme'
 import { TEXT_FADE_DELAY } from '@/lib/theme/motion'
 
+import { CtaSection } from './CtaSection'
 import { FluidBackground } from './FluidBackground'
+import { ProblemSection } from './ProblemSection'
+import { SolutionSection } from './SolutionSection'
 
 export const PageWrapper = styled.div`
   background-color: ${C.bgBase};
@@ -300,6 +303,9 @@ export function Hero() {
           </StatItem>
         </StatsInner>
       </StatsBar>
+      <ProblemSection />
+      <SolutionSection />
+      <CtaSection />
     </PageWrapper>
   )
 }
