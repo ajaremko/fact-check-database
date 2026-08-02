@@ -15,7 +15,7 @@ services:
       RECAPTCHA_SITE_KEY: $RECAPTCHA_SITE_KEY
       NX_TUI: false
     volumes:
-      - ../..:/workspaces:cached
+      - ../../..:/workspaces:cached
       - ~/.ssh:/home/node/.ssh:cached
       - ~/.gcp:/var/secrets:cached
       - type: bind

@@ -1,0 +1,18 @@
+services:
+  devcontainer:
+    image: nvidia/cuda:12.4.1-devel-ubuntu22.04
+    command: sleep infinity
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /var/secrets/$GOOGLE_APPLICATION_CREDENTIALS
+      NX_TUI: false
+    volumes:
+      - ../../..:/workspaces:cached
+      - ~/.ssh:/home/node/.ssh:cached
+      - ~/.gcp:/var/secrets:cached

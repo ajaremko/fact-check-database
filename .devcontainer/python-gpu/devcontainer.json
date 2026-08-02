@@ -1,5 +1,5 @@
 {
-  "name": "News Research Dev Container",
+  "name": "LI Python GPU Dev Container",
   "dockerComposeFile": "docker-compose.yml",
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -10,9 +10,6 @@
     },
     "ghcr.io/devcontainers/features/git:1": {
       "ppa": true,
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "latest"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -26,6 +23,9 @@
     },
     "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {
       "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "20"
     }
   },
   "customizations": {
@@ -34,7 +34,6 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-containers",
-        "nrwl.angular-console",
         "github.vscode-github-actions",
         "redhat.vscode-xml"
       ],
@@ -45,10 +44,6 @@
         "dev.containers.copyGitConfig": true
       }
     }
-  },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
-  "remoteEnv": {
-    "SSH_AUTH_SOCK": "/ssh-agent.sock"
   },
   "forwardPorts": []
 }
