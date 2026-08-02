@@ -14,7 +14,7 @@
     "download": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run argospm install translate",
+        "command": "uv run -m spacy download en_core_web_sm",
         "cwd": "{projectRoot}"
       }
     },
