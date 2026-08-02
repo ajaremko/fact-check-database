@@ -2,14 +2,14 @@
 
 import { useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
+import Link from 'next/link'
 
 import { C, mono, serif } from '@/lib/theme'
 import { TEXT_FADE_DELAY } from '@/lib/theme/motion'
+import { BodyText, Container, SectionLabel } from '@/lib/layout'
 
-import { CtaSection } from './CtaSection'
 import { FluidBackground } from './FluidBackground'
-import { ProblemSection } from './ProblemSection'
-import { SolutionSection } from './SolutionSection'
+import { ScrollButton } from './ScrollButton'
 
 export const PageWrapper = styled.div`
   background-color: ${C.bgBase};
@@ -30,8 +30,24 @@ const HeroSection = styled.section`
   gap: 1rem;
   text-align: center;
   padding: 2rem;
-  background-color: ${C.bgDark};
-  color: ${C.textInverse};
+  background-color: ${C.bgBase};
+  color: ${C.textPrimary};
+  font-family: ${serif};
+`
+
+const InterludeSection = styled.section`
+  position: relative;
+  overflow: hidden;
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  padding: 2rem;
+  background-color: ${C.bgBase};
+  color: ${C.textPrimary};
   font-family: ${serif};
 `
 
@@ -153,39 +169,6 @@ const Subheading = styled.p<{ $delay: number }>`
   }
 `
 
-const ScrollButton = styled.button<{ $delay: number }>`
-  position: absolute;
-  left: 50%;
-  bottom: 2rem;
-  transform: translateX(-50%);
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(48px);
-  -webkit-backdrop-filter: blur(48px);
-  box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.3);
-  color: ${C.textInverse};
-  cursor: pointer;
-  opacity: 0;
-  animation: ${fadeIn} 2.4s ease forwards;
-  animation-delay: ${({ $delay }) => $delay}s;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.16);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-    opacity: 1;
-  }
-`
-
 // --- Stats Bar ---
 
 const StatsBar = styled.div`
@@ -229,11 +212,54 @@ const StatLabel = styled.span`
   letter-spacing: 0.05em;
 `
 
+const Section = styled.section`
+  background-color: ${C.bgBase};
+  padding: 5rem 0;
+  font-family: ${serif};
+`
+
+const Heading2 = styled.h2`
+  font-family: ${mono};
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 400;
+  color: ${C.textPrimary};
+  margin: 0 0 1rem;
+  max-width: 640px;
+`
+
+const CtaBody = styled.p`
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 2rem;
+  font-size: 1rem;
+`
+
+const CtaButton = styled(Link)`
+  display: inline-block;
+  background-color: ${C.textPrimary};
+  color: ${C.bgBase};
+  font-weight: 700;
+  padding: 0.875rem 2rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`
+
 export function Hero() {
   const nextSectionRef = useRef<HTMLDivElement>(null)
 
   const scrollToNextSection = () => {
-    nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const headerOffset = 60
+    const elementPosition = nextSectionRef.current?.getBoundingClientRect().top
+    if (!elementPosition) return
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth',
+    })
   }
 
   return (
@@ -260,31 +286,72 @@ export function Hero() {
             </CycleSlot>
           </Heading>
           <Subheading $delay={subheadingDelay}>
-            A content archival and data extraction platform for longitudinal
-            media research and analysis.
+            We create narrative analysis tools for newsrooms, nonprofits and
+            academics that supercharge digital investigations and impact
+            assessments.
           </Subheading>
         </Content>
         <ScrollButton
           $delay={subheadingDelay}
+          $fadeIn={fadeIn}
           onClick={scrollToNextSection}
           aria-label="Scroll to learn more"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </ScrollButton>
+        />
       </HeroSection>
-      <StatsBar ref={nextSectionRef}>
+      <Section ref={nextSectionRef}>
+        <Container>
+          <SectionLabel>The Opportunity</SectionLabel>
+          <Heading2>
+            Tracking Narrative Change has Never Been More Challenging, or More
+            Possible
+          </Heading2>
+          <BodyText>
+            The boundary between journalist, citizen, and advertiser has
+            dissolved. We can no longer expect the news to come in a single,
+            reliable package; The news is now a fluid, heterogeneous,
+            distributed, and unverified stream of information. This makes it
+            difficult to separate subject from author, fact from fiction, and to
+            identify sources of information.
+          </BodyText>
+          <BodyText>
+            Quantitatively tracking the evolution of narratives across time and
+            mediums is a complex task that requires sophisticated digital tools
+            and methodologies. Researchers and analysts need to be able to
+            collect, organize, and analyze vast amounts of data from diverse
+            sources to understand how information spreads and transforms.
+          </BodyText>
+        </Container>
+      </Section>
+      {/* Analysis types: Structural (how), Thematic (what), Performative (who) */}
+      <InterludeSection>
+        <FluidBackground />
+        <Content>
+          <Heading2>The Shape of the News is Liquid</Heading2>
+        </Content>
+      </InterludeSection>
+      <Section>
+        <Container>
+          <SectionLabel>Our Services</SectionLabel>
+          <Heading2>
+            Real-Time Narrative Tracking, Bespoke Dataset Creation and Data
+            Warehousing
+          </Heading2>
+          <BodyText>
+            We provide a platform that archives content from a wide range of
+            digital sources, including social media, news websites, radio and
+            television. Our platform uses advanced statistical techniques to
+            extract meaningful datasets and knowledge graphs allowing you to
+            assess the impact of your organization or others on public
+            discourse.
+          </BodyText>
+        </Container>
+      </Section>
+      <StatsBar>
         <StatsInner>
+          <StatItem>
+            <StatValue>AI + ML</StatValue>
+            <StatLabel>Data Enrichment</StatLabel>
+          </StatItem>
           <StatItem>
             <StatValue>10,000+</StatValue>
             <StatLabel>Sources</StatLabel>
@@ -294,18 +361,43 @@ export function Hero() {
             <StatLabel>Ingestion Cadence</StatLabel>
           </StatItem>
           <StatItem>
-            <StatValue>AI + ML</StatValue>
-            <StatLabel>Data Enrichment</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>CMEK</StatValue>
-            <StatLabel>Encrypted at Rest</StatLabel>
+            <StatValue>51+</StatValue>
+            <StatLabel>Languages</StatLabel>
           </StatItem>
         </StatsInner>
       </StatsBar>
-      <ProblemSection />
-      <SolutionSection />
-      <CtaSection />
+      <Section>
+        <Container>
+          <SectionLabel>Our Platform</SectionLabel>
+          <Heading2>
+            Content Archival and Data Extraction Across Mediums and Languages
+          </Heading2>
+          <BodyText>
+            We provide a platform that archives content from a wide range of
+            digital sources, including social media, news websites, radio and
+            television. Our platform uses advanced statistical techniques to
+            extract meaningful datasets and knowledge graphs allowing you to
+            assess the impact of your organization or others on public
+            discourse.
+          </BodyText>
+        </Container>
+      </Section>
+      <InterludeSection>
+        <FluidBackground />
+        <Content>
+          <Heading2>The Shape of the News is Liquid</Heading2>
+        </Content>
+      </InterludeSection>
+      <Section>
+        <Container>
+          <Heading2>Bring Our Expertise to Your Organization</Heading2>
+          <CtaBody>
+            Placeholder copy — invite the reader to explore the services this
+            platform offers.
+          </CtaBody>
+          <CtaButton href="/services">View Services</CtaButton>
+        </Container>
+      </Section>
     </PageWrapper>
   )
 }

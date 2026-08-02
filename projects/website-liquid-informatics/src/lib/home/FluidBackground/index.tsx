@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
-import { createFluidBackground } from './fluidSim'
+import { clamp } from './clamp'
+import { createFluidSim } from './createFluidSim'
 
 const Canvas = styled.canvas`
   position: absolute;
@@ -18,11 +19,19 @@ const RESIZE_DEBOUNCE_MS = 200
 const PARALLAX_FACTOR = 0.7 // fraction of scroll speed the background trails at
 const PARALLAX_MAX_OFFSET = 1000 // px, clamps the shift at scroll extremes
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
+type FluidBackgroundProps = {
+  maxDevicePixelRatio?: number
+  resizeDebounceMs?: number
+  parallaxFactor?: number
+  parallaxMaxOffset?: number
 }
 
-export function FluidBackground() {
+export function FluidBackground({
+  maxDevicePixelRatio = MAX_DEVICE_PIXEL_RATIO,
+  resizeDebounceMs = RESIZE_DEBOUNCE_MS,
+  parallaxFactor = PARALLAX_FACTOR,
+  parallaxMaxOffset = PARALLAX_MAX_OFFSET,
+}: FluidBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -34,12 +43,12 @@ export function FluidBackground() {
     ).matches
     if (prefersReducedMotion) return
 
-    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO)
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDevicePixelRatio)
     const rect = canvas.getBoundingClientRect()
     canvas.width = Math.max(1, Math.round(rect.width * dpr))
     canvas.height = Math.max(1, Math.round(rect.height * dpr))
 
-    const sim = createFluidBackground(canvas)
+    const sim = createFluidSim(canvas)
     if (!sim) return
 
     sim.start()
@@ -52,7 +61,7 @@ export function FluidBackground() {
         canvas.width = Math.max(1, Math.round(nextRect.width * dpr))
         canvas.height = Math.max(1, Math.round(nextRect.height * dpr))
         sim.resize()
-      }, RESIZE_DEBOUNCE_MS)
+      }, resizeDebounceMs)
     }
     window.addEventListener('resize', handleResize)
 
@@ -77,9 +86,9 @@ export function FluidBackground() {
       ticking = false
       const heroTop = canvas.parentElement?.getBoundingClientRect().top ?? 0
       const offset = clamp(
-        -heroTop * PARALLAX_FACTOR,
-        -PARALLAX_MAX_OFFSET,
-        PARALLAX_MAX_OFFSET
+        -heroTop * parallaxFactor,
+        -parallaxMaxOffset,
+        parallaxMaxOffset
       )
       canvas.style.transform = `translateY(${offset}px)`
     }

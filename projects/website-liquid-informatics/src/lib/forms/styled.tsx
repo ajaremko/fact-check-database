@@ -33,7 +33,7 @@ export const Input = styled.input<{ $hasError?: boolean }>`
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
   color: ${C.textPrimary};
-  background-color: ${C.bgBase};
+  background-color: ${C.bgSurface};
   border: 1px solid
     ${({ $hasError }) => ($hasError ? C.error : C.borderSubtle)};
   border-radius: 6px;
@@ -55,7 +55,7 @@ export const Select = styled.select<{ $hasError?: boolean }>`
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
   color: ${C.textPrimary};
-  background-color: ${C.bgBase};
+  background-color: ${C.bgSurface};
   border: 1px solid
     ${({ $hasError }) => ($hasError ? C.error : C.borderSubtle)};
   border-radius: 6px;
@@ -78,7 +78,7 @@ export const Textarea = styled.textarea<{
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
   color: ${C.textPrimary};
-  background-color: ${C.bgBase};
+  background-color: ${C.bgSurface};
   border: 1px solid
     ${({ $hasError }) => ($hasError ? C.error : C.borderSubtle)};
   border-radius: 6px;

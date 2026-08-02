@@ -29,7 +29,7 @@ const LogoLink = styled(Link)`
   font-size: 1.125rem;
   font-weight: 400;
   letter-spacing: 0.01em;
-  color: ${C.textInverse};
+  color: ${C.textPrimary};
 `
 
 const NavLinks = styled.div`
@@ -47,11 +47,11 @@ const NavLink = styled(Link)<{ $active: boolean }>`
   font-weight: 400;
   text-decoration: none;
   color: ${({ $active }) =>
-    $active ? C.textInverse : 'rgba(255, 255, 255, 0.7)'};
+    $active ? C.textPrimary : 'rgba(255, 255, 255, 0.7)'};
   transition: color 0.15s ease;
 
   &:hover {
-    color: ${C.textInverse};
+    color: ${C.textPrimary};
   }
 `
 

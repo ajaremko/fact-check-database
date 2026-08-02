@@ -1,17 +1,15 @@
 export const C = {
-  bgBase: '#ffffff',
-  bgSurface: '#f5f5f5',
-  bgCode: '#ececec',
-  borderSubtle: '#dddddd',
-  textPrimary: '#111111',
-  textSecondary: '#555555',
-  textMuted: '#999999',
-  accent: '#333333',
-  accentHover: '#111111',
+  bgBase: '#111111',
+  bgSurface: '#1c1c1c',
+  bgCode: '#242424',
+  borderSubtle: '#333333',
+  textPrimary: '#ffffff',
+  textSecondary: '#b3b3b3',
+  textMuted: '#808080',
+  accent: '#4ade80',
+  accentHover: '#22c55e',
   error: '#c0392b',
   success: '#27ae60',
-  bgDark: '#111111',
-  textInverse: '#ffffff',
 } as const
 
 export const bp = { md: '@media (min-width: 768px)' } as const
