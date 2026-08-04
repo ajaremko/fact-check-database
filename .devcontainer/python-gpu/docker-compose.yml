@@ -2,6 +2,17 @@ services:
   devcontainer:
     image: nvidia/cuda:12.4.1-devel-ubuntu22.04
     command: sleep infinity
+    environment:
+      SSH_AUTH_SOCK: /ssh-agent.sock
+      GOOGLE_APPLICATION_CREDENTIALS: /var/secrets/$GOOGLE_APPLICATION_CREDENTIALS
+      NX_TUI: false
+    volumes:
+      - ../../..:/workspaces:cached
+      - ~/.ssh:~/.ssh:cached
+      - ~/.gcp:/var/secrets:cached
+      - type: bind
+        source: ${SSH_AUTH_SOCK:-/tmp/ssh-agent.sock}
+        target: /ssh-agent.sock
     deploy:
       resources:
         reservations:
@@ -9,10 +20,3 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /var/secrets/$GOOGLE_APPLICATION_CREDENTIALS
-      NX_TUI: false
-    volumes:
-      - ../../..:/workspaces:cached
-      - ~/.ssh:/home/node/.ssh:cached
-      - ~/.gcp:/var/secrets:cached
