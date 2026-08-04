@@ -14,7 +14,7 @@
     "segment": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run pipeline/segment_passages.py",
+        "command": "PYTHONSAFEPATH=1 uv run pipeline/segment_passages.py",
         "cwd": "{projectRoot}"
       }
     },

@@ -53,9 +53,10 @@ for subdir_path in basil_article_paths:
                 "main-entities": content.get("main-entities", []),
                 "body-paragraphs": len(paras),
             },
-            "num_words": len(text.split()),
-            "num_characters": len(text),
-            "processed_at": timestamp.isoformat()
+            "processed_at": timestamp.isoformat(),
+            "article_words": len(text.split()),
+            "article_characters": len(text),
+            "article_path": str(article_path)
         }
 
         with open(article_meta_path, "w", encoding="utf-8") as meta_file:
