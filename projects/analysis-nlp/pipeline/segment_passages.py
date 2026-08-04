@@ -7,9 +7,11 @@ from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, re
 import re
 from nltk.tokenize import TextTilingTokenizer
 import pysbd
+import nltk
 
-seg = pysbd.Segmenter(language="en", clean=False)
+nltk.download('stopwords')
 tt = TextTilingTokenizer(w=10, k=5)
+seg = pysbd.Segmenter(language="en", clean=False)
 
 
 def hard_split(sentence, max_words):
@@ -90,17 +92,12 @@ for article_text, content in articles:
             file.write(segment)
 
         passage_meta_path = passages_meta_path / f"{passage_id}.json"
+        meta_data = content | {
+            "passage_id": passage_id,
+            "passage_index": i + 1,
+            "passage_path": str(passage_path),
+            "passage_words": len(segment.split()),
+            "passage_characters": len(segment),
+        }
         with open(passage_meta_path, "w", encoding="utf-8") as meta_file:
-            meta_data = {
-                "source": content["source"],
-                "processed_at": datetime.now().isoformat(),
-                "article_id": content["article_id"],
-                "article_words": content["article_words"],
-                "article_characters": content["article_characters"],
-                "article_path": content["article_path"],
-                "passage_id": passage_id,
-                "passage_path": str(passage_path),
-                "passage_words": len(segment.split()),
-                "passage_characters": len(segment),
-            }
             json.dump(meta_data, meta_file, indent=4)

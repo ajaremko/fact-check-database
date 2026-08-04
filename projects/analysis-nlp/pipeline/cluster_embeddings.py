@@ -1,25 +1,12 @@
 import umap
 import hdbscan
 import os
+import numpy as np
 import json
 from pathlib import Path
 import shutil
 from datetime import datetime
-
-embeddings_meta_rel_path = os.getenv(
-    "EMBEDDINGS_META_PATH", "./tmp/meta/embeddings")
-embeddings_meta_path = Path(embeddings_meta_rel_path)
-
-clusters_rel_path = os.getenv(
-    "CLUSTERS_PASSAGES_PATH", "./tmp/clusters")
-clusters_path = Path(clusters_rel_path)
-clusters_path.mkdir(parents=True, exist_ok=True)
-
-
-clusters_meta_rel_path = os.getenv(
-    "CLUSTERS_META_PATH", "./tmp/meta/clusters")
-clusters_meta_path = Path(clusters_meta_rel_path)
-clusters_meta_path.mkdir(parents=True, exist_ok=True)
+from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
 
 
 def umap_reduce(embeddings):
@@ -47,76 +34,62 @@ def umap_reduce(embeddings):
     return cluster_labels, reduced_embeddings
 
 
-embeddings = []
-documents = []
-
-for file_path in embeddings_meta_path.iterdir():
-    if file_path.is_file():
-        print(f"Reading: {file_path.parts}")
-
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = json.load(file)
-            documents.append((file_path, content))
-
-for i, doc in enumerate(documents):
-    file_path, content = doc
-    embedding_path = Path(content["embedding_path"])
-    embedding = np.load(embedding_path)
-    embeddings.append(embedding)
-
-embeddings = np.array(embeddings)
-cluster_labels, reduced_embeddings = umap_reduce(embeddings)
-
-for doc, label in zip(documents, cluster_labels):
-    passage_path = Path(doc[1]["passage_path"])
-
-    cluster_dir = clusters_path / str(label)
-    cluster_dir.mkdir(parents=True, exist_ok=True)
-
-    shutil.copy(passage_path, cluster_dir / passage_path.name)
+embeddings_meta_path = prepare_input_dir_from_env(
+    "EMBEDDINGS_META_PATH", "./tmp/meta/embeddings")
+clustered_passages_path = prepare_output_dir_from_env(
+    "CLUSTERS_PASSAGES_PATH", "./tmp/data/clustered_passages")
+clusters_meta_path = prepare_output_dir_from_env(
+    "CLUSTERS_META_PATH", "./tmp/meta/clusters")
 
 # Get current time and format it
 now = datetime.now()
 run_id = now.strftime("%Y-%m-%d_%H:%M:%S")
 
+events = read_json_files(embeddings_meta_path)
 
-for doc, label in zip(documents, cluster_labels):
-    passage_path = Path(doc[1]["passage_path"])
+embeddings = []
 
-    cluster_dir = clusters_path / str(label)
-    cluster_dir.mkdir(parents=True, exist_ok=True)
+for i, doc in enumerate(events):
+    file_path, content = doc
+    embedding_path = Path(content["embedding_path"])
+    embedding = np.load(embedding_path)
+    embeddings.append(embedding)
 
-    shutil.copy(passage_path, cluster_dir / "passages" / passage_path.name)
 
-    meta = {
-        "document_id": doc[1]["document_id"],
-        "document_path": doc[1]["document_path"],
-        "passage_path": str(cluster_dir / "passages" / passage_path.name),
-        "passage_number": doc[1]["passage_number"],
-        "passage_length": doc[1]["passage_length"],
-        "embedding_path": doc[1]["embedding_path"],
-        "embedding_length": doc[1]["embedding_length"],
-        "cluster_label": int(label)
+embeddings = np.array(embeddings)
+cluster_labels, reduced_embeddings = umap_reduce(embeddings)
+
+clusters = {}
+
+for label, doc in zip(cluster_labels, events):
+    file_path, content = doc
+    item = {
+        "article_id": content["article_id"],
+        "article_path": content["article_path"],
+        "passage_index": content["passage_index"],
+        "passage_path": content["passage_path"],
     }
+    clusters.setdefault(str(label), []).append(item)
 
-    cluster_meta_dir = clusters_path / str(label) / "meta"
-    cluster_meta_dir.mkdir(parents=True, exist_ok=True)
-
-    with open(cluster_meta_dir / f"{run_id}.json", "w", encoding="utf-8") as f:
-        json.dump(meta, f, ensure_ascii=False, indent=4)
-
-
-meta = {
-    "clusters": {},
-    "segments": {}
+cluster_meta = {
+    "run_id": run_id,
+    "total_passages": len(events),
+    "total_clusters": len(set(cluster_labels)) - (1 if -1 in cluster_labels else 0),
+    "cluster_labels": cluster_labels.tolist(),
+    "clusters": clusters,
+    "processed_at": now.isoformat()
 }
 
-for doc, label in zip(documents, cluster_labels):
-    file_path, content = doc
-    id = f"{content['document_id']}_{content['passage_number']}"
-    meta["clusters"].setdefault(str(label), []).append(id)
-    meta["segments"][id] = content
+cluster_meta_path = clusters_meta_path / f"{run_id}.json"
 
+with open(cluster_meta_path, "w", encoding="utf-8") as f:
+    json.dump(cluster_meta, f, ensure_ascii=False, indent=4)
 
-with open(clusters_meta_path / f"{run_id}.json", "w", encoding="utf-8") as f:
-    json.dump(meta, f, ensure_ascii=False, indent=4)
+for event, label in zip(events, cluster_labels):
+    file_path, content = event
+    passage_path = Path(content["passage_path"])
+
+    cluster_dir = clustered_passages_path / str(label)
+    cluster_dir.mkdir(parents=True, exist_ok=True)
+
+    shutil.copy(passage_path, cluster_dir / passage_path.name)
