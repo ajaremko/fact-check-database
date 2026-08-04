@@ -1,3 +1,4 @@
+import hashlib
 import os
 import json
 from pathlib import Path
@@ -36,3 +37,17 @@ def read_json_files(directory_path) -> list[tuple[Path, dict]]:
                 content = json.load(file)
                 files.append((file_path, content))
     return files
+
+
+def read_subdirectories(directory_path) -> list[Path]:
+    subdirs = []
+    for subdir in directory_path.iterdir():
+        if subdir.is_dir():
+            print(f"Found subdirectory: {subdir.stem}")
+            subdirs.append(subdir)
+    return subdirs
+
+
+def hash_sha256(input_string: str) -> str:
+    encoded_bytes = input_string.encode('utf-8')
+    return hashlib.sha256(encoded_bytes).hexdigest()

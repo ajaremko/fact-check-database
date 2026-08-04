@@ -4,6 +4,13 @@
   "projectType": "application",
   "sourceRoot": "projects/analysis-nlp/pipeline",
   "targets": {
+    "preprocess": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/preprocess_BASIL.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "segment": {
       "executor": "@nxlv/python:run-commands",
       "options": {
