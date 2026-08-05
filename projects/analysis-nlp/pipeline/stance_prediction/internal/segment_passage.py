@@ -1,9 +1,3 @@
-import os
-import json
-from pathlib import Path
-import shutil
-from datetime import datetime
-from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
 import re
 from nltk.tokenize import TextTilingTokenizer
 import pysbd
@@ -56,48 +50,9 @@ def pack_tile(tile, max_words=100):
     return passages
 
 
-def segment_article(text, max_words=100):
+def segment_passage(text, max_words=100):
     try:
         tiles = tt.tokenize(text)               # needs \n\n breaks
     except (ValueError, ZeroDivisionError):     # too short for TextTiling
         tiles = [text]
     return [p for tile in tiles for p in pack_tile(tile, max_words)]
-
-
-articles_meta_path = prepare_input_dir_from_env(
-    "ARTICLES_META_PATH", "./tmp/meta/articles")
-passages_path = prepare_output_dir_from_env(
-    "PASSAGES_PATH", "./tmp/data/passages")
-passages_meta_path = prepare_output_dir_from_env(
-    "PASSAGES_META_PATH", "./tmp/meta/passages")
-
-
-events = read_json_files(articles_meta_path)
-
-articles = []
-
-for i, doc in enumerate(events):
-    file_path, content = doc
-    with open(content["article_path"], "r") as file:
-        article_text = file.read()
-        articles.append((article_text, content))
-
-for article_text, content in articles:
-    segments = segment_article(article_text)
-    for i, segment in enumerate(segments):
-
-        passage_id = f"{content["article_id"]}_{i+1}"
-        passage_path = passages_path / f"{passage_id}.txt"
-        with open(passage_path, "w", encoding="utf-8") as file:
-            file.write(segment)
-
-        passage_meta_path = passages_meta_path / f"{passage_id}.json"
-        meta_data = content | {
-            "passage_id": passage_id,
-            "passage_index": i + 1,
-            "passage_path": str(passage_path),
-            "passage_words": len(segment.split()),
-            "passage_characters": len(segment),
-        }
-        with open(passage_meta_path, "w", encoding="utf-8") as meta_file:
-            json.dump(meta_data, meta_file, indent=4)

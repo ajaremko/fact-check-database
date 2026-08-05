@@ -4,38 +4,52 @@
   "projectType": "application",
   "sourceRoot": "projects/analysis-nlp/pipeline",
   "targets": {
-    "preprocess": {
+    "install-models": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run pipeline/preprocess_BASIL.py",
+        "command": "uv run -m spacy download en_core_web_sm",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "extract-BASIL": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/ingestion/extract_articles_BASIL.py",
         "cwd": "{projectRoot}"
       }
     },
     "segment": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "NLTK_DISABLE_IMPORT_SECURITY=1 uv run pipeline/segment_passages.py",
+        "command": "NLTK_DISABLE_IMPORT_SECURITY=1 uv run --env-file .env pipeline/stance_prediction/segment_passages.py",
         "cwd": "{projectRoot}"
       }
     },
     "embeddings": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run pipeline/extract_embeddings.py",
+        "command": "uv run pipeline/stance_prediction/extract_embeddings.py",
         "cwd": "{projectRoot}"
       }
     },
     "cluster": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run pipeline/cluster_embeddings.py",
+        "command": "uv run pipeline/stance_prediction/cluster_embeddings.py",
         "cwd": "{projectRoot}"
       }
     },
     "keywords": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run pipeline/extract_keywords.py",
+        "command": "uv run pipeline/stance_prediction/extract_keywords.py",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "summaries": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/stance_prediction/extract_summaries.py",
         "cwd": "{projectRoot}"
       }
     },

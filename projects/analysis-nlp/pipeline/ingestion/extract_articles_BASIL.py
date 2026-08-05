@@ -1,22 +1,31 @@
 import os
 import json
 from pathlib import Path
-import shutil
 from datetime import datetime
-from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files, read_subdirectories, hash_sha256
 
-basil_root_path = prepare_input_dir_from_env("BASIL_PATH", "./BASIL/articles")
-basil_article_paths = read_subdirectories(basil_root_path)
+from batch_io import prepare_input_dir_from_env, read_json_files, read_subdirectories, hash_sha256
+from state import read_state, write_state
 
-articles_path = prepare_output_dir_from_env(
-    "ARTICLES_PATH", f"./tmp/data/articles")
-articles_meta_path = prepare_output_dir_from_env(
-    "ARTICLES_META_PATH", f"./tmp/meta/articles")
 
 timestamp = datetime.now()
+run_id = timestamp.strftime("%Y-%m-%d_%H:%M:%S")
+
+output_base_path = os.getenv("OUTPUT_PATH", "./tmp/data")
+basil_root_path = prepare_input_dir_from_env("BASIL_PATH", "./BASIL/articles")
+
+articles_path = Path(f"{output_base_path}/{run_id}/articles")
+articles_path.mkdir(parents=True, exist_ok=True)
+
+articles_meta_path = Path(f"{output_base_path}/{run_id}/meta")
+articles_meta_path.mkdir(parents=True, exist_ok=True)
+
+article_count = 0
+
+basil_article_paths = read_subdirectories(basil_root_path)
+
 
 for subdir_path in basil_article_paths:
-    print(f"Processing article directory: {subdir_path.stem}")
+
     documents = read_json_files(subdir_path)
 
     for i, doc in enumerate(documents):
@@ -61,3 +70,21 @@ for subdir_path in basil_article_paths:
 
         with open(article_meta_path, "w", encoding="utf-8") as meta_file:
             json.dump(meta_data, meta_file, indent=4)
+
+        article_count += 1
+
+duration = datetime.now() - timestamp
+
+state_update = {
+    "BASIL_extractor": {
+        "run_id": run_id,
+        "processed_at": timestamp.isoformat(),
+        "total_articles": article_count,
+        "articles_path": str(articles_path),
+        "duration_seconds": duration.total_seconds()
+    }
+}
+
+current_state = read_state()
+current_state.update(state_update)
+write_state(current_state)
