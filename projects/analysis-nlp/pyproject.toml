@@ -33,6 +33,8 @@ dependencies = [
     "nltk>=3.9.0",
     "pysbd>=0.3.4",
     "accelerate>=1.12.0",
+    "flash-linear-attention>=0.5.2",
+    "causal-conv1d>=1.5.2"
 ]
 
 [tool.hatch.build.targets.wheel]

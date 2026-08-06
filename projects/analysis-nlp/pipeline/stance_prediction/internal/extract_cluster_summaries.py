@@ -34,7 +34,7 @@ SYSTEM = ("You work for a news researcher and your job is to summarize articles.
           "as a single summary that covers the key points of the text. "
           "Do not include any text from the original passages in your summary. "
           "If you are unable to summarize the text, respond with 'Unable to summarize.'"
-          "Your summary should be approximately 100 words and less than 150 words. "
+          "Your summary should be approximately 40 words and less than 100 words. "
           "Do not create bullet points or lists. Do not attempt to format the summary in any way. ")
 
 MAX_INPUT_TOKENS = 6000   # leave headroom in the 8K window for chat scaffolding + output
@@ -63,14 +63,16 @@ def build_prompt(passages):
 
 @torch.no_grad()
 def summarize_clusters(clusters, batch_size=4, max_new_tokens=160):
-    """clusters: list of (passages, embeddings) tuples. Returns one summary per cluster."""
-    prompts = [
-        build_prompt(sample_passages(p, e)) for p, e in clusters
-    ]
+    """clusters: list of (key, passages, embeddings) tuples.
+    Returns list of (key, summary) pairs, one per cluster."""
+    sample = [(key, sample_passages(p, e)) for key, p, e in clusters]
+    prompts = [(key, build_prompt(p)) for key, p in sample]
     summaries = []
-    for i in range(0, 1, batch_size):
+    for i in range(0, len(prompts), batch_size):
+        batch_items = prompts[i:i + batch_size]
+        batch_keys = [k for k, _ in batch_items]
         batch = tokenizer(
-            prompts[i:i + batch_size],
+            [p for _, p in batch_items],
             return_tensors="pt", padding=True,
         ).to(model.device)
         out = model.generate(
@@ -83,5 +85,6 @@ def summarize_clusters(clusters, batch_size=4, max_new_tokens=160):
         )
         # slice off the prompt tokens; decode only the generated tail
         gen = out[:, batch["input_ids"].shape[1]:]
-        summaries.extend(tokenizer.batch_decode(gen, skip_special_tokens=True))
-    return [s.strip() for s in summaries]
+        decoded = tokenizer.batch_decode(gen, skip_special_tokens=True)
+        summaries.extend(zip(batch_keys, decoded, strict=True))
+    return [(key, s.strip()) for key, s in summaries]

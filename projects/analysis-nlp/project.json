@@ -46,6 +46,13 @@
         "cwd": "{projectRoot}"
       }
     },
+    "pairings": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/stance_prediction/build_keyword_pairings.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "summaries": {
       "executor": "@nxlv/python:run-commands",
       "options": {

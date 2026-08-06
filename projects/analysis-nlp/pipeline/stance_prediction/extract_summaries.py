@@ -6,7 +6,6 @@ import json
 import numpy as np
 from internal.extract_cluster_summaries import summarize_clusters
 
-
 timestamp = datetime.now()
 
 current_state = read_state()
@@ -26,8 +25,6 @@ clusterer_result_path = Path(clusterer["result_path"])
 with open(clusterer_result_path, "r", encoding="utf-8") as f:
     clusterer_result = json.load(f)
 
-passages_by_cluster = {}
-embeddings_by_cluster = {}
 passage_embedding_pairs = []
 
 for key, cluster_item in clusterer_result.items():
@@ -39,50 +36,30 @@ for key, cluster_item in clusterer_result.items():
             passages.append(passage_data)
         embedding_data = np.load(item["embedding_path"])
         embeddings.append(embedding_data)
-    passage_embedding_pairs.append((passages, np.vstack(embeddings)))
+    passage_embedding_pairs.append((key, passages, np.vstack(embeddings)))
 
 summaries = summarize_clusters(passage_embedding_pairs)
+passage_counts = {key: len(passages)
+                  for key, passages, _ in passage_embedding_pairs}
 
-for s in summaries:
-    print("---------------------\n")
-    print(s)
 
-# for key, passages in passages_by_cluster.items():
-#     cluster_counts = _count_terms(passages)
-#     keywords = scorer.score_cluster(cluster_counts, top_k=10, min_count=2)
+for key, summary_text in summaries:
 
-#     keyword_summary_path = keyword_summaries_path / \
-#         f"cluster_{key}_keywords.json"
-#     keyword_summary = {
-#         "keywords": keywords
-#     }
-#     with open(keyword_summary_path, "w", encoding="utf-8") as f:
-#         json.dump(keyword_summary, f, ensure_ascii=False, indent=2)
+    keywords_path = output_base_path / \
+        f"cluster_{key}.txt"
 
-#     keyword_summary_meta_path = keyword_summaries_meta_path / \
-#         f"cluster_{key}_keywords_meta.json"
-#     keyword_summary_meta = {
-#         "cluster_id": key,
-#         "num_passages": len(passages),
-#         "keyword_summary_path": str(keyword_summary_path)
-#     }
-#     with open(keyword_summary_meta_path, "w", encoding="utf-8") as f:
-#         json.dump(keyword_summary_meta, f, ensure_ascii=False, indent=2)
+    with open(keywords_path, "w", encoding="utf-8") as f:
+        f.write(summary_text)
 
-# for filepath, content in events:
-#     run_id = content["run_id"]
-#     clusters = content["clusters"]
-#     passages_by_cluster = {int(cid): [p["passage_text"] for p in ps]
-#                            for cid, ps in clusters.items() if int(cid) != -1}
-#     keywords = cluster_keywords(passages_by_cluster, top_k=10, alpha=1.0)
-#     print(f"Run ID: {run_id}")
-#     print(f"Keywords by cluster: {keywords}")
+state_update = {
+    "summary_extractor": {
+        "run_id": run_id,
+        "total_clusters": len(summaries),
+        "summaries_path": str(output_base_path),
+        "processed_at": timestamp.isoformat(),
+    }
+}
 
-# state_update = {
-#     "keyword_summarizer": {
-#         "run_id": run_id,
-#     }
-# }
-
-# current_state.update(state_update)
-# write_state(current_state)
+current_state = read_state()
+current_state.update(state_update)
+write_state(current_state)

@@ -14,6 +14,9 @@ output_base_path = Path(
     f"./tmp/stance_prediction/{run_id}/keyword_extraction")
 output_base_path.mkdir(parents=True, exist_ok=True)
 
+keywords_output_path = output_base_path / "keywords"
+keywords_output_path.mkdir(parents=True, exist_ok=True)
+
 clusterer = current_state["clusterer"]
 if not clusterer:
     raise ValueError("Clusterer state is missing in the current state.")
@@ -46,9 +49,8 @@ for key, passages in passages_by_cluster.items():
 for key, passages in passages_by_cluster.items():
     cluster_counts = _count_terms(passages)
     keywords = scorer.score_cluster(cluster_counts, top_k=10, min_count=2)
+    keywords_path = keywords_output_path / f"cluster_{key}.json"
 
-    keywords_path = output_base_path / \
-        f"cluster_{key}.json"
     meta = {
         "keywords": keywords,
         "cluster_id": key,
@@ -59,13 +61,20 @@ for key, passages in passages_by_cluster.items():
     with open(keywords_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
+corpus_counts_path = output_base_path / "corpus_counts.json"
+corpus_counts = scorer.get_corpus_counts()
+
+with open(corpus_counts_path, "w", encoding="utf-8") as f:
+    json.dump(corpus_counts, f, ensure_ascii=False, indent=2)
+
 state_update = {
     "keyword_extraction": {
         "run_id": run_id,
         "processed_at": timestamp.isoformat(),
         "clusters_path": str(clusterer_result_path),
         "total_clusters": len(clusterer_result),
-        "output_directory": str(output_base_path),
+        "output_directory": str(keywords_output_path),
+        "corpus_counts_path": str(corpus_counts_path)
     }
 }
 

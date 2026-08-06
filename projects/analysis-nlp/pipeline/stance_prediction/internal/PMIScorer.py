@@ -28,6 +28,12 @@ class PMIScorer:
         self.corpus_counts = Counter()
         self.corpus_total = 0
 
+    def get_corpus_counts(self):
+        data = {}
+        for w, c in self.corpus_counts.items():
+            data[w] = c
+        return data
+
     def update_corpus(self, passages):
         """Call as passages are ingested — independent of any clustering."""
         counts = _count_terms(passages)

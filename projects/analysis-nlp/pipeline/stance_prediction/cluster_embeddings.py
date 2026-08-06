@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 from datetime import datetime
 
-from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
+from batch_io import read_json_files
 from state import read_state, write_state
 from internal.cluster_embeddings_agglomerative import agglomerative_clustering
 from internal.cluster_embeddings_hdbscan import reduce_and_hdbscan_clustering
@@ -16,16 +16,16 @@ run_id = current_state.get("run_id")
 output_base_path = Path(f"./tmp/stance_prediction/{run_id}/clustering")
 output_base_path.mkdir(parents=True, exist_ok=True)
 
-embedding_extractor = current_state["embedding_extractor"]
-if not embedding_extractor:
+keyword_extraction = current_state["keyword_extraction"]
+if not keyword_extraction:
     raise ValueError(
-        "Embedding extraction state is missing in the current state.")
+        "Keyword extraction state is missing in the current state.")
 
 print(f"Starting embedding clustering for run_id: {run_id}")
 
-embeddings_meta_path = Path(embedding_extractor["output_directory"])
+keywords_path = Path(keyword_extraction["output_directory"])
 
-events = read_json_files(embeddings_meta_path)
+events = read_json_files(keywords_path)
 embeddings = []
 
 for i, doc in enumerate(events):
