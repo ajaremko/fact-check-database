@@ -1,16 +1,5 @@
-from collections import Counter
-
-
-def build_keyword_inventory(keywords_by_cluster, corpus_counts, top_n=75):
-    """keywords_by_cluster: {cluster_id: top-10 PMI keyword list (first-name filtered)}
-    corpus_counts: the PMIScorer's background Counter."""
-    candidates = Counter()
-    for kws in keywords_by_cluster.values():
-        for w in kws:
-            # cluster-presence count
-            candidates[w] += 1
-    # rank by (breadth, then raw frequency) and take top_n
-    ranked = sorted(candidates,
-                    key=lambda w: (candidates[w], corpus_counts[w]),
-                    reverse=True)
+def build_keyword_inventory(corpus_counts, top_n=1500):
+    """Top-N noun entities by raw corpus frequency ("popular topics"),
+    per Hanley et al. — independent of per-cluster PMI selection."""
+    ranked = sorted(corpus_counts, key=corpus_counts.get, reverse=True)
     return set(ranked[:top_n])

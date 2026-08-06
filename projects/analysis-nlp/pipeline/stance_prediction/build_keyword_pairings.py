@@ -42,7 +42,7 @@ for i, doc in enumerate(events):
     keywords_by_cluster[cluster_id] = content["keywords"]
     passage_paths_by_cluster[cluster_id] = content["passage_paths"]
 
-inventory = build_keyword_inventory(keywords_by_cluster, corpus_counts)
+inventory = build_keyword_inventory(corpus_counts, top_n=1500)
 pairs = []
 
 for cid, kws in keywords_by_cluster.items():
