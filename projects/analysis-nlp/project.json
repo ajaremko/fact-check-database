@@ -67,6 +67,13 @@
         "cwd": "{projectRoot}"
       }
     },
+    "aggregate": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/stance_prediction/aggregate_stances.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "summaries": {
       "executor": "@nxlv/python:run-commands",
       "options": {
