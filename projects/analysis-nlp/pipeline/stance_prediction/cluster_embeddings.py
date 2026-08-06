@@ -13,13 +13,14 @@ timestamp = datetime.now()
 
 current_state = read_state()
 run_id = current_state.get("run_id")
-output_base_path = Path(f"./tmp/stance_prediction/{run_id}/clustering")
+output_base_path = Path(
+    f"./tmp/stance_prediction/{run_id}/embedding_clustering")
 output_base_path.mkdir(parents=True, exist_ok=True)
 
-keyword_extraction = current_state["keyword_extraction"]
+keyword_extraction = current_state["embedding_extraction"]
 if not keyword_extraction:
     raise ValueError(
-        "Keyword extraction state is missing in the current state.")
+        "Embedding extraction state is missing in the current state.")
 
 print(f"Starting embedding clustering for run_id: {run_id}")
 
@@ -49,7 +50,7 @@ for label, doc in zip(cluster_labels, events):
         "article_path": content["article_path"],
         "passage_index": content["passage_index"],
         "passage_path": content["passage_path"],
-        "passage_meta_path": content["passage_meta_path"],
+        "passage_meta_path": str(file_path),
         "embedding_path": content["embedding_path"],
     }
     clusters.setdefault(str(label), []).append(item)
@@ -77,12 +78,13 @@ for event, label in zip(events, cluster_labels):
     shutil.copy(passage_path, passage_dest)
 
 state_update = {
-    "clusterer": {
+    "embedding_clustering": {
         "run_id": run_id,
         "total_passages": len(events),
         "total_clusters": len(set(cluster_labels)) - (1 if -1 in cluster_labels else 0),
         "result_path": str(result_path),
-        "processed_at": timestamp.isoformat()
+        "processed_at": timestamp.isoformat(),
+        "duration": (datetime.now() - timestamp).total_seconds(),
     }
 }
 

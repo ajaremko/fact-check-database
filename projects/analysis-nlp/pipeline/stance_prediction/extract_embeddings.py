@@ -56,12 +56,13 @@ for (article_text, content), embedding in results:
         json.dump(meta_data, meta_file, indent=4)
 
 state_update = {
-    "embedding_extractor": {
+    "embedding_extraction": {
         "run_id": run_id,
         "total_passages": len(events),
         "processed_at": timestamp.isoformat(),
         "input_directory": str(passages_meta_path),
         "output_directory": str(embeddings_meta_path),
+        "duration": (datetime.now() - timestamp).total_seconds()
     }
 }
 

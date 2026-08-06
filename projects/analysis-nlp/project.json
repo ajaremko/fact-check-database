@@ -18,6 +18,13 @@
         "cwd": "{projectRoot}"
       }
     },
+    "extract-ccnews": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/ingestion/extract_articles_ccnews.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "segment": {
       "executor": "@nxlv/python:run-commands",
       "options": {

@@ -67,6 +67,7 @@ state_update = {
         "processed_at": timestamp.isoformat(),
         "input_directory": str(articles_meta_path),
         "output_directory": str(passages_meta_path),
+        "duration": (datetime.now() - timestamp).total_seconds()
     }
 }
 

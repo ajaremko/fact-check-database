@@ -1,3 +1,4 @@
+from collections import Counter
 import numpy as np
 import json
 from pathlib import Path
@@ -53,6 +54,9 @@ for cid, kws in keywords_by_cluster.items():
         "cluster_id": cid
     })
 
+breadth = Counter(w for kws in keywords_by_cluster.values() for w in kws)
+print(Counter(breadth.values()))
+
 for pair in pairs:
     cluster_output_path = keyword_pairings_path / \
         f"cluster_{pair['cluster_id']}.json"
@@ -76,6 +80,7 @@ state_update = {
         "corpus_counts_path": str(corpus_counts_path),
         "inventory_size": len(inventory),
         "inventory_path": str(inventory_path),
+        "duration": (datetime.now() - timestamp).total_seconds()
     }
 }
 

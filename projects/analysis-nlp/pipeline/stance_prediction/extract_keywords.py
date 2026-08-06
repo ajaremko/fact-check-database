@@ -17,7 +17,7 @@ output_base_path.mkdir(parents=True, exist_ok=True)
 keywords_output_path = output_base_path / "keywords"
 keywords_output_path.mkdir(parents=True, exist_ok=True)
 
-clusterer = current_state["clusterer"]
+clusterer = current_state["embedding_clustering"]
 if not clusterer:
     raise ValueError("Clusterer state is missing in the current state.")
 
@@ -48,7 +48,7 @@ for key, passages in passages_by_cluster.items():
 # Score each cluster and save the keywords and metadata
 for key, passages in passages_by_cluster.items():
     cluster_counts = _count_terms(passages)
-    keywords = scorer.score_cluster(cluster_counts, top_k=10, min_count=2)
+    keywords = scorer.score_cluster(cluster_counts, top_k=25, min_count=2)
     keywords_path = keywords_output_path / f"cluster_{key}.json"
 
     meta = {
@@ -74,7 +74,8 @@ state_update = {
         "clusters_path": str(clusterer_result_path),
         "total_clusters": len(clusterer_result),
         "output_directory": str(keywords_output_path),
-        "corpus_counts_path": str(corpus_counts_path)
+        "corpus_counts_path": str(corpus_counts_path),
+        "duration": (datetime.now() - timestamp).total_seconds()
     }
 }
 

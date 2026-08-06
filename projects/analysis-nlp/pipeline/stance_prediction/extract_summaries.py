@@ -14,7 +14,7 @@ output_base_path = Path(
     f"./tmp/stance_prediction/{run_id}/summary_extraction")
 output_base_path.mkdir(parents=True, exist_ok=True)
 
-clusterer = current_state["clusterer"]
+clusterer = current_state["embedding_clustering"]
 if not clusterer:
     raise ValueError("Clusterer state is missing in the current state.")
 
@@ -57,6 +57,7 @@ state_update = {
         "total_clusters": len(summaries),
         "summaries_path": str(output_base_path),
         "processed_at": timestamp.isoformat(),
+        "duration": (datetime.now() - timestamp).total_seconds(),
     }
 }
 

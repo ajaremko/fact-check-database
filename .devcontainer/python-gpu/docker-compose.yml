@@ -6,6 +6,7 @@ services:
       SSH_AUTH_SOCK: /ssh-agent.sock
       GOOGLE_APPLICATION_CREDENTIALS: /var/secrets/$GOOGLE_APPLICATION_CREDENTIALS
       NX_TUI: false
+      HF_TOKEN: $HF_TOKEN
     volumes:
       - ../../..:/workspaces:cached
       - ~/.ssh:/root/.ssh:cached
