@@ -5,6 +5,7 @@ from datetime import datetime
 from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
 from state import read_state, write_state
 from internal.PMIScorer import PMIScorer, _count_terms
+from internal.filter_keywords import filter_first_names
 
 timestamp = datetime.now()
 
@@ -48,7 +49,9 @@ for key, passages in passages_by_cluster.items():
 # Score each cluster and save the keywords and metadata
 for key, passages in passages_by_cluster.items():
     cluster_counts = _count_terms(passages)
-    keywords = scorer.score_cluster(cluster_counts, top_k=25, min_count=2)
+    candidate_words = filter_first_names(cluster_counts.keys())
+    cluster_counts = {w: cluster_counts[w] for w in candidate_words}
+    keywords = scorer.score_cluster(cluster_counts, top_k=10, min_count=2)
     keywords_path = keywords_output_path / f"cluster_{key}.json"
 
     meta = {

@@ -49,7 +49,7 @@
     "keywords": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run pipeline/stance_prediction/extract_keywords.py",
+        "command": "NLTK_DISABLE_IMPORT_SECURITY=1 uv run pipeline/stance_prediction/extract_keywords.py",
         "cwd": "{projectRoot}"
       }
     },
