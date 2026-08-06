@@ -58,7 +58,9 @@ for key, passages in passages_by_cluster.items():
         "keywords": keywords,
         "cluster_id": key,
         "num_passages": len(passages),
-        "passage_paths": [item["passage_path"] for item in clusterer_result[key]],
+        "passage_meta_paths": [
+            item["passage_meta_path"] for item in clusterer_result[key]
+        ],
     }
 
     with open(keywords_path, "w", encoding="utf-8") as f:

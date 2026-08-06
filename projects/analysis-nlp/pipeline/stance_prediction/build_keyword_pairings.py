@@ -33,14 +33,14 @@ with open(corpus_counts_path, "r", encoding="utf-8") as f:
 keywords_path = Path(keyword_extraction["output_directory"])
 
 events = read_json_files(keywords_path)
-passage_paths_by_cluster = {}
+passage_meta_paths_by_cluster = {}
 keywords_by_cluster = {}
 
 for i, doc in enumerate(events):
     file_path, content = doc
     cluster_id = content["cluster_id"]
     keywords_by_cluster[cluster_id] = content["keywords"]
-    passage_paths_by_cluster[cluster_id] = content["passage_paths"]
+    passage_meta_paths_by_cluster[cluster_id] = content["passage_meta_paths"]
 
 inventory = build_keyword_inventory(corpus_counts, top_n=1500)
 pairs = []
@@ -50,7 +50,7 @@ for cid, kws in keywords_by_cluster.items():
     pairs.append({
         "keywords": kws,
         "targets": targets,
-        "passage_paths": passage_paths_by_cluster[cid],
+        "passage_meta_paths": passage_meta_paths_by_cluster[cid],
         "cluster_id": cid
     })
 

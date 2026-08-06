@@ -35,13 +35,13 @@ passages = []
 
 for i, doc in enumerate(events):
     file_path, content = doc
-    with open(content["article_path"], "r") as file:
-        article_text = file.read()
-        passages.append((article_text, content))
+    with open(content["passage_path"], "r") as file:
+        passage_text = file.read()
+        passages.append((passage_text, content))
 
 results = extract_embeddings(passages)
 
-for (article_text, content), embedding in results:
+for (_passage_text, content), embedding in results:
 
     embedding_id = f"{content["passage_id"]}"
     embedding_path = embeddings_path / f"{embedding_id}.npy"

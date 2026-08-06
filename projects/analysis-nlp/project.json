@@ -60,6 +60,13 @@
         "cwd": "{projectRoot}"
       }
     },
+    "stance": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/stance_prediction/predict_stance.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "summaries": {
       "executor": "@nxlv/python:run-commands",
       "options": {
