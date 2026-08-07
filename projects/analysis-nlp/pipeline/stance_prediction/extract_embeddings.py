@@ -1,35 +1,42 @@
-
+import argparse
 import json
 from pathlib import Path
 from datetime import datetime
 import numpy as np
 
-from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
+from batch_io import read_json_files
 from state import read_state, write_state
 from internal.extract_embeddings import extract_embeddings
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(
-    f"./tmp/stance_prediction/{run_id}/embedding_extraction")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
+)
+args = parser.parse_args()
 
-segmenter = current_state["segmenter"]
+current_state = read_state(args.root_dir)
+output_base_path = Path(f"{args.root_dir}/embedding_extraction")
+output_base_path.mkdir(parents=True, exist_ok=True)
+
+segmenter = current_state["passage_segmentation"]
 if not segmenter:
     raise ValueError("Segmenter state is missing in the current state.")
 
-print(f"Starting embedding extraction for run_id: {run_id}")
-
 passages_meta_path = Path(segmenter["output_directory"])
 
-embeddings_path = prepare_output_dir_from_env(
-    "EMBEDDINGS_PATH", f"{output_base_path}/embeddings")
-embeddings_meta_path = prepare_output_dir_from_env(
-    "EMBEDDINGS_META_PATH", f"{output_base_path}/meta")
+embeddings_path = Path(f"{output_base_path}/embeddings")
+embeddings_path.mkdir(parents=True, exist_ok=True)
 
+embeddings_meta_path = Path(f"{output_base_path}/meta")
+embeddings_meta_path.mkdir(parents=True, exist_ok=True)
 
 events = read_json_files(passages_meta_path)
+
+print(f"Loaded {len(events)} passages from {passages_meta_path}")
 
 passages = []
 
@@ -52,12 +59,12 @@ for (_passage_text, content), embedding in results:
         "embedding_path": str(embedding_path),
         "embedding_length": len(embedding)
     }
+
     with open(passage_meta_path, "w", encoding="utf-8") as meta_file:
         json.dump(meta_data, meta_file, indent=4)
 
 state_update = {
     "embedding_extraction": {
-        "run_id": run_id,
         "total_passages": len(events),
         "processed_at": timestamp.isoformat(),
         "input_directory": str(passages_meta_path),
@@ -67,4 +74,4 @@ state_update = {
 }
 
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)

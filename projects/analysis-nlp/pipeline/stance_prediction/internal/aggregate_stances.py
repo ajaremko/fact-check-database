@@ -27,3 +27,13 @@ def aggregate_stances(stance_records):
             "num_passages": n,
         })
     return results
+
+
+def build_summary(stances):
+    """stances: one article's list of aggregated stance dicts (each with
+    'target' and 'label'). Returns {'pro': [...], 'against': [...], 'neutral': [...]}
+    grouping target keywords by their final label."""
+    summary = {"pro": [], "against": [], "neutral": []}
+    for s in stances:
+        summary[s["label"]].append(s["target"])
+    return summary

@@ -1,22 +1,39 @@
+import argparse
 import os
 import json
 from pathlib import Path
 from datetime import datetime
 
-from batch_io import prepare_input_dir_from_env, read_json_files, read_subdirectories, hash_sha256
+from batch_io import read_json_files, read_subdirectories, hash_sha256
 from state import read_state, write_state
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--input_dir",
+    default="./BASIL/articles",
+    help="Directory of BASIL article JSON files",
+)
+parser.add_argument(
+    "--output_dir",
+    default="./tmp",
+    help="Directory to store extracted BASIL article files",
+)
+args = parser.parse_args()
 
 timestamp = datetime.now()
-run_id = timestamp.strftime("%Y-%m-%d_%H:%M:%S")
 
-output_base_path = os.getenv("OUTPUT_PATH", "./tmp/data")
-basil_root_path = prepare_input_dir_from_env("BASIL_PATH", "./BASIL/articles")
+output_base_path = Path(args.output_dir) / \
+    "basil_data" / \
+    f"timestamp={timestamp.strftime('%Y-%m-%d_%H:%M:%S')}"
 
-articles_path = Path(f"{output_base_path}/{run_id}/articles")
+output_base_path.mkdir(parents=True, exist_ok=True)
+
+basil_root_path = Path(args.input_dir)
+
+articles_path = output_base_path / "articles"
 articles_path.mkdir(parents=True, exist_ok=True)
 
-articles_meta_path = Path(f"{output_base_path}/{run_id}/meta")
+articles_meta_path = output_base_path / "meta"
 articles_meta_path.mkdir(parents=True, exist_ok=True)
 
 article_count = 0
@@ -77,11 +94,12 @@ duration = datetime.now() - timestamp
 
 state_update = {
     "BASIL_extractor": {
-        "run_id": run_id,
-        "processed_at": timestamp.isoformat(),
+        "timestamp": timestamp.isoformat(),
         "total_articles": article_count,
         "articles_path": str(articles_path),
-        "duration_seconds": duration.total_seconds()
+        "duration_seconds": duration.total_seconds(),
+        "input_directory": str(basil_root_path),
+        "output_directory": str(articles_meta_path)
     }
 }
 

@@ -1,8 +1,6 @@
-from collections import Counter
-import numpy as np
+import argparse
 import json
 from pathlib import Path
-import shutil
 from datetime import datetime
 
 from batch_io import read_json_files
@@ -11,19 +9,24 @@ from internal.build_keyword_inventory import build_keyword_inventory
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(f"./tmp/stance_prediction/{run_id}/keyword_pairings")
-output_base_path.mkdir(parents=True, exist_ok=True)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
+)
+args = parser.parse_args()
 
-keyword_pairings_path = output_base_path / "pairings"
+current_state = read_state(args.root_dir)
+output_base_path = Path(f"{args.root_dir}/keyword_pairings")
+output_base_path.mkdir(parents=True, exist_ok=True)
 
 keyword_extraction = current_state["keyword_extraction"]
 if not keyword_extraction:
     raise ValueError(
         "Keyword extraction state is missing in the current state.")
 
-print(f"Building keyword inventory for run_id: {run_id}")
+keyword_pairings_path = output_base_path / "pairings"
 
 corpus_counts_path = Path(keyword_extraction["corpus_counts_path"])
 
@@ -54,9 +57,6 @@ for cid, kws in keywords_by_cluster.items():
         "cluster_id": cid
     })
 
-breadth = Counter(w for kws in keywords_by_cluster.values() for w in kws)
-print(Counter(breadth.values()))
-
 for pair in pairs:
     cluster_output_path = keyword_pairings_path / \
         f"cluster_{pair['cluster_id']}.json"
@@ -73,7 +73,6 @@ with open(inventory_path, "w", encoding="utf-8") as f:
 
 state_update = {
     "keyword_pairings": {
-        "run_id": run_id,
         "processed_at": timestamp.isoformat(),
         "inventory_path": str(inventory_path),
         "output_directory": str(keyword_pairings_path),
@@ -85,4 +84,4 @@ state_update = {
 }
 
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)

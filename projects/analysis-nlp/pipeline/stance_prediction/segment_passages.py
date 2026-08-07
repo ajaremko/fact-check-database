@@ -1,27 +1,33 @@
+import argparse
 import json
 from pathlib import Path
 from datetime import datetime
 
-from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
+from batch_io import prepare_output_dir_from_env, read_json_files
 from state import read_state, write_state
 from internal.segment_passage import segment_passage
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(f"./tmp/stance_prediction/{run_id}/segmentation")
-
-print(f"Starting passage segmentation for run_id: {run_id}")
-
-articles_meta_path = prepare_input_dir_from_env(
-    "ARTICLES_META_PATH", f"tmp/data/test-run/meta/articles"
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
 )
+args = parser.parse_args()
 
-passages_path = prepare_output_dir_from_env(
-    "PASSAGES_PATH", f"{output_base_path}/passages")
-passages_meta_path = prepare_output_dir_from_env(
-    "PASSAGES_META_PATH", f"{output_base_path}/meta")
+current_state = read_state(args.root_dir)
+input_dir = current_state.get("input_dir")
+articles_meta_path = Path(input_dir)
+
+output_base_path = Path(f"{args.root_dir}/passage_segmentation")
+
+passages_path = Path(f"{output_base_path}/passages")
+passages_path.mkdir(parents=True, exist_ok=True)
+
+passages_meta_path = Path(f"{output_base_path}/meta")
+passages_meta_path.mkdir(parents=True, exist_ok=True)
 
 
 events = read_json_files(articles_meta_path)
@@ -60,8 +66,7 @@ for article_text, content in articles:
         passages_count += 1
 
 state_update = {
-    "segmenter": {
-        "run_id": run_id,
+    "passage_segmentation": {
         "total_articles": len(articles),
         "total_passages": passages_count,
         "processed_at": timestamp.isoformat(),
@@ -72,4 +77,4 @@ state_update = {
 }
 
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)

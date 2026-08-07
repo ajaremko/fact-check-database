@@ -1,28 +1,37 @@
+import argparse
 import json
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
 from batch_io import read_json_files
-from internal.aggregate_stances import aggregate_stances
+from internal.aggregate_stances import aggregate_stances, build_summary
 from state import read_state, write_state
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(f"./tmp/stance_prediction/{run_id}/stance_aggregation")
-articles_output_path = output_base_path / "articles"
-articles_output_path.mkdir(parents=True, exist_ok=True)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
+)
+args = parser.parse_args()
+
+current_state = read_state(args.root_dir)
+output_base_path = Path(f"{args.root_dir}/stance_aggregation")
+output_base_path.mkdir(parents=True, exist_ok=True)
 
 stance_detection = current_state["stance_detection"]
 if not stance_detection:
     raise ValueError(
         "Stance detection state is missing in the current state.")
 
-print(f"Starting stance aggregation for run_id: {run_id}")
+articles_output_path = Path(f"{output_base_path}/articles")
+articles_output_path.mkdir(parents=True, exist_ok=True)
 
 stance_detection_path = Path(stance_detection["output_directory"])
+
 events = read_json_files(stance_detection_path)
 
 all_records = []
@@ -46,12 +55,12 @@ for article_id, stances in by_article.items():
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump({
             "article_id": article_id,
+            "summary": build_summary(stances),
             "stances": stances,
         }, f, ensure_ascii=False, indent=2)
 
 state_update = {
     "stance_aggregation": {
-        "run_id": run_id,
         "processed_at": timestamp.isoformat(),
         "stance_detection_path": str(stance_detection_path),
         "output_directory": str(articles_output_path),
@@ -61,6 +70,5 @@ state_update = {
     }
 }
 
-current_state = read_state()
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)

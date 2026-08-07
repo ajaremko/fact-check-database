@@ -1,6 +1,9 @@
 """Tests for aggregating per-passage stances into per-article, per-keyword scores."""
 
-from pipeline.stance_prediction.internal.aggregate_stances import aggregate_stances
+from pipeline.stance_prediction.internal.aggregate_stances import (
+    aggregate_stances,
+    build_summary,
+)
 
 
 def test_aggregate_stances_sums_and_averages_within_a_group():
@@ -57,3 +60,24 @@ def test_aggregate_stances_keeps_different_articles_and_targets_separate():
     assert grouped[("article-1", "senate")]["label"] == "neutral"
     for r in results:
         assert r["num_passages"] == 1
+
+
+def test_build_summary_groups_targets_by_label():
+    stances = [
+        {"target": "reporting", "label": "pro"},
+        {"target": "gowdy", "label": "pro"},
+        {"target": "dowd", "label": "neutral"},
+        {"target": "cohen", "label": "against"},
+    ]
+
+    summary = build_summary(stances)
+
+    assert summary == {
+        "pro": ["reporting", "gowdy"],
+        "against": ["cohen"],
+        "neutral": ["dowd"],
+    }
+
+
+def test_build_summary_handles_empty_stances():
+    assert build_summary([]) == {"pro": [], "against": [], "neutral": []}

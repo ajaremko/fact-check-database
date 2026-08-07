@@ -1,29 +1,51 @@
+import argparse
 import os
 import json
 from datasets import load_dataset
 from pathlib import Path
 from datetime import datetime
 
-from batch_io import prepare_input_dir_from_env, read_json_files, read_subdirectories, hash_sha256
-from state import read_state, write_state
+from batch_io import hash_sha256
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--year",
+    default="2016",
+    help="Year of CCNews articles to extract",
+)
+parser.add_argument(
+    "--take",
+    default=1000,
+    type=int,
+    help="Number of CCNews articles to extract",
+)
+parser.add_argument(
+    "--output_dir",
+    default="./tmp",
+    help="Directory to store extracted CCNews article files",
+)
+args = parser.parse_args()
 
 timestamp = datetime.now()
-run_id = timestamp.strftime("%Y-%m-%d_%H:%M:%S")
 
-output_base_path = os.getenv("OUTPUT_PATH", "./tmp/data")
+output_base_path = Path(args.output_dir) / \
+    "ccnews_data" / \
+    f"year={args.year}" / \
+    f"take={args.take}" / \
+    f"timestamp={timestamp.strftime('%Y-%m-%d_%H:%M:%S')}"
 
-articles_path = Path(f"{output_base_path}/{run_id}/articles")
+articles_path = output_base_path / "articles"
 articles_path.mkdir(parents=True, exist_ok=True)
 
-articles_meta_path = Path(f"{output_base_path}/{run_id}/meta")
+articles_meta_path = output_base_path / "meta"
 articles_meta_path.mkdir(parents=True, exist_ok=True)
 
 # Load the news articles **crawled** in the year 2016 (but not necessarily published in 2016), in streaming mode
 # `name` can be one of 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
-dataset = load_dataset("stanford-oval/ccnews", name="2016", streaming=True)
+dataset = load_dataset("stanford-oval/ccnews", name=args.year, streaming=True)
 
 
-for i, article in enumerate(dataset["train"].take(1000)):
+for i, article in enumerate(dataset["train"].take(int(args.take))):
     if article["language"] != "en":
         continue  # Skip non-English articles
     article_id = hash_sha256(json.dumps(article))

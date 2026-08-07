@@ -4,6 +4,13 @@
   "projectType": "application",
   "sourceRoot": "projects/analysis-nlp/pipeline",
   "targets": {
+    "pipeline": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "scripts/stance_detection.sh",
+        "cwd": "{projectRoot}"
+      }
+    },
     "install-models": {
       "executor": "@nxlv/python:run-commands",
       "options": {
@@ -25,10 +32,17 @@
         "cwd": "{projectRoot}"
       }
     },
+    "initialize": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/stance_prediction/initialize_pipeline.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "segment": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "NLTK_DISABLE_IMPORT_SECURITY=1 uv run --env-file .env pipeline/stance_prediction/segment_passages.py",
+        "command": "NLTK_DISABLE_IMPORT_SECURITY=1 uv run pipeline/stance_prediction/segment_passages.py",
         "cwd": "{projectRoot}"
       }
     },
@@ -71,6 +85,13 @@
       "executor": "@nxlv/python:run-commands",
       "options": {
         "command": "uv run pipeline/stance_prediction/aggregate_stances.py",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "visualize": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pipeline/stance_prediction/visualize_pipeline.py",
         "cwd": "{projectRoot}"
       }
     },

@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 import json
 from pathlib import Path
@@ -11,22 +13,32 @@ from internal.cluster_embeddings_hdbscan import reduce_and_hdbscan_clustering
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(
-    f"./tmp/stance_prediction/{run_id}/embedding_clustering")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
+)
+parser.add_argument(
+    "--clustering_strategy",
+    required=True,
+    help="Clustering strategy to use (e.g., 'agglomerative' or 'hdbscan')",
+)
+args = parser.parse_args()
+
+current_state = read_state(args.root_dir)
+output_base_path = Path(f"{args.root_dir}/embedding_clustering")
 output_base_path.mkdir(parents=True, exist_ok=True)
 
-keyword_extraction = current_state["embedding_extraction"]
-if not keyword_extraction:
+embedding_extraction = current_state["embedding_extraction"]
+
+if not embedding_extraction:
     raise ValueError(
         "Embedding extraction state is missing in the current state.")
 
-print(f"Starting embedding clustering for run_id: {run_id}")
+embeddings_path = Path(embedding_extraction["output_directory"])
 
-keywords_path = Path(keyword_extraction["output_directory"])
-
-events = read_json_files(keywords_path)
+events = read_json_files(embeddings_path)
 embeddings = []
 
 for i, doc in enumerate(events):
@@ -37,8 +49,19 @@ for i, doc in enumerate(events):
 
 
 embeddings = np.array(embeddings)
-cluster_labels, reduced_embeddings = agglomerative_clustering(embeddings)
-# cluster_labels, reduced_embeddings = reduce_and_hdbscan_clustering(embeddings)
+print(f"Loaded {len(embeddings)} embeddings from {embeddings_path}")
+
+if args.clustering_strategy == "agglomerative":
+    cluster_labels, reduced_embeddings = agglomerative_clustering(embeddings)
+elif args.clustering_strategy == "hdbscan":
+    cluster_labels, reduced_embeddings = reduce_and_hdbscan_clustering(
+        embeddings)
+else:
+    raise ValueError(
+        f"Unknown clustering strategy: {args.clustering_strategy}")
+
+print(
+    f"Clustering completed using {args.clustering_strategy}. Found {len(set(cluster_labels))} clusters.")
 
 # Write clusters to a JSON file
 clusters = {}
@@ -79,7 +102,6 @@ for event, label in zip(events, cluster_labels):
 
 state_update = {
     "embedding_clustering": {
-        "run_id": run_id,
         "total_passages": len(events),
         "total_clusters": len(set(cluster_labels)) - (1 if -1 in cluster_labels else 0),
         "result_path": str(result_path),
@@ -88,6 +110,5 @@ state_update = {
     }
 }
 
-current_state = read_state()
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)

@@ -1,28 +1,34 @@
+import argparse
 import json
 from pathlib import Path
 from datetime import datetime
 
-from batch_io import prepare_output_dir_from_env, prepare_input_dir_from_env, read_json_files
 from state import read_state, write_state
 from internal.PMIScorer import PMIScorer, _count_terms
 from internal.filter_keywords import filter_first_names
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(
-    f"./tmp/stance_prediction/{run_id}/keyword_extraction")
-output_base_path.mkdir(parents=True, exist_ok=True)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
+)
+args = parser.parse_args()
 
-keywords_output_path = output_base_path / "keywords"
-keywords_output_path.mkdir(parents=True, exist_ok=True)
+current_state = read_state(args.root_dir)
+output_base_path = Path(
+    f"{args.root_dir}/keyword_extraction")
+output_base_path.mkdir(parents=True, exist_ok=True)
 
 clusterer = current_state["embedding_clustering"]
 if not clusterer:
     raise ValueError("Clusterer state is missing in the current state.")
 
-print(f"Starting keyword extraction for run_id: {run_id}")
+
+keywords_output_path = output_base_path / "keywords"
+keywords_output_path.mkdir(parents=True, exist_ok=True)
 
 clusterer_result_path = Path(clusterer["result_path"])
 
@@ -74,7 +80,6 @@ with open(corpus_counts_path, "w", encoding="utf-8") as f:
 
 state_update = {
     "keyword_extraction": {
-        "run_id": run_id,
         "processed_at": timestamp.isoformat(),
         "clusters_path": str(clusterer_result_path),
         "total_clusters": len(clusterer_result),
@@ -85,4 +90,4 @@ state_update = {
 }
 
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)

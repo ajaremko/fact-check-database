@@ -35,7 +35,8 @@
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-containers",
         "github.vscode-github-actions",
-        "redhat.vscode-xml"
+        "redhat.vscode-xml",
+        "ritwickdey.liveserver"
       ],
       "settings": {
         "extensions.verifySignature": false,

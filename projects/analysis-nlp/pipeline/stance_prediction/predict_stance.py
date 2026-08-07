@@ -1,3 +1,4 @@
+import argparse
 import json
 from datetime import datetime
 from pathlib import Path
@@ -8,9 +9,16 @@ from state import read_state, write_state
 
 timestamp = datetime.now()
 
-current_state = read_state()
-run_id = current_state.get("run_id")
-output_base_path = Path(f"./tmp/stance_prediction/{run_id}/stance_detection")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--root_dir",
+    required=True,
+    help="Directory of the pipeline run output",
+)
+args = parser.parse_args()
+
+current_state = read_state(args.root_dir)
+output_base_path = Path(f"{args.root_dir}/stance_detection")
 output_base_path.mkdir(parents=True, exist_ok=True)
 
 keyword_pairings = current_state["keyword_pairings"]
@@ -18,14 +26,12 @@ if not keyword_pairings:
     raise ValueError(
         "Keyword pairings state is missing in the current state.")
 
-print(f"Starting stance detection for run_id: {run_id}")
-
 pairings_path = Path(keyword_pairings["output_directory"])
 events = read_json_files(pairings_path)
 
 total_pairs = 0
 
-for _file_path, content in events:
+for _, content in events:
     cluster_id = content["cluster_id"]
     targets = content["targets"]
     passage_meta_paths = content["passage_meta_paths"]
@@ -56,7 +62,6 @@ for _file_path, content in events:
 
 state_update = {
     "stance_detection": {
-        "run_id": run_id,
         "processed_at": timestamp.isoformat(),
         "pairings_path": str(pairings_path),
         "output_directory": str(output_base_path),
@@ -65,6 +70,5 @@ state_update = {
     }
 }
 
-current_state = read_state()
 current_state.update(state_update)
-write_state(current_state)
+write_state(args.root_dir, current_state)
