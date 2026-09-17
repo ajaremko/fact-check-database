@@ -4,6 +4,13 @@
   "projectType": "application",
   "sourceRoot": "projects/analysis-nlp/pipeline",
   "targets": {
+    "parse": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "NLTK_DISABLE_IMPORT_SECURITY=1 uv run pipeline/parsing/parse_phrases.py",
+        "cwd": "{projectRoot}"
+      }
+    },
     "pipeline": {
       "executor": "@nxlv/python:run-commands",
       "options": {
