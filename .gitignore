@@ -5,6 +5,8 @@ dist
 tmp
 out-tsc
 __pycache__
+*.tsbuildinfo
+*.d.ts.map
 
 # dependencies
 node_modules
