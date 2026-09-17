@@ -4,7 +4,6 @@ import * as gcp from '@pulumi/gcp'
 import {
   analysisLabels,
   coreProject,
-  deployingServiceAccountEmail,
   gcpRegion,
   stagingStorageTopicName,
   tag,
