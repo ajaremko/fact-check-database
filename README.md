@@ -24,7 +24,9 @@ This project is intended to be legible to:
 
 - [x] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
 - [x] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
-- [] Rewrite project documentation
+- [ ] Rewrite project documentation
+  - [ ] Write missing READMEs: `analysis-loader`, `website-emailer`, `website-fact-check-database`, `website-liquid-informatics`, `website-loader`
+  - [ ] De-duplicate `core-infra`, `ingestion-infra`, `analysis-infra`, `research-infra`, `website-infra` READMEs — currently identical boilerplate, none document the stack's actual resources
 - [x] Remove `ingestion-replay` project
 - [] Sort fact checks feed on website using algolia queries rather than local sort
 - [] Verify fact checks are deduped correctly in ingestion and analysis slices
@@ -84,38 +86,72 @@ This repository is organized as an Nx monorepo with libraries, apps and pulumi i
 └── scripts/                  # Deployment and operational helpers
 ```
 
-### Infrastructure
+### Project Index
 
-All infrastructure is provisioned through multiple Pulumi projects in `projects/*-infra/`.
+Every project under `projects/` is listed below, grouped by domain. This table is the
+canonical entry point for navigating project-level documentation — use it to check
+which projects are documented and to jump into any project's README.
 
-See [projects/core-infra/README.md](./projects/core-infra/README.md) for infrastructure documentation.
+**Status legend:** ✅ documented · ❌ missing
 
-| Stack           | Documentation                                     |
-| --------------- | ------------------------------------------------- |
-| core-infra      | [README.md](./projects/core-infra/README.md)      |
-| ingestion-infra | [README.md](./projects/ingestion-infra/README.md) |
-| analysis-infra  | [README.md](./projects/analysis-infra/README.md)  |
-| research-infra  | [README.md](./projects/research-infra/README.md)  |
-| website-infra   | [README.md](./projects/website-infra/README.md)   |
+#### Core
 
-### Services
+Shared libraries with no dependency on app-level code, used across every domain.
 
-Dockerized applications (API services, workers, scheduled jobs) live in `projects/` as separate Nx projects. Each service:
+| Project        | Kind    | Status | Documentation                                     |
+| -------------- | ------- | :----: | -------------------------------------------------- |
+| core-infra     | Infra   |   ✅   | [README.md](./projects/core-infra/README.md)       |
+| core-contracts | Library |   ✅   | [README.md](./projects/core-contracts/README.md)   |
+| core-data      | Library |   ✅   | [README.md](./projects/core-data/README.md)        |
+| core-io        | Library |   ✅   | [README.md](./projects/core-io/README.md)          |
+| core-vendor    | Library |   ✅   | [README.md](./projects/core-vendor/README.md)      |
 
-- Has its own Dockerfile and deployment configuration
-- Is deployed to managed compute (e.g. Cloud Run)
+#### Ingestion
 
-See further documentation for individual services:
+Collects public fact-checking sources and normalizes them into the raw archive.
 
-| Service                     | Documentation                                                 |
-| --------------------------- | ------------------------------------------------------------- |
-| ingestion-ingestor          | [README.md](./projects/ingestion-ingestor/README.md)          |
-| ingestion-sanitizer         | [README.md](./projects/ingestion-sanitizer/README.md)         |
-| ingestion-extractor         | [README.md](./projects/ingestion-extractor/README.md)         |
-| analysis-loader             | [README.md](./projects/analysis-loader/README.md)             |
-| website-fact-check-database | [README.md](./projects/website-fact-check-database/README.md) |
-| website-emailer             | [README.md](./projects/website-emailer/README.md)             |
-| website-loader              | [README.md](./projects/website-loader/README.md)              |
+| Project             | Kind    | Status | Documentation                                          |
+| ------------------- | ------- | :----: | -------------------------------------------------------- |
+| ingestion-infra     | Infra   |   ✅   | [README.md](./projects/ingestion-infra/README.md)         |
+| ingestion-contracts | Library |   ✅   | [README.md](./projects/ingestion-contracts/README.md)     |
+| ingestion-ingestor  | Service |   ✅   | [README.md](./projects/ingestion-ingestor/README.md)      |
+| ingestion-sanitizer | Service |   ✅   | [README.md](./projects/ingestion-sanitizer/README.md)     |
+| ingestion-extractor | Service |   ✅   | [README.md](./projects/ingestion-extractor/README.md)     |
+
+#### Analysis
+
+Loads archived data for research use and runs NLP analysis (e.g. stance detection).
+
+| Project         | Kind    | Status | Documentation                                     |
+| --------------- | ------- | :----: | --------------------------------------------------- |
+| analysis-infra  | Infra   |   ✅   | [README.md](./projects/analysis-infra/README.md)     |
+| analysis-loader | Service |   ❌   | *(no README yet)*                                    |
+| analysis-nlp    | Library |   ✅   | [README.md](./projects/analysis-nlp/README.md)       |
+
+#### Research
+
+Infrastructure supporting controlled, auditable access for research use of the archive.
+
+| Project        | Kind  | Status | Documentation                                   |
+| -------------- | ----- | :----: | -------------------------------------------------- |
+| research-infra | Infra |   ✅   | [README.md](./projects/research-infra/README.md)   |
+
+#### Website
+
+Public-facing fact-check database, search, and supporting services.
+
+| Project                     | Kind    | Status | Documentation                                                |
+| ---------------------------- | ------- | :----: | -------------------------------------------------------------- |
+| website-infra                 | Infra   |   ✅   | [README.md](./projects/website-infra/README.md)                 |
+| website-contracts             | Library |   ✅   | [README.md](./projects/website-contracts/README.md)             |
+| website-fact-check-database   | App     |   ❌   | *(no README yet)*                                                |
+| website-liquid-informatics    | App     |   ❌   | *(no README yet)*                                                |
+| website-loader                | Service |   ❌   | *(no README yet)*                                                |
+| website-emailer               | Service |   ❌   | *(no README yet)*                                                |
+
+> Note: the `core-infra`, `ingestion-infra`, `analysis-infra`, and `website-infra` READMEs
+> are currently near-identical copies of one another and need to be rewritten to reflect
+> each stack's actual, distinct resources (tracked in TODOs below).
 
 ## Key Technologies
 
