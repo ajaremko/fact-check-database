@@ -1,10 +1,19 @@
 # core-data
 
-Effect `Schema` combinators for the serialization formats the platform reads and writes (CSV, XML, YAML, NDJSON, JSON, HTML, base64 and raw bytes), plus a few small Node.js and object helpers.
+Effect `Schema` combinators for the serialization formats the platform reads and writes, plus a few small Node.js and object helpers.
 
 Every application in the platform validates data at its boundaries with Effect `Schema`. Those boundaries are rarely plain JSON: source lists arrive as CSV, sanitizer policies as YAML, feeds as XML, archive batches as NDJSON, Pub/Sub payloads as base64, and article bodies as HTML. This library provides one combinator per format so that an application can describe the shape of a record once and get a typed, bidirectional `decode` / `encode` for the raw form for free, instead of hand-rolling a parser in each service.
 
-The package is `@news-research/core-data`. Each format is a separate subpath export (for example `@news-research/core-data/Yaml`) so a consumer only pulls in the parser dependency it actually uses. The package root exports only the object helpers `omitNullKeys` and `omitNullableKeys`.
+The package is `@news-research/core-data`. Each format is a separate subpath export of `@news-research/core-data` (for example `@news-research/core-data/Yaml`) so a consumer only pulls in the parser dependency it actually uses. The package root exports only the object helpers `omitNullKeys` and `omitNullableKeys`.
+
+## Development
+
+```bash
+nx test core-data       # run the vitest suite
+nx typecheck core-data
+nx lint core-data
+nx build core-data
+```
 
 ## The combinator pattern
 
@@ -266,21 +275,7 @@ Format combinators are built on `Schema.transformOrFail` and wrap the underlying
 
 With `Schema.decode` the failure is a `ParseError` in the Effect error channel and can be handled with the usual Effect combinators. The `Schema.decodeSync` variants used in the examples above throw instead, which is convenient in tests and scripts but should not be used in service code.
 
-## What this library does not do
-
-- **No IO.** Nothing here reads a file, a bucket or a socket. Bytes come from `@effect/platform` `FileSystem` or the `core-io` storage ports, and this library only transforms them.
-- **No domain schemas.** The record shapes that these combinators wrap live in `core-contracts` and the per-domain `*-contracts` packages.
-- **No streaming.** Every combinator operates on a whole string in memory. Batches are sized by the producers accordingly.
-- **No sanitization.** `htmlToMarkdown` converts markup to Markdown. It does not strip scripts, enforce a policy or make content safe to render. That is the sanitizer's responsibility.
-
-## Development
-
-```bash
-nx test core-data       # run the vitest suite
-nx typecheck core-data
-nx lint core-data
-nx build core-data
-```
+## Extension
 
 To add a format:
 
