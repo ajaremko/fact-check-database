@@ -11,7 +11,8 @@ import { format, parse } from 'date-fns'
  * both directions.
  *
  * - `decode` parses the string with `formatStr`, interpreting it in the local
- *   time zone, and returns `getTime()`.
+ *   time zone, and returns `getTime()`. Fails if the string does not match
+ *   the format.
  * - `encode` formats the number as a `Date` with `formatStr`, failing if the
  *   number is not a valid date.
  *
@@ -38,18 +39,22 @@ export function NumberFromFormattedDate(formatStr: string) {
       return ParseResult.succeed(formatted)
     },
     decode: (input, _, ast) => {
-      try {
-        const parsed = parse(input, formatStr, new Date())
-        const output = parsed.getTime()
-        return ParseResult.succeed(output)
-      } catch {
-        return ParseResult.fail(
+      // `parse` returns an Invalid Date rather than throwing when the input
+      // does not match the format, so the result is checked explicitly. It
+      // does throw on an unsupported format string, hence the catch.
+      const fail = () =>
+        ParseResult.fail(
           new ParseResult.Type(
             ast,
             input,
             `String does not match format ${formatStr}`
           )
         )
+      try {
+        const output = parse(input, formatStr, new Date()).getTime()
+        return isNaN(output) ? fail() : ParseResult.succeed(output)
+      } catch {
+        return fail()
       }
     },
   })

@@ -45,15 +45,18 @@ export function parseXml(opts?: {
     attributeNamePrefix: '@_',
     ignoreAttributes: false,
   }
-  const parser =
-    opts && opts.parser
-      ? new XMLParser({
-          ...defaults,
-          ...opts.parser,
-        })
-      : new XMLParser(defaults)
-  const builder =
-    opts && opts.builder ? new XMLBuilder(opts.builder) : new XMLBuilder()
+  const parserOptions = { ...defaults, ...opts?.parser }
+  // The builder inherits the parser's attribute settings so that `encode` is
+  // the inverse of `decode`: given its own defaults it would ignore attributes
+  // and emit the prefixed keys as elements (`<@_id>7</@_id>`), which is not
+  // well-formed XML. Explicit `builder` options still win.
+  const builderOptions = {
+    attributeNamePrefix: parserOptions.attributeNamePrefix,
+    ignoreAttributes: parserOptions.ignoreAttributes,
+    ...opts?.builder,
+  }
+  const parser = new XMLParser(parserOptions)
+  const builder = new XMLBuilder(builderOptions)
 
   return function <A, I extends Record<string, unknown>, R>(
     schema: Schema.Schema<A, I, R>

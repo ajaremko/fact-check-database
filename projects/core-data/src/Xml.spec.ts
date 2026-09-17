@@ -62,4 +62,37 @@ describe('parseXml', () => {
     const result = () => encode({ name: 'example', count: 'not-a-number' })
     expect(result).toThrow()
   })
+
+  it('decodes attributes using the default prefix', () => {
+    const decode = pipe(
+      Schema.Struct({
+        item: Schema.Struct({
+          '@_id': Schema.String,
+          name: Schema.String,
+        }),
+      }),
+      parseXml(),
+      Schema.decodeUnknownSync
+    )
+    expect(decode('<item id="7"><name>x</name></item>')).toStrictEqual({
+      item: { '@_id': '7', name: 'x' },
+    })
+  })
+
+  it('encodes prefixed keys back into attributes', () => {
+    const schema = Schema.Struct({
+      item: Schema.Struct({
+        '@_id': Schema.String,
+        name: Schema.String,
+      }),
+    })
+    const xml = '<item id="7"><name>x</name></item>'
+    const decoded = pipe(schema, parseXml(), Schema.decodeUnknownSync)(xml)
+    const encoded = pipe(
+      schema,
+      parseXml(),
+      Schema.encodeUnknownSync
+    )(decoded as never)
+    expect(encoded).toStrictEqual(xml)
+  })
 })
