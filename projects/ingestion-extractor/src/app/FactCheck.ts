@@ -75,7 +75,6 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         extracted_at: input.extractedAt,
         fetched_at: input.fetchedAt,
         ingestion_id: input.ingestionId,
-        content_hash: input.http.contentSha256,
         extraction_id: input.extractionId,
         extractor_id: input.extractor.id,
         extractor_version: input.extractor.version,

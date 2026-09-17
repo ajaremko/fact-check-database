@@ -21,14 +21,18 @@ export const stagingDataset = new gcp.bigquery.Dataset(
   { provider, retainOnDelete: retainTablesOnDelete }
 )
 
+/**
+ *  Type names from `FactChecksTableDBSchema` matter for deployment stability:
+ * BigQuery reports `STRUCT` as `RECORD` and `INT64` as `INTEGER`. Pulumi does
+ * not reliably detect changes inside nested `fields`, so schema changes need
+ * a manual check of the deployed table.
+ */
 export const stagingFactChecksTable = new gcp.bigquery.Table(
   `${tag}-staging-fact-checks-table`,
   {
     datasetId: stagingDataset.datasetId,
     tableId: 'fact_checks',
     deletionProtection: tableDeletionProtection,
-    // note: changes in FactChecksTableSchema fields may not be detected by pulumi
-    // needs further investigation
     schema: JSON.stringify(FactChecksTableDBSchema.fields),
     timePartitioning: {
       type: 'DAY',

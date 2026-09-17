@@ -2,16 +2,41 @@ import { ParseResult, Schema } from 'effect'
 
 import { NumberFromFormattedDate } from './NumberFromFormattedDate'
 
+/**
+ * The leading path segments under which every staged object of one type and
+ * contract version lives: `v{version}/type={type}`.
+ *
+ * Exposed separately from {@link StagingPathSchema} for use with GCS bucket
+ * notification config and for filtering and organizing staged objects.
+ *
+ * @example
+ * stagingPathPrefix('fact_checks', 1) // → "v1/type=fact_checks"
+ */
 export function stagingPathPrefix(type: string, version: number): string {
   return `v${version}/type=${type}`
 }
 
 /**
- * Schema for the GCS object path where extracted data is staged. Encodes the
- * `collectionName`, `date`, `extractionId`, and `ext` fields into a structured path for
- * queryable organization in GCS.
+ * Schema for the object path under which the extractor stages a batch in the
+ * staging bucket.
  *
- * Example path: `v1/fact_checks/date=2024-01-01/extraction-1.ndjson`
+ * The layout is `v{version}/type={type}/date={yyyy-MM-dd}/{extractionId}.{ext}`,
+ * so paths sort by contract version, then record type, then day, and a bucket
+ * listing or notification filter can select any of those levels by prefix.
+ * The `date` component is a Unix-millisecond `number` in code and is
+ * formatted by {@link NumberFromFormattedDate}.
+ *
+ * This schema is **encode-only**. Decoding is not currently required.
+ *
+ * @example
+ * Schema.encodeSync(StagingPathSchema)({
+ *   version: 1,
+ *   type: 'fact_checks',
+ *   date: 1704067200000,
+ *   extractionId: 'extraction-1',
+ *   ext: 'ndjson',
+ * })
+ * // → "v1/type=fact_checks/date=2024-01-01/extraction-1.ndjson"
  */
 export const StagingPathSchema = Schema.transformOrFail(
   Schema.String,
@@ -45,4 +70,5 @@ export const StagingPathSchema = Schema.transformOrFail(
     Schema for the GCS object path where extracted data is staged.`,
 })
 
+/** Decoded form of {@link StagingPathSchema}: the parts of a staging path, with `date` in Unix milliseconds. */
 export type StagingPath = Schema.Schema.Type<typeof StagingPathSchema>

@@ -111,7 +111,7 @@ describe('extractFactChecks', () => {
           extracted_at: '1970-01-01T00:00:00.000Z',
           extraction_id: 'run-1',
           extractor_id: 'rss',
-          extractor_version: 1,
+          extractor_version: '1',
           fetched_at: '1970-01-01T00:00:00.000Z',
           ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           source: {
@@ -157,7 +157,7 @@ describe('extractFactChecks', () => {
           extracted_at: '1970-01-01T00:00:00.000Z',
           extraction_id: 'run-1',
           extractor_id: 'rss',
-          extractor_version: 1,
+          extractor_version: '1',
           fetched_at: '1970-01-01T00:00:00.000Z',
           ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           fact_check: {
@@ -202,7 +202,7 @@ describe('extractFactChecks', () => {
           extracted_at: '1970-01-01T00:00:00.000Z',
           extraction_id: 'run-1',
           extractor_id: 'rss',
-          extractor_version: 1,
+          extractor_version: '1',
           fetched_at: '1970-01-01T00:00:00.000Z',
           source: {
             collection: 'rss',

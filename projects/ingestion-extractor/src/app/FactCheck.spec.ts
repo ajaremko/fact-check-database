@@ -56,7 +56,7 @@ describe('FactCheckRowSchema', () => {
       ingestion_id: 'ing-id',
       extraction_id: 'ext-id',
       extractor_id: 'extractor-id',
-      extractor_version: 1,
+      extractor_version: '1',
       fetched_at: '1970-01-01T00:00:00.000Z',
       fact_check: {
         sha256: 'abc123',
