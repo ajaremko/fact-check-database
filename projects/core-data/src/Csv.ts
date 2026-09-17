@@ -19,7 +19,7 @@ type OptionsWithColumns<T> = Omit<CsvParse.Options<T>, 'columns'> & {
  * const MySchema = Schema.Struct({ name: Schema.String, count: Schema.NumberFromString })
  * const decode = pipe(
  *   MySchema,
- *   NodeCsv.parseCsv({ parse: { columns: true, skip_empty_lines: true }, stringify: {} }),
+ *   Csv.parseCsv({ parse: { columns: true, skip_empty_lines: true }, stringify: {} }),
  *   Schema.decode
  * )
  * const result = decode('name,count\nexample,42\n')
@@ -29,7 +29,7 @@ type OptionsWithColumns<T> = Omit<CsvParse.Options<T>, 'columns'> & {
  * // Encode an array of typed objects into a CSV string
  * const encode = pipe(
  *   MySchema,
- *   NodeCsv.parseCsv({ parse: { columns: true }, stringify: { header: true } }),
+ *   Csv.parseCsv({ parse: { columns: true }, stringify: { header: true } }),
  *   Schema.encode
  * )
  * const result = encode([{ name: 'example', count: 42 }])

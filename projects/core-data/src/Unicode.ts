@@ -12,7 +12,6 @@ import { ParseResult, Schema } from 'effect'
  *
  * @example
  * // Decode a UTF-8 string into a US-ASCII string
- * const MySchema = Schema.Struct(Schema.String)
  * const decode = pipe(
  *   Schema.String,
  *   parseUnicode(),
