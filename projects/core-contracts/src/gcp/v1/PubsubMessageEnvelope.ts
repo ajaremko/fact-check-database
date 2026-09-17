@@ -35,10 +35,10 @@ export type PubsubMessagePayload = Schema.Schema.Type<
 /**
  * The JSON body Pub/Sub POSTs to a push subscription endpoint.
  *
- * Every service that receives work over HTTP and decodes the request
- * body with this schema before looking at the message inside. `subscription`
- * is the fully qualified subscription resource name, useful for logging and
- * for rejecting deliveries from an unexpected subscription.
+ * Decode the request body with this schema before looking at the message
+ * inside. `subscription` is the fully qualified subscription resource name,
+ * useful for logging and for rejecting deliveries from an unexpected
+ * subscription.
  * @example
  * // A decoded envelope
  * {

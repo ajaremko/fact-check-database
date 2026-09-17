@@ -2,7 +2,7 @@
 
 Cross-domain data contracts: the Effect `Schema` definitions for records that cross a boundary between two systems in the platform, and the Google Cloud event shapes those systems receive.
 
-A contract lives here when more than one domain depends on it. The ingestion domain produces staged fact-check batches and the analysis and website domains consume them, so the row shape and the object-path layout of those batches are defined once in this package rather than duplicated in each consumer. The same applies to the Pub/Sub and Cloud Storage event payloads: every service that receives work over a push subscription decodes the same envelope. Contracts specific to a single domain live in that domain's own package (`ingestion-contracts`, `website-contracts`).
+A contract lives here when more than one domain depends on it. The ingestion domain produces staged fact-check batches and the analysis and website domains consume them, so the row shape and the object-path layout of those batches are defined once in this package rather than duplicated on each side. The same applies to the Pub/Sub and Cloud Storage event payloads: every service that receives work over a push subscription decodes the same envelope. Contracts specific to a single domain live in that domain's own package (`ingestion-contracts`, `website-contracts`).
 
 The package is `@news-research/core-contracts`. Contracts are grouped by concern and version, and each group is a subpath export:
 
@@ -11,7 +11,7 @@ The package is `@news-research/core-contracts`. Contracts are grouped by concern
 | `@news-research/core-contracts/gcp/v1`     | `gcpV1`     | Pub/Sub push envelope, Cloud Storage object-finalized notification body and attributes    |
 | `@news-research/core-contracts/staging/v1` | `stagingV1` | Fact-checks table definition and row schema, staging object-path layout, date-path helper |
 
-The package root re-exports both groups as namespaces (`gcpV1`, `stagingV1`). Consumers in the repository import the subpaths directly.
+The package root re-exports both groups as the namespaces above. Prefer the subpath imports: they make the contract group and its version visible at the import site.
 
 ## Development
 
@@ -34,18 +34,20 @@ Schemas for the two Google Cloud event payloads the platform's services receive.
 
 ### PubsubMessageEnvelope
 
-The JSON body that Pub/Sub POSTs to a push-subscription endpoint. `message` is a `PubsubMessagePayload` with the base64 `data`, optional `attributes`, `messageId`, and `publishTime` (decoded to a `Date`). `subscription` is the fully qualified subscription name.
+The JSON body that Pub/Sub POSTs to a push-subscription endpoint. `message` is a `PubsubMessagePayload` with the base64 `data`, optional `attributes`, `messageId`, and `publishTime` (decoded to a `Date`). `subscription` is the fully qualified subscription resource name, useful for logging and for rejecting deliveries from an unexpected subscription.
 
 ```ts
-import { Schema } from 'effect'
+import { Effect, Schema } from 'effect'
 import { PubsubMessageEnvelope } from '@news-research/core-contracts/gcp/v1'
 
 const decodeEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
-const body = yield * request.json
-const { message, subscription } = yield * decodeEnvelope(body)
-// message.publishTime → Date
-// message.data        → "SGVsbG8gV29ybGQh" (still base64)
+Effect.gen(function* () {
+  const { message } = yield* decodeEnvelope(requestBody)
+  // message.messageId   → "123456789012345"
+  // message.publishTime → Date
+  // message.data        → "SGVsbG8gV29ybGQh" (still base64)
+})
 ```
 
 The schema leaves `data` encoded because the body format depends on the topic. `parsePubsubMessagePayloadData` is a combinator that decodes it to a UTF-8 string, and composes with a body schema when the body is JSON:
@@ -58,8 +60,9 @@ const decodeBody = Schema.String.pipe(
   parsePubsubMessagePayloadData,
   Schema.decodeUnknown
 )
-yield * decodeBody('SGVsbG8gV29ybGQh') // → "Hello World!"
+// decodeBody('SGVsbG8gV29ybGQh') → Effect<"Hello World!", ParseError>
 
+// Or decode straight into a typed record
 const decodeRecord = MyRecordSchema.pipe(
   Node.parseJson(),
   parsePubsubMessagePayloadData,
@@ -67,13 +70,12 @@ const decodeRecord = MyRecordSchema.pipe(
 )
 ```
 
-Used by the analysis loader, the website loader, the website emailer, and the `HttpServerMessageQueueFeeder` adapter in `core-io`, which turns push deliveries into a `MessageQueue`.
-
 ### StorageObjectAttributesSchema
 
-The message attributes Cloud Storage attaches to every bucket notification. `bucketId` and `objectId` identify the finalized object and are all a consumer needs to fetch it through a `core-io` `StorageReader`. This is the schema services actually act on.
+The message attributes Cloud Storage attaches to every bucket notification, regardless of payload format. `bucketId` and `objectId` together identify the finalized object, which is all that is needed to fetch it. `eventType` is `OBJECT_FINALIZE` for the notifications this platform subscribes to.
 
 ```ts
+import { Effect, Schema } from 'effect'
 import { StorageObjectAttributesSchema } from '@news-research/core-contracts/gcp/v1'
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
@@ -81,21 +83,41 @@ const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.decodeUnknown
 )
 
-const { bucketId, objectId } = yield * decodeAttributes(message.attributes)
-const bytes = yield * reader.read({ bucket: bucketId, object: objectId })
+Effect.gen(function* () {
+  const { bucketId, objectId } = yield* decodeAttributes(message.attributes)
+  // enough to build a pointer to the finalized object
+})
 ```
 
-Where a notification config adds custom attributes, consumers extend the schema. The analysis loader receives the table schema's object name this way and reads it with `Schema.extend(Schema.Struct({ schemaObjectId: Schema.String }))`.
+A notification configuration can attach custom attributes of its own. Extend the schema to read them:
+
+```ts
+const decodeAttributes = StorageObjectAttributesSchema.pipe(
+  Schema.pick('bucketId', 'objectId'),
+  Schema.extend(Schema.Struct({ customAttribute: Schema.String })),
+  Schema.decodeUnknown
+)
+```
 
 ### StorageObjectDataSchema
 
-The Cloud Storage object resource carried as the message body when a notification uses `payloadFormat: JSON_API_V1`. The field set mirrors `@google/events` and is checked against it at compile time. Only `kind` and `id` are required; every other field is optional because Cloud Storage omits fields that do not apply and because development adapters fabricate minimal bodies.
+The Cloud Storage object resource carried as the message body when a notification uses `payloadFormat: JSON_API_V1`. The field set mirrors `StorageObjectData` from `@google/events` and is checked against it at compile time. Numeric and timestamp fields arrive as strings and decode to `number` and `Date`.
 
-Production services rarely decode the full body. The development storage writer in `core-io` uses it in the encode direction to simulate a notification after writing a file:
+Only `kind` and `id` are required. Every other field is optional because Cloud Storage omits fields that do not apply to a given object, and because development adapters fabricate minimal notifications with only `kind`, `id`, `name`, and `bucket`. The attributes above already carry the bucket and object name, so the full body only needs decoding when metadata such as `size`, `md5Hash`, or `contentType` is wanted.
+
+Encoding a minimal body, as a development environment might to simulate a notification:
 
 ```ts
-const encode = StorageObjectDataSchema.pipe(Node.parseJson(), Schema.encode)
-yield * encode({ kind: 'storage#object', id: path, name: path, bucket })
+const encodeBody = StorageObjectDataSchema.pipe(Node.parseJson(), Schema.encode)
+
+Effect.gen(function* () {
+  const body = yield* encodeBody({
+    kind: 'storage#object',
+    id: path,
+    name: path,
+    bucket,
+  })
+})
 ```
 
 ## staging/v1
@@ -104,19 +126,19 @@ Contracts for the staging area: the bucket and BigQuery table through which extr
 
 ### FactChecksTableRowSchema
 
-One row of the staging `fact_checks` table, as an Effect schema. This is the record contract between ingestion and its consumers: the extractor encodes rows with it when writing an NDJSON batch, and the website loader decodes the same batches before transcoding them into search records.
+One row of the staging `fact_checks` table, as an Effect schema. This is the record contract for the staging area: a producer encodes rows with it when writing an NDJSON batch, and a consumer decodes the same batches on the way out.
 
 | Group                  | Fields                                                                                                                                                                                    | Notes                                                                                                                        |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Lineage and provenance | `content_lineage_id`, `content_sha256`, `ingestion_id`, `extraction_id`, `extractor_id`, `extractor_version`, `fetched_at`, `extracted_at`                                                | All required. `extractor_version` is a number in code and a string when encoded. The table is partitioned by `extracted_at`. |
-| `source`               | `id`, `collection`, `name`, `url`                                                                                                                                                         | Copied from the ingestor's source list.                                                                                      |
-| `fact_check`           | `sha256`, `guid`, `canonical_url`, `language`, `title`, `author`, `categories`, `summary`, `content`, `enclosure_url`, `image_url`, `link`, `published_at_raw`, `published_at_normalized` | Everything but `sha256` is optional. `summary` and `content` are Markdown.                                                   |
+| `source`               | `id`, `collection`, `name`, `url`                                                                                                                                                         | The feed the item came from.                                                                                                 |
+| `fact_check`           | `sha256`, `guid`, `canonical_url`, `language`, `title`, `author`, `categories`, `summary`, `content`, `enclosure_url`, `image_url`, `link`, `published_at_raw`, `published_at_normalized` | Everything but `sha256` is optional, because feeds vary in what they publish. `summary` and `content` are Markdown.          |
 | `http`                 | `final_url`, `status_code`, `etag`, `content_type`, `last_modified`, `headers`                                                                                                            | Response metadata of the fetch that produced the content.                                                                    |
 
-Optional fields are absent rather than `null`; producers drop nulls with `omitNullKeys` from `core-data` before encoding.
+`published_at_raw` preserves the publisher's original date string and `published_at_normalized` is the parsed form. Optional fields are absent rather than `null`; producers drop nulls with `omitNullKeys` from `core-data` before encoding.
 
 ```ts
-import { pipe, Schema } from 'effect'
+import { Effect, pipe, Schema } from 'effect'
 import * as Ndjson from '@news-research/core-data/Ndjson'
 import * as Node from '@news-research/core-data/Node'
 import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
@@ -127,17 +149,24 @@ const decodeBatch = pipe(
   Node.parseUint8Array({ encoding: 'utf-8' }),
   Schema.decode
 )
-const rows = yield * decodeBatch(bytes) // FactChecksTableRow[]
+
+Effect.gen(function* () {
+  const rows = yield* decodeBatch(bytes) // readonly FactChecksTableRow[]
+})
 ```
 
 ### FactChecksTableDBSchema
 
-The same table as a BigQuery JSON schema, the format BigQuery accepts for table creation and load jobs. It is the single source of truth for the table's columns and is consumed in two places that must agree:
+The same table as a BigQuery JSON schema, the format BigQuery accepts for table creation and load jobs. It is the single source of truth for the table's columns, and it is consumed in two places that must agree with each other and with the row schema:
 
 - `analysis-infra` passes its `fields` to Pulumi to create the table.
 - `core-infra` serializes the object to `schemas/fact_checks_table_schema_v1.json` in the staging bucket. The analysis loader reads that file at run time to supply the schema for each batch load job, which keeps the loader free of a build-time dependency on the infrastructure that owns the table.
 
-The column definition mirrors `FactChecksTableRowSchema`: a field that is required in the row schema is `REQUIRED` here and an optional field is `NULLABLE`, and column types follow the row schema's encoded form (so `extractor_version` is a `STRING` column). The two are kept in step by hand, so a change to one must be applied to the other. The type names use BigQuery's canonical spellings (`RECORD`, `INTEGER`) because the aliases (`STRUCT`, `INT64`) make Pulumi see a diff on every deploy and try to replace the table.
+Those consumers are named here, against the rule followed elsewhere in this package, because a mismatch between them fails at deploy or load time rather than at compile time.
+
+The column definition mirrors `FactChecksTableRowSchema`: a field that is required in the row schema is `REQUIRED` here and an optional field is `NULLABLE`, and column types follow the row schema's encoded form, so `extractor_version` is a `STRING` column. The two are kept in step by hand, so a change to one must be applied to the other.
+
+Type names use BigQuery's canonical spellings (`RECORD`, `INTEGER`) because the aliases (`STRUCT`, `INT64`) make Pulumi see a diff on every deploy and try to replace the table.
 
 ### StagingPathSchema and stagingPathPrefix
 
@@ -147,7 +176,9 @@ The object-path layout for staged batches:
 v{version}/type={type}/date={yyyy-MM-dd}/{extractionId}.{ext}
 ```
 
-Paths sort by contract version, then record type, then day, so a bucket listing or a notification filter can select any level by prefix. `StagingPathSchema` is encode-only: encoding a `StagingPath` value produces the string, and decoding fails with a `Forbidden` parse error because nothing in the platform needs to recover the parts from a path. The `date` part is a Unix-millisecond number in code and is formatted by `NumberFromFormattedDate`.
+Paths sort by contract version, then record type, then day, so a bucket listing or a notification filter can select any level by prefix. The `date` part is a Unix-millisecond number in code and is formatted by `NumberFromFormattedDate`.
+
+`StagingPathSchema` is encode-only: encoding a `StagingPath` value produces the path string, and decoding fails with a `Forbidden` parse error because recovering the fields from a path is not currently required.
 
 ```ts
 import { Schema } from 'effect'
@@ -168,11 +199,11 @@ Schema.encodeSync(StagingPathSchema)({
 stagingPathPrefix('fact_checks', 1) // → "v1/type=fact_checks"
 ```
 
-`stagingPathPrefix` is exported on its own because infrastructure needs the prefix without a full path. `core-infra` uses it as the `objectNamePrefix` filter on the staging bucket's notification config, so only objects under `v1/type=fact_checks` trigger downstream loaders. The extractor uses it to derive sibling layouts such as the per-item content blobs under `v1/type=fact_checks_content`.
+`stagingPathPrefix` is exported on its own for the cases that need the prefix without a full path: filtering a bucket notification configuration to one record type, listing or organizing staged objects, and deriving sibling layouts under a different `type=` segment.
 
 ### NumberFromFormattedDate
 
-A schema between a date string in a fixed `date-fns` format and Unix time in milliseconds. It exists so that date components of paths are human-readable in storage and numeric in code, with one schema converting in both directions.
+A schema between a date string in a fixed `date-fns` format and Unix time in milliseconds. It exists so that date components of paths are human-readable in storage and numeric in code, with one schema converting in both directions. Decoding interprets the string in the process's local time zone.
 
 ```ts
 import { Schema } from 'effect'
@@ -182,11 +213,4 @@ Schema.decodeSync(NumberFromFormattedDate('yyyy-MM-dd'))('2024-01-01') // → 17
 Schema.encodeSync(NumberFromFormattedDate('yyyy-MM-dd'))(1704067200000) // → "2024-01-01"
 ```
 
-Decoding interprets the string in the process's local time zone. `ingestion-contracts` carries an identical copy of this helper under `archive/v1` for archive paths, so that the ingestion domain's path contracts do not depend on the staging contracts.
-
-## What this library does not do
-
-- **No IO.** Nothing here reads a bucket, a table, or a request. Services decode inbound bodies and read objects through `core-io` and `@effect/platform`; this package only defines the shapes.
-- **No format handling.** Byte, JSON, NDJSON and base64 conversions come from `core-data`. Contracts compose with those combinators rather than reimplementing them.
-- **No domain-specific records.** Observations, archive paths and source configuration belong to `ingestion-contracts`; search and form records belong to `website-contracts`. A contract is promoted here only when a second domain depends on it.
-- **No table management.** The BigQuery table is created and evolved by `analysis-infra`. This package supplies the column definition but never applies it.
+`ingestion-contracts` carries an identical copy under `archive/v1`, kept separate on purpose so that the ingestion domain's path contracts do not depend on the staging contracts.

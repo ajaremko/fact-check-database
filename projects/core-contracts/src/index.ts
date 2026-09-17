@@ -9,7 +9,7 @@ export * as gcpV1 from './gcp/v1'
 /**
  * Schemas for the staging area shared by the ingestion and analysis domains:
  * the fact-checks table definition, its row shape, and the object-path layout
- * under which the extractor stages batches for downstream loaders.
+ * under which batches are staged.
  *
  * Also importable directly as `@news-research/core-contracts/staging/v1`.
  */
