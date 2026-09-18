@@ -51,7 +51,7 @@ config:
   core:kmsLocation: us-central1
   core:githubOrg: ajaremko
   core:githubRepo: news-research
-  core:workloadIdentityPoolId: shared-identity-pool
+  core:workloadIdentityPoolId: shared-identity-pool-01
   core:batchRetentionDays: 1
   core:forceDestroyStorage: true
   core:retainStorageOnDelete: false

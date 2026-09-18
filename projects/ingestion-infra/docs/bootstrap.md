@@ -39,15 +39,15 @@ Ensure that the `ingestion:project` points to the new gcp project and that `inge
 Run the production deployment command:
 
 ```bash
-nx deploy core-infra --stack=prod
+nx deploy ingestion-infra --stack=prod
 ```
 
 If deployment fails on the first attempt due to disabled apis, give the api changes a chance to propagate and try again. This could probably be corrected by verifying the `dependsOn` property of all pulumi resources are correct.
 
-Ensure that the `core:project` in `projects/core-infra/Pulumi.dev.yml` points to the development project.
+Ensure that the `ingestion:project` in `projects/ingestion-infra/Pulumi.dev.yml` points to the development project.
 
 Run the development deployment command:
 
 ```bash
-nx deploy core-infra --stack=dev
+nx deploy ingestion-infra --stack=dev
 ```
