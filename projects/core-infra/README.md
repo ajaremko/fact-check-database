@@ -15,26 +15,17 @@ uses to deploy every project in this repository, including this one.
 
 ```
 projects/core-infra/
-├── src/
-│   ├── index.ts               # Composition root — re-exports every stack output
-│   ├── config.ts              # `core` Pulumi config namespace
-│   ├── project.ts             # Shared GCP provider and project service account
-│   ├── services.ts            # GCP API enablement
-│   ├── kms.ts                 # CMEK key ring and keys
-│   ├── artifact-registry.ts   # Shared Docker registry
-│   ├── identity-pool.ts       # Workload identity pool
-│   ├── github-action-runner/  # GitHub Actions OIDC provider and service account
-│   └── staging-storage/       # Staging bucket, topic, and BigQuery schema object
-├── docs/                      # Infrastructure documentation
-├── Pulumi.yml                 # Project definition
-├── Pulumi.dev.yml             # Development stack config
-└── Pulumi.prod.yml            # Production stack config
+├── src/            # One flat file or folder per capability — see "What this project provisions" below
+├── docs/           # Infrastructure documentation
+├── Pulumi.yml      # Project definition
+├── Pulumi.dev.yml  # Development stack config
+└── Pulumi.prod.yml # Production stack config
 ```
 
-There is no `src/modules/` directory. Each capability above is its own top-level file or folder.
-Capabilities substantial enough to need their own IAM, scheduling, and monitoring — ingestion,
-analysis, website, research — are separate Pulumi projects instead, each holding a stack
-reference back to this one.
+There is no `src/modules/` directory — each capability described below is its own top-level
+file under `src/`, or a folder once it needs more than one file. Capabilities substantial enough
+to need their own IAM, scheduling, and monitoring are separate Pulumi projects instead, each
+holding a stack reference back to this one.
 
 ## Deployment
 
@@ -60,10 +51,10 @@ second provider, for example, to grant IAM directly against resources that live 
 
 Exported as stack outputs:
 
-| Output       | Type     |
-| ------------ | -------- |
-| `gcpProject` | `string` |
-| `gcpRegion`  | `string` |
+| Output       | Type     | Purpose                                        |
+| ------------ | -------- | ---------------------------------------------- |
+| `gcpProject` | `string` | GCP project ID this stack deploys into         |
+| `gcpRegion`  | `string` | GCP region for this stack's regional resources |
 
 ### GCP service enablement
 
@@ -88,10 +79,10 @@ Exported as stack outputs:
 
 Exported as stack outputs:
 
-| Output                                  | Type     |
-| --------------------------------------- | -------- |
-| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` |
-| `bigQueryKeyId` / `bigQueryKeyName`     | `string` |
+| Output                                  | Type     | Purpose                                                                                   |
+| --------------------------------------- | -------- | ----------------------------------------------------------------------------------------- |
+| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key that encrypts `ingestion-infra`'s raw archive bucket                   |
+| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key provisioned for BigQuery datasets; not referenced by any dataset today |
 
 ### Artifact Registry
 
@@ -102,13 +93,10 @@ Cloud Run service agent `roles/artifactregistry.reader` on it from its own proje
 
 Exported as stack outputs:
 
-| Output                                                                               | Type     |
-| ------------------------------------------------------------------------------------ | -------- |
-| `artifactRegistryLocation` / `artifactRegistryName` / `artifactRegistryRepositoryId` | `string` |
-| `artifactRegistryUri` / `artifactRegistryBaseUri`                                    | `string` |
-
-`artifactRegistryUri` and `artifactRegistryBaseUri` aren't read by anything outside this project
-today.
+| Output                                                                               | Type     | Purpose                                                                                    |
+| ------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------ |
+| `artifactRegistryLocation` / `artifactRegistryName` / `artifactRegistryRepositoryId` | `string` | Lets a downstream project build the registry's image path and grant itself reader access   |
+| `artifactRegistryUri` / `artifactRegistryBaseUri`                                    | `string` | Convenience forms of the registry address; not read by anything outside this project today |
 
 ### Staging storage
 
@@ -121,16 +109,12 @@ projects.
 
 Exported as stack outputs:
 
-| Output                             | Type     |
-| ---------------------------------- | -------- |
-| `stagingStorageBucketName`         | `string` |
-| `stagingStorageTopicName`          | `string` |
-| `stagingStorageUploadNoficationId` | `string` |
-| `factChecksTableDBSchemaObjectUri` | `string` |
-
-`stagingStorageUploadNoficationId` and `factChecksTableDBSchemaObjectUri` aren't read by
-anything today — the schema's actual location reaches the loader through the Pub/Sub message's
-`schemaObjectId` attribute (set in `staging-storage/topic.ts`), not this output.
+| Output                             | Type     | Purpose                                                                                                                                                                         |
+| ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stagingStorageBucketName`         | `string` | Lets a downstream project read the objects written here, or grant its own service account access                                                                                |
+| `stagingStorageTopicName`          | `string` | Lets a downstream project create its own subscription for new staging objects                                                                                                   |
+| `stagingStorageUploadNoficationId` | `string` | Identifies the storage notification; not read by anything today                                                                                                                 |
+| `factChecksTableDBSchemaObjectUri` | `string` | Points at the uploaded BigQuery schema file; not read by anything today — the schema's location instead reaches the loader via the Pub/Sub message's `schemaObjectId` attribute |
 
 ### Workload identity federation
 
@@ -149,10 +133,10 @@ See [docs/iam-model.md](./docs/iam-model.md) for the full role and binding list.
 
 Exported as stack outputs:
 
-| Output                                 | Type     |
-| -------------------------------------- | -------- |
-| `githubActionServiceAccountEmail`      | `string` |
-| `githubActionIdentityPoolProviderName` | `string` |
+| Output                                 | Type     | Purpose                                                                              |
+| -------------------------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `githubActionServiceAccountEmail`      | `string` | The email GitHub Actions workflows read to know which service account to impersonate |
+| `githubActionIdentityPoolProviderName` | `string` | The provider name GitHub Actions workflows read to authenticate via OIDC             |
 
 ## Consuming these outputs
 
