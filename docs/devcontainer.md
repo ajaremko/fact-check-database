@@ -10,7 +10,7 @@ The dev container is built on `mcr.microsoft.com/devcontainers/typescript-node:2
 | --------------------------- | ------------------------------------------------------------------- |
 | Node.js 20                  | Runtime for all TypeScript applications and build tooling           |
 | Nx CLI                      | Task orchestration, code generation, and monorepo management        |
-| Pulumi CLI                  | Infrastructure provisioning via `apps/infra`                        |
+| Pulumi CLI                  | Infrastructure provisioning via `projects/core-infra` and the other `projects/*-infra` projects |
 | Google Cloud SDK (`gcloud`) | Authenticating with GCP and managing cloud resources                |
 | Docker-in-Docker            | Building and running container images from within the dev container |
 | GitHub CLI (`gh`)           | Interacting with GitHub from the terminal                           |
@@ -21,10 +21,10 @@ VS Code extensions are pre-configured for ESLint, Prettier, Nx Console, GitHub A
 
 ## Prerequisites
 
-Before opening the dev container, create a `.env` file in `.devcontainer/` from the provided template:
+Before opening the dev container, create a `.env` file in `.devcontainer/node/` from the provided template:
 
 ```bash
-cp .devcontainer/.env.template .devcontainer/.env
+cp .devcontainer/node/.env.template .devcontainer/node/.env
 ```
 
 Then fill in the following values:
@@ -57,7 +57,7 @@ The `SSH_AUTH_SOCK` environment variable is set to `/ssh-agent.sock` inside the 
 
 ## Post-Create Setup
 
-After the container is created, `.devcontainer/setup.sh` runs automatically. It:
+After the container is created, `.devcontainer/node/setup.sh` runs automatically. It:
 
 1. Authenticates the `gcloud` CLI using the provided service account credentials
 2. Installs npm dependencies (`npm install`) if `node_modules` does not already exist

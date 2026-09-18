@@ -75,7 +75,7 @@ Exported as stack outputs:
 | Output                                  | Type     | Purpose                                                           |
 | --------------------------------------- | -------- | ----------------------------------------------------------------- |
 | `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key used to encrypt raw archive data               |
-| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key used to encrypt structured data; not yeet used |
+| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key used to encrypt structured data; not yet used |
 
 ### Artifact Registry
 

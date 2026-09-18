@@ -30,12 +30,46 @@ Deploy manually when:
 
 - Running the initial bootstrap deployment.
 - Automatic deployment fails because the GitHub Actions service account lacks a needed permission.
-- After rotating a KMS key.
 
 **Automatic deployment:** a push to `main` triggers
 [`ci.yml`](../../../.github/workflows/ci.yml), which deploys the `dev` stack.
 [`deploy.yml`](../../../.github/workflows/deploy.yml) deploys a chosen environment on manual
 dispatch.
+
+## Validating changes before merging
+
+There is no automated `pulumi preview` check on pull requests — `ci.yml` only runs
+`nx affected -t lint,test,build` before a merge to `main` triggers a real deploy to `dev`. Before
+merging a change to this project, run a preview locally against `dev` and read the diff:
+
+```bash
+nx preview core-infra --stack=dev
+```
+
+Treat any resource replacement (not just an in-place update) as a reason to pause and confirm the
+change is intentional — a replacement of the staging bucket, key ring, or artifact registry
+destroys and recreates a resource every downstream project depends on.
+
+## KMS key rotation
+
+The 90-day rotation `docs/encryption.md` describes is automatic and requires no operator action:
+Cloud KMS creates a new primary key version on schedule, new encrypt operations use it, and
+existing data stays readable because old key versions are retained and still decrypt it. No
+redeploy is needed — Pulumi's `CryptoKey` resource manages the rotation policy, not individual
+key versions.
+
+A manual rotation (for example, responding to a suspected key compromise) is a rare exception:
+create a new version and promote it to primary directly against the key —
+
+```bash
+gcloud kms keys versions create --key=<key-name> --location=us-central1 --keyring=core-key-ring \
+  --project=$PROJECT_ID
+gcloud kms keys set-primary-version --key=<key-name> --location=us-central1 --keyring=core-key-ring \
+  --project=$PROJECT_ID --version=<new-version-number>
+```
+
+— which also needs no redeploy, since every Pulumi resource and downstream IAM grant references
+the key by name, not by version.
 
 ## Troubleshooting: bucket creation failures
 
@@ -86,6 +120,39 @@ impersonating the service account.
 **Resolution:** update the attribute condition if the org or repo changed; re-grant
 `workloadIdentityUser` if the binding was removed; confirm the workflow YAML matches the current
 stack outputs (see the [README](../README.md#cicd-identity)).
+
+## Rolling back a deploy
+
+Prefer reverting the git commit that introduced the bad change and redeploying over hand-editing
+Pulumi state — the state file is a derived record of what's actually running, not a source of
+truth to edit directly.
+
+1. Find the last good update: `pulumi stack history --stack=<dev|prod>`.
+2. If an update is still in progress or was interrupted (a CI run cancelled mid-apply, a local
+   `nx deploy` killed with Ctrl-C), clear it before retrying: `pulumi cancel --stack=<dev|prod>`.
+3. Revert the offending commit in git, then redeploy: `nx deploy core-infra --stack=<dev|prod>`.
+4. If a resource was changed outside of Pulumi (a manual `gcloud` command, a console edit), run
+   `pulumi refresh --stack=<dev|prod>` to reconcile Pulumi's state with reality before the next
+   deploy, rather than letting the next `pulumi up` fight an unexpected diff.
+
+## Revoking operator access
+
+This project has exactly one operator identity today — see
+[docs/bootstrap.md](./bootstrap.md#pulumi-cloud-account-and-access-token) and
+[Create Core GCP Project and Root Service Account](./bootstrap.md#create-core-gcp-project-and-root-service-account)
+for how it was set up. To revoke it:
+
+- **GCP service account key**: delete or rotate the `pulumi-cli` service account's JSON key from
+  the GCP console (IAM → Service Accounts → Keys), or delete the service account itself if it's
+  being replaced.
+- **Pulumi Cloud access token**: revoke it from **Settings → Access Tokens** in the Pulumi Cloud
+  console, then generate a replacement if deploys need to continue under a new token.
+- **Project ownership**: the `pulumi-cli` service account holds the `Owner` role directly on both
+  GCP projects. Revoking it without first granting `Owner` (or an equivalent role) to a
+  replacement principal will leave the projects without an administrator able to manage IAM.
+
+This is distinct from revoking a *consuming* project's access to a CMEK key, which is scoped to
+that project and covered in [docs/encryption.md](./encryption.md#access-model).
 
 ## Audit logs
 

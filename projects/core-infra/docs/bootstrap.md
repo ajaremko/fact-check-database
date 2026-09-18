@@ -1,5 +1,26 @@
 # Bootstrap and First Deployment
 
+## Pulumi Cloud account and access token
+
+This project's Pulumi state is stored in Pulumi Cloud (the default backend — no self-managed
+backend is configured here), so a Pulumi Cloud account and access token are required before any
+`pulumi`, `nx deploy`, or `nx preview` command will work.
+
+1. Create an account at [app.pulumi.com](https://app.pulumi.com) and note the organization it
+   assigns you (or create one).
+2. Generate a personal access token from **Settings → Access Tokens** in the Pulumi Cloud
+   console.
+3. Supply the token as `PULUMI_ACCESS_TOKEN`:
+   - **Locally**, set it in `.devcontainer/node/.env` (see
+     [docs/devcontainer.md](../../../docs/devcontainer.md)) — the Pulumi CLI reads it
+     automatically on every command run inside the devcontainer.
+   - **In CI**, it's stored as the `PULUMI_ACCESS_TOKEN` GitHub Actions secret, read by every
+     workflow that runs `pulumi stack output` or the `deploy`/`preview` Nx targets (see
+     [docs/runbook.md](./runbook.md)).
+
+Run `pulumi login` once inside the devcontainer to confirm the token is valid; the CLI caches it
+in `~/.pulumi/credentials.json` for subsequent commands.
+
 ## Initial GCP project setup
 
 ### Create Core GCP Project and Root Service Account
@@ -12,9 +33,9 @@ Enable the compute api via `https://console.cloud.google.com/apis/api/compute.go
 
 In the core project, create a new service account for the pulumi cli to use, for example `pulumi-cli@fact-check-database-core.iam.gserviceaccount.com`. Give this service account the `Owner` IAM role to grant broad permission to modify cloud resources.
 
-Next, generate a new JSON key for Pulumi authentication and download it to the `/.gcp` on your development machine. The configuration in `.devcontainer/docker-compose.yml` will mount this specific directory into the devcontainer environment and use it to authenticate with the `gcloud` cli on devcontainer creation.
+Next, generate a new JSON key for Pulumi authentication and download it to the `/.gcp` on your development machine. The configuration in `.devcontainer/node/docker-compose.yml` will mount this specific directory into the devcontainer environment and use it to authenticate with the `gcloud` cli on devcontainer creation.
 
-Ensure that the JSON key is located in the correct directory. In `.devcontainer/.env`, set the `GOOGLE_APPLICATION_CREDENTIALS` value to the name of the key file. For example:
+Ensure that the JSON key is located in the correct directory. In `.devcontainer/node/.env`, set the `GOOGLE_APPLICATION_CREDENTIALS` value to the name of the key file. For example:
 
 ```bash
 GOOGLE_APPLICATION_CREDENTIALS=fact-check-database-core-1234567890ab.json
@@ -30,7 +51,7 @@ Enable the compute api via `https://console.cloud.google.com/apis/api/compute.go
 
 Add the pulumi cli service account as a principal with the `Owner` role in the new dev project.
 
-In `.devcontainer/.env`, ensure that the `GOOGLE_APPLICATION_CREDENTIALS` value is set to the name of the dev project. For example:
+In `.devcontainer/node/.env`, ensure that the `PROJECT_ID` value is set to the name of the dev project. For example:
 
 ```bash
 PROJECT_ID=fact-check-database-dev
@@ -38,7 +59,13 @@ PROJECT_ID=fact-check-database-dev
 
 The next time the dev container is created, the `gcloud` cli will be authenticated using the new root service account.
 
-Developers who do not need root access to gcp can be given JSON keys for different service accounts with permissions to access specific cloud resources.
+Because this platform is operated by a single person today, there is no scoped-access model for
+`core-infra` — Pulumi and GCP infrastructure access is root-operator-only, using the credentials
+set up above. Contributors working on non-infra projects (`ingestion-infra`'s application code,
+`analysis-infra`'s pipelines, `website-infra`'s frontend, etc.) never run `nx deploy`/`nx preview`
+against this project and don't need any GCP or Pulumi credentials at all. If this platform ever
+needs more than one deploying identity, see
+[docs/iam-model.md](./iam-model.md#possible-improvements) for the scoping that would require.
 
 ### First deployment
 
