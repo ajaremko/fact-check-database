@@ -4,13 +4,6 @@ Shared platform infrastructure, provisioned via Pulumi: the pieces every other i
 project in this repository depends on through a stack reference, plus the identity that lets
 CI/CD deploy anything at all.
 
-This project once held all of the platform's infrastructure as a single Pulumi program. As the
-platform grew, ingestion, analysis, website, and research infrastructure were each split into
-their own dedicated project. What remains here is what stayed genuinely shared: a Docker image
-registry, a CMEK key ring, the staging bucket and topic that hand data from ingestion to
-analysis and website, a workload identity pool, and the CI/CD service account GitHub Actions
-uses to deploy every project in this repository, including this one.
-
 ## Project structure
 
 ```
@@ -79,10 +72,10 @@ Exported as stack outputs:
 
 Exported as stack outputs:
 
-| Output                                  | Type     | Purpose                                                                                   |
-| --------------------------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key that encrypts `ingestion-infra`'s raw archive bucket                   |
-| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key provisioned for BigQuery datasets; not referenced by any dataset today |
+| Output                                  | Type     | Purpose                                                           |
+| --------------------------------------- | -------- | ----------------------------------------------------------------- |
+| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key used to encrypt raw archive data               |
+| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key used to encrypt structured data; not yeet used |
 
 ### Artifact Registry
 
@@ -181,3 +174,12 @@ treat it as a stable contract — see [Consuming these outputs](#consuming-these
 | [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rationale                          |
 | [docs/iam-model.md](./docs/iam-model.md)         | IAM roles, bindings, and the GitHub Actions identity model |
 | [docs/runbook.md](./docs/runbook.md)             | Deployment ordering and troubleshooting                    |
+
+## History
+
+This project once held all of the platform's infrastructure as a single Pulumi program. As the
+platform grew, ingestion, analysis, website, and research infrastructure were each split into
+their own dedicated project. What remains here is what stayed genuinely shared: a Docker image
+registry, a CMEK key ring, the staging bucket and topic that hand data from ingestion to
+analysis and website, a workload identity pool, and the CI/CD service account GitHub Actions
+uses to deploy every project in this repository, including this one.
