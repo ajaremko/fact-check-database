@@ -49,6 +49,19 @@ type StorageOptionsConfig = {
   [k in keyof BucketOptions]?: Config.Config<NonNullable<BucketOptions[k]>>
 }
 
+/**
+ * Builds a `StorageBucket` resource from a plain bucket name and resolved
+ * `BucketOptions`, rather than `Config.Config` values. Requires
+ * `StorageClient` in context.
+ *
+ * Unlike {@link layer}, which resolves `bucketName` and each option key from
+ * `Config` at effect runtime, this takes already-resolved values — useful
+ * when the bucket name is known outside of `Config` (e.g. computed at
+ * call time rather than read from the environment).
+ *
+ * @example
+ * const { bucket } = yield* make('my-bucket')
+ */
 export function make(bucketName: string, config?: BucketOptions) {
   return Effect.gen(function* () {
     const { client } = yield* StorageClient
@@ -138,6 +151,16 @@ export function writeFile(
   )
 }
 
+/**
+ * Moves (renames) the object at `name` to `destination` within the
+ * `StorageBucket` in context.
+ *
+ * Any rejection from the underlying `file.move()` call is caught and wrapped
+ * as a `StorageBucketIOError`.
+ *
+ * @example
+ * yield* StorageBucket.moveFile('path/to/file.json', 'archive/file.json')
+ */
 export function moveFile(
   name: string,
   destination: string,
@@ -157,13 +180,15 @@ export function moveFile(
 /**
  * Downloads the contents of the object at `name` from the `StorageBucket` in context.
  *
- * Returns a `Buffer[]`; concatenate the chunks to reconstruct the full payload.
+ * Returns the single-element `[Buffer]` tuple that GCS's `file.download()`
+ * resolves to (the whole object, not chunks); index or destructure it to get
+ * the contents.
  *
  * Any rejection from the underlying `file.download()` call is caught and wrapped as a `StorageBucketIOError`.
  *
  * @example
- * const chunks = yield* StorageBucket.downloadFile('path/to/file.json')
- * const contents = Buffer.concat(chunks).toString('utf-8')
+ * const [data] = yield* StorageBucket.downloadFile('path/to/file.json')
+ * const contents = data.toString('utf-8')
  */
 export function downloadFile(
   name: string
@@ -182,6 +207,17 @@ export function downloadFile(
   )
 }
 
+/**
+ * Lists the files in the `StorageBucket` in context matching `options`.
+ *
+ * Returns the full listing at once. For a bucket too large to list in one
+ * call, use {@link getFilesStream} instead. Any rejection from the
+ * underlying `bucket.getFiles()` call is caught and wrapped as a
+ * `StorageBucketIOError`.
+ *
+ * @example
+ * const [files] = yield* StorageBucket.getFiles({ prefix: 'v1/type=fact_checks/' })
+ */
 export function getFiles(
   options?: GetFilesOptions
 ): Effect.Effect<GetFilesResponse, StorageBucketIOError, StorageBucket> {
@@ -199,6 +235,18 @@ export function getFiles(
   )
 }
 
+/**
+ * Streams the files in the `StorageBucket` in context matching `options`, one
+ * `File` at a time, instead of buffering the full listing in memory.
+ *
+ * Returns an Effect `Stream` (the outer Effect only wires up the stream and
+ * never fails); a rejection from the underlying readable is caught and
+ * wrapped as a `StorageBucketIOError` in the stream's own error channel.
+ *
+ * @example
+ * const files = yield* StorageBucket.getFilesStream({ prefix: 'v1/type=fact_checks/' })
+ * yield* Stream.runForEach(files, (file) => Effect.logInfo(file.name))
+ */
 export function getFilesStream(
   options?: GetFilesOptions
 ): Effect.Effect<

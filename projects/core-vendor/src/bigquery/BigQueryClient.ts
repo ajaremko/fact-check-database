@@ -21,7 +21,7 @@ export class BigQueryClient extends Context.Tag('BigQueryClient')<
 >() {}
 
 /**
- * Provided to thrown when a BigQuery client call rejects.
+ * Thrown when a BigQuery client call rejects.
  */
 export class BigQueryClientIOError extends Data.TaggedError(
   'BigQueryClientIOError'
@@ -63,6 +63,18 @@ function make(config?: BigQueryOptionsConfig) {
  */
 export const layer = flow(make, Layer.effect(BigQueryClient))
 
+/**
+ * Starts a BigQuery job (e.g. a load or query job) and returns the `Job`
+ * handle. Requires `BigQueryClient` in context. Does not wait for the job to
+ * finish — pass the result to {@link awaitJob} for that.
+ *
+ * Any rejection from the underlying `client.createJob()` call is caught and
+ * wrapped as a {@link BigQueryClientIOError}.
+ *
+ * @example
+ * const job = yield* createJob({ configuration: { load: { ... } } })
+ * yield* awaitJob(job)
+ */
 export function createJob(options: JobOptions) {
   return BigQueryClient.pipe(
     Effect.flatMap(({ client }) =>
@@ -78,6 +90,17 @@ export function createJob(options: JobOptions) {
   )
 }
 
+/**
+ * Waits for a BigQuery `Job` to finish, resolving on the job's `complete`
+ * event and failing on its `error` event. Takes the `Job` handle directly
+ * and does not require `BigQueryClient` in context.
+ *
+ * Any error emitted by the job is wrapped as a {@link BigQueryClientIOError}.
+ *
+ * @example
+ * const job = yield* createJob(options)
+ * yield* awaitJob(job)
+ */
 export function awaitJob(job: Job) {
   return Effect.tryPromise({
     try: () =>

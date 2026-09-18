@@ -37,17 +37,16 @@ Schemas for the two Google Cloud event payloads the platform's services receive.
 The JSON body that Pub/Sub POSTs to a push-subscription endpoint. `message` is a `PubsubMessagePayload` with the base64 `data`, optional `attributes`, `messageId`, and `publishTime` (decoded to a `Date`). `subscription` is the fully qualified subscription resource name, useful for logging and for rejecting deliveries from an unexpected subscription.
 
 ```ts
-import { Effect, Schema } from 'effect'
+import { Schema } from 'effect'
 import { PubsubMessageEnvelope } from '@news-research/core-contracts/gcp/v1'
 
 const decodeEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
-Effect.gen(function* () {
-  const { message } = yield* decodeEnvelope(requestBody)
-  // message.messageId   → "123456789012345"
-  // message.publishTime → Date
-  // message.data        → "SGVsbG8gV29ybGQh" (still base64)
-})
+decodeEnvelope(requestBody)
+// → Effect<PubsubMessageEnvelope, ParseError>
+// message.messageId   → "123456789012345"
+// message.publishTime → Date
+// message.data        → "SGVsbG8gV29ybGQh" (still base64)
 ```
 
 The schema leaves `data` encoded because the body format depends on the topic. `parsePubsubMessagePayloadData` is a combinator that decodes it to a UTF-8 string, and composes with a body schema when the body is JSON:
@@ -75,7 +74,7 @@ const decodeRecord = MyRecordSchema.pipe(
 The message attributes Cloud Storage attaches to every bucket notification, regardless of payload format. `bucketId` and `objectId` together identify the finalized object, which is all that is needed to fetch it. `eventType` is `OBJECT_FINALIZE` for the notifications this platform subscribes to.
 
 ```ts
-import { Effect, Schema } from 'effect'
+import { Schema } from 'effect'
 import { StorageObjectAttributesSchema } from '@news-research/core-contracts/gcp/v1'
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
@@ -83,10 +82,9 @@ const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.decodeUnknown
 )
 
-Effect.gen(function* () {
-  const { bucketId, objectId } = yield* decodeAttributes(message.attributes)
-  // enough to build a pointer to the finalized object
-})
+decodeAttributes(message.attributes)
+// → Effect<{ bucketId: string; objectId: string }, ParseError>
+// enough to build a pointer to the finalized object
 ```
 
 A notification configuration can attach custom attributes of its own. Extend the schema to read them:
@@ -110,14 +108,8 @@ Encoding a minimal body, as a development environment might to simulate a notifi
 ```ts
 const encodeBody = StorageObjectDataSchema.pipe(Node.parseJson(), Schema.encode)
 
-Effect.gen(function* () {
-  const body = yield* encodeBody({
-    kind: 'storage#object',
-    id: path,
-    name: path,
-    bucket,
-  })
-})
+encodeBody({ kind: 'storage#object', id: path, name: path, bucket })
+// → Effect<string, ParseError>
 ```
 
 ## staging/v1
@@ -138,7 +130,7 @@ One row of the staging `fact_checks` table, as an Effect schema. This is the rec
 `published_at_raw` preserves the publisher's original date string and `published_at_normalized` is the parsed form. Optional fields are absent rather than `null`; producers drop nulls with `omitNullKeys` from `core-data` before encoding.
 
 ```ts
-import { Effect, pipe, Schema } from 'effect'
+import { pipe, Schema } from 'effect'
 import * as Ndjson from '@news-research/core-data/Ndjson'
 import * as Node from '@news-research/core-data/Node'
 import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
@@ -150,9 +142,8 @@ const decodeBatch = pipe(
   Schema.decode
 )
 
-Effect.gen(function* () {
-  const rows = yield* decodeBatch(bytes) // readonly FactChecksTableRow[]
-})
+decodeBatch(bytes)
+// → Effect<readonly FactChecksTableRow[], ParseError>
 ```
 
 ### FactChecksTableDBSchema

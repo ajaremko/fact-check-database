@@ -5,6 +5,26 @@ import { createGcpLoggingPinoConfig } from '@google-cloud/pino-logging-gcp-confi
 
 const PinoLogLevel = Config.literal(...Object.values(levels.labels))
 
+/**
+ * Effect that builds Pino `LoggerOptions` formatted for Google Cloud
+ * Logging, ready to pass to `pinoLogger` from `@news-research/core-vendor/pino`.
+ *
+ * Reads `SERVICE_NAME`, `SERVICE_VERSION` and `LOGGING_LEVEL` (one of Pino's
+ * level labels) from `Config`, and wraps
+ * `@google-cloud/pino-logging-gcp-config`'s `createGcpLoggingPinoConfig` with
+ * two adjustments:
+ *
+ * - `messageKey` is set to `'message'`, matching the field Cloud Logging
+ *   displays as the log entry's summary.
+ * - The log formatter renames an object's `cause` property to `err` when the
+ *   value is an `Error`, because Cloud Logging only recognizes error reports
+ *   under `err`. Any existing `formatters.log` from the base config still
+ *   runs first.
+ *
+ * @example
+ * const config = yield* make
+ * const logger = Logger.addScoped(pinoLogger(config))
+ */
 export const make = Effect.gen(function* () {
   const service = yield* Config.string('SERVICE_NAME')
   const version = yield* Config.string('SERVICE_VERSION')

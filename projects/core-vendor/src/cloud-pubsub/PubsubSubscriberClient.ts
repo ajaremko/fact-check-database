@@ -3,11 +3,13 @@ import { ClientConfig, v1 } from '@google-cloud/pubsub'
 import type { google } from '@google-cloud/pubsub/build/protos/protos'
 
 /**
- * Provides a shared Google Cloud `PubSub` client instance.
+ * Provides a shared Google Cloud Pub/Sub v1 `SubscriberClient` instance, for
+ * pull-based access to a subscription (see `pull` and `acknowledge` below).
  *
- * This is the base layer required by both `PubsubTopic` and `PubsubSubscription`.
- * Credentials default to Application Default Credentials (ADC), which are
- * resolved automatically in Cloud Run via the attached service account.
+ * This is a separate client from `PubsubClient`: `PubsubTopic` and
+ * `PubsubSubscription` do not depend on it. Credentials default to
+ * Application Default Credentials (ADC), which are resolved automatically in
+ * Cloud Run via the attached service account.
  */
 export class PubsubSubscriberClient extends Context.Tag(
   'PubsubSubscriberClient'
@@ -52,10 +54,10 @@ function make(config?: PubsubOptionsConfig) {
 export const layer = flow(make, Layer.effect(PubsubSubscriberClient))
 
 /**
- * Thrown when a `subscriptionClient.pull()` call rejects.
+ * Thrown when a `pull()` or `acknowledge()` call rejects.
  *
  * @example
- * yield* PubsubSubscriberClient.pull('my-project', 'my-subscription', 100).pipe(
+ * yield* pull('projects/p/subscriptions/s', 100).pipe(
  *   Effect.catchTag('PubsubSubscriberClientIOError', (err) => Effect.logError('Pull failed', err.cause))
  * )
  */
@@ -66,8 +68,21 @@ export class PubsubSubscriberClientIOError extends Data.TaggedError(
   readonly message: string
 }> {}
 
+/** The ack ID of a single pulled message, as returned by {@link pull}. */
 export type AckId = google.pubsub.v1.IReceivedMessage['ackId']
 
+/**
+ * Pulls up to `maxMessages` messages from a subscription. Requires
+ * `PubsubSubscriberClient` in context.
+ *
+ * This is a single synchronous pull, not a streaming pull: it returns
+ * whatever is immediately available, which may be fewer than `maxMessages`
+ * or none. Any rejection is caught and wrapped as a
+ * {@link PubsubSubscriberClientIOError}.
+ *
+ * @example
+ * const [{ receivedMessages }] = yield* pull('projects/p/subscriptions/s')
+ */
 export function pull(subscriptionId: string, maxMessages = 10) {
   return Effect.gen(function* () {
     const { client } = yield* PubsubSubscriberClient
@@ -87,6 +102,20 @@ export function pull(subscriptionId: string, maxMessages = 10) {
   })
 }
 
+/**
+ * Acknowledges the given ack IDs on a subscription, so Pub/Sub does not
+ * redeliver them. Requires `PubsubSubscriberClient` in context.
+ *
+ * Any rejection is caught and wrapped as a
+ * {@link PubsubSubscriberClientIOError}.
+ *
+ * @example
+ * const [{ receivedMessages }] = yield* pull(subscriptionId)
+ * yield* acknowledge(
+ *   subscriptionId,
+ *   (receivedMessages ?? []).map((m) => m.ackId)
+ * )
+ */
 export function acknowledge(subscriptionId: string, ackIds: string[]) {
   return Effect.gen(function* () {
     const { client } = yield* PubsubSubscriberClient

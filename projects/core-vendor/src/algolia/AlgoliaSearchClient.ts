@@ -2,9 +2,10 @@ import { Context, Effect, Config, flow, Layer, Data } from 'effect'
 import { Algoliasearch, algoliasearch } from 'algoliasearch'
 
 /**
- * Provides a shared Algolia `AlgoliaSearchClient` instance.
+ * Provides a shared Algolia search client instance.
  *
- * This is the base layer required by `AlgoliaSearchClient`.
+ * This is the base layer required by this module's operations
+ * (`saveObjects`, `saveObjectsWithTransformation`).
  */
 export class AlgoliaSearchClient extends Context.Tag('AlgoliaSearchClient')<
   AlgoliaSearchClient,
@@ -14,7 +15,7 @@ export class AlgoliaSearchClient extends Context.Tag('AlgoliaSearchClient')<
 >() {}
 
 /**
- * Provided to thrown when a BigQuery client call rejects.
+ * Thrown when an Algolia search client call rejects.
  */
 export class AlgoliaSearchClientIOError extends Data.TaggedError(
   'AlgoliaSearchClientIOError'
@@ -53,6 +54,19 @@ function make(config: AlgoliaSearchClientOptionsConfig) {
  */
 export const layer = flow(make, Layer.effect(AlgoliaSearchClient))
 
+/**
+ * Saves objects to an index, applying the index's configured transformation
+ * rules first. Requires `AlgoliaSearchClient` in context.
+ *
+ * Takes the same parameters as `Algoliasearch['saveObjectsWithTransformation']`.
+ * Any rejection is caught and wrapped as an {@link AlgoliaSearchClientIOError}.
+ *
+ * @example
+ * yield* saveObjectsWithTransformation({
+ *   indexName: 'fact_checks',
+ *   objects: records,
+ * })
+ */
 export function saveObjectsWithTransformation(
   ...params: Parameters<Algoliasearch['saveObjectsWithTransformation']>
 ) {
@@ -70,6 +84,16 @@ export function saveObjectsWithTransformation(
   )
 }
 
+/**
+ * Saves objects to an index as is, with no transformation applied. Requires
+ * `AlgoliaSearchClient` in context.
+ *
+ * Takes the same parameters as `Algoliasearch['saveObjects']`. Any rejection
+ * is caught and wrapped as an {@link AlgoliaSearchClientIOError}.
+ *
+ * @example
+ * yield* saveObjects({ indexName: 'fact_checks', objects: records })
+ */
 export function saveObjects(
   ...params: Parameters<Algoliasearch['saveObjects']>
 ) {
