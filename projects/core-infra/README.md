@@ -52,6 +52,19 @@ The [runbook](./docs/runbook.md) documents operational procedures for subsequent
 
 ## What this project provisions
 
+### Core project
+
+`gcpProject` and `gcpRegion` identify the GCP project and region this stack deploys into. Every
+downstream project reads them to scope its own view of this project's resources — building a
+second provider, for example, to grant IAM directly against resources that live here.
+
+Exported as stack outputs:
+
+| Output       | Type     |
+| ------------ | -------- |
+| `gcpProject` | `string` |
+| `gcpRegion`  | `string` |
+
 ### GCP service enablement
 
 | Service                | API                                   | Purpose                                     |
@@ -73,12 +86,29 @@ The [runbook](./docs/runbook.md) documents operational procedures for subsequent
 | `gcs-archive-encryption-key` | Encrypts `ingestion-infra`'s raw archive bucket. The grant to that bucket's service account is created in `ingestion-infra`, not here. |
 | `bigquery-encryption-key`    | Provisioned for BigQuery datasets, but no dataset currently references it — see [docs/encryption.md](./docs/encryption.md).            |
 
+Exported as stack outputs:
+
+| Output                                  | Type     |
+| --------------------------------------- | -------- |
+| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` |
+| `bigQueryKeyId` / `bigQueryKeyName`     | `string` |
+
 ### Artifact Registry
 
 A single Docker repository (`core-artifact-registry`) that every domain project's Cloud Run
 services and jobs pull images from. `ingestion-infra`, `analysis-infra`, and `website-infra`
 each read its location, name, and repository ID via a stack reference, and each grants its own
 Cloud Run service agent `roles/artifactregistry.reader` on it from its own project.
+
+Exported as stack outputs:
+
+| Output                                                                               | Type     |
+| ------------------------------------------------------------------------------------ | -------- |
+| `artifactRegistryLocation` / `artifactRegistryName` / `artifactRegistryRepositoryId` | `string` |
+| `artifactRegistryUri` / `artifactRegistryBaseUri`                                    | `string` |
+
+`artifactRegistryUri` and `artifactRegistryBaseUri` aren't read by anything outside this project
+today.
 
 ### Staging storage
 
@@ -87,7 +117,20 @@ bucket (`core-staging-bucket`), a Pub/Sub topic that fires on every finalized ob
 `fact_checks` path prefix, and a JSON object describing the BigQuery schema those objects
 conform to. `ingestion-infra`'s extractor writes batches here; `analysis-infra`'s staging loader
 and `website-infra`'s search loader each subscribe to the topic directly, from their own
-projects. See [docs/contracts.md](./docs/contracts.md) for the exact outputs.
+projects.
+
+Exported as stack outputs:
+
+| Output                             | Type     |
+| ---------------------------------- | -------- |
+| `stagingStorageBucketName`         | `string` |
+| `stagingStorageTopicName`          | `string` |
+| `stagingStorageUploadNoficationId` | `string` |
+| `factChecksTableDBSchemaObjectUri` | `string` |
+
+`stagingStorageUploadNoficationId` and `factChecksTableDBSchemaObjectUri` aren't read by
+anything today — the schema's actual location reaches the loader through the Pub/Sub message's
+`schemaObjectId` attribute (set in `staging-storage/topic.ts`), not this output.
 
 ### Workload identity federation
 
@@ -104,6 +147,38 @@ projects. See [docs/contracts.md](./docs/contracts.md) for the exact outputs.
 
 See [docs/iam-model.md](./docs/iam-model.md) for the full role and binding list.
 
+Exported as stack outputs:
+
+| Output                                 | Type     |
+| -------------------------------------- | -------- |
+| `githubActionServiceAccountEmail`      | `string` |
+| `githubActionIdentityPoolProviderName` | `string` |
+
+## Consuming these outputs
+
+Every output above is depended on by other infrastructure projects through a Pulumi
+`StackReference`, not a compile-time import — no project's `package.json` lists
+`@news-research/core-infra` as a dependency. Treat these outputs as a stable interface: renaming
+one, changing what it means, or pointing it at a different resource is a breaking change for
+whatever currently reads it, even though nothing tracks that dependency but the code itself.
+
+A downstream Pulumi project opens a `StackReference` in its own `config.ts`:
+
+```ts
+const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
+export const stagingStorageBucketName = coreStackRef.getOutput(
+  'stagingStorageBucketName'
+)
+```
+
+GitHub Actions workflows read outputs directly through the Pulumi CLI instead of a
+`StackReference`:
+
+```bash
+cd projects/core-infra
+pulumi stack output --json --stack=<dev|prod>
+```
+
 ## Adding new shared infrastructure
 
 Something belongs here only if more than one domain project needs it — the same bar
@@ -111,15 +186,14 @@ Something belongs here only if more than one domain project needs it — the sam
 following the existing pattern: a `services.ts` entry if it needs a new API enabled, resources
 built from the shared `provider` in `project.ts`. Re-export any value a downstream project
 should read as a stack output from `src/index.ts`, and once a downstream project depends on it,
-treat it as a stable contract — see [docs/contracts.md](./docs/contracts.md).
+treat it as a stable contract — see [Consuming these outputs](#consuming-these-outputs) above.
 
 ## Related documentation
 
-| Document                                         | Purpose                                                               |
-| ------------------------------------------------ | --------------------------------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup and first deployment                        |
-| [docs/configuration.md](./docs/configuration.md) | Stack configuration reference                                         |
-| [docs/contracts.md](./docs/contracts.md)         | Stack output contract — what this project exports and who consumes it |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rationale                                     |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM roles, bindings, and the GitHub Actions identity model            |
-| [docs/runbook.md](./docs/runbook.md)             | Deployment ordering and troubleshooting                               |
+| Document                                         | Purpose                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup and first deployment             |
+| [docs/configuration.md](./docs/configuration.md) | Stack configuration reference                              |
+| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rationale                          |
+| [docs/iam-model.md](./docs/iam-model.md)         | IAM roles, bindings, and the GitHub Actions identity model |
+| [docs/runbook.md](./docs/runbook.md)             | Deployment ordering and troubleshooting                    |

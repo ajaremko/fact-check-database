@@ -23,5 +23,5 @@ production.** `src/config.ts`'s own code comments recommend the opposite for pro
 stack is ever destroyed.
 
 Every domain project points back at this stack through its own `<domain>:coreStackName` config
-key (for example `ingestion:coreStackName`) and a Pulumi `StackReference` — see
-[docs/contracts.md](./contracts.md) for what each one reads from here.
+key (for example `ingestion:coreStackName`) and a Pulumi `StackReference` — see the
+[README](../README.md#consuming-these-outputs) for what each one reads from here.

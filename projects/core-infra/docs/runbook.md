@@ -85,7 +85,7 @@ impersonating the service account.
 
 **Resolution:** update the attribute condition if the org or repo changed; re-grant
 `workloadIdentityUser` if the binding was removed; confirm the workflow YAML matches the current
-stack outputs (see [docs/contracts.md](./contracts.md)).
+stack outputs (see the [README](../README.md#cicd-identity)).
 
 ## Audit logs
 

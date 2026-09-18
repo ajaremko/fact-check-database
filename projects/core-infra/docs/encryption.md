@@ -22,10 +22,10 @@ Google-managed defaults, even though the platform primarily handles public data.
 Both live in one key ring (`core-key-ring`), with 90-day automatic rotation and
 `ENCRYPT_DECRYPT` purpose.
 
-| Key                           | Currently protects                                                                                                                                              |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `gcs-archive-encryption-key`  | `ingestion-infra`'s raw archive bucket. The encrypter/decrypter grant to that bucket's GCS service account is created in `ingestion-infra` (`storageServiceAccountKmsBinding`), not here — this project only owns the key. |
-| `bigquery-encryption-key`     | Nothing currently. It is provisioned and exported (`bigQueryKeyId` / `bigQueryKeyName`), but no BigQuery dataset in `analysis-infra` or `research-infra` sets any encryption config referencing it. If a future dataset needs CMEK, this is the key to use — until then, treat it as unused rather than assume BigQuery data is encrypted with it. |
+| Key                          | Currently protects                                                                                                                                                                                                                                                                                                                                 |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gcs-archive-encryption-key` | `ingestion-infra`'s raw archive bucket. The encrypter/decrypter grant to that bucket's GCS service account is created in `ingestion-infra` (`storageServiceAccountKmsBinding`), not here — this project only owns the key.                                                                                                                         |
+| `bigquery-encryption-key`    | Nothing currently. It is provisioned and exported (`bigQueryKeyId` / `bigQueryKeyName`), but no BigQuery dataset in `analysis-infra` or `research-infra` sets any encryption config referencing it. If a future dataset needs CMEK, this is the key to use — until then, treat it as unused rather than assume BigQuery data is encrypted with it. |
 
 ## Access model
 
