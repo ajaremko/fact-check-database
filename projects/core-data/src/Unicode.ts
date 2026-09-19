@@ -4,8 +4,8 @@ import { ParseResult, Schema } from 'effect'
 /**
  * A schema combinator that adds unicode parsing and serialization to an existing schema.
  *
- * Accepts an optional options object, then a schema,
- * and produces a new schema that transforms between a UTF-8 string and
+ * Accepts an optional substitution string for characters `unidecode` can't
+ * transliterate, then a schema, and produces a new schema that transforms between a UTF-8 string and
  * a US-ASCII string. 
  * Returned schema applies transformation in both directions.
 

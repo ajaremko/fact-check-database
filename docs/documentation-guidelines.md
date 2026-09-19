@@ -43,8 +43,10 @@ These apply to every project regardless of kind.
   consumer owns how it maps those errors to its own outward-facing behavior (e.g. HTTP responses).
   See the matching anti-pattern below for what it means when a concern _can't_ be cleanly split
   this way.
-- **Every doc ends with a pointer to the next relevant doc.** README → runbook → known issues →
-  back to the README. No dead ends.
+- **A doc points to the next relevant doc, when one exists.** README → runbook → known issues →
+  back to the README. Don't force a closing link to a doc that doesn't exist for this project —
+  a library with no known issues doesn't need a manufactured pointer to a `known-issues.md` it
+  doesn't have.
 
 ## Common documentation types and their purpose
 
@@ -59,6 +61,10 @@ The runbook should be a comprehensive guide to operating the program. This means
 ### `known-issues.md`
 
 Known issues is for current bugs or architectural issues that are long lived. This could be library incompatibilites, overrides, patches or design flaws that don't have an easy fix.
+
+This file is conditional, not mandatory: create it only once a project has an actual accepted
+issue worth recording. A trivial bug with a clear fix should just be fixed, not written up here.
+Don't create an empty placeholder file for a project that currently has nothing to record.
 
 ## Structure by project kind
 
@@ -80,11 +86,12 @@ A library has a `README.md` and no runbook — nothing about it is directly oper
 - **Persistence or data shapes**, if applicable, as commented code blocks rather than prose, with
   any non-obvious layout decision justified against a real constraint.
 - **Usage examples**: runnable code snippets covering realistic call sequences.
-- **`docs/known-issues.md`**: see below.
+- **`docs/known-issues.md`**, once there's something worth recording: see below.
 
 ### App
 
-An app has a `README.md`, a `docs/runbook.md`, and a `docs/known-issues.md`.
+An app has a `README.md` and a `docs/runbook.md`, plus a `docs/known-issues.md` once there's
+something worth recording.
 
 - **`README.md`**: description and scope boundary; build/serve/containerize commands; a routes or
   pages table for anything HTTP-facing (or the equivalent interface table for non-HTTP apps); a
@@ -96,13 +103,13 @@ An app has a `README.md`, a `docs/runbook.md`, and a `docs/known-issues.md`.
   already owned by a consumed library are out of scope here — point to that library's doc
   instead); a debugging section structured as named failure modes, each as **symptom → root
   cause → what to check**; closing operational caveats; a pointer back to the README.
-- **`docs/known-issues.md`**: see below.
+- **`docs/known-issues.md`**, once there's something worth recording: see below.
 
 ### Infra
 
-An infra project has a `README.md`, `docs/runbook.md`, `docs/iam-model.md`, and
-`docs/known-issues.md`. It has a `docs/bootstrap.md` only when there is project-specific setup
-beyond what's documented centrally (see below).
+An infra project has a `README.md`, `docs/runbook.md`, and `docs/iam-model.md`, plus a
+`docs/known-issues.md` once there's something worth recording. It has a `docs/bootstrap.md` only
+when there is project-specific setup beyond what's documented centrally (see below).
 
 - **`README.md`**: description; explicit callouts of dependencies on other stacks or projects;
   deploy commands; "what this provisions," broken into subsections by resource group; a
@@ -122,7 +129,7 @@ beyond what's documented centrally (see below).
   credential/key-rotation section; an access-revocation section.
 - **`docs/iam-model.md`**: the project's trust model centralized in one place — principals, roles,
   bindings, and the reasoning behind them — rather than scattered per-resource across the README.
-- **`docs/known-issues.md`**: see below.
+- **`docs/known-issues.md`**, once there's something worth recording: see below.
 
 ### `docs/known-issues.md` (all project kinds)
 

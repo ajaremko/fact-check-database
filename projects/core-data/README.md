@@ -6,6 +6,8 @@ Every application in the platform validates data at its boundaries with Effect `
 
 The package is `@news-research/core-data`. Each format is a separate subpath export of `@news-research/core-data` (for example `@news-research/core-data/Yaml`) so a consumer only pulls in the parser dependency it actually uses. The package root exports only the object helpers `omitNullKeys` and `omitNullableKeys`.
 
+This library only handles format-level decode and encode: turning raw bytes or strings into a typed shape, and back. It does not validate content against business rules or policy — the sanitizer's policy evaluation, for example, runs after a record has already been decoded by this library.
+
 ## Development
 
 ```bash
@@ -274,6 +276,25 @@ Format combinators are built on `Schema.transformOrFail` and wrap the underlying
 - `Xml`, `Html` and `Unicode` report a `ParseResult.Unexpected` error carrying the offending input.
 
 With `Schema.decode` the failure is a `ParseError` in the Effect error channel and can be handled with the usual Effect combinators. The `Schema.decodeSync` variants used in the examples above throw instead, which is convenient in tests and scripts but should not be used in service code.
+
+A consumer typically catches the tag rather than inspecting the error by hand:
+
+```ts
+import { Effect, pipe } from 'effect'
+
+const program = pipe(
+  decodePolicy(bytes),
+  Effect.catchTag('ParseError', (error) =>
+    Effect.logError('failed to decode policy', { cause: error.message })
+  )
+)
+```
+
+## Logging
+
+This library does no logging of its own — no `Effect.log*` calls and no dependency on a
+`LogLevel`. A consumer is free to log around a call to it at whatever level fits its own
+strategy; there's no level range reserved here.
 
 ## Extension
 
