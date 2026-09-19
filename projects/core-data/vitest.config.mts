@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/packages/ingestion-data',
+  cacheDir: '../../node_modules/.vite/packages/core-data',
   test: {
     name: '@news-research/core-data',
     watch: false,
