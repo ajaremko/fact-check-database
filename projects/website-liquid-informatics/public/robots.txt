@@ -1,6 +1,0 @@
-# Allow all bots to access all pages
-User-agent: *
-Disallow: 
-
-# Direct bots to the sitemap
-Sitemap: https://factcheckdatabase.com/sitemap.xml

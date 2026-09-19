@@ -25,11 +25,13 @@ This project is intended to be legible to:
 - [x] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
 - [x] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
 - [ ] Rewrite project documentation
-  - [ ] Write missing READMEs: `analysis-loader`, `website-emailer`, `website-fact-check-database`, `website-liquid-informatics`, `website-loader`
+  - [ ] Write missing READMEs: `analysis-loader`, `website-emailer`, `website-fact-check-database`, `website-loader`
   - [x] Rewrite `core-infra` README and `docs/` to match its current, post-domain-split scope
   - [ ] De-duplicate `ingestion-infra`, `analysis-infra`, `research-infra`, `website-infra` READMEs — currently identical boilerplate, none document the stack's actual resources
   - [ ] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` — topically correct but still rough TODO checklists, not finished docs
 - [x] Remove `ingestion-replay` project
+- [x] Remove `analysis-nlp` project
+- [x] Remove `website-liquid-informatics` project
 - [] Sort fact checks feed on website using algolia queries rather than local sort
 - [] Verify fact checks are deduped correctly in ingestion and analysis slices
 
@@ -128,7 +130,6 @@ Loads archived data for research use and runs NLP analysis (e.g. stance detectio
 | --------------- | ------- | :----: | ------------------------------------------------ |
 | analysis-infra  | Infra   |   ✅   | [README.md](./projects/analysis-infra/README.md) |
 | analysis-loader | Service |   ❌   | _(no README yet)_                                |
-| analysis-nlp    | Library |   ✅   | [README.md](./projects/analysis-nlp/README.md)   |
 
 #### Research
 
@@ -147,7 +148,6 @@ Public-facing fact-check database, search, and supporting services.
 | website-infra               | Infra   |   ✅   | [README.md](./projects/website-infra/README.md)     |
 | website-contracts           | Library |   ✅   | [README.md](./projects/website-contracts/README.md) |
 | website-fact-check-database | App     |   ❌   | _(no README yet)_                                   |
-| website-liquid-informatics  | App     |   ❌   | _(no README yet)_                                   |
 | website-loader              | Service |   ❌   | _(no README yet)_                                   |
 | website-emailer             | Service |   ❌   | _(no README yet)_                                   |
 

@@ -56,9 +56,6 @@
     },
     {
       "path": "./projects/ingestion-contracts"
-    },
-    {
-      "path": "./projects/website-liquid-informatics"
     }
   ]
 }
