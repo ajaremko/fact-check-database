@@ -19,12 +19,6 @@ Schemas are organized by pipeline stage, mirroring `ingestion-pipeline`'s own in
 
 Every schema is exported both as a flat named export (e.g. `ObservationIngestedSchema`) and under a domain namespace (e.g. `IngestionRecord.IngestionRecordSchema`), per this repo's contracts-package convention.
 
-## What this library does NOT do
-
-- Implement any ingestion, sanitization, or extraction logic — it only defines the shape of the data those stages produce and consume
-- Provide storage or messaging adapters — see `@news-research/core-io` for those
-- Guarantee backward compatibility across versions — each schema is explicitly versioned (`version` literal) so breaking changes ship as a new version rather than mutating an existing one
-
 ## Project Structure
 
 ```
