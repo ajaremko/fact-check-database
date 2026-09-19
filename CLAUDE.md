@@ -144,7 +144,7 @@ Packages are reusable libraries with no dependency on app-level code.
 - **Layer factory pattern**: Export a `layer` constant or factory function. Callers should never instantiate SDK clients directly.
 - **Combinator pattern** (`core-data`): Combinators are curried higher-order functions — they accept options and return a function `(schema) => schema`. This enables composition via `pipe()`.
 - **No side effects at module load time**: Defer all initialization inside `Effect.gen()` or `Layer.effect()`.
-- **`contracts` package**: All cross-app data contracts live here. Every record type must include `version` (literal), `kind`, and `outcome` discriminators. Use constructor functions that supply defaults for `version`, `kind`, and `outcome`. Export schemas and types grouped by domain (e.g. `export * as IngestorRecord`).
+- **`contracts` package**: All cross-app data contracts live here. Export schemas and types grouped by domain (e.g. `export * as IngestorRecord`). Domain-event or outcome records (e.g. `ingestion-contracts`' `IngestionRecord`) typically include `version` (literal), `kind`, and `outcome` discriminators, built via constructor functions that supply defaults for them — this is a pattern for that kind of record, not a requirement for every contract. External event schemas (e.g. GCP Pub/Sub or Cloud Storage payloads) and plain table/row/path schemas don't need it.
 
 # Documentation Style Guidelines
 

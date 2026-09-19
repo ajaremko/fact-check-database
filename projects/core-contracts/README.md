@@ -205,3 +205,24 @@ Schema.encodeSync(NumberFromFormattedDate('yyyy-MM-dd'))(1704067200000) // → "
 ```
 
 `ingestion-contracts` carries an identical copy under `archive/v1`, kept separate on purpose so that the ingestion domain's path contracts do not depend on the staging contracts.
+
+## Error handling
+
+Every schema in this package is built on Effect's `Schema`, so a decode or encode failure is a `ParseError` in the Effect error channel, not a thrown exception. `StagingPathSchema` is the one exception worth calling out specifically: its decode direction always fails with `ParseResult.Forbidden`, because recovering a `StagingPath`'s fields from a path string isn't implemented.
+
+A consumer typically catches the tag rather than inspecting the error by hand:
+
+```ts
+import { Effect, pipe } from 'effect'
+
+const program = pipe(
+  decodeEnvelope(requestBody),
+  Effect.catchTag('ParseError', (error) =>
+    Effect.logError('failed to decode envelope', { cause: error.message })
+  )
+)
+```
+
+## Logging
+
+This library does no logging of its own — no `Effect.log*` calls and no dependency on a `LogLevel`. A consumer is free to log around a call to it at whatever level fits its own strategy; there's no level range reserved here.
