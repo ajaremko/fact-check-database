@@ -146,7 +146,7 @@ export const factCheckDatabaseBackendService = new gcp.cloudrun.Service(
           },
           ...authContainer,
           {
-            image: getImageUrl('website-fact-check-database', dockerTag),
+            image: getImageUrl('website-server', dockerTag),
             name: 'backend',
             startupProbe: {
               initialDelaySeconds: 10,
