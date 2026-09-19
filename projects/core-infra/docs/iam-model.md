@@ -22,9 +22,10 @@ Granted to `github-actions-sa` on the `core` project:
 | `roles/compute.admin`                  | Manage compute resources                                                              |
 | `roles/cloudkms.admin`                 | Manage KMS keys and key rings                                                         |
 
-These roles are broad by design — the same identity deploys `core-infra` and every domain
-project — and are the clearest candidate for tightening if this platform ever needed more than
-one deploying identity. See "Possible improvements" below.
+These roles are broad by design. The same identity deploys `core-infra` and every domain project,
+so scoping them down would mean auditing every deploy step. See
+[docs/known-issues.md](./known-issues.md) for why that hasn't been done and what a narrower set
+would look like.
 
 ## Service account impersonation
 
@@ -55,16 +56,8 @@ Attribute mapping:
 | `attribute.actor`      | `assertion.actor`      |
 | `attribute.repository` | `assertion.repository` |
 
-## Possible improvements
-
-- Replace `roles/editor` with the specific resource-level roles each deploy step actually needs.
-- Scope `roles/cloudkms.admin` to the one key ring this project manages, rather than the whole
-  project.
-- Add conditional IAM bindings keyed on resource labels if more than one team ever deploys
-  through this identity.
-
 ## Note
 
 An earlier version of this document listed a resource-level grant of the GCS service account on
-`gcs-archive-encryption-key`. That binding is created in `ingestion-infra` — the project that
-owns the bucket the key protects — not here. See [docs/encryption.md](./encryption.md).
+`gcs-archive-encryption-key`. That binding is created in `ingestion-infra`, the project that owns
+the bucket the key protects, not here. See [docs/encryption.md](./encryption.md).

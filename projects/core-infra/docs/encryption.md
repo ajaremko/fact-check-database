@@ -42,5 +42,8 @@ created it. The service can no longer read or write encrypted data; the data its
 ## Out of scope
 
 CMEK encrypts data at rest. It does not detect or redact PII in content, classify data
-sensitivity, encrypt data in transit, or provide key escrow — Cloud KMS is the sole store for
-these keys.
+sensitivity, or encrypt data in transit. Cloud KMS is the sole store for these keys; there is no
+escrow.
+
+See [docs/runbook.md](./runbook.md#kms-key-rotation) for how key rotation works in practice, and
+[docs/iam-model.md](./iam-model.md) for the broader IAM model this access model sits inside.

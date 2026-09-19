@@ -100,14 +100,13 @@ An app has a `README.md`, a `docs/runbook.md`, and a `docs/known-issues.md`.
 
 ### Infra
 
-An infra project has a `README.md`, `docs/configuration.md`, `docs/runbook.md`,
-`docs/iam-model.md`, and `docs/known-issues.md`. It has a `docs/bootstrap.md` only when there is
-project-specific setup beyond what's documented centrally (see below).
+An infra project has a `README.md`, `docs/runbook.md`, `docs/iam-model.md`, and
+`docs/known-issues.md`. It has a `docs/bootstrap.md` only when there is project-specific setup
+beyond what's documented centrally (see below).
 
 - **`README.md`**: description; explicit callouts of dependencies on other stacks or projects;
   deploy commands; "what this provisions," broken into subsections by resource group; a
   stack-outputs table for any output another project consumes via a `StackReference`.
-- **`docs/configuration.md`**: a stack-configuration reference table.
 - **`docs/bootstrap.md`**: generic account, backend, and tooling setup (e.g. the Pulumi Cloud
   account and access token, initial cloud-project creation) is documented **once, centrally** —
   in this repo, that's `core-infra/docs/bootstrap.md`, since `core-infra` is the first stack
@@ -118,9 +117,9 @@ project-specific setup beyond what's documented centrally (see below).
   GCP project. So a project's bootstrap doc, when it needs one at all, should state whether and
   when a new GCP project must be manually created for it — normally only relevant for its prod
   stack — rather than re-explain the generic setup steps.
-- **`docs/runbook.md`**: a commands table; debugging structured as named failure modes (symptom →
-  cause → fix); a rollback/recovery procedure; a credential/key-rotation section; an
-  access-revocation section.
+- **`docs/runbook.md`**: a stack-configuration reference table; a commands table; debugging
+  structured as named failure modes (symptom → cause → fix); a rollback/recovery procedure; a
+  credential/key-rotation section; an access-revocation section.
 - **`docs/iam-model.md`**: the project's trust model centralized in one place — principals, roles,
   bindings, and the reasoning behind them — rather than scattered per-resource across the README.
 - **`docs/known-issues.md`**: see below.

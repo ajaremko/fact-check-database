@@ -1,5 +1,10 @@
 # Bootstrap and First Deployment
 
+This is the one place generic Pulumi Cloud, account, and tooling setup is documented for the
+whole repository. Other infra projects' own bootstrap docs, when they need one at all, should
+link back here rather than repeat these steps — see
+[docs/documentation-guidelines.md](../../../docs/documentation-guidelines.md).
+
 ## Pulumi Cloud account and access token
 
 This project's Pulumi state is stored in Pulumi Cloud (the default backend — no self-managed
@@ -43,6 +48,10 @@ GOOGLE_APPLICATION_CREDENTIALS=fact-check-database-core-1234567890ab.json
 
 ### Create a Dev GCP Project and Authorize Root Access
 
+This repository follows one rule for every domain: dev deployments all share a single GCP
+project, and each domain's prod deployment gets its own dedicated GCP project. Core-infra's dev
+project is that one shared project.
+
 Next, create a dev project, for example: `fact-check-database-dev`. This project will host the core development stack as well as all other development stacks. Link this project to an existing billing account.
 
 Enable the cloud resource manager api via `https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com?project=fact-check-database-dev`
@@ -64,8 +73,8 @@ Because this platform is operated by a single person today, there is no scoped-a
 set up above. Contributors working on non-infra projects (`ingestion-infra`'s application code,
 `analysis-infra`'s pipelines, `website-infra`'s frontend, etc.) never run `nx deploy`/`nx preview`
 against this project and don't need any GCP or Pulumi credentials at all. If this platform ever
-needs more than one deploying identity, see
-[docs/iam-model.md](./iam-model.md#possible-improvements) for the scoping that would require.
+needs more than one deploying identity, see [docs/known-issues.md](./known-issues.md) for the
+scoping that would require.
 
 ### First deployment
 
@@ -92,7 +101,9 @@ Run the production deployment command:
 nx deploy core-infra --stack=prod
 ```
 
-If deployment fails on the first attempt due to disabled apis, give the api changes a chance to propagate and try again. This could probably be corrected by verifying the `dependsOn` property of all pulumi resources are correct.
+If deployment fails on the first attempt due to disabled APIs, see
+[docs/known-issues.md](./known-issues.md) for why, and why the fix is to retry rather than to
+change the code.
 
 Ensure that the `core:project` in `projects/core-infra/Pulumi.dev.yml` points to the development project.
 
@@ -101,3 +112,6 @@ Run the development deployment command:
 ```bash
 nx deploy core-infra --stack=dev
 ```
+
+Once the initial deployment succeeds, see [docs/runbook.md](./runbook.md) for how subsequent
+deployments and troubleshooting work.

@@ -39,8 +39,9 @@ The [runbook](./docs/runbook.md) documents operational procedures for subsequent
 ### Core project
 
 `gcpProject` and `gcpRegion` identify the GCP project and region this stack deploys into. Every
-downstream project reads them to scope its own view of this project's resources — building a
-second provider, for example, to grant IAM directly against resources that live here.
+downstream project reads them to scope its own view of this project's resources. For example, a
+downstream project can build a second provider from them to grant IAM directly against resources
+that live here.
 
 Exported as stack outputs:
 
@@ -165,16 +166,6 @@ built from the shared `provider` in `project.ts`. Re-export any value a downstre
 should read as a stack output from `src/index.ts`, and once a downstream project depends on it,
 treat it as a stable contract — see [Consuming these outputs](#consuming-these-outputs) above.
 
-## Related documentation
-
-| Document                                         | Purpose                                                    |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup and first deployment             |
-| [docs/configuration.md](./docs/configuration.md) | Stack configuration reference                              |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rationale                          |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM roles, bindings, and the GitHub Actions identity model |
-| [docs/runbook.md](./docs/runbook.md)             | Deployment ordering and troubleshooting                    |
-
 ## History
 
 This project once held all of the platform's infrastructure as a single Pulumi program. As the
@@ -183,3 +174,13 @@ their own dedicated project. What remains here is what stayed genuinely shared: 
 registry, a CMEK key ring, the staging bucket and topic that hand data from ingestion to
 analysis and website, a workload identity pool, and the CI/CD service account GitHub Actions
 uses to deploy every project in this repository, including this one.
+
+## Related documentation
+
+| Document                                         | Purpose                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup and first deployment             |
+| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rationale                          |
+| [docs/iam-model.md](./docs/iam-model.md)         | IAM roles, bindings, and the GitHub Actions identity model |
+| [docs/runbook.md](./docs/runbook.md)             | Stack configuration, deployment ordering, and troubleshooting |
+| [docs/known-issues.md](./docs/known-issues.md)   | Accepted, long-lived gaps and deferred fixes               |
