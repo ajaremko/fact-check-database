@@ -8,7 +8,7 @@ import { sanitizeObservation } from './sanitizeObservation'
 
 describe('sanitizeObservation', () => {
   it.effect(
-    'skips non-data_fetched records and returns empty array without writing',
+    'quarantines and writes a sanitizer record for non-data_fetched (no_response) records',
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
