@@ -4,6 +4,15 @@ Shared messaging and storage ports (`MessageBatch`, `MessageQueue`, `Publisher`,
 
 Each consumer application wires the adapters appropriate to their own environment (local filesystem/in-memory for development, GCP Pub/Sub, GCS, or HTTP for production).
 
+## Development
+
+```bash
+nx test core-io       # run the vitest suite
+nx typecheck core-io
+nx lint core-io
+nx build core-io
+```
+
 ## Ports
 
 - **`MessageBatch`** — a finite, pre-pulled batch of messages, each with only an `ack` (no `nack`). Use this for batch or cron-style jobs that pull a fixed set of work and process it to completion.
@@ -28,6 +37,7 @@ Each consumer application wires the adapters appropriate to their own environmen
 | `CloudStorageStorageWriter`     | `StorageWriter`  | Production  | Writes an object to a fixed GCS bucket configured at startup                                 |
 | `FileSystemStorageReader`       | `StorageReader`  | Development | Reads a file from the local filesystem                                                       |
 | `FileSystemStorageWriter`       | `StorageWriter`  | Development | Writes a file (and an optional `.meta.json` sidecar) to a local output directory             |
+| `FileSystemStorageWriterWithNotification` | `StorageWriter` | Development | Wraps `FileSystemStorageWriter`; also depends on `Publisher` and publishes a GCS-object-finalized-style notification for any write whose path matches a configured prefix |
 | `InMemoryStorageReader`         | `StorageReader`  | Test        | Reads from an in-memory key/value store used as a test double                                |
 | `InMemoryStorageWriter`         | `StorageWriter`  | Test        | Writes to an in-memory key/value store used as a test double                                 |
 
@@ -55,30 +65,72 @@ Each adapter is imported via its own subpath export (e.g. `@news-research/core-i
 | `STORAGE_BUCKET_NAME`      | `CloudStorageStorageWriter`                              |
 | `STORAGE_OUTPUT_DIR`       | `FileSystemStorageWriter`                                |
 
-## Project Structure
+## Error handling
 
+Each port defines its own `Data.TaggedError`, since a `MessageQueue` failure and a `StorageWriter` failure aren't the same kind of thing and a consumer usually wants to handle them differently:
+
+| Error              | Fields                                    | Raised by                                                                          |
+| ------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `MessageQueueError` | `cause`, `message`                        | `CloudPubsubMessageQueueFeeder` (pushed onto the queue's `errors` queue)           |
+| `PublisherError`    | `cause`, `message`                        | `CloudPubsubPublisher`, `FileSystemPublisher`                                      |
+| `StorageReadError`  | `cause`, `path`, `bucket`, `message`      | `CloudStorageStorageReader`, `FileSystemStorageReader`, `InMemoryStorageReader`     |
+| `StorageWriteError` | `cause`, `path`, `bucket`, `message`      | `CloudStorageStorageWriter`, `FileSystemStorageWriter` (and, transitively, `FileSystemStorageWriterWithNotification`) |
+
+`MessageBatch` has no error type of its own — a batch either has messages or it doesn't, so there's no whole-batch failure to model. `InMemoryStorageWriter` never fails.
+
+A consumer typically catches the tag it cares about:
+
+```ts
+import { Effect, pipe } from 'effect'
+
+const program = pipe(
+  writeFile({ path, data }),
+  Effect.catchTag('StorageWriteError', (error) =>
+    Effect.logError('failed to write object', { path: error.path, cause: error.cause })
+  )
+)
 ```
-projects/core-io/
-├── src/
-│   ├── index.ts                  # Barrel export for ports (adapters are imported via subpath exports)
-│   ├── ports/
-│   │   ├── MessageBatch.ts       # Port: finite, pre-pulled batch
-│   │   ├── MessageQueue.ts       # Port: live, continuously-fed queue
-│   │   ├── Publisher.ts          # Port: outbound publish
-│   │   ├── MessageBody.ts        # Shared message shape
-│   │   ├── StorageReader.ts      # Port: read an object by FilePointer
-│   │   ├── StorageWriter.ts      # Port: write an object, returns a FilePointer
-│   │   └── FilePointer.ts        # Shared pointer shape (bucket/object)
-│   ├── internal/                 # Shared implementation helpers, not part of the public API
-│   └── adapters/
-│       ├── CloudPubsub*.ts       # GCP Pub/Sub adapters (production)
-│       ├── CloudStorageStorage*.ts   # GCS storage adapters (production)
-│       ├── FileSystem*.ts        # Local filesystem adapters (development)
-│       ├── HttpServerMessageQueueFeeder.ts  # HTTP push ingestion entry point
-│       ├── InMemoryMessageQueue.ts          # Test double
-│       └── InMemoryStorage*.ts              # Test doubles
+
+## Logging
+
+This library logs at two levels only, and never at `info`, `error`, or `fatal` — a consuming app's own logging owns everything above `trace`/`warning`:
+
+- **`trace`** — construction and lifecycle events (an adapter being created, a batch or directory being read, processing counts) and nothing else.
+- **`warning`** — recoverable anomalies the adapter chooses to continue past: a malformed message skipped in `CloudPubsubMessageBatch`, or a notification-publish failure swallowed in `FileSystemStorageWriterWithNotification` (the write itself still succeeds).
+
+The port helper functions (`readFile`, `writeFile`, `publish`) are each wrapped in an `Effect.withSpan`, so calls through this library also show up as spans in whatever tracing backend the consuming app configures.
+
+## Usage
+
+Wiring a `StorageWriter` and writing to it:
+
+```ts
+import { Effect } from 'effect'
+import { writeFile } from '@news-research/core-io'
+import { layer as FileSystemStorageWriter } from '@news-research/core-io/adapters/FileSystemStorageWriter'
+
+const program = writeFile({ path: 'example.json', data: Buffer.from('{}') }).pipe(
+  Effect.provide(FileSystemStorageWriter)
+)
 ```
 
-## Building
+Consuming a `MessageQueue`:
 
-Run `nx build core-io` to build the library.
+```ts
+import { Effect } from 'effect'
+import { takeMessage } from '@news-research/core-io'
+
+const consume = Effect.gen(function* () {
+  const { message, ack, nack } = yield* takeMessage
+  const result = yield* Effect.either(handle(message))
+  yield* result._tag === 'Right' ? ack : nack
+}).pipe(Effect.forever)
+```
+
+## Adding a new port or adapter
+
+1. A new port goes in `src/ports/` as a `Context.Tag` class, with its own `Data.TaggedError` if it can fail, and a helper function wrapped in `Effect.withSpan` if consumers call it directly (see the existing ports for the pattern).
+2. A new adapter goes in `src/adapters/`, exporting `make` and a `layer` (a plain `Layer` constant, or a factory function when the adapter needs configuration a `Context.Tag` can't carry — see `HttpServerMessageQueueFeeder` or `InMemoryStorageReader` for that shape).
+3. Add a subpath entry for the new adapter under `exports` in `package.json`.
+
+See [docs/known-issues.md](./docs/known-issues.md) for this package's current test-coverage gap.
