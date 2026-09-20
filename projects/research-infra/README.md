@@ -1,100 +1,52 @@
-# Platform Infrastructure
+# research-infra
 
-This project provisions all platform infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
-
-## Project Structure
-
-```
-apps/infra/
-├── src/
-│   ├── index.ts              # Main entrypoint, composes modules
-│   ├── config.ts             # Shared configuration
-│   ├── modules/              # Capability-specific infrastructure (future)
-│   │   └── <module>/         # e.g. ingestion, persistence, analysis
-│   └── ...                   # Core infrastructure components
-├── docs/                     # Infrastructure documentation
-├── Pulumi.yml                # Project definition
-├── Pulumi.dev.yml            # Development stack config
-└── Pulumi.prod.yml           # Production stack config
-```
-
-This structure simplifies deployment ordering and state management compared to per-capability Pulumi projects, while maintaining logical separation of concerns.
+Infrastructure for research access to the platform's fact-check data: a single BigQuery view over [analysis-infra](../analysis-infra/README.md)'s curated fact-checks table. Provisioned via Pulumi.
 
 ## Deployment
 
-Infrastructure is deployed via Pulumi through Nx:
-
 ```bash
-nx preview infra   # Preview changes
-nx deploy infra    # Apply changes
+nx preview research-infra --stack=<dev|prod>   # Preview changes
+nx deploy research-infra --stack=<dev|prod>    # Apply changes
 ```
 
-The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
+`analysis-infra` must already be deployed to the same stack before this project can deploy. See [docs/bootstrap.md](./docs/bootstrap.md) for initial setup and [docs/runbook.md](./docs/runbook.md) for subsequent deployments.
 
-The [runbook](./docs/runbook.md) documents operational procedures for subsequent deployments.
+## What this project provisions
 
-## What This Project Provisions
+### GCP service enablement
 
-### GCP Service Enablement
+| Service | API | Purpose |
+| --- | --- | --- |
+| Compute Engine | `compute.googleapis.com` | Required before enabling other APIs |
+| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
 
-| Service                | API                             | Purpose                               |
-| ---------------------- | ------------------------------- | ------------------------------------- |
-| IAM                    | `iam.googleapis.com`            | Identity and access management        |
-| IAM Credentials        | `iamcredentials.googleapis.com` | Service account credential generation |
-| Security Token Service | `sts.googleapis.com`            | Workload identity federation          |
-| Pub/Sub                | `pubsub.googleapis.com`         | Messaging primitives                  |
-| Cloud KMS              | `cloudkms.googleapis.com`       | Encryption key management             |
-| Cloud Storage          | `storage.googleapis.com`        | Object storage                        |
+Nothing else is enabled — there's no storage, messaging, or compute here beyond a BigQuery
+dataset and view.
 
-### Customer-Managed Encryption Keys (CMEK)
+### Marts dataset
 
-| Resource                     | Purpose                             |
-| ---------------------------- | ----------------------------------- |
-| `gcs-archive-encryption-key` | Encrypts raw archive bucket objects |
-| `bigquery-encryption-key`    | Encrypts BigQuery datasets          |
+BigQuery dataset `research_marts`, holding one object: `fact_checks` — a **view**, not a table.
+Its query selects a fixed subset of columns (`fact_check_id`, `source_name`, `collection`,
+`raw_published_at`, `published_at`, `title`, `summary`, `language`, `canonical_url`) from
+`analysis-infra`'s curated fact-checks table, filtered to rows with a non-null `title`.
 
-### Archival Storage
+Because it's a view rather than a table, `pulumi destroy` followed by `pulumi up` simply
+recreates the query definition — there's no data of its own to lose.
 
-| Resource             | Purpose                                 | Notes                                                                            |
-| -------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `raw-archive-bucket` | Long-term storage for ingested raw data | CMEK-encrypted, configurable TTL, uniform bucket access, public access prevented |
+| Output | Purpose |
+| --- | --- |
+| `martsDatasetId` / `martsFactChecksTableId` | Identify the dataset and view |
 
-### Messaging Primitives
+### Access
 
-| Resource             | Purpose                                                          |
-| -------------------- | ---------------------------------------------------------------- |
-| `observations-topic` | Central Pub/Sub topic for observation ingestion and distribution |
+This project defines no service accounts or IAM bindings of its own. BigQuery view access to the
+underlying curated table isn't managed here: a principal querying this view also needs its own
+read access to `analysis-infra`'s curated dataset — ordinary BigQuery behavior in the absence of
+an authorized-view configuration, which this project doesn't set up.
 
-### Workload Identity Federation
+## Related documentation
 
-| Resource               | Purpose                                                                  |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `shared-identity-pool` | External workload authentication without long-lived service account keys |
-
-### CI/CD Identity
-
-| Resource                                | Purpose                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `github-actions-sa`                     | Service account impersonated by GitHub Actions                                            |
-| `github-actions-identity-pool-provider` | Facilitates authentication from GitHub Actions workflows via workload identity federation |
-
-## Adding New Infrastructure Modules
-
-As the platform evolves, capability-specific infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
-
-- Encapsulates resources for a specific capability
-- Imports shared primitives (keys, topics, buckets) from the main project
-- Is composed into the main entrypoint (`src/index.ts`)
-
-This keeps related resources together while maintaining a single deployment unit.
-
-## Related Documentation
-
-| Document                                         | Purpose                                      |
-| ------------------------------------------------ | -------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup instructions       |
-| [docs/configuration.md](./docs/configuration.md) | Stack output contract definitions            |
-| [docs/contracts.md](./docs/contracts.md)         | Stack output contract definitions            |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rotation details     |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM boundaries and access patterns           |
-| [docs/runbook.md](./docs/runbook.md)             | Operational procedures and incident response |
+| Document | Purpose |
+| --- | --- |
+| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
