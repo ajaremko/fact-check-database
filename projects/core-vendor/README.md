@@ -24,6 +24,13 @@ import * as StorageBucket from '@news-research/core-vendor/cloud-storage/Storage
 | `pino`                                | Pino-backed Effect `Logger`            |
 | `pino-logging-gcp-config`             | Cloud Logging formatting for Pino      |
 
+## What this library does NOT do
+
+- Implement retry or backoff policies — no `Effect.retry`/`Schedule` appears anywhere here; a caller that needs retries wraps a call to this library with its own policy
+- Paginate results — `StorageBucket.getFilesStream` streams a bucket listing, but BigQuery and Pub/Sub calls return whatever the SDK gives back in one call
+- Contain business or domain logic — every module only wraps an SDK call behind an Effect service
+- Cache or reuse a client across requests beyond what `Layer` scoping already provides
+
 ## Development
 
 ```bash
@@ -42,6 +49,8 @@ Every client module (`PubsubClient`, `PubsubTopic`, `PubsubSubscription`, `Pubsu
 - A `Context.Tag` class naming the service and the SDK object it carries.
 - A private `make` that builds the SDK object.
 - An exported `layer`, built with `flow(make, Layer.effect(Tag))`, that turns `make` into an Effect layer.
+
+`StorageBucket` is the one exception: alongside the private, `Config`-based `makeConfig` its `layer` actually uses, it also exports a **public** `make(bucketName: string, config?: BucketOptions)` for a caller that already has a resolved bucket name and doesn't need the `Layer`/`Config` machinery. No consumer in this repo currently calls it, but it's a deliberate, documented alternative, not an oversight.
 
 Configuration is threaded through as `Config.Config<T>` values, one per option key, rather than as already-resolved values. That means a layer reads its configuration from the environment when the Effect runtime actually needs it, not when the layer is constructed:
 
@@ -180,6 +189,8 @@ const logger = Logger.addScoped(
 Effect.logInfo('started').pipe(Effect.provide(logger))
 ```
 
+Every other module in this package — every Pub/Sub, Cloud Storage, BigQuery, and Algolia client, plus `cloudRunInstanceId` — logs at `trace` only, and only at construction time (creating a client, accessing a topic or bucket). None of them log at `info`, `warning`, `error`, or `fatal`, so a consuming app's own logging owns every level above `trace` without needing to work around anything this package does.
+
 ## Error convention
 
 Each module exports one `Data.TaggedError` named after the module, carrying `cause` and `message`, so a caller can handle every failure from that vendor with a single `Effect.catchTag`:
@@ -195,3 +206,5 @@ PubsubTopic.publishMessage(message).pipe(
   )
 )
 ```
+
+See [docs/known-issues.md](./docs/known-issues.md) for this package's current test-coverage gap.

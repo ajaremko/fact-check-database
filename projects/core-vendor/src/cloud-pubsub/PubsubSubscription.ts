@@ -41,7 +41,7 @@ function make(
   })
 
   function release(resource: Effect.Effect.Success<typeof acquire>) {
-    return Effect.logTrace('Creating pubsub client').pipe(
+    return Effect.logTrace('Closing pubsub subscription').pipe(
       Effect.andThen(Effect.promise(() => resource.subscription.close()))
     )
   }
