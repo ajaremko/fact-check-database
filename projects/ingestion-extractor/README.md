@@ -31,7 +31,9 @@ Both extraction strategies populate the same `FactCheck` shape from format-speci
 | `categories` | `<category>` (repeatable) | `<category term>` (repeatable) |
 | `summary` | `<description>` | `<summary>` |
 | `content` | `<content:encoded>` | `<content>` (plain-text only) |
-| `language` | not populated | `xml:lang` attribute on the entry, if present |
+| `enclosureUrl` | `<enclosure>`, `<media:thumbnail>`, or `<media:content>` | always `null` — Atom has no equivalent element |
+| `imageUrl` | `<enclosure>`, `<media:thumbnail>`, or `<media:content>` | always `null` — Atom has no equivalent element |
+| `language` | `xml:lang` is RSS-only so this falls back to the feed's channel-level `<language>` element (not a guarantee for multilingual feeds) | `xml:lang` attribute on the entry, if present |
 | `publishedAtRaw` / `publishedAtNormalized` | `<pubDate>` | `<published>`, falling back to `<updated>` |
 
 Strategy selection is a direct lookup keyed by `source.collection` (see `src/integration/extraction-strategy/index.ts`) — there is exactly one strategy per collection type, so there's no ambiguity to resolve at runtime.
@@ -50,7 +52,9 @@ projects/ingestion-extractor/
 │   │   ├── ExtractionBatch.ts           # Batch event + staging path schema
 │   │   ├── writeBatch.ts                # NDJSON batch write
 │   │   ├── NormalizedText.ts            # Size-bounded, Unicode-normalized string schema
-│   │   └── NumberFromDate.ts            # Date <-> epoch-ms schema
+│   │   ├── NumberFromDate.ts            # Date <-> epoch-ms schema
+│   │   ├── ContentBlob.ts               # Content-addressed (sha256) blob path, written per fact-check
+│   │   └── logging/                     # Structured job/event log helpers
 │   └── integration/
 │       └── extraction-strategy/         # Pure feed-parsing logic, one file per format
 │           ├── ExtractionStrategy.ts    # Strategy shape (id, version, extractor)
@@ -63,3 +67,38 @@ projects/ingestion-extractor/
 ```
 
 This app has no app-specific `ports`/`adapters`/`environments` split: all I/O goes through `@news-research/core-io`'s shared storage/messaging ports, wired directly in `main.ts`. Introducing a local ports/adapters layer here would wrap those shared ports without adding a real seam.
+
+## Development
+
+```bash
+nx serve ingestion-extractor       # run locally
+nx test ingestion-extractor        # run the vitest suite
+nx typecheck ingestion-extractor
+nx lint ingestion-extractor
+nx build ingestion-extractor
+```
+
+Seven spec files cover both extraction strategies against real-world feed quirks, the schema round-trips, and the extract/write-batch paths, including the skip case.
+
+### Local setup
+
+```bash
+cp projects/ingestion-extractor/.env.template projects/ingestion-extractor/.env
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `STORAGE_MODE=filesystem` | Read/write the archive and staging output on a local directory instead of GCS |
+| `STORAGE_OUTPUT_DIR` | Directory batches and content blobs are written to (also where sanitizer/ingestor records are read from) |
+| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory |
+| `MESSAGE_QUEUE_INPUT_DIR` | Directory to populate with notification JSON files (e.g. from a local sanitizer run) |
+
+See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
+
+## Related documentation
+
+| Document | Purpose |
+| --- | --- |
+| [docs/runbook.md](./docs/runbook.md) | Configuration reference, output contract, and diagnosing failures |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
+| [core-contracts](../core-contracts/README.md) | The canonical `FactChecksTableRowSchema`/`StagingPathSchema` this service writes to |
