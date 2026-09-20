@@ -57,7 +57,7 @@ export const make = Effect.gen(function* () {
       catch: (cause) =>
         new EmailerError({
           cause,
-          message: 'Failed to send confirmation email',
+          message: 'Failed to send notification email',
         }),
     })
   }

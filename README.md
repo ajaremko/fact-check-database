@@ -25,7 +25,7 @@ This project is intended to be legible to:
 - [x] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
 - [x] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
 - [ ] Rewrite project documentation
-  - [ ] Write missing READMEs: `analysis-loader`, `website-emailer`, `website-server`, `website-loader`
+  - [ ] Write missing READMEs: `website-server`, `website-loader`
   - [x] Rewrite `core-infra` README and `docs/` to match its current, post-domain-split scope
   - [ ] De-duplicate `ingestion-infra`, `analysis-infra`, `research-infra`, `website-infra` READMEs — currently identical boilerplate, none document the stack's actual resources
   - [ ] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` — topically correct but still rough TODO checklists, not finished docs
@@ -129,7 +129,7 @@ Loads archived data for research use and runs NLP analysis (e.g. stance detectio
 | Project         | Kind    | Status | Documentation                                    |
 | --------------- | ------- | :----: | ------------------------------------------------ |
 | analysis-infra  | Infra   |   ✅   | [README.md](./projects/analysis-infra/README.md) |
-| analysis-loader | Service |   ❌   | _(no README yet)_                                |
+| analysis-loader | Service |   ✅   | [README.md](./projects/analysis-loader/README.md) |
 
 #### Research
 
@@ -149,7 +149,7 @@ Public-facing fact-check database, search, and supporting services.
 | website-contracts | Library |   ✅   | [README.md](./projects/website-contracts/README.md) |
 | website-server    | App     |   ❌   | _(no README yet)_                                   |
 | website-loader    | Service |   ❌   | _(no README yet)_                                   |
-| website-emailer   | Service |   ❌   | _(no README yet)_                                   |
+| website-emailer   | Service |   ✅   | [README.md](./projects/website-emailer/README.md)   |
 
 > Note: the `ingestion-infra`, `analysis-infra`, and `website-infra` READMEs are currently
 > near-identical copies of one another and need to be rewritten to reflect each stack's
