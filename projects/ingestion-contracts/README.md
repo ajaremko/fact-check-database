@@ -1,36 +1,82 @@
 # ingestion-contracts
 
-Versioned wire-format schemas for the ingestion pipeline's cross-app data contracts — the events and records that flow between `ingestion-pipeline`'s stages and the standalone services (`ingestion-extractor`, `ingestion-ingestor`, `ingestion-sanitizer`) that consume them.
+Versioned wire-format schemas for the ingestion pipeline's cross-app data contracts — the archived records, source configuration, and log-event payloads that flow between `ingestion-ingestor`, `ingestion-sanitizer`, and `ingestion-extractor`.
 
-Schemas are organized by pipeline stage, mirroring `ingestion-pipeline`'s own internal module layout, with a `shared/v1` folder holding the value types and records common to more than one stage.
+The package is `@news-research/ingestion-contracts`. Every schema is reached by a flat named export from a specific versioned subpath (for example `@news-research/ingestion-contracts/archive/v1`) — this is the convention every real consumer in this repo actually uses; prefer it over the root package, which only re-exports each subpath under a namespace (`archiveV1`, `configV1`, `loggingV1`, `sharedV1`) for the rare case that's more convenient.
 
 ## Contracts
 
-- **`shared/v1`** — foundational, cross-stage schemas:
+- **`archive/v1`** — the archived record schemas and the GCS path convention they're stored under:
   - `FilePointer` — a reference to an archived object (bucket + object + optional generation)
-  - `Source` — an ingestion source (id, name, url, collection)
-  - `ArchivePath` — the GCS object path convention for archived records
-  - `ContentLineageId` — a unique identifier correlating a fetch attempt's outcome
-  - `IngestionRecord` (+ `IngestionRecordMetadata`) — the archived record produced for each HTTP fetch attempt
-  - `SanitizerRecord` (+ `SanitizerRecordMetadata`, `PolicyLabel`, `SanitizationAction`) — the archived record produced after a sanitization pass
-- **`ingest/v1`** — `ObservationIngested`, the event published by the ingestor per fetch attempt
-- **`sanitize/v1`** — `ObservationSanitized`, the event published by the sanitizer after processing an ingested observation
-- **`extract/v1`** — `ExtractionBatchReady`, the event published when a batch of extracted records is ready for downstream consumption
+  - `Source` — an ingestion source as recorded in an archived record (id, name, url, and a free-form `collection` string)
+  - `ArchivePath` — the GCS object path convention for archived records (encode-only; see "Error handling")
+  - `ContentLineageId` — a unique identifier correlating a fetch attempt's outcome (encode-only)
+  - `NumberFromFormattedDate` — a bidirectional date-string ↔ Unix-milliseconds schema factory, used internally by `ArchivePath`/`ContentLineageId`
+  - `IngestionRecord` (+ `IngestionRecordMetadata`) — the record produced for each HTTP fetch attempt. Discriminators: `version: 1`, `kind: 'fetch_attempt'`, `outcome: 'data_fetched' | 'no_response'`
+  - `SanitizerRecord` (+ `SanitizerRecordMetadata`, `PolicyLabel`, `SanitizationAction`) — the record produced after a sanitization pass. Discriminators: `version: 1`, `kind: 'sanitized_record'`; classification lives in a `label` field (`PolicyLabel`), not a separate `outcome`
+- **`config/v1`** — `SourceConfig`, the validated shape of one row in a target list: `id`, `name`, `url`, and `collection` constrained to `'atom' | 'rss'`. This is a stricter, config-time cousin of `archive/v1`'s `Source` — once a fetch attempt is archived, its `Source.collection` is stored as a free-form string rather than re-validated against the enum.
+- **`logging/v1`** — 8 flat, `event`-discriminated schemas describing the structured log payloads the three ingestion services emit (`IngestionSucceeded`, `IngestionFailed`, `IngestionJobCompleted`, `RecordSanitized`, `ExtractionSucceeded`, `ExtractionFailed`, `ExtractionBatchWritten`, `ExtractionJobCompleted`). These are payload shapes for `Effect.annotateLogs`, not events published anywhere — see each consuming service's own runbook for what actually triggers them.
+- **`shared/v1`** — `Timestamp`, a branded non-negative-number schema shared across the other domains.
 
-Every schema is exported both as a flat named export (e.g. `ObservationIngestedSchema`) and under a domain namespace (e.g. `IngestionRecord.IngestionRecordSchema`), per this repo's contracts-package convention.
+## Development
 
-## Project Structure
-
-```
-projects/ingestion-contracts/
-├── src/
-│   ├── index.ts        # Barrel: flat + domain-namespaced exports
-│   ├── shared/v1/       # Cross-stage value types and archived records
-│   ├── ingest/v1/       # Ingestor event schema
-│   ├── sanitize/v1/     # Sanitizer event schema
-│   └── extract/v1/      # Extractor event schema
+```bash
+nx build ingestion-contracts
+nx test ingestion-contracts
+nx typecheck ingestion-contracts
+nx lint ingestion-contracts
 ```
 
-## Building
+## Error handling
 
-Run `nx build ingestion-contracts` to build the library.
+This package defines no custom error types. A decode or encode failure is a `ParseResult.ParseError` in the Effect error channel, like any Effect `Schema`. `ArchivePath` and `ContentLineageId` are both encode-only: decoding either always fails with `ParseResult.Forbidden`, since recovering their fields from a path string or a lineage-ID string isn't implemented.
+
+## Logging
+
+This package does no logging of its own. `logging/v1`'s schemas describe *other* services' log payloads — they aren't code that logs anything here.
+
+## Usage examples
+
+```ts
+import { Schema } from 'effect'
+import { IngestionRecordSchema } from '@news-research/ingestion-contracts/archive/v1'
+
+const encode = Schema.encodeSync(IngestionRecordSchema)
+encode({
+  version: 1,
+  kind: 'fetch_attempt',
+  outcome: 'data_fetched',
+  content_lineage_id: '...',
+  ingestion_batch_id: '...',
+  fetched_at: 1704067200000,
+  source: { id: 'politifact', name: 'politifact.com', url: 'https://...', collection: 'rss' },
+})
+```
+
+```ts
+import { Schema } from 'effect'
+import { ArchivePathSchema } from '@news-research/ingestion-contracts/archive/v1'
+
+Schema.encodeSync(ArchivePathSchema)({
+  version: 1,
+  collectionName: 'records/ingestion',
+  ext: 'yml',
+  sourceId: 'politifact',
+  date: 1704067200000,
+  ingestionId: 'run-1',
+  observationId: 'abc123',
+})
+// → "v1/records/ingestion/source=politifact/date=2024-01-01/ingestion_id=run-1/abc123.yml"
+```
+
+```ts
+import { Schema } from 'effect'
+import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
+
+Schema.decodeUnknownSync(SourceConfigSchema)({
+  id: 'politifact',
+  name: 'politifact.com',
+  url: 'https://www.politifact.com/rss/all/',
+  collection: 'rss',
+})
+```

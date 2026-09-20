@@ -1,100 +1,103 @@
-# Platform Infrastructure
+# ingestion-infra
 
-This project provisions all platform infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
-
-## Project Structure
-
-```
-apps/infra/
-├── src/
-│   ├── index.ts              # Main entrypoint, composes modules
-│   ├── config.ts             # Shared configuration
-│   ├── modules/              # Capability-specific infrastructure (future)
-│   │   └── <module>/         # e.g. ingestion, persistence, analysis
-│   └── ...                   # Core infrastructure components
-├── docs/                     # Infrastructure documentation
-├── Pulumi.yml                # Project definition
-├── Pulumi.dev.yml            # Development stack config
-└── Pulumi.prod.yml           # Production stack config
-```
-
-This structure simplifies deployment ordering and state management compared to per-capability Pulumi projects, while maintaining logical separation of concerns.
+Infrastructure for the ingestion pipeline: the scheduled ingestor job, the always-on sanitizer service, the scheduled extractor job, and the storage/messaging that connects them. Provisioned via Pulumi, depending on [core-infra](../core-infra/README.md) for the platform's shared identity, encryption key, and Artifact Registry.
 
 ## Deployment
 
-Infrastructure is deployed via Pulumi through Nx:
-
 ```bash
-nx preview infra   # Preview changes
-nx deploy infra    # Apply changes
+nx preview ingestion-infra --stack=<dev|prod>   # Preview changes
+nx deploy ingestion-infra --stack=<dev|prod>    # Apply changes
 ```
 
-The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
+`core-infra` must already be deployed to the same stack before this project can deploy. See [docs/bootstrap.md](./docs/bootstrap.md) for initial setup and [docs/runbook.md](./docs/runbook.md) for subsequent deployments and troubleshooting.
 
-The [runbook](./docs/runbook.md) documents operational procedures for subsequent deployments.
+## What this project provisions
 
-## What This Project Provisions
+### Consumed from core-infra
 
-### GCP Service Enablement
+Read via a `StackReference` in `src/config.ts`, not owned here:
 
-| Service                | API                             | Purpose                               |
-| ---------------------- | ------------------------------- | ------------------------------------- |
-| IAM                    | `iam.googleapis.com`            | Identity and access management        |
-| IAM Credentials        | `iamcredentials.googleapis.com` | Service account credential generation |
-| Security Token Service | `sts.googleapis.com`            | Workload identity federation          |
-| Pub/Sub                | `pubsub.googleapis.com`         | Messaging primitives                  |
-| Cloud KMS              | `cloudkms.googleapis.com`       | Encryption key management             |
-| Cloud Storage          | `storage.googleapis.com`        | Object storage                        |
+| Output read | Used for |
+| --- | --- |
+| `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
+| `stagingStorageBucketName` / `stagingStorageTopicName` | Where the extractor writes its output batches |
+| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving each service's container image |
+| `gcsArchiveKeyId` | Encrypting this project's raw archive bucket |
 
-### Customer-Managed Encryption Keys (CMEK)
+This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub
+Actions CI/CD identity — those are core-infra's, documented in its own
+[docs/encryption.md](../core-infra/docs/encryption.md) and
+[docs/iam-model.md](../core-infra/docs/iam-model.md).
 
-| Resource                     | Purpose                             |
-| ---------------------------- | ----------------------------------- |
-| `gcs-archive-encryption-key` | Encrypts raw archive bucket objects |
-| `bigquery-encryption-key`    | Encrypts BigQuery datasets          |
+### GCP service enablement
 
-### Archival Storage
+| Service | API | Purpose |
+| --- | --- | --- |
+| Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
+| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
+| Artifact Registry | `artifactregistry.googleapis.com` | Pulling container images from core-infra's registry |
+| Cloud Run | `run.googleapis.com` | The ingestor/extractor jobs and the sanitizer service |
+| Cloud Scheduler | `cloudscheduler.googleapis.com` | Triggering the ingestor and extractor jobs on a cron |
+| Cloud Storage | `storage.googleapis.com` | Archive, event-log, deadletter, and assets buckets |
+| Pub/Sub | `pubsub.googleapis.com` | Ingestor → sanitizer → extractor hand-off |
+| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and the pipeline dashboard |
+| Secret Manager | `secretmanager.googleapis.com` | The source list and sanitizer policy documents |
 
-| Resource             | Purpose                                 | Notes                                                                            |
-| -------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `raw-archive-bucket` | Long-term storage for ingested raw data | CMEK-encrypted, configurable TTL, uniform bucket access, public access prevented |
+### Storage
 
-### Messaging Primitives
+| Bucket | Purpose | Notes |
+| --- | --- | --- |
+| `ingestion-archive-bucket` | Permanent store for raw fetch bodies and both ingestor and sanitizer records | CMEK-encrypted with core-infra's key; no lifecycle rule — see [docs/known-issues.md](./docs/known-issues.md) for a config-flag gap here |
+| `ingestion-event-log-bucket` | Auto-archived copy of every message published to the ingestor and sanitizer topics | Age-based deletion, configurable per collection — see known-issues for a gap in what's covered |
+| `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription | Age-based deletion plus optional soft-delete |
+| `ingestion-assets-bucket` | Holds two static objects (a default source list and sanitizer policy) that aren't currently read by anything — see known-issues |
 
-| Resource             | Purpose                                                          |
-| -------------------- | ---------------------------------------------------------------- |
-| `observations-topic` | Central Pub/Sub topic for observation ingestion and distribution |
+### Pipeline: ingestor → sanitizer → extractor
 
-### Workload Identity Federation
+The three services chain together through storage notifications and Pub/Sub, not direct calls:
 
-| Resource               | Purpose                                                                  |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `shared-identity-pool` | External workload authentication without long-lived service account keys |
+1. **Ingestor** (`ingestion-ingestor-job`, a Cloud Run Job) — triggered by Cloud Scheduler on
+   `ingestion:ingestorSchedule` if set, otherwise run manually. Reads its target list from a Secret
+   Manager secret and writes fetch records to the archive bucket.
+2. That write triggers a GCS notification into the **ingestor topic**
+   (`ingestion-ingestor-topic`), which auto-archives every message to the event log bucket and
+   push-delivers to the sanitizer.
+3. **Sanitizer** (`ingestion-sanitizer-service`, a Cloud Run Service — always running, not
+   scheduled) — receives work via an OIDC-authenticated push subscription, reads its policy from a
+   Secret Manager secret, and writes sanitized records back to the same archive bucket.
+4. That write triggers a GCS notification into the **sanitizer topic**
+   (`ingestion-sanitizer-topic`), which the extractor pulls from (with a dead-letter topic after 5
+   failed delivery attempts).
+5. **Extractor** (`ingestion-extractor-job`, a Cloud Run Job) — triggered by Cloud Scheduler on
+   `ingestion:extractorSchedule` if set. Writes extracted batches into **core-infra's** shared
+   staging bucket for `analysis-infra`/`website-infra` to load.
 
-### CI/CD Identity
+Three shared factory helpers in `src/shared/` standardize repeated pieces of this wiring rather
+than each service reimplementing them: Cloud Scheduler → Cloud Run Job invocation
+(`createJobScheduler`), a topic with an auto-archive-to-GCS subscription (`createArchivedTopic`),
+and a subscription with a dead-letter topic (`createDeadletteredSubscription`).
 
-| Resource                                | Purpose                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `github-actions-sa`                     | Service account impersonated by GitHub Actions                                            |
-| `github-actions-identity-pool-provider` | Facilitates authentication from GitHub Actions workflows via workload identity federation |
+See [docs/iam-model.md](./docs/iam-model.md) for each service's service account and role grants.
 
-## Adding New Infrastructure Modules
+### Dashboard
 
-As the platform evolves, capability-specific infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
+One Cloud Monitoring dashboard (`ingestion-dashboard`) with six sections: Overview (per-service
+result breakdowns), Content Ingestion and Data Extraction (log-analytics tables per pipeline
+stage), System Logs (currently broken — see known-issues), Messaging (Pub/Sub backlog/throughput),
+and Storage (bucket sizes).
 
-- Encapsulates resources for a specific capability
-- Imports shared primitives (keys, topics, buckets) from the main project
-- Is composed into the main entrypoint (`src/index.ts`)
+## Consuming these outputs
 
-This keeps related resources together while maintaining a single deployment unit.
+Unlike `core-infra`, nothing else in this repository reads `ingestion-infra`'s stack outputs via a
+`StackReference` today — they exist for the dashboard, for `pulumi stack output`, and for CI, not
+for another Pulumi project's config. If that changes, treat the affected outputs the same way
+core-infra treats its own: a stable interface, breaking to rename or repoint.
 
-## Related Documentation
+## Related documentation
 
-| Document                                         | Purpose                                      |
-| ------------------------------------------------ | -------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup instructions       |
-| [docs/configuration.md](./docs/configuration.md) | Stack output contract definitions            |
-| [docs/contracts.md](./docs/contracts.md)         | Stack output contract definitions            |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rotation details     |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM boundaries and access patterns           |
-| [docs/runbook.md](./docs/runbook.md)             | Operational procedures and incident response |
+| Document | Purpose |
+| --- | --- |
+| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
+| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |

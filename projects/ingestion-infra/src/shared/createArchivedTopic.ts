@@ -77,7 +77,6 @@ export function createArchivedTopic(opts: {
     {
       dependsOn: [
         canPublish,
-        // pubsubServiceAccountEventLogSubscriber,
         pubsubServiceAccountEventLogBucketReader,
         pubsubServiceAccountEventLogObjectCreator,
         ...dependsOn,

@@ -1,14 +1,22 @@
 # Bootstrap and First Deployment
 
+Generic Pulumi Cloud/account/tooling setup is documented once, centrally, in
+[core-infra/docs/bootstrap.md](../../core-infra/docs/bootstrap.md) — this doc only covers what's
+specific to `ingestion-infra`. Follow that doc first if you haven't already.
+
 ## Initial GCP project setup
 
 Ensure that the core pulumi stack is deployed before deploying this stack.
 
 ### Create a GCP Project and Authorize Root Access
 
+Per the dev-shared / prod-per-domain convention (see core-infra's bootstrap doc), this project
+needs its own dedicated GCP project only for **prod** — dev deploys into the shared dev project
+already set up for core-infra.
+
 Create a new gcp project to host the pulumi stack, for example: `fact-check-database-ingestion`. This project will host the production ingestion stack. Link this project to an existing billing account.
 
-Enable the cloud resource manager api via `https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com?project=fact-check-database-dev`
+Enable the cloud resource manager api via `https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com?project=fact-check-database-ingestion`
 
 Add the root pulumi cli service account as a principal with the `Owner` role in the new project.
 
