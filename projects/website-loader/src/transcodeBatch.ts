@@ -14,7 +14,7 @@ const decodeBatch = Schema.transformOrFail(
       ParseResult.succeed({
         objectID: input.content_lineage_id,
         content_type: input.http.content_type,
-        content_length: input.http.etag,
+        content_length: input.http.headers?.['content-length'],
         final_url: input.http.final_url,
         extracted_at: encoded.extracted_at,
         source_collection: input.source.collection,
