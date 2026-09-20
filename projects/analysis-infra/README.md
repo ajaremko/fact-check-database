@@ -1,100 +1,102 @@
-# Platform Infrastructure
+# analysis-infra
 
-This project provisions all platform infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
-
-## Project Structure
-
-```
-apps/infra/
-├── src/
-│   ├── index.ts              # Main entrypoint, composes modules
-│   ├── config.ts             # Shared configuration
-│   ├── modules/              # Capability-specific infrastructure (future)
-│   │   └── <module>/         # e.g. ingestion, persistence, analysis
-│   └── ...                   # Core infrastructure components
-├── docs/                     # Infrastructure documentation
-├── Pulumi.yml                # Project definition
-├── Pulumi.dev.yml            # Development stack config
-└── Pulumi.prod.yml           # Production stack config
-```
-
-This structure simplifies deployment ordering and state management compared to per-capability Pulumi projects, while maintaining logical separation of concerns.
+Infrastructure for the analysis domain: a staging BigQuery table fed from the ingestion pipeline's output, a curated BigQuery table deduped and appended from staging on a schedule, and a translation service. Provisioned via Pulumi, depending on [core-infra](../core-infra/README.md) for the platform's shared identity, artifact registry, and the staging bucket/topic the ingestion pipeline writes to.
 
 ## Deployment
 
-Infrastructure is deployed via Pulumi through Nx:
-
 ```bash
-nx preview infra   # Preview changes
-nx deploy infra    # Apply changes
+nx preview analysis-infra --stack=<dev|prod>   # Preview changes
+nx deploy analysis-infra --stack=<dev|prod>    # Apply changes
 ```
 
-The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
+`core-infra` must already be deployed to the same stack before this project can deploy. See [docs/bootstrap.md](./docs/bootstrap.md) for initial setup and [docs/runbook.md](./docs/runbook.md) for subsequent deployments and troubleshooting.
 
-The [runbook](./docs/runbook.md) documents operational procedures for subsequent deployments.
+## What this project provisions
 
-## What This Project Provisions
+### Consumed from core-infra
 
-### GCP Service Enablement
+Read via a `StackReference` in `src/config.ts`, not owned here:
 
-| Service                | API                             | Purpose                               |
-| ---------------------- | ------------------------------- | ------------------------------------- |
-| IAM                    | `iam.googleapis.com`            | Identity and access management        |
-| IAM Credentials        | `iamcredentials.googleapis.com` | Service account credential generation |
-| Security Token Service | `sts.googleapis.com`            | Workload identity federation          |
-| Pub/Sub                | `pubsub.googleapis.com`         | Messaging primitives                  |
-| Cloud KMS              | `cloudkms.googleapis.com`       | Encryption key management             |
-| Cloud Storage          | `storage.googleapis.com`        | Object storage                        |
+| Output read | Used for |
+| --- | --- |
+| `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
+| `stagingStorageTopicName` | What the staging loader's push subscription subscribes to |
+| `stagingStorageBucketName` | Passed to the staging loader as `STAGING_BUCKET_NAME` |
+| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving the staging loader's container image |
 
-### Customer-Managed Encryption Keys (CMEK)
+This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub
+Actions CI/CD identity — those are core-infra's.
 
-| Resource                     | Purpose                             |
-| ---------------------------- | ----------------------------------- |
-| `gcs-archive-encryption-key` | Encrypts raw archive bucket objects |
-| `bigquery-encryption-key`    | Encrypts BigQuery datasets          |
+### GCP service enablement
 
-### Archival Storage
+| Service | API | Purpose |
+| --- | --- | --- |
+| Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
+| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
+| Artifact Registry | `artifactregistry.googleapis.com` | Pulling the staging loader's image from core-infra's registry |
+| Cloud Run | `run.googleapis.com` | The staging loader and translation services |
+| Cloud Storage | `storage.googleapis.com` | The dead-letter bucket |
+| Pub/Sub | `pubsub.googleapis.com` | The staging loader's push subscription and dead-letter topic |
+| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and metrics |
 
-| Resource             | Purpose                                 | Notes                                                                            |
-| -------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `raw-archive-bucket` | Long-term storage for ingested raw data | CMEK-encrypted, configurable TTL, uniform bucket access, public access prevented |
+### Staging dataset
 
-### Messaging Primitives
+BigQuery dataset `analysis_staging`, table `fact_checks` — schema imported from
+`@news-research/core-contracts/staging/v1` (`FactChecksTableDBSchema`), the same canonical schema
+`core-infra` uploads for `ingestion-extractor` to write against. Partitioned by `extracted_at`
+(daily, 7-day partition expiration).
 
-| Resource             | Purpose                                                          |
-| -------------------- | ---------------------------------------------------------------- |
-| `observations-topic` | Central Pub/Sub topic for observation ingestion and distribution |
+Fed by a Cloud Run **service** (`analysis-loader`), which receives work via a push subscription
+on core-infra's staging topic (OIDC-authenticated), writes rows into this table, and — on
+delivery failure after 5 attempts — routes to a dead-letter topic archived into a dedicated
+dead-letter bucket.
 
-### Workload Identity Federation
+| Output | Purpose |
+| --- | --- |
+| `stagingDatasetId` / `stagingFactChecksTableId` / `stagingTableRef` | Identify the dataset/table |
+| `loaderServiceName` / `loaderSubscriptionName` | The Cloud Run service and its push subscription |
+| `loaderDeadletterTopicName` / `loaderDeadletterTopicArchiveSubscriptionName` / `deadletterBucketName` | The failure path |
+| `loaderInvokerServiceAccountEmail` | The identity Pub/Sub uses to push to the loader |
+| `loaderBatchesLoadedCounterMetricType` | Custom metric for batches loaded |
 
-| Resource               | Purpose                                                                  |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `shared-identity-pool` | External workload authentication without long-lived service account keys |
+### Curated dataset
 
-### CI/CD Identity
+BigQuery dataset `analysis_curated`, table `fact_checks` — schema hand-written here (not shared
+with the staging schema; see [docs/known-issues.md](./docs/known-issues.md)). Partitioned by
+`extracted_at` (monthly, no expiration).
 
-| Resource                                | Purpose                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `github-actions-sa`                     | Service account impersonated by GitHub Actions                                            |
-| `github-actions-identity-pool-provider` | Facilitates authentication from GitHub Actions workflows via workload identity federation |
+Fed by a **BigQuery Data Transfer Service scheduled query** (not a Cloud Run job) running every 6
+hours: a `MERGE` that dedupes on a hash of `source id + canonical URL + title` and only inserts
+rows from staging that aren't already present — append-only, no update or delete path.
 
-## Adding New Infrastructure Modules
+| Output | Purpose |
+| --- | --- |
+| `curatedDatasetId` / `curatedFactChecksTableId` / `curatedTableRef` | Identify the dataset/table — `curatedTableRef` is read by `research-infra`, the only cross-project consumer of any output this project has |
+| `transferJobName` | The scheduled query job |
 
-As the platform evolves, capability-specific infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
+### Translation
 
-- Encapsulates resources for a specific capability
-- Imports shared primitives (keys, topics, buckets) from the main project
-- Is composed into the main entrypoint (`src/index.ts`)
+A Cloud Run service running the public `libretranslate/libretranslate` image directly, plus a
+models bucket. See [docs/known-issues.md](./docs/known-issues.md) — the bucket isn't currently
+wired to the service, and the service doesn't go through core-infra's Artifact Registry the way
+every other service in this project does.
 
-This keeps related resources together while maintaining a single deployment unit.
+| Output | Purpose |
+| --- | --- |
+| `translatorServiceName` | The Cloud Run service |
+| `translationModelsBucketName` | The (currently unused) models bucket |
 
-## Related Documentation
+## Consuming these outputs
 
-| Document                                         | Purpose                                      |
-| ------------------------------------------------ | -------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup instructions       |
-| [docs/configuration.md](./docs/configuration.md) | Stack output contract definitions            |
-| [docs/contracts.md](./docs/contracts.md)         | Stack output contract definitions            |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rotation details     |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM boundaries and access patterns           |
-| [docs/runbook.md](./docs/runbook.md)             | Operational procedures and incident response |
+`research-infra` reads exactly one output from this stack — `curatedTableRef` — via its own
+`StackReference`. Nothing else in this repo reads any other output here. Treat `curatedTableRef`
+as a stable interface for that reason; the rest are informational (dashboard/CLI/CI use only).
+
+## Related documentation
+
+| Document | Purpose |
+| --- | --- |
+| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
+| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
