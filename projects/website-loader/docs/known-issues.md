@@ -38,19 +38,3 @@ correctness.
 **If this ever needs to be fixed:** Add `Effect.catchTags` for `StorageReadError` and `ParseError`
 alongside the existing `AlgoliaSearchClientIOError` handling, each with its own clear response
 message.
-
-## `STAGING_BUCKET_NAME` is provisioned but never read
-
-**Error:** No error — dead configuration.
-**Where:** `website-infra`'s `search/loader/service.ts` sets `STAGING_BUCKET_NAME`, but no code in
-this project reads it (confirmed: zero references anywhere in `src/`). The bucket to read from is
-instead determined per-message from the Pub/Sub notification's `bucketId` attribute — the same
-finding already documented for `analysis-infra`'s equivalent variable in
-`analysis-loader/docs/known-issues.md`.
-**Root cause:** Likely provisioned defensively or left over from an earlier design that read a
-fixed bucket rather than one carried per-message.
-**Decision:** Leave as-is. Removing a provisioned env var is a change to `website-infra`, not to
-this project — noting it here rather than reopening that project's docs in this pass.
-**If this ever needs to be fixed:** Remove `STAGING_BUCKET_NAME` from
-`website-infra/src/search/loader/service.ts`'s env list once confirmed nothing else depends on it
-being present.

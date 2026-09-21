@@ -150,7 +150,7 @@ See [known-issues.md](../projects/website-loader/docs/known-issues.md).
       Algolia sandbox index for local development
 - [ ] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
       the existing `AlgoliaSearchClientIOError` handling
-- [ ] Remove `STAGING_BUCKET_NAME` from `website-infra`'s search loader service env list — it's
+- [x] Remove `STAGING_BUCKET_NAME` from `website-infra`'s search loader service env list — it's
       never read
 - [ ] Add `.spec.ts` coverage for `transcodeBatch` and the `/load-jobs` route
 

@@ -4,7 +4,6 @@ import {
   gcpRegion,
   gcpProject,
   dockerTag,
-  stagingStorageBucketName,
   tag,
   logLevel,
   algoliaAppId,
@@ -49,10 +48,6 @@ export const loaderService = new gcp.cloudrunv2.Service(
             {
               name: 'ALGOLIA_INDEX_NAME',
               value: factChecksIndex.name,
-            },
-            {
-              name: 'STAGING_BUCKET_NAME',
-              value: stagingStorageBucketName,
             },
             {
               name: 'LOGGING_LEVEL',

@@ -24,13 +24,10 @@ The Algolia client's transformation region is hardcoded to `us` in `main.ts`
 (`transformationOptions: Config.succeed({ region: 'us' })`) — not configurable via environment
 variable.
 
-`website-infra` also sets two env vars this service doesn't explicitly read:
-
-- `STAGING_BUCKET_NAME` — genuinely unused. The bucket to read from is determined per-message
-  from the Pub/Sub notification's `bucketId` attribute instead, not from a fixed env var.
-- `GOOGLE_CLOUD_PROJECT` — not read via this service's own `Config` calls, but a conventional env
-  var the underlying `@google-cloud/*` client libraries check themselves for default project
-  resolution, so this is plausibly intentional rather than dead.
+`website-infra` also sets `GOOGLE_CLOUD_PROJECT`, which this service doesn't read via its own
+`Config` calls — but it's a conventional env var the underlying `@google-cloud/*` client libraries
+check themselves for default project resolution, so this is plausibly intentional rather than
+dead.
 
 ## Logging
 
