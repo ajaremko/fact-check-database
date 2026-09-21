@@ -1,100 +1,103 @@
-# Platform Infrastructure
+# website-infra
 
-This project provisions all platform infrastructure using Pulumi. It follows a modular monolith approach: a single Pulumi project with capability-specific modules organized under `src/modules/`.
-
-## Project Structure
-
-```
-apps/infra/
-├── src/
-│   ├── index.ts              # Main entrypoint, composes modules
-│   ├── config.ts             # Shared configuration
-│   ├── modules/              # Capability-specific infrastructure (future)
-│   │   └── <module>/         # e.g. ingestion, persistence, analysis
-│   └── ...                   # Core infrastructure components
-├── docs/                     # Infrastructure documentation
-├── Pulumi.yml                # Project definition
-├── Pulumi.dev.yml            # Development stack config
-└── Pulumi.prod.yml           # Production stack config
-```
-
-This structure simplifies deployment ordering and state management compared to per-capability Pulumi projects, while maintaining logical separation of concerns.
+Infrastructure for the public website domain: the backend Cloud Run service (the public site
+itself, fronted by Envoy and a dev-only basic-auth sidecar), the Algolia search integration and
+its BigQuery-loading service, the emailer service, a shared dead-letter bucket, and a plain
+redirect service. Provisioned via Pulumi, depending on
+[core-infra](../core-infra/README.md) for the platform's shared identity, Artifact Registry, and
+the staging bucket/topic the ingestion pipeline writes to.
 
 ## Deployment
 
-Infrastructure is deployed via Pulumi through Nx:
-
 ```bash
-nx preview infra   # Preview changes
-nx deploy infra    # Apply changes
+nx preview website-infra --stack=<dev|prod>   # Preview changes
+nx deploy website-infra --stack=<dev|prod>    # Apply changes
 ```
 
-The initial deployment requires elevated permissions and must be run locally. See [bootstrap documentation](./docs/bootstrap.md) for setup instructions.
+`core-infra` must already be deployed to the same stack before this project can deploy. See
+[docs/bootstrap.md](./docs/bootstrap.md) for initial setup and
+[docs/runbook.md](./docs/runbook.md) for subsequent deployments and troubleshooting.
 
-The [runbook](./docs/runbook.md) documents operational procedures for subsequent deployments.
+## What this project provisions
 
-## What This Project Provisions
+### Consumed from core-infra
 
-### GCP Service Enablement
+Read via a `StackReference` in `src/config.ts`, not owned here:
 
-| Service                | API                             | Purpose                               |
-| ---------------------- | ------------------------------- | ------------------------------------- |
-| IAM                    | `iam.googleapis.com`            | Identity and access management        |
-| IAM Credentials        | `iamcredentials.googleapis.com` | Service account credential generation |
-| Security Token Service | `sts.googleapis.com`            | Workload identity federation          |
-| Pub/Sub                | `pubsub.googleapis.com`         | Messaging primitives                  |
-| Cloud KMS              | `cloudkms.googleapis.com`       | Encryption key management             |
-| Cloud Storage          | `storage.googleapis.com`        | Object storage                        |
+| Output read | Used for |
+| --- | --- |
+| `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
+| `stagingStorageBucketName` / `stagingStorageTopicName` | Where `website-loader` reads staged fact-check batches from |
+| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving each service's container image |
 
-### Customer-Managed Encryption Keys (CMEK)
+This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub
+Actions CI/CD identity — those are core-infra's, documented in its own
+[docs/encryption.md](../core-infra/docs/encryption.md) and
+[docs/iam-model.md](../core-infra/docs/iam-model.md).
 
-| Resource                     | Purpose                             |
-| ---------------------------- | ----------------------------------- |
-| `gcs-archive-encryption-key` | Encrypts raw archive bucket objects |
-| `bigquery-encryption-key`    | Encrypts BigQuery datasets          |
+### GCP service enablement
 
-### Archival Storage
+| Service | API | Purpose |
+| --- | --- | --- |
+| IAM | `iam.googleapis.com` | Identity and access management |
+| IAM Credentials | `iamcredentials.googleapis.com` | Service account credential generation |
+| Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
+| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
+| Artifact Registry | `artifactregistry.googleapis.com` | Pulling container images from core-infra's registry |
+| Cloud Run | `run.googleapis.com` | The backend, emailer, search loader, and redirect services |
+| Cloud Storage | `storage.googleapis.com` | The backend and dead-letter buckets |
+| Pub/Sub | `pubsub.googleapis.com` | Form-submission and staging-batch push subscriptions |
+| Secret Manager | `secretmanager.googleapis.com` | Envoy/htpasswd/oauth2-proxy config, the Resend and Algolia API keys |
+| reCAPTCHA Enterprise | `recaptchaenterprise.googleapis.com` | The form-abuse-protection key used by `website-server` |
+| Cloud Domains / DNS / Site Verification | `domains`, `dns`, `siteverification.googleapis.com` | Enabled for the public domains, but domain verification and Cloud Run domain mapping are done manually — see [docs/bootstrap.md](./docs/bootstrap.md); no Pulumi resource here creates a domain mapping |
 
-| Resource             | Purpose                                 | Notes                                                                            |
-| -------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `raw-archive-bucket` | Long-term storage for ingested raw data | CMEK-encrypted, configurable TTL, uniform bucket access, public access prevented |
+### Backend
 
-### Messaging Primitives
+The public site itself. `factCheckDatabaseBackendService` runs three containers in one Cloud Run
+(v1) service: an Envoy sidecar (public entry point), a dev-only `oauth2-proxy` container gating
+access behind `htpasswd` credentials, and the `website-server` container. `roles/run.invoker` is
+granted to `allUsers` in every stack — the Envoy/oauth2-proxy layer is what actually restricts dev
+access, not IAM. Backed by `backendBucket`, where `website-server`'s form submissions land before
+triggering the emailer.
 
-| Resource             | Purpose                                                          |
-| -------------------- | ---------------------------------------------------------------- |
-| `observations-topic` | Central Pub/Sub topic for observation ingestion and distribution |
+### Emailer
 
-### Workload Identity Federation
+`emailerService` (Cloud Run v2) runs [website-emailer](../website-emailer/README.md). Two Pub/Sub
+push subscriptions (`submissionSubscription`, `confirmationSubscription`) both subscribe to the
+same form-submissions topic in the backend module and push to this service's two routes — see
+`website-emailer`'s own README for why the route names don't match what each sends. Failed
+deliveries dead-letter into the shared bucket below.
 
-| Resource               | Purpose                                                                  |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `shared-identity-pool` | External workload authentication without long-lived service account keys |
+### Search
 
-### CI/CD Identity
+`website-loader` (Cloud Run v2, `search/loader/`) reads staged fact-check batches from
+core-infra's staging bucket via a **cross-project** push subscription and writes them into an
+Algolia index (`factChecksIndex`, plus a `factChecksOldestIndex` replica sorted the other way).
+Separately, `algoliaServiceAccount` and a custom IAM role
+(`websiteAlgoliaBigQueryIntegrator`) exist for Algolia's own BigQuery connector — a one-time
+manual integration, not something this project's Pulumi code wires up itself; see
+[docs/bootstrap.md](./docs/bootstrap.md).
 
-| Resource                                | Purpose                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `github-actions-sa`                     | Service account impersonated by GitHub Actions                                            |
-| `github-actions-identity-pool-provider` | Facilitates authentication from GitHub Actions workflows via workload identity federation |
+### Dead-letter
 
-## Adding New Infrastructure Modules
+One shared bucket (`deadletterBucket`) receives messages that exhaust delivery attempts from
+**both** the emailer's `submissionSubscription` and the search loader's staging-storage
+subscription, each via its own archive-topic-and-subscription pair.
 
-As the platform evolves, capability-specific infrastructure (e.g. ingestion pipelines, BigQuery datasets, Cloud Run services) should be added as modules under `src/modules/`. Each module:
+### Redirect
 
-- Encapsulates resources for a specific capability
-- Imports shared primitives (keys, topics, buckets) from the main project
-- Is composed into the main entrypoint (`src/index.ts`)
+`redirectService` — a plain Cloud Run (v1) service running the public `morbz/docker-web-redirect`
+image, redirecting to the backend URL in dev or `mainDomain` in prod. No application code of its
+own; exists purely as infrastructure.
 
-This keeps related resources together while maintaining a single deployment unit.
+## Related documentation
 
-## Related Documentation
-
-| Document                                         | Purpose                                      |
-| ------------------------------------------------ | -------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup instructions       |
-| [docs/configuration.md](./docs/configuration.md) | Stack output contract definitions            |
-| [docs/contracts.md](./docs/contracts.md)         | Stack output contract definitions            |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rotation details     |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM boundaries and access patterns           |
-| [docs/runbook.md](./docs/runbook.md)             | Operational procedures and incident response |
+| Document | Purpose |
+| --- | --- |
+| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
+| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
+| [website-server](../website-server/README.md) | The public frontend running in the backend service |
+| [website-emailer](../website-emailer/README.md) | The service running behind the emailer routes |
+| [website-loader](../website-loader/README.md) | The service populating the Algolia index |

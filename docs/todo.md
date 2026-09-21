@@ -9,9 +9,9 @@ to be a won't-fix.
 
 ## Repository-wide
 
-- [ ] De-duplicate `ingestion-infra`, `analysis-infra`, `research-infra`, `website-infra` READMEs
+- [x] De-duplicate `ingestion-infra`, `analysis-infra`, `research-infra`, `website-infra` READMEs
       — currently identical boilerplate, none document the stack's actual resources
-- [ ] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` into finished docs
+- [x] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` into finished docs
 - [ ] Sort the website's fact-checks feed via Algolia queries instead of local sort
 - [ ] Verify fact checks are deduped correctly across ingestion and analysis
 - [ ] Implement the bot-transparency policy in
@@ -130,6 +130,17 @@ See [known-issues.md](../projects/website-emailer/docs/known-issues.md).
 - [ ] Add `Effect.catchTag('ParseError', ...)` alongside the existing `EmailerError` handling in
       the route handlers
 - [ ] Add `.spec.ts` coverage for `accessFormSubmission` and each `Emailer` adapter
+
+### website-infra
+
+See [known-issues.md](../projects/website-infra/docs/known-issues.md).
+
+- [ ] Wire `forceDestroyStorage`/`retainStorageOnDelete`/`deadletterRetentionDays`/
+      `deadletterSoftDeleteDays` into `backendBucket`/`deadletterBucket` — both currently
+      hardcode `forceDestroy: true` with no `retainOnDelete`, regardless of stack
+- [ ] Either implement domain-verification automation using `verifiedOwnerEmail`/
+      `secondaryDomains`, or remove those two plus the unused `siteVerificationService`
+      enablement
 
 ### website-loader
 
