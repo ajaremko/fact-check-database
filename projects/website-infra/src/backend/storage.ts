@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { gcpRegion } from '../config'
+import { gcpRegion, forceDestroyStorage, retainStorageOnDelete } from '../config'
 import { websiteLabels, tag } from '../config'
 import { storageService } from '../services'
 import { provider } from '../project'
@@ -11,11 +11,12 @@ export const backendBucket = new gcp.storage.Bucket(
     location: gcpRegion,
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
-    forceDestroy: true,
+    forceDestroy: forceDestroyStorage,
     labels: websiteLabels,
   },
   {
     dependsOn: [storageService],
+    retainOnDelete: retainStorageOnDelete,
     provider,
   }
 )

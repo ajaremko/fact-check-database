@@ -98,7 +98,6 @@ config:
   website:region: us-central1
   website:coreStackName: alfredsyoung/fact-check-database-core
   website:logLevel: debug
-  website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
     - factcheckdatabase.com
     - thefactcheckdatabase.com

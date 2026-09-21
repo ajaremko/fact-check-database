@@ -49,7 +49,7 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 | Pub/Sub | `pubsub.googleapis.com` | Form-submission and staging-batch push subscriptions |
 | Secret Manager | `secretmanager.googleapis.com` | Envoy/htpasswd/oauth2-proxy config, the Resend and Algolia API keys |
 | reCAPTCHA Enterprise | `recaptchaenterprise.googleapis.com` | The form-abuse-protection key used by `website-server` |
-| Cloud Domains / DNS / Site Verification | `domains`, `dns`, `siteverification.googleapis.com` | Enabled for the public domains, but domain verification and Cloud Run domain mapping are done manually — see [docs/bootstrap.md](./docs/bootstrap.md); no Pulumi resource here creates a domain mapping |
+| Cloud Domains / DNS | `domains.googleapis.com`, `dns.googleapis.com` | Enabled for the public domains, but domain verification and Cloud Run domain mapping are done manually — see [docs/bootstrap.md](./docs/bootstrap.md); no Pulumi resource here creates a domain mapping |
 
 ### Backend
 

@@ -17,14 +17,16 @@ Reference for the `website` Pulumi config namespace, read by `src/config.ts`. Se
 | `website:tag` | Docker image tag for all four services | No | set per-deploy | set per-deploy |
 | `website:logLevel` | Log level passed to services that read it | Yes | `debug` | `debug` |
 | `website:verifiedDomains` | Domains verified for Cloud Run domain mapping and the reCAPTCHA key's allowed domains | Yes | `dev.factcheckdatabase.com` | `factcheckdatabase.com`, `thefactcheckdatabase.com` |
-| `website:verifiedOwner` | Declared but never read anywhere in `src/` — see [docs/known-issues.md](./known-issues.md) | Yes (deployment fails without it, despite doing nothing) | — | — |
 | `website:algoliaAppId` / `algoliaSearchKey` | The Algolia application this stack's index lives in | Yes | same app as prod today | — |
 | `website:gaMeasurementId` | Google Analytics measurement ID, passed to the backend service. Unset in dev on purpose — dev/test traffic should never reach real analytics | No | unset | set |
 | `website:resendApiKeySecretVersion` | Which version of the `website-resend-api-key` secret to mount into the emailer | No, but the emailer fails to start without a real value | set | set |
 | `website:resendConfirmationTemplateId` | The Resend template used for confirmation emails | Yes | same template as prod today | — |
 | `website:adminEmail` | Notification-email recipient | Yes | — | — |
 | `website:htpasswdSecretVersion` | Which version of the dev basic-auth credentials to mount. Deployment throws if this is set in **prod** | No; required in practice for dev to be reachable | set | must stay unset |
-| `website:forceDestroyStorage` / `retainStorageOnDelete` / `deadletterRetentionDays` / `deadletterSoftDeleteDays` | Declared, validated, and warned-about in `config.ts` — but never read by any resource. See [docs/known-issues.md](./known-issues.md) | No | unused | unused |
+| `website:forceDestroyStorage` | Whether `pulumi destroy` may delete non-empty buckets (`backendBucket`, `deadletterBucket`) | No, default `false` | unset (defaults to `false`) | unset (defaults to `false`) |
+| `website:retainStorageOnDelete` | Whether those buckets survive `pulumi destroy` instead of being deleted with the stack | No, default `true` | unset (defaults to `true`) | unset (defaults to `true`) |
+| `website:deadletterRetentionDays` | Age-based deletion window for `deadletterBucket`. Unset disables the rule | No | unset | unset |
+| `website:deadletterSoftDeleteDays` | Soft-delete window on `deadletterBucket` | No | unset | unset |
 
 ## Commands
 
@@ -36,9 +38,12 @@ nx destroy website-infra --stack=<dev|prod>   # tear down — see the storage-co
 nx output website-infra --stack=<dev|prod>    # print stack outputs
 ```
 
-**Before running `nx destroy` against prod**: both the backend bucket and the dead-letter bucket
-hardcode `forceDestroy: true` with no `retainOnDelete` — a destroy will force-empty and delete
-them regardless of stack. See [docs/known-issues.md](./known-issues.md).
+**Before running `nx destroy`**: `backendBucket` and `deadletterBucket` both respect
+`website:forceDestroyStorage`/`retainStorageOnDelete`. Neither `Pulumi.dev.yml` nor
+`Pulumi.prod.yml` currently overrides these, so both stacks currently fall back to the code's own
+safe defaults (`forceDestroyStorage: false`, `retainStorageOnDelete: true`) — a destroy will fail
+on a non-empty bucket rather than force-deleting it, unless someone deliberately sets
+`forceDestroyStorage: true` for a stack first.
 
 ## Deployment ordering
 

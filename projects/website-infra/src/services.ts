@@ -51,14 +51,6 @@ export const dnsService = new gcp.projects.Service(
   { provider }
 )
 
-export const siteVerificationService = new gcp.projects.Service(
-  `${tag}-siteverification-service`,
-  {
-    service: 'siteverification.googleapis.com',
-  },
-  { provider }
-)
-
 export const storageService = new gcp.projects.Service(
   `${tag}-storage-service`,
   {

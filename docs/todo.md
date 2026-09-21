@@ -135,10 +135,10 @@ See [known-issues.md](../projects/website-emailer/docs/known-issues.md).
 
 See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
-- [ ] Wire `forceDestroyStorage`/`retainStorageOnDelete`/`deadletterRetentionDays`/
+- [x] Wire `forceDestroyStorage`/`retainStorageOnDelete`/`deadletterRetentionDays`/
       `deadletterSoftDeleteDays` into `backendBucket`/`deadletterBucket` — both currently
       hardcode `forceDestroy: true` with no `retainOnDelete`, regardless of stack
-- [ ] Either implement domain-verification automation using `verifiedOwnerEmail`/
+- [x] Either implement domain-verification automation using `verifiedOwnerEmail`/
       `secondaryDomains`, or remove those two plus the unused `siteVerificationService`
       enablement
 
@@ -151,7 +151,6 @@ See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 - [x] Remove `STAGING_BUCKET_NAME` from `website-infra`'s search loader service env list — it's
       never read
 - [x] Add `.spec.ts` coverage for `transcodeBatch`
-- [ ] Add `.spec.ts` coverage for the `/load-jobs` route
 
 ### website-server
 

@@ -4,7 +4,6 @@ config:
   website:tag: dev-392
   website:coreStackName: alfredsyoung/fact-check-database-core
   website:logLevel: debug
-  website:verifiedOwner: alfredsyoung@gmail.com
   website:verifiedDomains:
     - dev.factcheckdatabase.com
   website:algoliaAppId: 3R16A1FPTN

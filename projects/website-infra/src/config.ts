@@ -115,20 +115,13 @@ export const logLevel = websiteConfig.require('logLevel')
 export const verifiedDomains =
   websiteConfig.requireObject<string[]>('verifiedDomains')
 
-export const [mainDomain, ...secondaryDomains] = verifiedDomains
+export const [mainDomain] = verifiedDomains
 
 if (!mainDomain) {
   throw new Error(
     'At least one verified domain must be provided in the configuration.'
   )
 }
-
-/**
- * The email address of the verified owner of the website. This should be the
- * email address associated with the Google account that has ownership of the
- * verified domains.
- */
-export const verifiedOwnerEmail = websiteConfig.require('verifiedOwner')
 
 export const websiteLabels: Record<string, string> = {
   env: stackName,
