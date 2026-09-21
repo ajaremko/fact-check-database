@@ -46,12 +46,6 @@ export const gcpProject = ingestionConfig.require('project')
 export const gcpRegion = ingestionConfig.require('region')
 
 /**
- * The GCP region where the archive storage bucket using CMEK will be created. This should
- * be the region where the encryption key is deployed.
- */
-export const archiveLocation = ingestionConfig.require('archiveLocation')
-
-/**
  * The Docker image tag to use for all ingestion pipeline components.
  * This should correspond to a tag in the container registry where the
  * ingestion pipeline images are stored.
@@ -93,14 +87,6 @@ export const logLevel = ingestionConfig.require('logLevel')
  * issues in the pipeline, while also considering storage costs for logs.
  */
 export const logRetention = ingestionConfig.requireNumber('logRetentionDays')
-
-/**
- * The number of days to retain extractor batch data. The loader component
- * should process all data in the staging bucket within this time frame
- * to ensure data is not deleted before it can be loaded into BigQuery.
- */
-export const batchRetentionDays =
-  ingestionConfig.requireNumber('batchRetentionDays')
 
 /**
  * The number of days to retain event logs. This should be left unset in production

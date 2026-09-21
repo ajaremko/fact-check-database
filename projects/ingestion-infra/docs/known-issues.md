@@ -1,22 +1,5 @@
 # Known Issues
 
-## Two required config keys do nothing
-
-**Error:** No error — `ingestion:archiveLocation` and `ingestion:batchRetentionDays` are both
-`require()`d in `src/config.ts` (a deploy fails without them being set), but neither is read
-anywhere else in `src/`.
-**Where:** `src/config.ts`. The raw archive bucket's actual location comes from `gcpRegion`, not
-`archiveLocation`; nothing implements a batch-retention policy that would use
-`batchRetentionDays`.
-**Root cause:** Likely leftover from an earlier design where these were wired up, or written
-ahead of the code that was meant to consume them.
-**Decision:** Leave as-is. Removing a required config key changes this stack's deployment
-contract and isn't a change to make as part of a documentation pass.
-**If this ever needs to be fixed:** Either wire `archiveLocation` into the raw archive bucket's
-`location` (if regional independence from `gcpRegion` is actually wanted) and implement whatever
-`batchRetentionDays` was meant to govern, or remove both keys from `config.ts` and the two
-`Pulumi.<stack>.yml` files together.
-
 ## The event log bucket's retention rule silently excludes ingestor events
 
 **Error:** No error — ingestor event logs accumulate indefinitely regardless of

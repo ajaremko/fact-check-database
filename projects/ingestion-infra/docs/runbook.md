@@ -14,18 +14,16 @@ Reference for the `ingestion` Pulumi config namespace, read by `src/config.ts`. 
 | `ingestion:coreStackName` | The core-infra stack this project reads a `StackReference` from | Yes | `alfredsyoung/fact-check-database-core` | same |
 | `ingestion:project` | GCP project ID this stack deploys into | Yes | `fact-check-database-dev` | `fact-check-database-ingestion` |
 | `ingestion:region` | GCP region for regional resources | Yes | `us-central1` | `us-central1` |
-| `ingestion:archiveLocation` | Declared but never read anywhere in `src/` — see [docs/known-issues.md](./known-issues.md) | Yes (deployment fails without it, despite doing nothing) | — | — |
 | `ingestion:tag` | Docker image tag for all three services | No | set per-deploy | set per-deploy |
 | `ingestion:ingestorSchedule` | Cron schedule for the ingestor job. Unset means manual-trigger only | No | `0 */4 * * *` | currently unset — see known-issues |
 | `ingestion:extractorSchedule` | Cron schedule for the extractor job. Unset means manual-trigger only | No | `0 */12 * * *` | currently unset — see known-issues |
 | `ingestion:logLevel` | Log level passed to all three services | Yes | `info` (or as configured) | `info` |
 | `ingestion:logRetentionDays` | Retention on the project's `_Default` log bucket | Yes | — | — |
-| `ingestion:batchRetentionDays` | Declared but never read anywhere in `src/` — see known-issues | Yes (deployment fails without it, despite doing nothing) | — | — |
 | `ingestion:eventLogRetentionDays` | Age-based deletion window for the event log bucket. Unset disables the rule; a code comment recommends leaving it unset in prod | No | set in dev | unset |
 | `ingestion:deadletterRetentionDays` | Age-based deletion window for the deadletter bucket. Same unset-in-prod recommendation | No | set in dev | unset |
 | `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be *set* in production | No | unset | unset — contradicts the recommendation, see known-issues |
-| `ingestion:forceDestroyStorage` | Whether `pulumi destroy` may delete non-empty buckets. Does **not** apply to the raw archive bucket — see known-issues | No, default `false` | `true` | `true` |
-| `ingestion:retainStorageOnDelete` | Whether buckets survive `pulumi destroy` instead of being deleted with the stack. Does **not** apply to the raw archive bucket | No, default `true` | `false` | `false` |
+| `ingestion:forceDestroyStorage` | Whether `pulumi destroy` may delete non-empty buckets, including the raw archive bucket | No, default `false` | `true` | `true` |
+| `ingestion:retainStorageOnDelete` | Whether buckets survive `pulumi destroy` instead of being deleted with the stack, including the raw archive bucket | No, default `true` | `false` | `false` |
 
 ## Commands
 

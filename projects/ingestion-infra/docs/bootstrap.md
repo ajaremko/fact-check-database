@@ -29,13 +29,11 @@ config:
   ingestion:project: fact-check-database-ingestion
   ingestion:region: us-central1
   ingestion:coreStackName: alfredsyoung/fact-check-database-core
-  ingestion:archiveLocation: US
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
   ingestion:tag: dev-347
   ingestion:logLevel: info
   ingestion:logRetentionDays: 1
-  ingestion:batchRetentionDays: 1
   ingestion:eventLogRetentionDays: 3
   ingestion:deadletterRetentionDays: 3
   ingestion:forceDestroyStorage: true
