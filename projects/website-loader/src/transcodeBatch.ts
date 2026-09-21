@@ -2,6 +2,7 @@ import { Effect, flow, ParseResult, Schema } from 'effect'
 
 import * as Node from '@news-research/core-data/Node'
 import * as Ndjson from '@news-research/core-data/Ndjson'
+import { omitNullableKeys } from '@news-research/core-data'
 import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
 import { SearchResultSchema } from '@news-research/website-contracts/search/v1'
 
@@ -56,5 +57,6 @@ const encodeSearchResults = SearchResultSchema.pipe(
 
 export const transcodeBatch = flow(
   decodeBatch,
-  Effect.andThen(encodeSearchResults)
+  Effect.andThen(encodeSearchResults),
+  Effect.map((results) => results.map(omitNullableKeys))
 )

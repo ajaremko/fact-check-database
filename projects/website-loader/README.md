@@ -62,9 +62,10 @@ nx build website-loader
 nx serve website-loader
 nx typecheck website-loader
 nx lint website-loader
+nx test website-loader
 ```
 
-**No automated tests exist for this project today** — see
+`transcodeBatch` has spec coverage; the `/load-jobs` route itself doesn't yet — see
 [docs/known-issues.md](./docs/known-issues.md).
 
 ### Local setup

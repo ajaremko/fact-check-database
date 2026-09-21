@@ -146,13 +146,12 @@ See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 
-- [ ] Add a `STORAGE_MODE`-style dev/filesystem adapter switch, `.env.template`, and a local
-      Algolia sandbox index for local development
 - [ ] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
       the existing `AlgoliaSearchClientIOError` handling
 - [x] Remove `STAGING_BUCKET_NAME` from `website-infra`'s search loader service env list — it's
       never read
-- [ ] Add `.spec.ts` coverage for `transcodeBatch` and the `/load-jobs` route
+- [x] Add `.spec.ts` coverage for `transcodeBatch`
+- [ ] Add `.spec.ts` coverage for the `/load-jobs` route
 
 ### website-server
 
