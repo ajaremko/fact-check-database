@@ -43,32 +43,19 @@ The simplest logging profile of any service in this pipeline — two levels, not
 
 ## Diagnosing failures
 
-### The batch fails to save
+### A batch fails to load
 
-**Symptom:** a `500` response with the message "Something went wrong submitting the batch load
-job" — this is the one error path this service handles explicitly, catching
-`AlgoliaSearchClientIOError`.
-**Steps:**
-1. Check the Algolia dashboard for the index named by `ALGOLIA_INDEX_NAME` — common causes are an
-   API key that lacks write access to that index, or a request that exceeds Algolia's record size
-   limits.
-2. Confirm the GCS object referenced by the Pub/Sub message's `objectId` attribute still exists —
-   if the extractor's write failed or the object was since deleted, there's nothing to read.
+All three failure sources the route can hit are caught explicitly, each with its own `500`
+message:
 
-### A push message fails with no clear error message
+| Message | Cause | Steps |
+| --- | --- | --- |
+| "Something went wrong submitting the batch load job" | `AlgoliaSearchClientIOError` — the Algolia save call itself failed | Check the Algolia dashboard for the index named by `ALGOLIA_INDEX_NAME` — common causes are an API key that lacks write access to that index, or a request that exceeds Algolia's record size limits |
+| "Something went wrong reading the batch from storage" | `StorageReadError` — reading the batch from GCS failed | Confirm the service account has `storage.objects.get` on the bucket named in `bucketId`, and that the GCS object referenced by the Pub/Sub message's `objectId` attribute still exists — if the extractor's write failed or the object was since deleted, there's nothing to read |
+| "Something went wrong decoding the batch" | A schema `ParseError` — the push message itself, or a row in the batch, didn't decode | Confirm the batch's rows still match `FactChecksTableRowSchema` — a change to that shared schema upstream, or a malformed row from the extractor, would show up here |
 
-**Symptom:** an error response that isn't the friendly Algolia-specific one above.
-**Cause:** this is one of two error paths that aren't explicitly handled — `StorageReadError`
-(reading the batch from GCS failed) or a schema `ParseError` (the push message itself, or a row in
-the batch, didn't decode) — both only get logged via `Effect.tapErrorCause(Effect.logError)`, not
-a tailored response. See [docs/known-issues.md](./known-issues.md).
-**Steps:**
-1. Check the logged cause for which of the two it was.
-2. For a `StorageReadError`: confirm the service account has `storage.objects.get` on the bucket
-   named in `bucketId`.
-3. For a schema `ParseError`: confirm the batch's rows still match
-   `FactChecksTableRowSchema` — a change to that shared schema upstream, or a malformed row from
-   the extractor, would show up here.
+Check the logged cause (`Effect.tapErrorCause(Effect.logError)`) to see which of the three
+actually happened, and the full underlying error detail.
 
 ### Messages are being redelivered repeatedly
 

@@ -146,7 +146,7 @@ See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 
-- [ ] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
+- [x] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
       the existing `AlgoliaSearchClientIOError` handling
 - [x] Remove `STAGING_BUCKET_NAME` from `website-infra`'s search loader service env list — it's
       never read
