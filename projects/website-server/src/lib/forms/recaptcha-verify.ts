@@ -1,5 +1,6 @@
 'use server'
 
+import { Effect, Logger, LogLevel } from 'effect'
 import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise'
 import type { google } from '@google-cloud/recaptcha-enterprise/build/protos/protos'
 
@@ -33,10 +34,10 @@ type AssessmentResult =
       cause: unknown
     }
 
-async function createAssessment(
+function createAssessment(
   token: string,
   recaptchaAction: string
-): Promise<AssessmentResult> {
+): Effect.Effect<AssessmentResult> {
   const { client, projectPath } = accessEnv()
 
   // Build the assessment request.
@@ -50,21 +51,24 @@ async function createAssessment(
     parent: projectPath,
   }
 
-  try {
-    const [response] = await client.createAssessment(request)
+  return Effect.gen(function* () {
+    const [response] = yield* Effect.tryPromise({
+      try: () => client.createAssessment(request),
+      catch: (cause) => cause,
+    })
 
     // Check if the token is valid.
     if (!response.tokenProperties || !response.tokenProperties.valid) {
-      return { success: false, cause: new Error('Invalid token') }
+      return { success: false, cause: new Error('Invalid token') } as const
     }
 
     // Check if the expected action was executed.
     // The `action` property is set by user client in the grecaptcha.enterprise.execute() method.
     if (response.tokenProperties.action !== recaptchaAction) {
-      console.log(
+      yield* Effect.logDebug(
         'The action attribute in your reCAPTCHA tag does not match the action you are expecting to score'
       )
-      return { success: false, cause: new Error('Action mismatch') }
+      return { success: false, cause: new Error('Action mismatch') } as const
     }
 
     // For more information on interpreting the assessment, see:
@@ -73,17 +77,19 @@ async function createAssessment(
       return {
         success: false,
         cause: new Error('No risk analysis available for this token.'),
-      }
+      } as const
     }
 
     return {
       success: true,
       score: response.riskAnalysis.score,
       reasons: response.riskAnalysis.reasons ?? [],
-    }
-  } catch (error) {
-    return { success: false, cause: error }
-  }
+    } as const
+  }).pipe(
+    Effect.catchAll((cause) =>
+      Effect.succeed({ success: false, cause } as const)
+    )
+  )
 }
 
 const SCORE_THRESHOLD = 0.5
@@ -97,11 +103,22 @@ export async function verifyRecaptchaToken(
   token: string,
   recaptchaAction: string
 ): Promise<VerificationResult> {
-  console.debug('[recaptcha] Verifying token for action:', recaptchaAction)
-  const result = await createAssessment(token, recaptchaAction)
-  if (!result.success) {
-    console.debug('[recaptcha] Verification failed:', result.cause)
-    return { success: false }
-  }
-  return { success: result.score >= SCORE_THRESHOLD, score: result.score }
+  // Runs in its own isolated Effect runtime (this module isn't wired into the
+  // app's Effect dependency graph), so the minimum log level is set
+  // explicitly here rather than deferring to the app's LOGGING_LEVEL config.
+  return Effect.runPromise(
+    Effect.gen(function* () {
+      yield* Effect.logDebug('Verifying reCAPTCHA token').pipe(
+        Effect.annotateLogs({ action: recaptchaAction })
+      )
+      const result = yield* createAssessment(token, recaptchaAction)
+      if (!result.success) {
+        yield* Effect.logDebug('reCAPTCHA verification failed').pipe(
+          Effect.annotateLogs({ cause: result.cause })
+        )
+        return { success: false }
+      }
+      return { success: result.score >= SCORE_THRESHOLD, score: result.score }
+    }).pipe(Logger.withMinimumLogLevel(LogLevel.Debug))
+  )
 }

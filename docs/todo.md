@@ -152,4 +152,4 @@ See [known-issues.md](../projects/website-server/docs/known-issues.md).
       provisioned)
 - [ ] Wire `NEXT_PUBLIC_GA_MEASUREMENT_ID` into `src/lib/analytics/index.tsx` instead of the
       hardcoded measurement ID
-- [ ] Convert `recaptcha-verify.ts` to Effect logging instead of `console.log`/`console.debug`
+- [x] Convert `recaptcha-verify.ts` to Effect logging instead of `console.log`/`console.debug`
