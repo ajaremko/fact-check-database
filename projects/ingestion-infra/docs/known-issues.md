@@ -1,20 +1,5 @@
 # Known Issues
 
-## The raw archive bucket ignores the storage-safety config flags
-
-**Error:** No error yet. As configured, `pulumi destroy` against this stack would delete the
-permanent raw/sanitized record archive, with no config-level way to prevent it.
-**Where:** `src/archive/raw/storage.ts` hardcodes `forceDestroy: true` and `retainOnDelete: true`
-on `ingestion-archive-bucket`, regardless of the `ingestion:forceDestroyStorage`/
-`retainStorageOnDelete` config values that correctly govern every other bucket in this project.
-**Root cause:** Unknown — this looks like an oversight rather than a deliberate choice, since the
-other three buckets (event log, deadletter, assets) all read these two config values correctly.
-**Decision:** Leave as-is for now. Documented here so the risk is visible before anyone runs
-`pulumi destroy` against a stack holding real archived data, rather than discovered by doing it.
-**If this ever needs to be fixed:** Change `archive/raw/storage.ts` to read
-`forceDestroyStorage`/`retainStorageOnDelete` from config, the same way the other three buckets
-do.
-
 ## Two required config keys do nothing
 
 **Error:** No error — `ingestion:archiveLocation` and `ingestion:batchRetentionDays` are both

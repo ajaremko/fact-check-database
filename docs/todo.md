@@ -45,7 +45,7 @@ See [known-issues.md](../projects/core-io/docs/known-issues.md).
 
 See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
 
-- [ ] Change `archive/raw/storage.ts` to read `forceDestroyStorage`/`retainStorageOnDelete` from
+- [x] Change `archive/raw/storage.ts` to read `forceDestroyStorage`/`retainStorageOnDelete` from
       config, like the other three buckets, instead of hardcoding `forceDestroy`/`retainOnDelete`
 - [ ] Remove the unused required config keys `ingestion:archiveLocation` and
       `ingestion:batchRetentionDays`, or wire them up

@@ -7,6 +7,8 @@ import {
   ingestionLabels,
   tag,
   gcpProject,
+  forceDestroyStorage,
+  retainStorageOnDelete,
 } from '../../config'
 import { storageService } from '../../services'
 import { provider } from '../../project'
@@ -41,14 +43,14 @@ export const archiveBucket = new gcp.storage.Bucket(
     uniformBucketLevelAccess: true,
     publicAccessPrevention: 'enforced',
     labels: ingestionLabels,
-    forceDestroy: true,
+    forceDestroy: forceDestroyStorage,
     encryption: {
       defaultKmsKeyName: gcsArchiveKeyId,
     },
   },
   {
     dependsOn: [storageServiceAccountKmsBinding],
-    retainOnDelete: true,
+    retainOnDelete: retainStorageOnDelete,
     provider,
   }
 )

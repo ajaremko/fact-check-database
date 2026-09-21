@@ -47,7 +47,7 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 
 | Bucket | Purpose | Notes |
 | --- | --- | --- |
-| `ingestion-archive-bucket` | Permanent store for raw fetch bodies and both ingestor and sanitizer records | CMEK-encrypted with core-infra's key; no lifecycle rule — see [docs/known-issues.md](./docs/known-issues.md) for a config-flag gap here |
+| `ingestion-archive-bucket` | Permanent store for raw fetch bodies and both ingestor and sanitizer records | CMEK-encrypted with core-infra's key; no lifecycle rule |
 | `ingestion-event-log-bucket` | Auto-archived copy of every message published to the ingestor and sanitizer topics | Age-based deletion, configurable per collection — see known-issues for a gap in what's covered |
 | `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription | Age-based deletion plus optional soft-delete |
 | `ingestion-assets-bucket` | Holds two static objects (a default source list and sanitizer policy) that aren't currently read by anything — see known-issues |
