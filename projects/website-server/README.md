@@ -91,15 +91,13 @@ nx lint website-server
 ```
 
 There is no `typecheck` target — `next build` does its own type checking as part of `build`. There
-is no `test` target and no automated test coverage exists for this project today — see
-[docs/known-issues.md](./docs/known-issues.md).
+is no `test` target and no automated test coverage exists for this project today.
 
 ## Related documentation
 
 | Document | Purpose |
 | --- | --- |
 | [docs/runbook.md](./docs/runbook.md) | Configuration reference and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
 | [website-contracts](../website-contracts/README.md) | The form submission schemas this service writes against |
 | [website-emailer](../website-emailer/README.md) | Sends the confirmation/notification emails triggered by a form submission |
 | [website-loader](../website-loader/README.md) | Populates the Algolia index this service searches against — from the ingestion pipeline, unrelated to form submissions |

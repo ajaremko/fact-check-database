@@ -18,7 +18,7 @@ Configuration reference and diagnosing failures for `website-server`. See the
 | `RECAPTCHA_SITE_KEY` | string | Yes | — | reCAPTCHA Enterprise site key — used both server-side (assessment requests) and passed to the client widget |
 | `RECAPTCHA_PROJECT_ID` | string | Yes | — | GCP project the reCAPTCHA Enterprise key lives in |
 | `GA_MEASUREMENT_ID` | string | No | — | Read server-side by the already-server-side `AnalyticsScript` component (no prop needed). Unset in dev by design — dev/test traffic should never reach real analytics; when unset, no analytics script renders at all |
-| `NEXT_PUBLIC_BUILD_NUMBER` | string | No | — | Displayed in the site footer; inlined at build time (real `NEXT_PUBLIC_` var, unlike the Algolia/reCAPTCHA/GA values above). See [docs/known-issues.md](./known-issues.md) — the prod release workflow doesn't actually set this today |
+| `NEXT_PUBLIC_BUILD_NUMBER` | string | No | — | Displayed in the site footer; inlined at build time (real `NEXT_PUBLIC_` var, unlike the Algolia/reCAPTCHA/GA values above), set from the CI build-number step in both `ci.yml` and `release.yml` |
 | `PORT` | number | No | `3000` (Next.js default) | `website-infra` and the Dockerfile both set this explicitly to `3000`, matching Next's own default |
 
 None of these are read via a `*_MODE`-style switch for reCAPTCHA, Algolia, or analytics — all are
@@ -48,5 +48,3 @@ becomes ready.
 dependency check was never added — so a probe failure here almost always means the process itself
 isn't starting (a missing required env var, or the container crashing on boot), not a downstream
 dependency being unavailable.
-
-See [docs/known-issues.md](./known-issues.md) for this project's current accepted gaps.

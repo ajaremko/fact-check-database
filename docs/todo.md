@@ -164,7 +164,7 @@ See [known-issues.md](../projects/website-server/docs/known-issues.md).
 - [x] Wire `NEXT_PUBLIC_GA_MEASUREMENT_ID` into `src/lib/analytics/index.tsx` instead of the
       hardcoded measurement ID
 - [x] Convert `recaptcha-verify.ts` to Effect logging instead of `console.log`/`console.debug`
-- [ ] Add `NEXT_PUBLIC_BUILD_NUMBER` to `release.yml`'s "Build and release Docker images" step,
+- [x] Add `NEXT_PUBLIC_BUILD_NUMBER` to `release.yml`'s "Build and release Docker images" step,
       matching `ci.yml` — the prod footer almost certainly renders "Build #undefined" today
       (found while resolving the GA measurement ID item; see
       [known-issues.md](../projects/website-server/docs/known-issues.md))
