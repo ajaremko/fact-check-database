@@ -21,7 +21,7 @@ Read via a `StackReference` in `src/config.ts`, not owned here:
 | --- | --- |
 | `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
 | `stagingStorageTopicName` | What the staging loader's push subscription subscribes to |
-| `stagingStorageBucketName` | Passed to the staging loader as `STAGING_BUCKET_NAME` |
+| `stagingStorageBucketName` | Granting the staging loader's service account read access to core-infra's staging bucket (not passed as an env var — the bucket is determined per-message instead) |
 | `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving the staging loader's container image |
 
 This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub

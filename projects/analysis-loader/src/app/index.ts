@@ -69,14 +69,29 @@ const loadJobs = HttpRouter.post(
     )
   }).pipe(
     Effect.tapErrorCause(Effect.logError),
-    Effect.catchTag('BigQueryClientIOError', () =>
-      HttpServerResponse.json(
-        {
-          message: 'Something went wrong submitting the batch load job',
-        },
-        { status: StatusCodes.INTERNAL_SERVER_ERROR }
-      )
-    )
+    Effect.catchTags({
+      BigQueryClientIOError: () =>
+        HttpServerResponse.json(
+          {
+            message: 'Something went wrong submitting the batch load job',
+          },
+          { status: StatusCodes.INTERNAL_SERVER_ERROR }
+        ),
+      StorageReadError: () =>
+        HttpServerResponse.json(
+          {
+            message: 'Something went wrong reading the batch schema from storage',
+          },
+          { status: StatusCodes.INTERNAL_SERVER_ERROR }
+        ),
+      ParseError: () =>
+        HttpServerResponse.json(
+          {
+            message: 'Something went wrong decoding the batch or schema',
+          },
+          { status: StatusCodes.INTERNAL_SERVER_ERROR }
+        ),
+    })
   )
 )
 

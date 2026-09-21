@@ -20,13 +20,10 @@ its GCP adapters, with no dev-mode alternative.
 | `OTEL_METRIC_EXPORT_INTERVAL` | integer (ms) | No | `60000` | How often metrics are exported |
 | `OTEL_CLOUD_MONITORING_PREFIX` | string | No | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring — `analysis-infra` overrides this |
 
-`analysis-infra` also sets two env vars this service doesn't explicitly read:
-
-- `STAGING_BUCKET_NAME` — genuinely unused. The bucket to read from is determined per-message
-  from the Pub/Sub notification's `bucketId` attribute instead, not from a fixed env var.
-- `GOOGLE_CLOUD_PROJECT` — not read via this service's own `Config` calls, but a conventional env
-  var the underlying `@google-cloud/*` client libraries check themselves for default project
-  resolution, so this is plausibly intentional rather than dead.
+`analysis-infra` also sets `GOOGLE_CLOUD_PROJECT`, which this service doesn't read via its own
+`Config` calls — but it's a conventional env var the underlying `@google-cloud/*` client libraries
+check themselves for default project resolution, so this is plausibly intentional rather than
+dead.
 
 ## Logging
 
@@ -43,35 +40,19 @@ No `debug`, `warning`, or `trace` calls exist anywhere in this service's own cod
 
 ## Diagnosing failures
 
-### The load job fails
+### A batch fails to load
 
-**Symptom:** a `500` response with the message "Something went wrong submitting the batch load
-job" — this is the one error path this service handles explicitly, catching
-`BigQueryClientIOError`.
-**Steps:**
-1. Check the BigQuery job's own error details (Cloud Console → BigQuery → Job history) — common
-   causes are a schema mismatch between the fetched schema and the actual NDJSON rows, or the
-   service account lacking `bigquery.dataEditor`/`bigquery.jobUser`.
-2. Confirm the GCS object referenced by the Pub/Sub message's `objectId` attribute still exists —
-   if the extractor's write failed or the object was since deleted, the load job has nothing to
-   read.
+All three failure sources the route can hit are caught explicitly, each with its own `500`
+message:
 
-### A push message fails with no clear error message
+| Message | Cause | Steps |
+| --- | --- | --- |
+| "Something went wrong submitting the batch load job" | `BigQueryClientIOError` — the load job itself failed | Check the BigQuery job's own error details (Cloud Console → BigQuery → Job history) — common causes are a schema mismatch between the fetched schema and the actual NDJSON rows, or the service account lacking `bigquery.dataEditor`/`bigquery.jobUser` |
+| "Something went wrong reading the batch schema from storage" | `StorageReadError` — fetching the table schema from GCS failed | Confirm the service account has `storage.objects.get` on the bucket named in `bucketId`, and that `schemaObjectId` still points at a real object (it should be `schemas/fact_checks_table_schema_v1.json` in core-infra's staging bucket). Also confirm the GCS object referenced by the Pub/Sub message's `objectId` attribute still exists — if the extractor's write failed or the object was since deleted, the load job has nothing to read |
+| "Something went wrong decoding the batch or schema" | A schema `ParseError` — the push message itself, or the fetched schema JSON, didn't decode | Confirm the Pub/Sub push subscription's payload format and `analysis-infra`'s subscription config haven't drifted from what this service expects (a GCS object-finalized notification's attributes, not its full JSON body) |
 
-**Symptom:** an error response that isn't the friendly BigQuery-specific one above.
-**Cause:** this is one of the two error paths that aren't explicitly handled —
-`StorageReadError` (fetching the table schema from GCS failed) or a schema `ParseError` (the push
-message itself, or the fetched schema JSON, didn't decode) — both only get logged via
-`Effect.tapErrorCause(Effect.logError)`, not a tailored response. See
-[docs/known-issues.md](./known-issues.md).
-**Steps:**
-1. Check the logged cause for which of the two it was.
-2. For a `StorageReadError`: confirm the service account has `storage.objects.get` on the bucket
-   named in `bucketId`, and that `schemaObjectId` still points at a real object (it should be
-   `schemas/fact_checks_table_schema_v1.json` in core-infra's staging bucket).
-3. For a schema `ParseError`: confirm the Pub/Sub push subscription's payload format and
-   `analysis-infra`'s subscription config haven't drifted from what this service expects (a GCS
-   object-finalized notification's attributes, not its full JSON body).
+Check the logged cause (`Effect.tapErrorCause(Effect.logError)`) to see which of the three
+actually happened, and the full underlying error detail.
 
 ### Messages are being redelivered repeatedly
 

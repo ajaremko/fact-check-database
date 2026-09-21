@@ -24,34 +24,3 @@ storage adapter and one BigQuery adapter, unconditionally.
 services) with a filesystem-backed alternative for both the schema fetch and the BigQuery load
 step (the latter would need a local BigQuery emulator or a mocked client), plus a
 `.env.template`.
-
-## Two of three error sources aren't explicitly handled
-
-**Error:** No error — an inconsistency in error handling, not a functional bug.
-**Where:** `src/app/index.ts`'s route handler only catches `BigQueryClientIOError` with a
-tailored `500` response. `StorageReadError` (from the schema fetch in `readSchema.ts`) and any
-schema `ParseError` (a malformed push message or malformed fetched schema) are only logged via
-`Effect.tapErrorCause(Effect.logError)`, not caught — they fall through to the HTTP framework's
-default error response instead.
-**Root cause:** Likely only the most commonly-hit failure mode (a BigQuery load error) was
-handled explicitly; the other two are rarer in practice (a malformed message from Pub/Sub itself,
-or the schema object going missing).
-**Decision:** Leave as-is. All three failure modes already nack correctly (any non-2xx response
-triggers redelivery) — the gap is in response consistency and log-based diagnosis, not
-correctness.
-**If this ever needs to be fixed:** Add `Effect.catchTags` for `StorageReadError` and `ParseError`
-alongside the existing `BigQueryClientIOError` handling, each with its own clear response message.
-
-## `STAGING_BUCKET_NAME` is provisioned but never read
-
-**Error:** No error — dead configuration.
-**Where:** `analysis-infra`'s Cloud Run service definition sets `STAGING_BUCKET_NAME`, but no
-code in this project reads it (confirmed: zero references anywhere in `src/`). The bucket to read
-from is instead determined per-message from the Pub/Sub notification's `bucketId` attribute.
-**Root cause:** Likely provisioned defensively or left over from an earlier design that read a
-fixed bucket rather than one carried per-message.
-**Decision:** Leave as-is. Removing a provisioned env var is a change to `analysis-infra`, not to
-this project — noting it here rather than reopening that project's docs in this pass.
-**If this ever needs to be fixed:** Remove `STAGING_BUCKET_NAME` from
-`analysis-infra/src/staging-dataset/loader/service.ts`'s env list once confirmed nothing else
-depends on it being present.

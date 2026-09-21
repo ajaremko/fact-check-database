@@ -1,13 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import {
-  gcpRegion,
-  gcpProject,
-  dockerTag,
-  stagingStorageBucketName,
-  tag,
-  logLevel,
-} from '../../config'
+import { gcpRegion, gcpProject, dockerTag, tag, logLevel } from '../../config'
 import { provider } from '../../project'
 import { cloudRunService } from '../../services'
 import { getImageUrl } from '../../getImageUrl'
@@ -44,10 +37,6 @@ export const loaderService = new gcp.cloudrunv2.Service(
             {
               name: 'BIGQUERY_TABLE',
               value: stagingFactChecksTable.tableId,
-            },
-            {
-              name: 'STAGING_BUCKET_NAME',
-              value: stagingStorageBucketName,
             },
             {
               name: 'LOGGING_LEVEL',

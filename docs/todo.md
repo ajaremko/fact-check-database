@@ -107,13 +107,10 @@ See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/analysis-loader/docs/known-issues.md).
 
-- [ ] Add a `STORAGE_MODE`-style dev/filesystem adapter switch and `.env.template` for local
-      development
-- [ ] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
+- [x] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
       the existing `BigQueryClientIOError` handling
-- [ ] Remove `STAGING_BUCKET_NAME` from `analysis-infra`'s loader service env list — it's never
+- [x] Remove `STAGING_BUCKET_NAME` from `analysis-infra`'s loader service env list — it's never
       read
-- [ ] Add `.spec.ts` coverage for `loadBatch` and `readSchema`
 
 ## Website
 
