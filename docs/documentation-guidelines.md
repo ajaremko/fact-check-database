@@ -149,13 +149,49 @@ consistent four-field template:
 The point is to preserve _why something wasn't fixed_, including what was already ruled out, so
 the next person doesn't redo the investigation.
 
-## Root-level conventions
+## Root-level documentation
 
-- **Project index table**, grouped by domain, in the root `README.md` — already established;
-  keep it current as projects are added, removed, or documented.
-- **Architecture/pipeline diagram**, in prose plus ASCII, for any system with a multi-stage flow.
-  This applies at the whole-repository level and can also apply inside an individual library that
-  models its own multi-stage process.
+The root `README.md` is a different kind of document from a project README: it's the entry point
+for a reader who hasn't opened any per-project docs yet, describing a whole repository rather than
+one service. It draws on the same principles as the rest of this guide (explain why, state scope
+boundaries, tables for facts and prose for rationale) without adopting the library/app/infra
+structure above — nothing here should be forced into a README/runbook/known-issues shape that
+doesn't fit a whole repository.
+
+The root `README.md` should cover:
+
+- **Mission and scope** — what the platform is for and who it's meant to be legible to.
+- **A "Domains" section** — one subsection per domain, opening with an ASCII diagram of the whole
+  pipeline's data flow, then, per domain, a short paragraph (what it does, why it's a separate
+  domain) directly followed by that domain's project table. Keep prose and table together per
+  domain rather than splitting them into separate sections — a reader should be able to
+  understand the pipeline, and find any project's README, from this one section alone. Keep the
+  tables current as projects are added, removed, or documented; drop a documentation-status
+  column once every project in the table actually has docs.
+- **Key shared technologies** (Nx, Pulumi, Docker, etc.) — what role each plays in this repository
+  specifically, not a generic description of the tool.
+- **Pointers to `docs/documentation-guidelines.md`** and to anything else in root `docs/`.
+
+### What belongs in root `docs/`
+
+Root `docs/` is for cross-cutting material that doesn't belong to any single project — for
+example, devcontainer setup. Two rules keep it from accumulating cruft:
+
+- **Every file in root `docs/` must be linked from the root `README.md`.** An unlinked file is
+  invisible to a reader and tends to go stale unnoticed.
+- **A handful of disconnected fragments (example commands, a short list with no narrative) belong
+  folded into the relevant README section, not left as a standalone file.** A standalone doc should
+  earn its place with enough content to need its own page — otherwise it's just a stub with extra
+  navigation overhead.
+
+### Aspirational or unimplemented content
+
+This extends the anti-pattern below about leftover spec/prompt artifacts: a policy or design
+document describing behavior the code doesn't implement yet — even when the topic itself is
+legitimate — does not belong in `docs/` presented as current fact. Keep it as an explicit,
+clearly-labeled item in the README's TODOs (or a similarly-labeled roadmap doc linked from there)
+until the behavior it describes is real, and state plainly which parts, if any, are already true
+today versus not yet built.
 
 ## Anti-patterns to avoid
 
@@ -170,7 +206,11 @@ the next person doesn't redo the investigation.
   change — don't leave the old mechanism documented alongside the new one.
 - **Don't leave informal spec or prompt artifacts mixed in with maintained docs.** A leftover
   feature-request or planning document, unlinked from the README and written in a different voice
-  from everything else, should not be treated as part of a project's documentation set.
+  from everything else, should not be treated as part of a project's documentation set. A concrete
+  case worth naming: a "draft" policy or design doc with placeholder values (a fake domain, a
+  fictional contact address) that was never finished or grounded in what the code actually does —
+  don't let it sit alongside real docs implying it's current. Either finish it against the real
+  implementation, or move its content into the TODOs as an explicit, labeled roadmap item.
 - **Treat duplicated documentation of a shared concern across multiple consumers as a signal, not
   just a style slip.** If the same explanation would need to be written into more than one
   consuming project's docs because the layered-scoping split above doesn't cleanly apply, surface
