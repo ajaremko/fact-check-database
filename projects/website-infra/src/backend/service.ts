@@ -8,6 +8,7 @@ import {
   tag,
   algoliaSearchKey,
   algoliaAppId,
+  gaMeasurementId,
   htpasswdSecretVersion,
   stackName,
 } from '../config'
@@ -55,6 +56,10 @@ const htpasswdSecretMount = htpasswdSecretVersion
         mountPath: '/etc/secret',
       },
     ]
+  : []
+
+const gaMeasurementIdEnv = gaMeasurementId
+  ? [{ name: 'GA_MEASUREMENT_ID', value: gaMeasurementId }]
   : []
 
 const authContainer: pulumi.Input<
@@ -190,6 +195,7 @@ export const factCheckDatabaseBackendService = new gcp.cloudrun.Service(
                 name: 'STORAGE_BUCKET_NAME',
                 value: backendBucket.name,
               },
+              ...gaMeasurementIdEnv,
             ],
           },
         ],

@@ -1,8 +1,11 @@
 import Script from 'next/script'
 
-const measurementId = 'G-3M9TMFJZZD'
-
 export function AnalyticsScript() {
+  const measurementId = process.env.GA_MEASUREMENT_ID
+  if (!measurementId) {
+    return null
+  }
+
   return (
     <>
       <Script

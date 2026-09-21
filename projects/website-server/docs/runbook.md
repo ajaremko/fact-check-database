@@ -17,16 +17,13 @@ Configuration reference and diagnosing failures for `website-server`. See the
 | `ALGOLIA_INDEX_NAME_OLDEST` | string | Yes | — | The oldest-first replica index, used for the "oldest first" sort |
 | `RECAPTCHA_SITE_KEY` | string | Yes | — | reCAPTCHA Enterprise site key — used both server-side (assessment requests) and passed to the client widget |
 | `RECAPTCHA_PROJECT_ID` | string | Yes | — | GCP project the reCAPTCHA Enterprise key lives in |
-| `NEXT_PUBLIC_BUILD_NUMBER` | string | No | — | Displayed in the site footer; inlined at build time (real `NEXT_PUBLIC_` var, unlike the Algolia/reCAPTCHA values above) |
+| `GA_MEASUREMENT_ID` | string | No | — | Read server-side by the already-server-side `AnalyticsScript` component (no prop needed). Unset in dev by design — dev/test traffic should never reach real analytics; when unset, no analytics script renders at all |
+| `NEXT_PUBLIC_BUILD_NUMBER` | string | No | — | Displayed in the site footer; inlined at build time (real `NEXT_PUBLIC_` var, unlike the Algolia/reCAPTCHA/GA values above). See [docs/known-issues.md](./known-issues.md) — the prod release workflow doesn't actually set this today |
 | `PORT` | number | No | `3000` (Next.js default) | `website-infra` and the Dockerfile both set this explicitly to `3000`, matching Next's own default |
 
-None of these are read via a `*_MODE`-style switch for reCAPTCHA or Algolia — both are always
-live; there's no logger/mock adapter for either.
-
-One variable set in the real `.env.local` is dead — not carried into `.env.template`. See
-[docs/known-issues.md](./known-issues.md):
-
-- `NEXT_PUBLIC_GA_MEASUREMENT_ID` — the analytics script hardcodes the same ID directly instead.
+None of these are read via a `*_MODE`-style switch for reCAPTCHA, Algolia, or analytics — all are
+always live (or, for `GA_MEASUREMENT_ID`, simply absent); there's no logger/mock adapter for any
+of them.
 
 ## Diagnosing failures
 

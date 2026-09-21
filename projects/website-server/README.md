@@ -71,6 +71,10 @@ are meant to be embedded in client-side code by design, and passing them down as
 `NEXT_PUBLIC_` build-time-inlining requirement, so the values can be changed without rebuilding
 the image.
 
+`AnalyticsScript` (`src/lib/analytics/`) follows the same idea, one step simpler: it reads
+`GA_MEASUREMENT_ID` directly, since it's already a Server Component itself — no prop-passing
+needed. When the variable is unset (the dev stack leaves it unset on purpose), it renders nothing.
+
 ## Access
 
 The dev deployment runs behind an Envoy + oauth2-proxy sidecar gated by `htpasswd` credentials

@@ -144,6 +144,13 @@ export const algoliaAppId = websiteConfig.require('algoliaAppId')
 export const algoliaSearchKey = websiteConfig.require('algoliaSearchKey')
 
 /**
+ * Google Analytics measurement ID for the public site. Optional and unset for dev on purpose —
+ * dev/test traffic should never reach real analytics. When unset, the frontend renders no
+ * analytics script at all.
+ */
+export const gaMeasurementId = websiteConfig.get('gaMeasurementId')
+
+/**
  * Resend configuration for the website's email sending functionality. The API key secret
  * version should correspond to the version of the Resend API key stored in Secret Manager,
  * and the confirmation template ID should correspond to the email template set up in
