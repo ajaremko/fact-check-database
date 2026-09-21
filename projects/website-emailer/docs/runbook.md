@@ -56,14 +56,15 @@ and email template are all external to this repo — there is no infra resource 
 
 1. Check whether the GCS write actually happened — the object should exist at
    `submissions/{kind}-{id}.yml` in the backend bucket.
-2. Check the Pub/Sub subscription's undelivered message count. `submissionSubscription` (backing
-   `/submissions`, the confirmation email) dead-letters to `emailerDeadletterTopic` after 5
-   delivery attempts, archived to the deadletter bucket under `emailer-deadletter/`.
-   `confirmationSubscription` (backing `/confirmations`, the notification email) has no
-   dead-letter policy — see [docs/known-issues.md](./known-issues.md).
+2. Check the Pub/Sub subscription's undelivered message count. `confirmationEmailSubscription`
+   (backing `/confirmation-email`) dead-letters to `emailerDeadletterTopic` after 5 delivery
+   attempts, archived to the deadletter bucket under `emailer-deadletter/`.
+   `notificationEmailSubscription` (backing `/notification-email`) has no dead-letter policy — see
+   [docs/known-issues.md](./known-issues.md).
 3. Look for the request's logged cause. An `EmailerError` means the send itself failed (check
    Resend's own dashboard/API status); a `ParseError` means the envelope or the submission object
-   didn't decode — check for a schema change in `website-contracts` or a malformed object.
+   didn't decode — check for a schema change in `website-contracts` or a malformed object. Both
+   now produce their own tailored `500` response.
 
 ### The service won't start
 

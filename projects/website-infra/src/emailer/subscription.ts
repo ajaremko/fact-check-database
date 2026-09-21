@@ -64,8 +64,8 @@ const pubsubServiceAccountPublisher = new gcp.pubsub.TopicIAMMember(
 
 // create the subscription with a deadletter policy that
 // sends failed messages to the deadletter topic
-export const submissionSubscription = new gcp.pubsub.Subscription(
-  `${tag}-submission-subscription`,
+export const confirmationEmailSubscription = new gcp.pubsub.Subscription(
+  `${tag}-confirmation-email-subscription`,
   {
     topic: formSubmissionTopic.name,
     deadLetterPolicy: {
@@ -77,7 +77,7 @@ export const submissionSubscription = new gcp.pubsub.Subscription(
       maximumBackoff: '600s',
     },
     pushConfig: {
-      pushEndpoint: pulumi.interpolate`${emailerService.uri}/submissions`,
+      pushEndpoint: pulumi.interpolate`${emailerService.uri}/confirmation-email`,
       oidcToken: {
         serviceAccountEmail: emailerInvokerServiceAccount.email,
       },
@@ -98,8 +98,8 @@ export const submissionSubscription = new gcp.pubsub.Subscription(
   }
 )
 
-export const confirmationSubscription = new gcp.pubsub.Subscription(
-  `${tag}-confirmation-subscription`,
+export const notificationEmailSubscription = new gcp.pubsub.Subscription(
+  `${tag}-notification-email-subscription`,
   {
     topic: formSubmissionTopic.name,
     retryPolicy: {
@@ -107,7 +107,7 @@ export const confirmationSubscription = new gcp.pubsub.Subscription(
       maximumBackoff: '600s',
     },
     pushConfig: {
-      pushEndpoint: pulumi.interpolate`${emailerService.uri}/confirmations`,
+      pushEndpoint: pulumi.interpolate`${emailerService.uri}/notification-email`,
       oidcToken: {
         serviceAccountEmail: emailerInvokerServiceAccount.email,
       },
@@ -130,22 +130,22 @@ export const confirmationSubscription = new gcp.pubsub.Subscription(
 
 // grant the pubsub service account permissions to access
 // the subscription
-const pubsubServiceAccountSubmissionSubscriber =
+const pubsubServiceAccountConfirmationEmailSubscriber =
   new gcp.pubsub.SubscriptionIAMMember(
-    `${tag}-pubsub-sa-emailer-submission-subscriber`,
+    `${tag}-pubsub-sa-emailer-confirmation-email-subscriber`,
     {
-      subscription: submissionSubscription.name,
+      subscription: confirmationEmailSubscription.name,
       role: 'roles/pubsub.subscriber',
       member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },
     { provider }
   )
 
-const pubsubServiceAccountConfirmationSubscriber =
+const pubsubServiceAccountNotificationEmailSubscriber =
   new gcp.pubsub.SubscriptionIAMMember(
-    `${tag}-pubsub-sa-emailer-confirmation-subscriber`,
+    `${tag}-pubsub-sa-emailer-notification-email-subscriber`,
     {
-      subscription: confirmationSubscription.name,
+      subscription: notificationEmailSubscription.name,
       role: 'roles/pubsub.subscriber',
       member: pulumi.interpolate`serviceAccount:${pubsubServiceAccountEmail}`,
     },
@@ -172,8 +172,8 @@ export const emailerDeadletterTopicArchiveSubscription =
     {
       dependsOn: [
         pubsubServiceAccountPublisher,
-        pubsubServiceAccountSubmissionSubscriber,
-        pubsubServiceAccountConfirmationSubscriber,
+        pubsubServiceAccountConfirmationEmailSubscriber,
+        pubsubServiceAccountNotificationEmailSubscriber,
         ...pubsubServiceAccountIamRoles,
       ],
       provider,

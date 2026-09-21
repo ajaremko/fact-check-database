@@ -5,29 +5,35 @@ import { createServer } from 'node:http'
 
 import { sendConfirmationEmail, sendNotificationEmail } from '../ports/Emailer'
 import { accessFormSubmission } from './accessFormSubmission'
-import { created, serverError } from './responses'
+import { created, serverError, parseError } from './responses'
 
-const submissions = HttpRouter.post(
-  '/submissions',
+const confirmationEmail = HttpRouter.post(
+  '/confirmation-email',
   accessFormSubmission.pipe(
     Effect.andThen(sendConfirmationEmail),
     Effect.andThen(created),
     Effect.tapErrorCause(Effect.logError),
-    Effect.catchTag('EmailerError', () => serverError)
+    Effect.catchTags({
+      EmailerError: () => serverError,
+      ParseError: () => parseError,
+    })
   )
 )
 
-const confirmations = HttpRouter.post(
-  '/confirmations',
+const notificationEmail = HttpRouter.post(
+  '/notification-email',
   accessFormSubmission.pipe(
     Effect.andThen(sendNotificationEmail),
     Effect.andThen(created),
     Effect.tapErrorCause(Effect.logError),
-    Effect.catchTag('EmailerError', () => serverError)
+    Effect.catchTags({
+      EmailerError: () => serverError,
+      ParseError: () => parseError,
+    })
   )
 )
 
-const router = HttpRouter.empty.pipe(submissions, confirmations)
+const router = HttpRouter.empty.pipe(confirmationEmail, notificationEmail)
 
 const app = router.pipe(
   HttpServer.serve(HttpMiddleware.logger),

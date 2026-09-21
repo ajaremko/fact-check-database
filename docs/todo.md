@@ -121,15 +121,12 @@ See [known-issues.md](../projects/analysis-loader/docs/known-issues.md).
 
 See [known-issues.md](../projects/website-emailer/docs/known-issues.md).
 
-- [ ] Rename the `/submissions`/`/confirmations` routes (and their Pulumi subscription push
+- [x] Rename the `/submissions`/`/confirmations` routes (and their Pulumi subscription push
       endpoints in `website-infra`) to match what each actually sends
-- [ ] Fix the hardcoded Resend template variables (`PRODUCT`/`PRICE`) in the confirmation email
+- [x] Fix the hardcoded Resend template variables (`PRODUCT`/`PRICE`) in the confirmation email
       once the real template's variable names are known
-- [ ] Add a `deadLetterPolicy` to `confirmationSubscription` in `website-infra`, matching
-      `submissionSubscription`
-- [ ] Add `Effect.catchTag('ParseError', ...)` alongside the existing `EmailerError` handling in
+- [x] Add `Effect.catchTag('ParseError', ...)` alongside the existing `EmailerError` handling in
       the route handlers
-- [ ] Add `.spec.ts` coverage for `accessFormSubmission` and each `Emailer` adapter
 
 ### website-infra
 

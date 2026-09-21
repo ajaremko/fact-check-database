@@ -63,10 +63,11 @@ triggering the emailer.
 ### Emailer
 
 `emailerService` (Cloud Run v2) runs [website-emailer](../website-emailer/README.md). Two Pub/Sub
-push subscriptions (`submissionSubscription`, `confirmationSubscription`) both subscribe to the
-same form-submissions topic in the backend module and push to this service's two routes — see
-`website-emailer`'s own README for why the route names don't match what each sends. Failed
-deliveries dead-letter into the shared bucket below.
+push subscriptions (`confirmationEmailSubscription`, `notificationEmailSubscription`) both
+subscribe to the same form-submissions topic in the backend module and push to this service's two
+routes. Failed deliveries dead-letter into the shared bucket below (only
+`confirmationEmailSubscription` has a dead-letter policy today — see
+[website-emailer's known-issues.md](../website-emailer/docs/known-issues.md)).
 
 ### Search
 
@@ -81,7 +82,7 @@ manual integration, not something this project's Pulumi code wires up itself; se
 ### Dead-letter
 
 One shared bucket (`deadletterBucket`) receives messages that exhaust delivery attempts from
-**both** the emailer's `submissionSubscription` and the search loader's staging-storage
+**both** the emailer's `confirmationEmailSubscription` and the search loader's staging-storage
 subscription, each via its own archive-topic-and-subscription pair.
 
 ### Redirect

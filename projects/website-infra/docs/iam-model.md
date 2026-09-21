@@ -32,7 +32,7 @@ authenticated OIDC identity:
 
 | Service account | Invokes | Grant |
 | --- | --- | --- |
-| `website-emailer-push-sa` | The emailer service | `roles/run.invoker` on the service; used as the OIDC identity for both the `submissionSubscription` and `confirmationSubscription` push subscriptions |
+| `website-emailer-push-sa` | The emailer service | `roles/run.invoker` on the service; used as the OIDC identity for both the `confirmationEmailSubscription` and `notificationEmailSubscription` push subscriptions |
 | `website-loader-push-sa` | The search loader service | `roles/run.invoker` on the service; used as the OIDC identity for the cross-project staging-storage push subscription |
 
 ## Pub/Sub service agent grants

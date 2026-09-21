@@ -25,10 +25,6 @@ export const make = Effect.gen(function* () {
           to,
           template: {
             id: confirmationTemplateId,
-            variables: {
-              PRODUCT: 'Vintage Macintosh',
-              PRICE: '499',
-            },
           },
         }),
       catch: (cause) =>

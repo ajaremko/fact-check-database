@@ -14,3 +14,10 @@ export const serverError = HttpServerResponse.json(
   },
   { status: StatusCodes.INTERNAL_SERVER_ERROR }
 )
+
+export const parseError = HttpServerResponse.json(
+  {
+    message: 'Something went wrong decoding the submission',
+  },
+  { status: StatusCodes.INTERNAL_SERVER_ERROR }
+)

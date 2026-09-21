@@ -15,14 +15,12 @@ service:
 
 | Route | Sends | To |
 | --- | --- | --- |
-| `POST /submissions` | a confirmation email | the form submitter |
-| `POST /confirmations` | a notification email | the site admin |
+| `POST /confirmation-email` | a confirmation email | the form submitter |
+| `POST /notification-email` | a notification email | the site admin |
 
-The route names are swapped relative to what they actually do — see
-[docs/known-issues.md](./docs/known-issues.md). Both routes share the same handler shape: decode
-the Pub/Sub push envelope, pull `bucketId`/`objectId` out of its attributes, read that object from
-storage, and decode it as YAML into the `FormSubmission` union — then run whichever `Emailer`
-capability that route wires up.
+Both routes share the same handler shape: decode the Pub/Sub push envelope, pull
+`bucketId`/`objectId` out of its attributes, read that object from storage, and decode it as YAML
+into the `FormSubmission` union — then run whichever `Emailer` capability that route wires up.
 
 ## Ports and adapters
 
@@ -55,10 +53,9 @@ There is no `test` target for this project — no test infrastructure exists her
 ## Error handling
 
 This service defines one custom error, `EmailerError` (`{ cause, message }`), raised by both
-`Emailer` capabilities. Route handlers catch `EmailerError` explicitly and return a `500`; any
-other error (for example a `ParseError` from a malformed push envelope or a submission object that
-no longer matches `FormSubmission`) falls through to the HTTP framework's default response — see
-[docs/known-issues.md](./docs/known-issues.md) for why this is accepted as-is.
+`Emailer` capabilities. Route handlers catch both `EmailerError` and `ParseError` (a malformed
+push envelope, or a submission object that no longer matches `FormSubmission`) explicitly, each
+returning its own `500` response.
 
 ## Logging
 

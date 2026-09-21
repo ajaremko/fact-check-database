@@ -100,9 +100,9 @@ without their entry and deploy a new secret version.
 
 **Symptom:** the emailer or search loader keeps reprocessing the same message.
 **Cause:** any non-2xx response nacks the Pub/Sub message. The emailer's
-`submissionSubscription` and the search loader's staging-storage subscription both dead-letter
-after 5 attempts into the shared `deadletterBucket`; `confirmationSubscription` does not — see
-[website-emailer's known-issues.md](../website-emailer/docs/known-issues.md).
+`confirmationEmailSubscription` and the search loader's staging-storage subscription both
+dead-letter after 5 attempts into the shared `deadletterBucket`; `notificationEmailSubscription`
+does not — see [website-emailer's known-issues.md](../website-emailer/docs/known-issues.md).
 **Steps:** fix the underlying cause (see the relevant app's own runbook), or inspect the
 dead-lettered message directly in `deadletterBucket`.
 

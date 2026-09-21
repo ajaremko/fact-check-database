@@ -1,11 +1,11 @@
 import {
-  submissionSubscription,
+  confirmationEmailSubscription,
   emailerDeadletterTopic,
   emailerDeadletterTopicArchiveSubscription,
   emailerInvokerServiceAccount,
 } from './subscription'
 
-export const emailerSubscriptionName = submissionSubscription.name
+export const emailerSubscriptionName = confirmationEmailSubscription.name
 export const emailerDeadletterTopicName = emailerDeadletterTopic.name
 export const emailerDeadletterTopicArchiveSubscriptionName =
   emailerDeadletterTopicArchiveSubscription.name
