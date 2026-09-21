@@ -105,18 +105,6 @@ const pubsubServiceAccountStagingStorageSubscriber =
     { provider: coreProvider }
   )
 
-// // Grant the deploying SA actAs on the push SA — within the same program
-// const deployingServiceAccountInvokerAccountUser =
-//   new gcp.serviceaccount.IAMMember(
-//     'deploying-sa-invoker-account-user',
-//     {
-//       serviceAccountId: loaderInvokerServiceAccount.name,
-//       role: 'roles/iam.serviceAccountUser',
-//       member: pulumi.interpolate`serviceAccount:${deployingServiceAccountEmail}`,
-//     },
-//     { provider }
-//   )
-
 // create the subscription with a deadletter policy that
 // sends failed messages to the deadletter topic
 export const stagingStorageSubscription = new gcp.pubsub.Subscription(
@@ -145,7 +133,6 @@ export const stagingStorageSubscription = new gcp.pubsub.Subscription(
   {
     provider,
     dependsOn: [
-      // deployingServiceAccountInvokerAccountUser,
       pubsubServiceAccountStagingStorageSubscriber,
       loaderInvokerServiceAccountTokenCreator,
       pubsubServiceAccountDeadletterBucketReader,

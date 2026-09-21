@@ -8,9 +8,6 @@ export const tag = 'analysis'
 const analysisConfig = new pulumi.Config('analysis')
 export const gcpProject = analysisConfig.require('project')
 export const gcpRegion = analysisConfig.require('region')
-export const deployingServiceAccountEmail = analysisConfig.require(
-  'deployingServiceAccountEmail'
-)
 
 const coreStackName = analysisConfig.require('coreStackName')
 // Format: <organization>/<project>/<stack>

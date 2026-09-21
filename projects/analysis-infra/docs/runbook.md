@@ -14,7 +14,6 @@ Reference for the `analysis` Pulumi config namespace, read by `src/config.ts`. S
 | `analysis:coreStackName` | The core-infra stack this project reads a `StackReference` from | Yes | — |
 | `analysis:project` | GCP project ID this stack deploys into | Yes | — |
 | `analysis:region` | GCP region for regional resources | Yes | — |
-| `analysis:deployingServiceAccountEmail` | Required by `config.ts`, but the only reference anywhere in `src/` is inside a commented-out block — see [docs/known-issues.md](./known-issues.md) | Yes (deployment fails without it, despite doing nothing) | — |
 | `analysis:logLevel` | Log level passed to the staging loader | Yes | — |
 | `analysis:tag` | Docker image tag for the staging loader | No | none — falls back to a public placeholder image if unset |
 | `analysis:tableDeletionProtection` | Whether the BigQuery tables have Pulumi/GCP deletion protection | No | `true` — both stacks currently override to `false`, see known-issues |

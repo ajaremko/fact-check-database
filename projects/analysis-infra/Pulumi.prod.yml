@@ -1,7 +1,6 @@
 config:
   analysis:project: fact-check-database-analysis
   analysis:region: us-central1
-  analysis:deployingServiceAccountEmail: pulumi-cli@fact-check-database-core.iam.gserviceaccount.com
   analysis:coreStackName: alfredsyoung/fact-check-database-core
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false

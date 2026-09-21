@@ -62,10 +62,10 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
 
-- [ ] Change `decodeContext` in `ingestFromSource.ts` to decode via `Schema.decodeUnknown` inside
+- [x] Change `decodeContext` in `ingestFromSource.ts` to decode via `Schema.decodeUnknown` inside
       the `Effect.gen` body instead of `Schema.decodeUnknownSync` outside it, so a bad target
       fails like every other typed error
-- [ ] Change `logIngestionFailed` to log at `Effect.logWarning`/`logError` instead of `info`, so
+- [x] Change `logIngestionFailed` to log at `Effect.logWarning`/`logError` instead of `info`, so
       failures are distinguishable from successes by level
 
 ### ingestion-sanitizer
@@ -80,11 +80,8 @@ See [known-issues.md](../projects/ingestion-sanitizer/docs/known-issues.md).
 
 See [known-issues.md](../projects/ingestion-extractor/docs/known-issues.md).
 
-- [ ] Resolve the commented-out publish path in `main.ts`/`app/index.ts` — finish it or remove the
+- [x] Resolve the commented-out publish path in `main.ts`/`app/index.ts` — finish it or remove the
       dead code
-- [ ] Add dedicated `Metric.counter`s for skipped/failed observations, and move
-      `logExtractionFailed` to `Effect.logWarning`, so these are distinguishable from successful
-      runs by metrics alone
 
 ## Analysis
 
@@ -94,7 +91,7 @@ See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
 
 - [ ] Set `analysis:tableDeletionProtection: true` and `analysis:retainTablesOnDelete: true` in
       `Pulumi.prod.yml` (or remove the overrides) before any planned prod destroy
-- [ ] Remove the unused required config key `analysis:deployingServiceAccountEmail`, or finish the
+- [x] Remove the unused required config key `analysis:deployingServiceAccountEmail`, or finish the
       commented-out feature in `subscription.ts` that was meant to use it
 - [x] Wire the translation models bucket into the translator service, or remove the bucket and its
       IAM grant — resolved by removing the whole translation capability (moved to a separate

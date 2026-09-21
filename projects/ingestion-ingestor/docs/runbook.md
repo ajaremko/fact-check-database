@@ -72,13 +72,14 @@ v1/raw/source={sourceId}/date={YYYY-MM-DD}/ingestion_id={ingestionId}/{observati
 
 ## Logging
 
-This app's own code uses four levels, never `warning`:
+This app's own code uses five levels:
 
 | Level | Used for |
 | --- | --- |
 | `trace` | Low-level step tracing inside a single fetch attempt (`Fetching data from source target`, `Writing fetch failure record`, `Writing raw response body`), and source-list construction |
 | `debug` | Mode-selection at startup (`Using filesystem/gcs source list`, `...storage`, `...messaging`, `...otel configuration`) and per-run progress (`Processing {n} targets`, `Requesting content from source {i}`, `Processed {k} of {n} targets`) |
-| `info` | Job start (`Starting ingestor job run {runId}`), and — notably — **both** outcomes of a fetch attempt: `Ingestion succeeded` and `Ingestion failed` log at the same level, distinguished only by message text and annotations, not severity |
+| `info` | Job start (`Starting ingestor job run {runId}`) and a successful fetch attempt (`Ingestion succeeded`) |
+| `warning` | A failed fetch attempt (`Ingestion failed`) — recoverable and isolated to that target, distinguishable from a success by level as well as message text |
 | `error` | A per-target failure's full cause, dumped once via `Effect.tapErrorCause(Effect.logError)` when any step in that target's pipeline fails |
 
 `core-io` (which every storage/messaging call in this app goes through) separately logs at `trace`/`warning` only, and `core-data` logs nothing at all — see each package's own README. There's no overlap to reconcile: this app's `error` level isn't used by either dependency.
@@ -107,14 +108,8 @@ This app's own code uses four levels, never `warning`:
 
 **Steps:**
 1. Find that target's `error` log line (`Effect.tapErrorCause(Effect.logError)`) and read the dumped cause.
-2. The cause will be one of: a `FetcherError` (network/DNS/timeout/non-2xx — see `HttpClientFetcher`'s error message), a `StorageWriteError` from `core-io` (permission or connectivity issue writing the archive), or a `ParseResult.ParseError` (a schema encode failure — should not happen in normal operation; if it does, something about the fetched content or config is unexpected).
+2. The cause will be one of: a `FetcherError` (network/DNS/timeout/non-2xx — see `HttpClientFetcher`'s error message), a `StorageWriteError` from `core-io` (permission or connectivity issue writing the archive), or a `ParseResult.ParseError` (either a schema encode failure when writing the record, or `ingestFromSource`'s own `decodeContext` step rejecting a malformed target-list row, e.g. an invalid `collection` value — both are isolated to that one target, same as every other failure mode here).
 3. If failures for that source are consistent across runs, consider removing it from the target list.
-
-### A target fails immediately with no fetch attempt logged
-
-**Symptom:** no `Fetching data from source target` trace line for that target, but the run continues (or, if this affects every target, the whole run may fail as an unhandled defect rather than a normal per-target failure).
-
-**Cause:** `ingestFromSource`'s `decodeContext` step decodes its arguments *synchronously*, outside the Effect error channel — unlike every other failure mode in this pipeline, a bad value here (e.g. a target-list row with an invalid `collection`) isn't isolated by `Effect.all(..., { mode: 'either' })`. See [docs/known-issues.md](./known-issues.md).
 
 ### Target list unreadable
 
@@ -135,5 +130,3 @@ ls "$STORAGE_OUTPUT_DIR"
 # Simulated storage notifications
 ls "$PUBLISHER_OUTPUT_DIR"
 ```
-
-See [docs/known-issues.md](./known-issues.md) for this project's current accepted gaps.

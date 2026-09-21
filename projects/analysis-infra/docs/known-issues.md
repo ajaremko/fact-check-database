@@ -18,19 +18,6 @@ development and never revisited for prod.
 `analysis:retainTablesOnDelete: true` in `Pulumi.prod.yml` (falling back to the code's own safe
 defaults would also work — remove the overrides entirely).
 
-## `analysis:deployingServiceAccountEmail` is required but effectively unused
-
-**Error:** No error — deployment succeeds with any value set, but the value does nothing.
-**Where:** `src/config.ts` `require()`s this key. The only reference to it anywhere in `src/` is
-inside a commented-out block in `staging-dataset/loader/subscription.ts`.
-**Root cause:** Likely leftover from a feature that was implemented, then commented out, without
-removing the now-unused config requirement.
-**Decision:** Leave as-is. Removing a required config key changes this stack's deployment
-contract and isn't a change to make as part of a documentation pass.
-**If this ever needs to be fixed:** Either uncomment and finish whatever the commented-out block
-in `subscription.ts` was building, or remove the config key from `config.ts` and both
-`Pulumi.<stack>.yml` files together.
-
 ## The curated table's schema is hand-duplicated rather than shared
 
 **Error:** No error — a maintenance/drift risk.

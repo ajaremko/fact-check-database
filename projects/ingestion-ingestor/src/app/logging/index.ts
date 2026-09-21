@@ -6,15 +6,19 @@ import {
   IngestionJobCompletedSchema,
 } from '@news-research/ingestion-contracts/logging/v1'
 
+// This whole file should probably be removed or reimagined
+// its an abstracted procedure for logging events which is
+// probably an unnecessary abstraction
 function logEvent<Fields extends Schema.Struct.Fields>(
   schema: Schema.Struct<Fields>,
-  message: string
+  message: string,
+  log: (message: string) => Effect.Effect<void> = Effect.logInfo
 ) {
   return flow(
     schema.make,
     Schema.encode(schema),
     Effect.andThen((annotations) =>
-      Effect.annotateLogs(Effect.logInfo(message), annotations)
+      Effect.annotateLogs(log(message), annotations)
     )
   )
 }
@@ -26,7 +30,8 @@ export const logIngestionSucceeded = logEvent(
 
 export const logIngestionFailed = logEvent(
   IngestionFailedSchema,
-  'Ingestion failed'
+  'Ingestion failed',
+  Effect.logWarning
 )
 
 export const logIngestionJobCompleted = logEvent(

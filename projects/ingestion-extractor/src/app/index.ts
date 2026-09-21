@@ -82,14 +82,10 @@ export const App = Effect.gen(function* () {
     'job.rowsExtracted': rows.length,
   })
 
-  // publish message
-  // const outgoing =
   yield* writeBatch({
     runId: job.runId,
     rows,
     timestamp: job.startedAt,
     type: 'fact_checks',
   })
-  // const data = yield* encodeOutgoing(outgoing)
-  // yield* publish(data)
 })

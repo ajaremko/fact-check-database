@@ -30,17 +30,12 @@ Review the configuration in `projects/analysis-infra/Pulumi.prod.yml`. A real ex
 config:
   analysis:project: fact-check-database-analysis
   analysis:region: us-central1
-  analysis:deployingServiceAccountEmail: pulumi-cli@fact-check-database-core.iam.gserviceaccount.com
   analysis:coreStackName: alfredsyoung/fact-check-database-core
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false
   analysis:tag: <docker-tag>
   analysis:logLevel: debug
 ```
-
-`analysis:deployingServiceAccountEmail` is currently required by `src/config.ts` but not actually
-used anywhere — see [docs/known-issues.md](./known-issues.md). Set it to the same value shown
-above regardless, since deployment fails without it being set to something.
 
 Note `tableDeletionProtection: false` / `retainTablesOnDelete: false` here — see
 [docs/known-issues.md](./known-issues.md) for what that means for a `pulumi destroy` against this

@@ -42,7 +42,7 @@ const encodeHashedObservationId = flow(
   Effect.andThen((base) => Node.sha256Hex(base, 'utf8'))
 )
 
-const decodeContext = Schema.decodeUnknownSync(
+const decodeContext = Schema.decodeUnknown(
   Schema.Struct({
     ingestionId: Schema.String,
     source: SourceConfigSchema,
@@ -58,7 +58,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     timestamp: TimestampEncoded
     source: SourceConfigEncoded
   }) {
-    const ctx = decodeContext(args)
+    const ctx = yield* decodeContext(args)
 
     yield* Effect.logTrace('Fetching data from source target')
     const result = yield* fetch(ctx.source, ctx.timestamp)

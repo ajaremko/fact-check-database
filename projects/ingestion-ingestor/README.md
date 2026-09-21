@@ -72,7 +72,7 @@ Because it's derived from content rather than randomly generated, `observationId
 
 ### Partial failure behavior
 
-Each target's fetch, archive, and record-write sequence runs independently through `Effect.all(..., { mode: 'either' })`, so one bad target doesn't fail the run — the run only fails afterward, if the overall success rate falls below `SUCCESS_THRESHOLD`. One exception to this isolation exists; see [docs/known-issues.md](./docs/known-issues.md).
+Each target's fetch, archive, and record-write sequence runs independently through `Effect.all(..., { mode: 'either' })`, so one bad target doesn't fail the run — the run only fails afterward, if the overall success rate falls below `SUCCESS_THRESHOLD`.
 
 ## Development
 
@@ -110,5 +110,4 @@ See [docs/runbook.md](./docs/runbook.md) for the complete configuration referenc
 | Document | Purpose |
 | --- | --- |
 | [docs/runbook.md](./docs/runbook.md) | Configuration reference, operations, and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
 | [ingestion-contracts](../ingestion-contracts/README.md) | The canonical `IngestionRecord` schema this service archives |
