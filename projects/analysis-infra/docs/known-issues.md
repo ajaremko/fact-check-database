@@ -31,35 +31,6 @@ contract and isn't a change to make as part of a documentation pass.
 in `subscription.ts` was building, or remove the config key from `config.ts` and both
 `Pulumi.<stack>.yml` files together.
 
-## The translation models bucket is provisioned but never wired to the translator service
-
-**Error:** No error — an orphaned resource.
-**Where:** `src/translation/storage.ts` provisions `translationModelsBucket` and grants the
-translator service account `storage.objectViewer` on it, but `src/translation/service.ts` never
-references the bucket — no volume mount, no environment variable pointing at it.
-**Root cause:** Likely provisioned ahead of a "load custom models from GCS" feature that was
-never finished.
-**Decision:** Leave as-is. The running LibreTranslate instance uses only its bundled default
-models; nothing currently depends on this bucket having content.
-**If this ever needs to be fixed:** Either wire the bucket into the service (a GCS FUSE volume or
-a startup step that syncs from it) if custom models are actually wanted, or remove the bucket and
-its IAM grant if they're not.
-
-## The translation service doesn't use the shared Artifact Registry pattern
-
-**Error:** No error — an inconsistency with the rest of this project and its siblings.
-**Where:** `src/translation/service.ts` hardcodes the public `libretranslate/libretranslate`
-Docker Hub image, rather than resolving an image via `getImageUrl()` against core-infra's
-Artifact Registry the way the staging loader (and every service in the sibling infra projects)
-does. It still lists `cloudRunArtifactRegistryReader` as a `dependsOn`, which it doesn't actually
-need since it never pulls from that registry.
-**Root cause:** LibreTranslate is a third-party image, not one of this platform's own services
-built and pushed to the shared registry, so there was nothing to resolve there in the first place.
-**Decision:** Leave as-is — using the public image directly is reasonable for a third-party tool;
-the unnecessary `dependsOn` is cosmetic.
-**If this ever needs to be fixed:** Remove the unused `cloudRunArtifactRegistryReader` dependency
-from `translatorService`'s resource options.
-
 ## The curated table's schema is hand-duplicated rather than shared
 
 **Error:** No error — a maintenance/drift risk.

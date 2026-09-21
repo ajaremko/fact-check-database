@@ -96,10 +96,12 @@ See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
       `Pulumi.prod.yml` (or remove the overrides) before any planned prod destroy
 - [ ] Remove the unused required config key `analysis:deployingServiceAccountEmail`, or finish the
       commented-out feature in `subscription.ts` that was meant to use it
-- [ ] Wire the translation models bucket into the translator service, or remove the bucket and its
-      IAM grant
-- [ ] Remove the unnecessary `cloudRunArtifactRegistryReader` dependency from the translation
-      service (it uses a public Docker Hub image, not the shared registry)
+- [x] Wire the translation models bucket into the translator service, or remove the bucket and its
+      IAM grant — resolved by removing the whole translation capability (moved to a separate
+      project); see [analysis-infra's README](../projects/analysis-infra/README.md)
+- [x] Remove the unnecessary `cloudRunArtifactRegistryReader` dependency from the translation
+      service (it uses a public Docker Hub image, not the shared registry) — moot, the service is
+      gone
 - [ ] Consider defining the curated fact-check table's schema as a shared `core-contracts` schema
       instead of hand-duplicating it, if the shape stabilizes
 

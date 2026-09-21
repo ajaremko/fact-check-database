@@ -47,7 +47,7 @@ Shared infrastructure and libraries with no domain of its own — the staging bu
 keys, and IAM baseline (`core-infra`), plus libraries (`core-contracts`, `core-data`, `core-io`,
 `core-vendor`) used across every domain below.
 
-| Project        | Kind    | Purpose                                | Documentation                                    |
+| Project        | Kind    | Purpose                                 | Documentation                                    |
 | -------------- | ------- | --------------------------------------- | ------------------------------------------------ |
 | core-infra     | Infra   | Shared GCP bootstrap: bucket, CMEK, IAM | [README.md](./projects/core-infra/README.md)     |
 | core-contracts | Library | Cross-domain schemas                    | [README.md](./projects/core-contracts/README.md) |
@@ -62,22 +62,22 @@ structured fact-check records. Its output is a single artifact — an NDJSON bat
 shared staging bucket — consumed independently by two downstream domains.
 
 | Project             | Kind    | Purpose                               | Documentation                                         |
-| ------------------- | ------- | -------------------------------------- | ----------------------------------------------------- |
-| ingestion-infra     | Infra   | Ingestion domain's Pulumi stack        | [README.md](./projects/ingestion-infra/README.md)     |
-| ingestion-contracts | Library | Ingestion-domain schemas               | [README.md](./projects/ingestion-contracts/README.md) |
-| ingestion-ingestor  | Service | Fetches sources                        | [README.md](./projects/ingestion-ingestor/README.md)  |
-| ingestion-sanitizer | Service | Cleans and normalizes fetched content  | [README.md](./projects/ingestion-sanitizer/README.md) |
-| ingestion-extractor | Service | Extracts fact-check records            | [README.md](./projects/ingestion-extractor/README.md) |
+| ------------------- | ------- | ------------------------------------- | ----------------------------------------------------- |
+| ingestion-infra     | Infra   | Ingestion domain's Pulumi stack       | [README.md](./projects/ingestion-infra/README.md)     |
+| ingestion-contracts | Library | Ingestion-domain schemas              | [README.md](./projects/ingestion-contracts/README.md) |
+| ingestion-ingestor  | Service | Fetches sources                       | [README.md](./projects/ingestion-ingestor/README.md)  |
+| ingestion-sanitizer | Service | Cleans and normalizes fetched content | [README.md](./projects/ingestion-sanitizer/README.md) |
+| ingestion-extractor | Service | Extracts fact-check records           | [README.md](./projects/ingestion-extractor/README.md) |
 
 ### Analysis
 
-Loads staged data into BigQuery and runs NLP-style analysis (e.g. stance detection) over it. This
-is the privileged domain of an internal database maintenance team, not a public-facing one.
+Loads staged data into BigQuery and maintains a deduplicated dataset. This is
+the privileged domain of an internal database maintenance team, not a public-facing one.
 
-| Project         | Kind    | Purpose                             | Documentation                                      |
-| --------------- | ------- | ------------------------------------ | --------------------------------------------------- |
-| analysis-infra  | Infra   | Analysis domain's Pulumi stack       | [README.md](./projects/analysis-infra/README.md)   |
-| analysis-loader | Service | Loads staged batches into BigQuery   | [README.md](./projects/analysis-loader/README.md)  |
+| Project         | Kind    | Purpose                            | Documentation                                     |
+| --------------- | ------- | ---------------------------------- | ------------------------------------------------- |
+| analysis-infra  | Infra   | Analysis domain's Pulumi stack     | [README.md](./projects/analysis-infra/README.md)  |
+| analysis-loader | Service | Loads staged batches into BigQuery | [README.md](./projects/analysis-loader/README.md) |
 
 ### Research
 
@@ -86,8 +86,8 @@ specifically so research access can be governed independently of the pipeline th
 data, without exposing the entire BigQuery dataset.
 
 | Project        | Kind  | Purpose                              | Documentation                                    |
-| -------------- | ----- | -------------------------------------- | ------------------------------------------------ |
-| research-infra | Infra | Read-only BigQuery view for research   | [README.md](./projects/research-infra/README.md) |
+| -------------- | ----- | ------------------------------------ | ------------------------------------------------ |
+| research-infra | Infra | Read-only BigQuery view for research | [README.md](./projects/research-infra/README.md) |
 
 ### Website
 
@@ -95,13 +95,13 @@ Loads the same staging data into a public search index, and separately runs the 
 site itself: informational pages, search, and three forms (contact, dataset access request, tip
 submission) whose submissions flow back through GCS to trigger outbound email.
 
-| Project           | Kind    | Purpose                               | Documentation                                        |
-| ----------------- | ------- | --------------------------------------- | ----------------------------------------------------- |
-| website-infra     | Infra   | Website domain's Pulumi stack           | [README.md](./projects/website-infra/README.md)     |
-| website-contracts | Library | Website-domain schemas                  | [README.md](./projects/website-contracts/README.md) |
-| website-server    | App     | Public frontend                         | [README.md](./projects/website-server/README.md)    |
-| website-loader    | Service | Loads staged batches into Algolia       | [README.md](./projects/website-loader/README.md)    |
-| website-emailer   | Service | Sends confirmation/notification emails  | [README.md](./projects/website-emailer/README.md)   |
+| Project           | Kind    | Purpose                                | Documentation                                       |
+| ----------------- | ------- | -------------------------------------- | --------------------------------------------------- |
+| website-infra     | Infra   | Website domain's Pulumi stack          | [README.md](./projects/website-infra/README.md)     |
+| website-contracts | Library | Website-domain schemas                 | [README.md](./projects/website-contracts/README.md) |
+| website-server    | App     | Public frontend                        | [README.md](./projects/website-server/README.md)    |
+| website-loader    | Service | Loads staged batches into Algolia      | [README.md](./projects/website-loader/README.md)    |
+| website-emailer   | Service | Sends confirmation/notification emails | [README.md](./projects/website-emailer/README.md)   |
 
 > Note: the `ingestion-infra`, `analysis-infra`, and `website-infra` READMEs are currently
 > near-identical copies of one another and need to be rewritten to reflect each stack's

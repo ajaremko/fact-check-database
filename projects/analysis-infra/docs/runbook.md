@@ -68,15 +68,6 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
    only inserts rows that don't already match an existing curated row's dedup hash — a row that's
    older than that window when the schedule catches up won't be picked up.
 
-### The translation service isn't behaving as expected
-
-**Steps:**
-1. Confirm `envs: []` is intentional for your use case — the service currently starts with no
-   configuration passed to LibreTranslate at all (no API keys, no model-loading flags).
-2. The models bucket exists and is permissioned, but isn't actually read by the running service —
-   see [docs/known-issues.md](./docs/known-issues.md) before assuming any bucket content affects
-   translation behavior today.
-
 ## Access notes
 
 No service account in this project holds a downloaded key. The one trust relationship worth

@@ -5,4 +5,3 @@ export {
 
 export * from './curated-dataset'
 export * from './staging-dataset'
-export * from './translation'

@@ -11,8 +11,7 @@ deploys this stack — that identity is provisioned there, not here.
 | Cloud Run service agent (this project's project) | `roles/artifactregistry.reader` | core-infra's shared Artifact Registry repository | Lets Cloud Run in this project pull the staging loader's image from core-infra's registry |
 
 Applied via a second `gcp.Provider` (`coreProvider`) scoped to core-infra's project, with
-`retainOnDelete: true`. Note the translation service doesn't use this grant at all — see
-[docs/known-issues.md](./known-issues.md).
+`retainOnDelete: true`.
 
 ## Service accounts
 
@@ -20,7 +19,6 @@ Applied via a second `gcp.Provider` (`coreProvider`) scoped to core-infra's proj
 | --- | --- | --- |
 | Staging loader SA | The staging loader Cloud Run service | `storage.objectViewer` on core-infra's staging bucket; `bigquery.dataEditor` and `bigquery.jobUser` on the staging table; `cloudtrace.agent`, `telemetry.tracesWriter`, `monitoring.metricWriter` at project level |
 | Curated loader SA | The BigQuery Data Transfer Service scheduled query | `bigquery.dataViewer` on the staging dataset; `bigquery.dataEditor` on the curated dataset; `bigquery.jobUser` at project level |
-| Translator SA | The translation Cloud Run service | `storage.objectViewer` on the (currently unused) models bucket |
 
 ## A distinct trust pattern: impersonation, not attachment
 
@@ -46,7 +44,7 @@ The staging loader's push subscription setup also creates:
 
 ## Trust model summary
 
-Two of the three service accounts here (staging loader, translator) are simple Cloud-Run-attached
-identities with no downloaded keys. The third (curated loader) is impersonated by a Google-managed
-service rather than attached to anything this project runs directly — the one relationship in
-this project's IAM model that isn't visible just by looking at its Cloud Run resources.
+The staging loader's service account is a simple Cloud-Run-attached identity with no downloaded
+keys. The curated loader's is impersonated by a Google-managed service rather than attached to
+anything this project runs directly — the one relationship in this project's IAM model that isn't
+visible just by looking at its Cloud Run resources.

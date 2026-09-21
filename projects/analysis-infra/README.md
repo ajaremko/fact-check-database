@@ -1,6 +1,6 @@
 # analysis-infra
 
-Infrastructure for the analysis domain: a staging BigQuery table fed from the ingestion pipeline's output, a curated BigQuery table deduped and appended from staging on a schedule, and a translation service. Provisioned via Pulumi, depending on [core-infra](../core-infra/README.md) for the platform's shared identity, artifact registry, and the staging bucket/topic the ingestion pipeline writes to.
+Infrastructure for the analysis domain: a staging BigQuery table fed from the ingestion pipeline's output, and a curated BigQuery table deduped and appended from staging on a schedule. Provisioned via Pulumi, depending on [core-infra](../core-infra/README.md) for the platform's shared identity, artifact registry, and the staging bucket/topic the ingestion pipeline writes to.
 
 ## Deployment
 
@@ -34,7 +34,7 @@ Actions CI/CD identity — those are core-infra's.
 | Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
 | Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
 | Artifact Registry | `artifactregistry.googleapis.com` | Pulling the staging loader's image from core-infra's registry |
-| Cloud Run | `run.googleapis.com` | The staging loader and translation services |
+| Cloud Run | `run.googleapis.com` | The staging loader service |
 | Cloud Storage | `storage.googleapis.com` | The dead-letter bucket |
 | Pub/Sub | `pubsub.googleapis.com` | The staging loader's push subscription and dead-letter topic |
 | Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and metrics |
@@ -73,18 +73,6 @@ rows from staging that aren't already present — append-only, no update or dele
 | --- | --- |
 | `curatedDatasetId` / `curatedFactChecksTableId` / `curatedTableRef` | Identify the dataset/table — `curatedTableRef` is read by `research-infra`, the only cross-project consumer of any output this project has |
 | `transferJobName` | The scheduled query job |
-
-### Translation
-
-A Cloud Run service running the public `libretranslate/libretranslate` image directly, plus a
-models bucket. See [docs/known-issues.md](./docs/known-issues.md) — the bucket isn't currently
-wired to the service, and the service doesn't go through core-infra's Artifact Registry the way
-every other service in this project does.
-
-| Output | Purpose |
-| --- | --- |
-| `translatorServiceName` | The Cloud Run service |
-| `translationModelsBucketName` | The (currently unused) models bucket |
 
 ## Consuming these outputs
 
