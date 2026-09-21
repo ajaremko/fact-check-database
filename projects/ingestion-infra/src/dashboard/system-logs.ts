@@ -1,3 +1,5 @@
+import { gcpProject } from '../config'
+
 export function systemLogsTiles(x: number, y: number): object[] {
   return [
     {
@@ -23,7 +25,7 @@ export function systemLogsTiles(x: number, y: number): object[] {
         logsPanel: {
           filter: 'jsonPayload.serviceContext.service=~"^@news-research/"',
           resourceNames: [
-            'projects/news-research-dev/locations/global/logScopes/_Default',
+            `projects/${gcpProject}/locations/global/logScopes/_Default`,
           ],
         },
       },

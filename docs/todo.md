@@ -53,7 +53,7 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
       sanitizer/extractor events are currently pruned)
 - [ ] Set real cron schedules (`ingestorSchedule`/`extractorSchedule`) and a
       `deadletterSoftDeleteDays` value in `Pulumi.prod.yml` once the pipeline should run unattended
-- [ ] Interpolate `gcpProject` into the System Logs dashboard panel's `resourceNames` instead of
+- [x] Interpolate `gcpProject` into the System Logs dashboard panel's `resourceNames` instead of
       the hardcoded dev project id
 - [ ] Remove the unused `ingestion-sources.csv`/`sanitizer-policy.yml` GCS objects and their
       outputs from `src/assets/storage.ts` (config is actually served from Secret Manager)

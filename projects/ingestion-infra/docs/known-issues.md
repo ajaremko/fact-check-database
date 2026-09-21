@@ -26,19 +26,6 @@ as part of a documentation pass.
 **If this ever needs to be fixed:** Set real cron schedules and a `deadletterSoftDeleteDays` value
 in `Pulumi.prod.yml` once the production pipeline is meant to run unattended.
 
-## The System Logs dashboard panel is broken in both stacks
-
-**Error:** The panel renders empty or against the wrong project's logs.
-**Where:** `src/dashboard/system-logs.ts` hardcodes
-`resourceNames: ['projects/news-research-dev/locations/global/logScopes/_Default']` instead of
-interpolating the actual `gcpProject` — which matches neither `fact-check-database-dev` nor
-`fact-check-database-ingestion`.
-**Root cause:** Likely copied from an example or an earlier project-naming scheme and never
-parameterized.
-**Decision:** Leave as-is for now — low severity (one dashboard panel), but a real, easy fix.
-**If this ever needs to be fixed:** Interpolate `gcpProject` into the `resourceNames` array
-instead of the hardcoded project id.
-
 ## Two GCS objects are provisioned and exported but never read
 
 **Error:** No error — dead infrastructure.
