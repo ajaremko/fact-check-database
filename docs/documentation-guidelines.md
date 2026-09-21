@@ -172,6 +172,12 @@ The root `README.md` should cover:
   specifically, not a generic description of the tool.
 - **Pointers to `docs/documentation-guidelines.md`** and to anything else in root `docs/`.
 
+`docs/todo.md` is a related but separate artifact: a consolidated, manually-curated action list —
+open repository-wide roadmap items plus one line per open entry across every project's
+`known-issues.md`. It's a working backlog, meant to be pruned as items are done or decided as
+won't-fix. It doesn't replace `known-issues.md`, which remains the permanent record of *why*
+something wasn't fixed, even after the corresponding backlog line is gone.
+
 ### What belongs in root `docs/`
 
 Root `docs/` is for cross-cutting material that doesn't belong to any single project — for

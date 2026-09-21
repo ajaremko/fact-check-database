@@ -1,20 +1,5 @@
 # Known Issues
 
-## Rate limiting is scaffolded but never implemented
-
-**Error:** No error — a missing feature, not a bug.
-**Where:** `package.json` declares `ioredis` and `rate-limiter-flexible` as real dependencies, and
-the real `.env.local` sets `REDIS_HOST`, `REDIS_PORT`, and `MAX_REQUESTS_PER_SEC` — but there are
-zero references to any of them, or to `Redis`/`RateLimiter`, anywhere in `src/`.
-**Root cause:** Unknown — reads like rate limiting was planned (dependencies installed, env vars
-provisioned) but never wired into the three form actions.
-**Decision:** Leave as-is. The three forms currently rely solely on the reCAPTCHA Enterprise score
-threshold for abuse protection. Adding real rate limiting is a feature, not a small fix.
-**If this ever needs to be fixed:** Wrap each form action (`submitContactForm`,
-`submitAccessRequest`, `submitTip`) with a `rate-limiter-flexible` `RateLimiterRedis` instance,
-keyed by IP or a session identifier, using `REDIS_HOST`/`REDIS_PORT`/`MAX_REQUESTS_PER_SEC` (all
-already provisioned) to configure it.
-
 ## `NEXT_PUBLIC_GA_MEASUREMENT_ID` is dead configuration
 
 **Error:** No error — the env var currently has no effect.

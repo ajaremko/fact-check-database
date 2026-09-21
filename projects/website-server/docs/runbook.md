@@ -23,12 +23,10 @@ Configuration reference and diagnosing failures for `website-server`. See the
 None of these are read via a `*_MODE`-style switch for reCAPTCHA or Algolia — both are always
 live; there's no logger/mock adapter for either.
 
-Two variables set in the real `.env.local` are dead — not carried into `.env.template`. See
+One variable set in the real `.env.local` is dead — not carried into `.env.template`. See
 [docs/known-issues.md](./known-issues.md):
 
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — the analytics script hardcodes the same ID directly instead.
-- `REDIS_HOST` / `REDIS_PORT` / `MAX_REQUESTS_PER_SEC` — rate limiting was never implemented
-  despite `ioredis` and `rate-limiter-flexible` being real dependencies.
 
 ## Diagnosing failures
 

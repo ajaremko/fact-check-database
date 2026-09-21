@@ -105,25 +105,15 @@ submission) whose submissions flow back through GCS to trigger outbound email.
 
 > Note: the `ingestion-infra`, `analysis-infra`, and `website-infra` READMEs are currently
 > near-identical copies of one another and need to be rewritten to reflect each stack's
-> actual, distinct resources (tracked in TODOs below). `core-infra`'s README and `docs/`
-> have been rewritten to match its current, post-domain-split scope.
+> actual, distinct resources (tracked in [docs/todo.md](./docs/todo.md)). `core-infra`'s README
+> and `docs/` have been rewritten to match its current, post-domain-split scope.
 
 New or updated project docs follow [docs/documentation-guidelines.md](./docs/documentation-guidelines.md).
 
 ## TODOs
 
-- [x] Instead of directly publishing events from ingestion services, just write to gcp and notify a topic in infra
-- [x] Migrate app specific code from `/projects/ingestion-pipeline` to the consuming project, create a shared `/projects/core-io` to contain shared application interfaces and implementations
-- [ ] Rewrite project documentation
-  - [x] Rewrite `core-infra` README and `docs/` to match its current, post-domain-split scope
-  - [ ] De-duplicate `ingestion-infra`, `analysis-infra`, `research-infra`, `website-infra` READMEs — currently identical boilerplate, none document the stack's actual resources
-  - [ ] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` — topically correct but still rough TODO checklists, not finished docs
-- [x] Remove `ingestion-replay` project
-- [x] Remove `analysis-nlp` project
-- [x] Remove `website-liquid-informatics` project
-- [] Sort fact checks feed on website using algolia queries rather than local sort
-- [] Verify fact checks are deduped correctly in ingestion and analysis slices
-- [ ] Implement the bot-transparency policy described in [docs/roadmap-bot-transparency.md](./docs/roadmap-bot-transparency.md) (`robots.txt` honoring, per-host crawl delay, a real publisher opt-out channel) — the honest User-Agent identification part is already live
+See [docs/todo.md](./docs/todo.md) for the current backlog — the repository's open roadmap items
+plus every project's outstanding known issues.
 
 ## Core Principles
 
