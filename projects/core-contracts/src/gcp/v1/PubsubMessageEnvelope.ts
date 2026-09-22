@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
+import * as Node from '@fact-check-database/core-data/Node'
 
 /**
  * Payload of a Pub/Sub message delivered via HTTP push subscription.

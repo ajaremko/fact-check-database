@@ -10,12 +10,12 @@ import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import * as AlgoliaSearchClient from '@news-research/core-vendor/algolia/AlgoliaSearchClient'
+import * as AlgoliaSearchClient from '@fact-check-database/core-vendor/algolia/AlgoliaSearchClient'
 import {
   StorageObjectAttributesSchema,
   PubsubMessageEnvelope,
-} from '@news-research/core-contracts/gcp/v1'
-import { StorageReader } from '@news-research/core-io'
+} from '@fact-check-database/core-contracts/gcp/v1'
+import { StorageReader } from '@fact-check-database/core-io'
 
 import { transcodeBatch } from './transcodeBatch'
 

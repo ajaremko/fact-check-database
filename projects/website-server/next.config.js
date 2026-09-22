@@ -22,8 +22,8 @@ const nextConfig = {
   // serverExternalPackages: [
   //   '@google-cloud/pubsub',
   //   '@google-cloud/recaptcha-enterprise',
-  //   '@news-research/core-vendor',
-  //   '@news-research/ingestion-messaging',
+  //   '@fact-check-database/core-vendor',
+  //   '@fact-check-database/ingestion-messaging',
   // ],
 }
 

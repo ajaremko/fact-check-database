@@ -4,7 +4,7 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/packages/ingestion-sanitizer',
   test: {
-    name: '@news-research/ingestion-sanitizer',
+    name: '@fact-check-database/ingestion-sanitizer',
     watch: false,
     globals: true,
     environment: 'node',

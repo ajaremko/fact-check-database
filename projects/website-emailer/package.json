@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/website-emailer",
+  "name": "@fact-check-database/website-emailer",
   "version": "0.0.1",
   "private": true,
   "nx": {

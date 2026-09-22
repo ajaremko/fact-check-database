@@ -1,7 +1,7 @@
 import { Context, Data, Effect, Schema, flow } from 'effect'
 
-import { Timestamp } from '@news-research/ingestion-contracts/shared/v1'
-import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
+import { Timestamp } from '@fact-check-database/ingestion-contracts/shared/v1'
+import { SourceConfig } from '@fact-check-database/ingestion-contracts/config/v1'
 
 export const FetchFailureSchema = Schema.TaggedStruct('FetchFailure', {
   error: Schema.String,

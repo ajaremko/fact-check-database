@@ -78,7 +78,7 @@
       "request": "launch",
       "name": "Debug gcs-data-transfer with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@news-research/gcs-data-transfer"],
+      "runtimeArgs": ["nx", "serve", "@fact-check-database/gcs-data-transfer"],
       "env": {
         "NODE_OPTIONS": "--inspect=9234"
       },
@@ -94,9 +94,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @news-research/website-emailer with Nx",
+      "name": "Debug @fact-check-database/website-emailer with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@news-research/website-emailer"],
+      "runtimeArgs": ["nx", "serve", "@fact-check-database/website-emailer"],
       "env": {
         "NODE_OPTIONS": "--inspect=9235"
       },

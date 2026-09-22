@@ -7,7 +7,7 @@ const PinoLogLevel = Config.literal(...Object.values(levels.labels))
 
 /**
  * Effect that builds Pino `LoggerOptions` formatted for Google Cloud
- * Logging, ready to pass to `pinoLogger` from `@news-research/core-vendor/pino`.
+ * Logging, ready to pass to `pinoLogger` from `@fact-check-database/core-vendor/pino`.
  *
  * Reads `SERVICE_NAME`, `SERVICE_VERSION` and `LOGGING_LEVEL` (one of Pino's
  * level labels) from `Config`, and wraps

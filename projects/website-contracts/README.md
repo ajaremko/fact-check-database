@@ -2,7 +2,7 @@
 
 Cross-app data contracts for the website domain: the search record shape loaded into the site's search index, and the shapes of the site's contact/access/tip forms.
 
-The package is `@news-research/website-contracts`. Each domain is a separate subpath export (for example `@news-research/website-contracts/search/v1`) — prefer these over the root package, which only re-exports each subpath under a namespace (`searchV1`, `formSubmissionsV1`) for the rare case that's more convenient; no consumer in this repo uses that form today.
+The package is `@fact-check-database/website-contracts`. Each domain is a separate subpath export (for example `@fact-check-database/website-contracts/search/v1`) — prefer these over the root package, which only re-exports each subpath under a namespace (`searchV1`, `formSubmissionsV1`) for the rare case that's more convenient; no consumer in this repo uses that form today.
 
 ## Contracts
 
@@ -41,7 +41,7 @@ This package does no logging of its own.
 
 ```ts
 import { Schema } from 'effect'
-import { FormSubmissionSchema } from '@news-research/website-contracts/form-submissions/v1'
+import { FormSubmissionSchema } from '@fact-check-database/website-contracts/form-submissions/v1'
 
 const decode = Schema.decodeUnknownSync(FormSubmissionSchema)
 decode({
@@ -56,7 +56,7 @@ decode({
 
 ```ts
 import { Schema } from 'effect'
-import { SearchResultSchema } from '@news-research/website-contracts/search/v1'
+import { SearchResultSchema } from '@fact-check-database/website-contracts/search/v1'
 
 Schema.encodeSync(SearchResultSchema)({
   objectID: 'content-lineage-id',

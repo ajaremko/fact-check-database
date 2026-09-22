@@ -13,7 +13,7 @@ import { createServer } from 'node:http'
 import {
   StorageObjectAttributesSchema,
   PubsubMessageEnvelope,
-} from '@news-research/core-contracts/gcp/v1'
+} from '@fact-check-database/core-contracts/gcp/v1'
 
 import { ServiceContext, provideServiceContext } from './config'
 import { readSchema, provideSchemaReader } from './readSchema'
@@ -80,7 +80,8 @@ const loadJobs = HttpRouter.post(
       StorageReadError: () =>
         HttpServerResponse.json(
           {
-            message: 'Something went wrong reading the batch schema from storage',
+            message:
+              'Something went wrong reading the batch schema from storage',
           },
           { status: StatusCodes.INTERNAL_SERVER_ERROR }
         ),

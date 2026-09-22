@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-extractor",
+  "name": "@fact-check-database/ingestion-extractor",
   "version": "0.0.1",
   "private": true,
   "nx": {

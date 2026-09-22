@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { archivePathPrefix } from '@news-research/ingestion-contracts/archive/v1'
+import { archivePathPrefix } from '@fact-check-database/ingestion-contracts/archive/v1'
 
 import { provider, gcsAccount } from '../project'
 import { archiveBucketName } from '../archive'

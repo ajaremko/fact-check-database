@@ -1,9 +1,9 @@
 import { Effect, Metric, pipe, Schema } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 
-import { FilePointer, readFile, writeFile } from '@news-research/core-io'
+import { FilePointer, readFile, writeFile } from '@fact-check-database/core-io'
 
 import { contentBlobPath } from './ContentBlob'
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
@@ -93,7 +93,10 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
                   extractedAt: ctx.extractedAt,
                   ingestionId: observation.ingestionId,
                   factCheck: factCheck.content
-                    ? { ...factCheck, content: contentPreview(factCheck.content) }
+                    ? {
+                        ...factCheck,
+                        content: contentPreview(factCheck.content),
+                      }
                     : factCheck,
                   extractor: {
                     id: extractor.id,

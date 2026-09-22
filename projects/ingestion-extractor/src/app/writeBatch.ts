@@ -1,8 +1,8 @@
 import { Effect, Metric, pipe, Schema } from 'effect'
 
-import * as Ndjson from '@news-research/core-data/Ndjson'
-import * as Node from '@news-research/core-data/Node'
-import { writeFile } from '@news-research/core-io'
+import * as Ndjson from '@fact-check-database/core-data/Ndjson'
+import * as Node from '@fact-check-database/core-data/Node'
+import { writeFile } from '@fact-check-database/core-io'
 
 import {
   ExtractionBatchSchema,

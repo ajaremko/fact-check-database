@@ -4,7 +4,7 @@ import {
   IngestionSucceededSchema,
   IngestionFailedSchema,
   IngestionJobCompletedSchema,
-} from '@news-research/ingestion-contracts/logging/v1'
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 // This whole file should probably be removed or reimagined
 // its an abstracted procedure for logging events which is

@@ -1,7 +1,7 @@
 import { Effect, Metric } from 'effect'
 
-import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
-import { FilePointer } from '@news-research/core-io'
+import * as BigQueryClient from '@fact-check-database/core-vendor/bigquery/BigQueryClient'
+import { FilePointer } from '@fact-check-database/core-io'
 
 const batchesLoadedCounter = Metric.counter('loaded_batches')
 

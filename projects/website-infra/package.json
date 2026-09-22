@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/website-infra",
+  "name": "@fact-check-database/website-infra",
   "version": "0.0.1",
   "private": true,
   "nx": {

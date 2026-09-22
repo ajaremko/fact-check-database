@@ -4,12 +4,12 @@ Cross-domain data contracts: the Effect `Schema` definitions for records that cr
 
 A contract lives here when more than one domain depends on it. The ingestion domain produces staged fact-check batches and the analysis and website domains consume them, so the row shape and the object-path layout of those batches are defined once in this package rather than duplicated on each side. The same applies to the Pub/Sub and Cloud Storage event payloads: every service that receives work over a push subscription decodes the same envelope. Contracts specific to a single domain live in that domain's own package (`ingestion-contracts`, `website-contracts`).
 
-The package is `@news-research/core-contracts`. Contracts are grouped by concern and version, and each group is a subpath export:
+The package is `@fact-check-database/core-contracts`. Contracts are grouped by concern and version, and each group is a subpath export:
 
-| Subpath                                    | Namespace   | Contents                                                                                  |
-| ------------------------------------------ | ----------- | ----------------------------------------------------------------------------------------- |
-| `@news-research/core-contracts/gcp/v1`     | `gcpV1`     | Pub/Sub push envelope, Cloud Storage object-finalized notification body and attributes    |
-| `@news-research/core-contracts/staging/v1` | `stagingV1` | Fact-checks table definition and row schema, staging object-path layout, date-path helper |
+| Subpath                                          | Namespace   | Contents                                                                                  |
+| ------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------------- |
+| `@fact-check-database/core-contracts/gcp/v1`     | `gcpV1`     | Pub/Sub push envelope, Cloud Storage object-finalized notification body and attributes    |
+| `@fact-check-database/core-contracts/staging/v1` | `stagingV1` | Fact-checks table definition and row schema, staging object-path layout, date-path helper |
 
 The package root re-exports both groups as the namespaces above. Prefer the subpath imports: they make the contract group and its version visible at the import site.
 
@@ -38,7 +38,7 @@ The JSON body that Pub/Sub POSTs to a push-subscription endpoint. `message` is a
 
 ```ts
 import { Schema } from 'effect'
-import { PubsubMessageEnvelope } from '@news-research/core-contracts/gcp/v1'
+import { PubsubMessageEnvelope } from '@fact-check-database/core-contracts/gcp/v1'
 
 const decodeEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
@@ -52,8 +52,8 @@ decodeEnvelope(requestBody)
 The schema leaves `data` encoded because the body format depends on the topic. `parsePubsubMessagePayloadData` is a combinator that decodes it to a UTF-8 string, and composes with a body schema when the body is JSON:
 
 ```ts
-import * as Node from '@news-research/core-data/Node'
-import { parsePubsubMessagePayloadData } from '@news-research/core-contracts/gcp/v1'
+import * as Node from '@fact-check-database/core-data/Node'
+import { parsePubsubMessagePayloadData } from '@fact-check-database/core-contracts/gcp/v1'
 
 const decodeBody = Schema.String.pipe(
   parsePubsubMessagePayloadData,
@@ -75,7 +75,7 @@ The message attributes Cloud Storage attaches to every bucket notification, rega
 
 ```ts
 import { Schema } from 'effect'
-import { StorageObjectAttributesSchema } from '@news-research/core-contracts/gcp/v1'
+import { StorageObjectAttributesSchema } from '@fact-check-database/core-contracts/gcp/v1'
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.pick('bucketId', 'objectId'),
@@ -131,9 +131,9 @@ One row of the staging `fact_checks` table, as an Effect schema. This is the rec
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Ndjson from '@news-research/core-data/Ndjson'
-import * as Node from '@news-research/core-data/Node'
-import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
+import * as Ndjson from '@fact-check-database/core-data/Ndjson'
+import * as Node from '@fact-check-database/core-data/Node'
+import { FactChecksTableRowSchema } from '@fact-check-database/core-contracts/staging/v1'
 
 const decodeBatch = pipe(
   FactChecksTableRowSchema,
@@ -176,7 +176,7 @@ import { Schema } from 'effect'
 import {
   StagingPathSchema,
   stagingPathPrefix,
-} from '@news-research/core-contracts/staging/v1'
+} from '@fact-check-database/core-contracts/staging/v1'
 
 Schema.encodeSync(StagingPathSchema)({
   version: 1,
@@ -198,7 +198,7 @@ A schema between a date string in a fixed `date-fns` format and Unix time in mil
 
 ```ts
 import { Schema } from 'effect'
-import { NumberFromFormattedDate } from '@news-research/core-contracts/staging/v1'
+import { NumberFromFormattedDate } from '@fact-check-database/core-contracts/staging/v1'
 
 Schema.decodeSync(NumberFromFormattedDate('yyyy-MM-dd'))('2024-01-01') // → 1704067200000
 Schema.encodeSync(NumberFromFormattedDate('yyyy-MM-dd'))(1704067200000) // → "2024-01-01"

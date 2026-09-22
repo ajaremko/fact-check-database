@@ -1,4 +1,4 @@
-import { stagingPathPrefix } from '@news-research/core-contracts/staging/v1'
+import { stagingPathPrefix } from '@fact-check-database/core-contracts/staging/v1'
 
 /**
  * Deterministic, content-addressable path for the full Markdown content of

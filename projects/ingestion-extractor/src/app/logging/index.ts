@@ -5,7 +5,7 @@ import {
   ExtractionFailedSchema,
   ExtractionJobCompletedSchema,
   ExtractionSucceededSchema,
-} from '@news-research/ingestion-contracts/logging/v1'
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 function logEvent<Fields extends Schema.Struct.Fields>(
   schema: Schema.Struct<Fields>,

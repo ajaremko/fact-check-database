@@ -73,9 +73,9 @@ Exported as stack outputs:
 
 Exported as stack outputs:
 
-| Output                                  | Type     | Purpose                                                           |
-| --------------------------------------- | -------- | ----------------------------------------------------------------- |
-| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key used to encrypt raw archive data               |
+| Output                                  | Type     | Purpose                                                          |
+| --------------------------------------- | -------- | ---------------------------------------------------------------- |
+| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key used to encrypt raw archive data              |
 | `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key used to encrypt structured data; not yet used |
 
 ### Artifact Registry
@@ -136,7 +136,7 @@ Exported as stack outputs:
 
 Every output above is depended on by other infrastructure projects through a Pulumi
 `StackReference`, not a compile-time import — no project's `package.json` lists
-`@news-research/core-infra` as a dependency. Treat these outputs as a stable interface: renaming
+`@fact-check-database/core-infra` as a dependency. Treat these outputs as a stable interface: renaming
 one, changing what it means, or pointing it at a different resource is a breaking change for
 whatever currently reads it, even though nothing tracks that dependency but the code itself.
 
@@ -177,10 +177,10 @@ uses to deploy every project in this repository, including this one.
 
 ## Related documentation
 
-| Document                                         | Purpose                                                    |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md)         | Initial GCP project setup and first deployment             |
-| [docs/encryption.md](./docs/encryption.md)       | CMEK key management and rationale                          |
-| [docs/iam-model.md](./docs/iam-model.md)         | IAM roles, bindings, and the GitHub Actions identity model |
-| [docs/runbook.md](./docs/runbook.md)             | Stack configuration, deployment ordering, and troubleshooting |
-| [docs/known-issues.md](./docs/known-issues.md)   | Accepted, long-lived gaps and deferred fixes               |
+| Document                                       | Purpose                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)       | Initial GCP project setup and first deployment                |
+| [docs/encryption.md](./docs/encryption.md)     | CMEK key management and rationale                             |
+| [docs/iam-model.md](./docs/iam-model.md)       | IAM roles, bindings, and the GitHub Actions identity model    |
+| [docs/runbook.md](./docs/runbook.md)           | Stack configuration, deployment ordering, and troubleshooting |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes                  |

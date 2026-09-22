@@ -3,12 +3,12 @@ import { Schema, ParseResult } from 'effect'
 import {
   SourceCollectionConfigSchema,
   SourceConfigSchema,
-} from '@news-research/ingestion-contracts/config/v1'
+} from '@fact-check-database/ingestion-contracts/config/v1'
 import {
   FilePointerSchema,
   IngestionRecordSchema,
-} from '@news-research/ingestion-contracts/archive/v1'
-import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
+} from '@fact-check-database/ingestion-contracts/archive/v1'
+import { TimestampSchema } from '@fact-check-database/ingestion-contracts/shared/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
   observationId: Schema.String,

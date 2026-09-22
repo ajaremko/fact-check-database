@@ -1,8 +1,8 @@
 import { ParseResult, Schema } from 'effect'
 
-import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
-import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
-import { omitNullKeys } from '@news-research/core-data'
+import { FactChecksTableRowSchema } from '@fact-check-database/core-contracts/staging/v1'
+import { SourceConfigSchema } from '@fact-check-database/ingestion-contracts/config/v1'
+import { omitNullKeys } from '@fact-check-database/core-data'
 
 import {
   NormalizedTextMediumSchema,

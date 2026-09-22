@@ -1,10 +1,10 @@
 import { Effect, Layer, Schema, flow } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
+import * as Node from '@fact-check-database/core-data/Node'
 import {
   StorageObjectAttributesSchema,
   StorageObjectDataSchema,
-} from '@news-research/core-contracts/gcp/v1'
+} from '@fact-check-database/core-contracts/gcp/v1'
 
 import { StorageWriter } from '../ports/StorageWriter'
 import { Publisher } from '../ports/Publisher'

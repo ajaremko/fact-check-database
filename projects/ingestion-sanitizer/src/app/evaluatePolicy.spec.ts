@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { TimestampBrand } from '@news-research/ingestion-contracts/shared/v1'
+import { TimestampBrand } from '@fact-check-database/ingestion-contracts/shared/v1'
 
 import { evaluatePolicy, pickRule } from './evaluatePolicy'
 import { Observation } from './Observation'

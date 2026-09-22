@@ -1,4 +1,4 @@
-import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfig } from '@fact-check-database/ingestion-contracts/config/v1'
 
 import type {
   CollectionRule,

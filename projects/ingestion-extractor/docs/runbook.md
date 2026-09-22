@@ -55,7 +55,7 @@ full content lives in the separate, content-addressed blob object, written once 
 that has content and shared across re-fetches with identical content (same `sha256`, same blob).
 
 Input decoding (the sanitizer's `SanitizerRecord` and the platform's `SourceConfig`) uses
-`@news-research/ingestion-contracts` instead — this project's _output_ contract and its _input_
+`@fact-check-database/ingestion-contracts` instead — this project's _output_ contract and its _input_
 contract come from two different shared packages, which is expected: the input is what the
 sanitizer defines, the output is what the staging table (owned by `core-infra`/`analysis-infra`)
 defines.

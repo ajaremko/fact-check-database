@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/website-contracts",
+  "name": "@fact-check-database/website-contracts",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",

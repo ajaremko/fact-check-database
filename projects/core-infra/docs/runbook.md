@@ -14,7 +14,7 @@ directly in `Pulumi.<stack>.yml`) before the stack will deploy.
 | `core:region`                 | GCP region for regional resources (the Artifact Registry, the staging bucket)                                 | `us-central1`             | `us-central1`              |
 | `core:kmsLocation`            | Location of the CMEK key ring                                                                                 | `us-central1`             | `us-central1`              |
 | `core:githubOrg`              | GitHub organization allowed to assume the CI/CD identity                                                      | `ajaremko`                | `ajaremko`                 |
-| `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                        | `news-research`           | `news-research`            |
+| `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                        | `fact-check-database`     | `fact-check-database`      |
 | `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                              | `shared-identity-pool-01` | `shared-identity-pool-01`  |
 | `core:batchRetentionDays`     | Days before an object in the staging bucket is deleted by its lifecycle rule                                  | `1`                       | `1`                        |
 | `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                              | `true`                    | `false`                    |
@@ -173,7 +173,7 @@ for how it was set up. To revoke it:
   GCP projects. Revoking it without first granting `Owner` (or an equivalent role) to a
   replacement principal will leave the projects without an administrator able to manage IAM.
 
-This is distinct from revoking a *consuming* project's access to a CMEK key, which is scoped to
+This is distinct from revoking a _consuming_ project's access to a CMEK key, which is scoped to
 that project and covered in [docs/encryption.md](./encryption.md#access-model).
 
 ## Audit logs

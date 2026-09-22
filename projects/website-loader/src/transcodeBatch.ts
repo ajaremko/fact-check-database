@@ -1,10 +1,10 @@
 import { Effect, flow, ParseResult, Schema } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Ndjson from '@news-research/core-data/Ndjson'
-import { omitNullableKeys } from '@news-research/core-data'
-import { FactChecksTableRowSchema } from '@news-research/core-contracts/staging/v1'
-import { SearchResultSchema } from '@news-research/website-contracts/search/v1'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Ndjson from '@fact-check-database/core-data/Ndjson'
+import { omitNullableKeys } from '@fact-check-database/core-data'
+import { FactChecksTableRowSchema } from '@fact-check-database/core-contracts/staging/v1'
+import { SearchResultSchema } from '@fact-check-database/website-contracts/search/v1'
 
 const decodeBatch = Schema.transformOrFail(
   FactChecksTableRowSchema,

@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { FactChecksTableDBSchema } from '@news-research/core-contracts/staging/v1'
+import { FactChecksTableDBSchema } from '@fact-check-database/core-contracts/staging/v1'
 
 import {
   tableDeletionProtection,

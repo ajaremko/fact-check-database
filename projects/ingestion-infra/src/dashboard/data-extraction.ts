@@ -5,7 +5,7 @@ import {
   ExtractionSucceededKey,
   ExtractionFailedKey,
   ExtractionJobCompletedKey,
-} from '@news-research/ingestion-contracts/logging/v1'
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 const timezone = 'America/Los_Angeles'
 

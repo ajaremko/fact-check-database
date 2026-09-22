@@ -1,7 +1,7 @@
 import { Brand, Schema } from 'effect'
 
-import * as Html from '@news-research/core-data/Html'
-import { stripMarkdown } from '@news-research/core-data/Markdown'
+import * as Html from '@fact-check-database/core-data/Html'
+import { stripMarkdown } from '@fact-check-database/core-data/Markdown'
 
 function collapseWhitespace(text: string): string {
   return text
@@ -66,8 +66,7 @@ export const NormalizedMarkdownSchema = Schema.transform(
 ).pipe(Html.htmlToMarkdown())
 
 export type NormalizedMarkdown = string & Brand.Brand<'NormalizedMarkdown'>
-export const NormalizedMarkdownBrand =
-  Brand.nominal<NormalizedMarkdown>()
+export const NormalizedMarkdownBrand = Brand.nominal<NormalizedMarkdown>()
 
 const CONTENT_PREVIEW_MAX_LENGTH = 500
 

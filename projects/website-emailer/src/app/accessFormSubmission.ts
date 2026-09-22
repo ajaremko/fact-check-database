@@ -1,14 +1,14 @@
 import { Effect, Schema } from 'effect'
 import { HttpServerRequest } from '@effect/platform'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 import {
   PubsubMessageEnvelope,
   StorageObjectAttributesSchema,
-} from '@news-research/core-contracts/gcp/v1'
-import { FormSubmissionSchema } from '@news-research/website-contracts/form-submissions/v1'
-import { readFile } from '@news-research/core-io'
+} from '@fact-check-database/core-contracts/gcp/v1'
+import { FormSubmissionSchema } from '@fact-check-database/website-contracts/form-submissions/v1'
+import { readFile } from '@fact-check-database/core-io'
 
 const decodePubsubMessageEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 

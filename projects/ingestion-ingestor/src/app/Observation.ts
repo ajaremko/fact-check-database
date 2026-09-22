@@ -5,9 +5,9 @@ import {
   FilePointerSchema,
   IngestionRecordSchema,
   IngestionRecordMetadataSchema,
-} from '@news-research/ingestion-contracts/archive/v1'
-import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
-import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
+} from '@fact-check-database/ingestion-contracts/archive/v1'
+import { SourceConfigSchema } from '@fact-check-database/ingestion-contracts/config/v1'
+import { TimestampSchema } from '@fact-check-database/ingestion-contracts/shared/v1'
 
 import { FetchResultSchema } from '../ports/Fetcher'
 

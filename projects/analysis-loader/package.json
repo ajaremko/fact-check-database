@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/analysis-loader",
+  "name": "@fact-check-database/analysis-loader",
   "version": "0.0.1",
   "private": true,
   "nx": {

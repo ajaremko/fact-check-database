@@ -1,7 +1,7 @@
 import { Context, Effect, Schema, flow } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
-import { readFile } from '@news-research/core-io'
+import * as Node from '@fact-check-database/core-data/Node'
+import { readFile } from '@fact-check-database/core-io'
 
 const decodeSchema = Schema.Object.pipe(
   Node.parseJson(),

@@ -4,10 +4,10 @@ The platform's boundary with the external SDKs it depends on: Google Cloud Pub/S
 
 Every SDK client is reached through an Effect `Context.Tag`, never constructed directly by application code. Every SDK call that can reject is wrapped in `Effect.tryPromise` so the failure lands in the Effect error channel as a typed error rather than a thrown exception. This is where that boundary lives, so the rest of the platform depends on Effect services, not on a specific vendor's client API.
 
-The package is `@news-research/core-vendor`. There is no root export; every module is reached by its own subpath, imported as a namespace:
+The package is `@fact-check-database/core-vendor`. There is no root export; every module is reached by its own subpath, imported as a namespace:
 
 ```ts
-import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
+import * as StorageBucket from '@fact-check-database/core-vendor/cloud-storage/StorageBucket'
 ```
 
 | Subpath                               | Provides                               |
@@ -56,7 +56,7 @@ Configuration is threaded through as `Config.Config<T>` values, one per option k
 
 ```ts
 import { Config } from 'effect'
-import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
+import * as BigQueryClient from '@fact-check-database/core-vendor/bigquery/BigQueryClient'
 
 // Application Default Credentials, no extra options
 Effect.provide(BigQueryClient.layer())
@@ -88,8 +88,8 @@ Client layers (`PubsubClient`, `StorageClient`, `BigQueryClient`) take this conf
 
 ```ts
 import { Config, Effect } from 'effect'
-import * as PubsubTopic from '@news-research/core-vendor/cloud-pubsub/PubsubTopic'
-import * as PubsubSubscriberClient from '@news-research/core-vendor/cloud-pubsub/PubsubSubscriberClient'
+import * as PubsubTopic from '@fact-check-database/core-vendor/cloud-pubsub/PubsubTopic'
+import * as PubsubSubscriberClient from '@fact-check-database/core-vendor/cloud-pubsub/PubsubSubscriberClient'
 
 // Publish
 PubsubTopic.publishMessage({
@@ -114,7 +114,7 @@ Effect.gen(function* () {
 
 ```ts
 import { Effect, Stream } from 'effect'
-import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
+import * as StorageBucket from '@fact-check-database/core-vendor/cloud-storage/StorageBucket'
 
 Effect.gen(function* () {
   yield* StorageBucket.writeFile(
@@ -138,7 +138,7 @@ Effect.gen(function* () {
 
 ```ts
 import { Effect } from 'effect'
-import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
+import * as BigQueryClient from '@fact-check-database/core-vendor/bigquery/BigQueryClient'
 
 Effect.gen(function* () {
   const job = yield* BigQueryClient.createJob({
@@ -157,7 +157,7 @@ Effect.gen(function* () {
 `AlgoliaSearchClient` writes records to a search index, with or without the index's configured transformation rules applied.
 
 ```ts
-import * as AlgoliaSearchClient from '@news-research/core-vendor/algolia/AlgoliaSearchClient'
+import * as AlgoliaSearchClient from '@fact-check-database/core-vendor/algolia/AlgoliaSearchClient'
 
 AlgoliaSearchClient.saveObjects({ indexName: 'fact_checks', objects: records })
 ```
@@ -167,7 +167,7 @@ AlgoliaSearchClient.saveObjects({ indexName: 'fact_checks', objects: records })
 `cloudRunInstanceId` reads the running revision's numeric instance ID from the GCP metadata server. It only resolves on Google Compute infrastructure; anywhere else the request is unreachable and fails.
 
 ```ts
-import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
+import { cloudRunInstanceId } from '@fact-check-database/core-vendor/cloud-run'
 
 cloudRunInstanceId
 // → Effect<string, CloudRunInstanceError>
@@ -179,8 +179,8 @@ Two modules combine to produce the platform's structured, Cloud-Logging-ready lo
 
 ```ts
 import { Effect, Logger } from 'effect'
-import { pinoLogger } from '@news-research/core-vendor/pino'
-import { make as gcpLoggingConfig } from '@news-research/core-vendor/pino-logging-gcp-config'
+import { pinoLogger } from '@fact-check-database/core-vendor/pino'
+import { make as gcpLoggingConfig } from '@fact-check-database/core-vendor/pino-logging-gcp-config'
 
 const logger = Logger.addScoped(
   gcpLoggingConfig.pipe(Effect.andThen((config) => pinoLogger(config)))

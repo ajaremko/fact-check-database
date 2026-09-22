@@ -1,4 +1,4 @@
-import type { SourceCollectionConfig } from '@news-research/ingestion-contracts/config/v1'
+import type { SourceCollectionConfig } from '@fact-check-database/ingestion-contracts/config/v1'
 
 import { AtomExtractor } from './AtomExtractor'
 import { RssExtractor } from './RssExtractor'

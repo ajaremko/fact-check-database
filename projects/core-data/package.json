@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/core-data",
+  "name": "@fact-check-database/core-data",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",

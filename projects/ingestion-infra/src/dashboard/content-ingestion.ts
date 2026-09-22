@@ -5,7 +5,7 @@ import {
   IngestionJobCompletedKey,
   IngestionSucceededKey,
   RecordSanitizedKey,
-} from '@news-research/ingestion-contracts/logging/v1'
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 const timezone = 'America/Los_Angeles'
 
@@ -72,7 +72,7 @@ const archivedRequestsWidget = {
               WHERE
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND JSON_VALUE(json_payload, '$.event') = '${IngestionSucceededKey}'
-                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-ingestor'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@fact-check-database/ingestion-ingestor'
               GROUP BY Name, \`Source ID\`, Collection, URL, Status, Code, \`Content Type\`
               ORDER BY Date, Time, Name, Code
               LIMIT 1000`,
@@ -108,7 +108,7 @@ const failedRequestsWidget = {
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'WARNING'
                 AND JSON_VALUE(json_payload, '$.event') = '${IngestionFailedKey}'
-                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-ingestor'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@fact-check-database/ingestion-ingestor'
               GROUP BY Name, \`Source ID\`, Collection, URL, Error
               ORDER BY Name`,
           },
@@ -143,7 +143,7 @@ const sanitizerDecisionsWidget = {
                 timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
                 AND severity = 'INFO'
                 AND JSON_VALUE(json_payload, '$.event') = '${RecordSanitizedKey}'
-                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@news-research/ingestion-sanitizer'
+                AND JSON_VALUE(json_payload, '$.serviceContext.service') = '@fact-check-database/ingestion-sanitizer'
               GROUP BY Name, \`Source ID\`, Collection, URL, Decision
               ORDER BY Name, Decision`,
           },

@@ -1,16 +1,16 @@
 import { Schema, ParseResult } from 'effect'
 import { DeepMutable, Mutable } from 'effect/Types'
 
-import { omitNullKeys } from '@news-research/core-data'
+import { omitNullKeys } from '@fact-check-database/core-data'
 
 import {
   SanitizerRecordSchema,
   SanitizerRecord,
   SanitizerRecordMetadataSchema,
   ArchivePathSchema,
-} from '@news-research/ingestion-contracts/archive/v1'
-import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
-import { TimestampSchema } from '@news-research/ingestion-contracts/shared/v1'
+} from '@fact-check-database/ingestion-contracts/archive/v1'
+import { SourceConfigSchema } from '@fact-check-database/ingestion-contracts/config/v1'
+import { TimestampSchema } from '@fact-check-database/ingestion-contracts/shared/v1'
 
 import { PolicyDecisionSchema } from './PolicyDecision'
 

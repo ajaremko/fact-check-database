@@ -1,18 +1,18 @@
 import { Effect, Schema, Metric, flow, pipe } from 'effect'
 import { getReasonPhrase } from 'http-status-codes'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 import {
   TimestampEncoded,
   TimestampSchema,
-} from '@news-research/ingestion-contracts/shared/v1'
+} from '@fact-check-database/ingestion-contracts/shared/v1'
 import {
   SourceConfigEncoded,
   SourceConfigSchema,
-} from '@news-research/ingestion-contracts/config/v1'
-import { omitNullKeys } from '@news-research/core-data'
-import { writeFile } from '@news-research/core-io'
+} from '@fact-check-database/ingestion-contracts/config/v1'
+import { omitNullKeys } from '@fact-check-database/core-data'
+import { writeFile } from '@fact-check-database/core-io'
 
 import { fetch } from '../ports/Fetcher'
 

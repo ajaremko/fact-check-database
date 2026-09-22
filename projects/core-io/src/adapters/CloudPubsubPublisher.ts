@@ -1,7 +1,7 @@
 import { Config, ConfigError, Effect, Layer } from 'effect'
 
-import * as PubsubClient from '@news-research/core-vendor/cloud-pubsub/PubsubClient'
-import * as PubsubTopic from '@news-research/core-vendor/cloud-pubsub/PubsubTopic'
+import * as PubsubClient from '@fact-check-database/core-vendor/cloud-pubsub/PubsubClient'
+import * as PubsubTopic from '@fact-check-database/core-vendor/cloud-pubsub/PubsubTopic'
 
 import { Publisher, PublisherError } from '../ports/Publisher'
 

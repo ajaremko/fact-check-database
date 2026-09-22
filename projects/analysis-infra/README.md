@@ -17,32 +17,32 @@ nx deploy analysis-infra --stack=<dev|prod>    # Apply changes
 
 Read via a `StackReference` in `src/config.ts`, not owned here:
 
-| Output read | Used for |
-| --- | --- |
-| `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
-| `stagingStorageTopicName` | What the staging loader's push subscription subscribes to |
-| `stagingStorageBucketName` | Granting the staging loader's service account read access to core-infra's staging bucket (not passed as an env var — the bucket is determined per-message instead) |
-| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving the staging loader's container image |
+| Output read                                          | Used for                                                                                                                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `gcpProject` / `gcpRegion`                           | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources                                                                              |
+| `stagingStorageTopicName`                            | What the staging loader's push subscription subscribes to                                                                                                          |
+| `stagingStorageBucketName`                           | Granting the staging loader's service account read access to core-infra's staging bucket (not passed as an env var — the bucket is determined per-message instead) |
+| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving the staging loader's container image                                                                                                                     |
 
 This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub
 Actions CI/CD identity — those are core-infra's.
 
 ### GCP service enablement
 
-| Service | API | Purpose |
-| --- | --- | --- |
-| Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
-| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
-| Artifact Registry | `artifactregistry.googleapis.com` | Pulling the staging loader's image from core-infra's registry |
-| Cloud Run | `run.googleapis.com` | The staging loader service |
-| Cloud Storage | `storage.googleapis.com` | The dead-letter bucket |
-| Pub/Sub | `pubsub.googleapis.com` | The staging loader's push subscription and dead-letter topic |
-| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and metrics |
+| Service                                              | API                                                                     | Purpose                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Compute Engine                                       | `compute.googleapis.com`                                                | Required before enabling several other APIs                   |
+| Cloud Resource Manager                               | `cloudresourcemanager.googleapis.com`                                   | Project-level IAM and metadata                                |
+| Artifact Registry                                    | `artifactregistry.googleapis.com`                                       | Pulling the staging loader's image from core-infra's registry |
+| Cloud Run                                            | `run.googleapis.com`                                                    | The staging loader service                                    |
+| Cloud Storage                                        | `storage.googleapis.com`                                                | The dead-letter bucket                                        |
+| Pub/Sub                                              | `pubsub.googleapis.com`                                                 | The staging loader's push subscription and dead-letter topic  |
+| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and metrics                                 |
 
 ### Staging dataset
 
 BigQuery dataset `analysis_staging`, table `fact_checks` — schema imported from
-`@news-research/core-contracts/staging/v1` (`FactChecksTableDBSchema`), the same canonical schema
+`@fact-check-database/core-contracts/staging/v1` (`FactChecksTableDBSchema`), the same canonical schema
 `core-infra` uploads for `ingestion-extractor` to write against. Partitioned by `extracted_at`
 (daily, 7-day partition expiration).
 
@@ -51,13 +51,13 @@ on core-infra's staging topic (OIDC-authenticated), writes rows into this table,
 delivery failure after 5 attempts — routes to a dead-letter topic archived into a dedicated
 dead-letter bucket.
 
-| Output | Purpose |
-| --- | --- |
-| `stagingDatasetId` / `stagingFactChecksTableId` / `stagingTableRef` | Identify the dataset/table |
-| `loaderServiceName` / `loaderSubscriptionName` | The Cloud Run service and its push subscription |
-| `loaderDeadletterTopicName` / `loaderDeadletterTopicArchiveSubscriptionName` / `deadletterBucketName` | The failure path |
-| `loaderInvokerServiceAccountEmail` | The identity Pub/Sub uses to push to the loader |
-| `loaderBatchesLoadedCounterMetricType` | Custom metric for batches loaded |
+| Output                                                                                                | Purpose                                         |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `stagingDatasetId` / `stagingFactChecksTableId` / `stagingTableRef`                                   | Identify the dataset/table                      |
+| `loaderServiceName` / `loaderSubscriptionName`                                                        | The Cloud Run service and its push subscription |
+| `loaderDeadletterTopicName` / `loaderDeadletterTopicArchiveSubscriptionName` / `deadletterBucketName` | The failure path                                |
+| `loaderInvokerServiceAccountEmail`                                                                    | The identity Pub/Sub uses to push to the loader |
+| `loaderBatchesLoadedCounterMetricType`                                                                | Custom metric for batches loaded                |
 
 ### Curated dataset
 
@@ -71,10 +71,10 @@ Fed by a **BigQuery Data Transfer Service scheduled query** (not a Cloud Run job
 hours: a `MERGE` that dedupes on a hash of `source id + canonical URL + title` and only inserts
 rows from staging that aren't already present — append-only, no update or delete path.
 
-| Output | Purpose |
-| --- | --- |
+| Output                                                              | Purpose                                                                                                                                    |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `curatedDatasetId` / `curatedFactChecksTableId` / `curatedTableRef` | Identify the dataset/table — `curatedTableRef` is read by `research-infra`, the only cross-project consumer of any output this project has |
-| `transferJobName` | The scheduled query job |
+| `transferJobName`                                                   | The scheduled query job                                                                                                                    |
 
 ## Consuming these outputs
 
@@ -84,8 +84,8 @@ as a stable interface for that reason; the rest are informational (dashboard/CLI
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
+| Document                                 | Purpose                                                                |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
 | [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
-| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
-| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
+| [docs/runbook.md](./docs/runbook.md)     | Stack configuration, deployment, and troubleshooting                   |
+| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant               |

@@ -21,20 +21,20 @@ The extractor turns fetched, sanitized RSS/Atom feed content into structured `Fa
 
 Both extraction strategies populate the same `FactCheck` shape from format-specific source elements:
 
-| `FactCheck` field | RSS 2.0 source | Atom source |
-| --- | --- | --- |
-| `guid` | `<guid>` | `<id>` |
-| `link` | `<link>` | `<link rel="alternate">` (or the sole link) |
-| `canonicalUrl` | `<guid>` when `isPermaLink` and URL-shaped, else `link` | the alternate `<link>`, else `<id>` when URL-shaped |
-| `title` / `claim` | `<title>` | `<title>` |
-| `author` | `<dc:creator>` or `<author>` | `<author><name>` |
-| `categories` | `<category>` (repeatable) | `<category term>` (repeatable) |
-| `summary` | `<description>` | `<summary>` |
-| `content` | `<content:encoded>` | `<content>` (plain-text only) |
-| `enclosureUrl` | `<enclosure>`, `<media:thumbnail>`, or `<media:content>` | always `null` — Atom has no equivalent element |
-| `imageUrl` | `<enclosure>`, `<media:thumbnail>`, or `<media:content>` | always `null` — Atom has no equivalent element |
-| `language` | `xml:lang` is RSS-only so this falls back to the feed's channel-level `<language>` element (not a guarantee for multilingual feeds) | `xml:lang` attribute on the entry, if present |
-| `publishedAtRaw` / `publishedAtNormalized` | `<pubDate>` | `<published>`, falling back to `<updated>` |
+| `FactCheck` field                          | RSS 2.0 source                                                                                                                      | Atom source                                         |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `guid`                                     | `<guid>`                                                                                                                            | `<id>`                                              |
+| `link`                                     | `<link>`                                                                                                                            | `<link rel="alternate">` (or the sole link)         |
+| `canonicalUrl`                             | `<guid>` when `isPermaLink` and URL-shaped, else `link`                                                                             | the alternate `<link>`, else `<id>` when URL-shaped |
+| `title` / `claim`                          | `<title>`                                                                                                                           | `<title>`                                           |
+| `author`                                   | `<dc:creator>` or `<author>`                                                                                                        | `<author><name>`                                    |
+| `categories`                               | `<category>` (repeatable)                                                                                                           | `<category term>` (repeatable)                      |
+| `summary`                                  | `<description>`                                                                                                                     | `<summary>`                                         |
+| `content`                                  | `<content:encoded>`                                                                                                                 | `<content>` (plain-text only)                       |
+| `enclosureUrl`                             | `<enclosure>`, `<media:thumbnail>`, or `<media:content>`                                                                            | always `null` — Atom has no equivalent element      |
+| `imageUrl`                                 | `<enclosure>`, `<media:thumbnail>`, or `<media:content>`                                                                            | always `null` — Atom has no equivalent element      |
+| `language`                                 | `xml:lang` is RSS-only so this falls back to the feed's channel-level `<language>` element (not a guarantee for multilingual feeds) | `xml:lang` attribute on the entry, if present       |
+| `publishedAtRaw` / `publishedAtNormalized` | `<pubDate>`                                                                                                                         | `<published>`, falling back to `<updated>`          |
 
 Strategy selection is a direct lookup keyed by `source.collection` (see `src/integration/extraction-strategy/index.ts`) — there is exactly one strategy per collection type, so there's no ambiguity to resolve at runtime.
 
@@ -66,7 +66,7 @@ projects/ingestion-extractor/
 └── .env.template                        # Required environment variables for local runs
 ```
 
-This app has no app-specific `ports`/`adapters`/`environments` split: all I/O goes through `@news-research/core-io`'s shared storage/messaging ports, wired directly in `main.ts`. Introducing a local ports/adapters layer here would wrap those shared ports without adding a real seam.
+This app has no app-specific `ports`/`adapters`/`environments` split: all I/O goes through `@fact-check-database/core-io`'s shared storage/messaging ports, wired directly in `main.ts`. Introducing a local ports/adapters layer here would wrap those shared ports without adding a real seam.
 
 ## Development
 
@@ -86,19 +86,19 @@ Seven spec files cover both extraction strategies against real-world feed quirks
 cp projects/ingestion-extractor/.env.template projects/ingestion-extractor/.env
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `STORAGE_MODE=filesystem` | Read/write the archive and staging output on a local directory instead of GCS |
-| `STORAGE_OUTPUT_DIR` | Directory batches and content blobs are written to (also where sanitizer/ingestor records are read from) |
-| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory |
-| `MESSAGE_QUEUE_INPUT_DIR` | Directory to populate with notification JSON files (e.g. from a local sanitizer run) |
+| Variable                    | Purpose                                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `STORAGE_MODE=filesystem`   | Read/write the archive and staging output on a local directory instead of GCS                            |
+| `STORAGE_OUTPUT_DIR`        | Directory batches and content blobs are written to (also where sanitizer/ingestor records are read from) |
+| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory                                                              |
+| `MESSAGE_QUEUE_INPUT_DIR`   | Directory to populate with notification JSON files (e.g. from a local sanitizer run)                     |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference, output contract, and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
-| [core-contracts](../core-contracts/README.md) | The canonical `FactChecksTableRowSchema`/`StagingPathSchema` this service writes to |
+| Document                                       | Purpose                                                                             |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)           | Configuration reference, output contract, and diagnosing failures                   |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes                                        |
+| [core-contracts](../core-contracts/README.md)  | The canonical `FactChecksTableRowSchema`/`StagingPathSchema` this service writes to |

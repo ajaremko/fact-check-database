@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/core-vendor",
+  "name": "@fact-check-database/core-vendor",
   "version": "0.0.1",
   "private": true,
   "exports": {

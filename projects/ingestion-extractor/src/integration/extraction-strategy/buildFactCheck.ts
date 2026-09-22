@@ -1,6 +1,6 @@
 import { Effect, Option, Schema } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
+import * as Node from '@fact-check-database/core-data/Node'
 
 import { FactCheckSchema } from '../../app/FactCheck'
 
@@ -19,9 +19,7 @@ export function isUrlShaped(value: string | null | undefined): value is string {
 }
 
 /** Normalizes a value that fast-xml-parser may return as a single item or an array of items. */
-export function toArray<T>(
-  value: T | readonly T[] | undefined
-): T[] {
+export function toArray<T>(value: T | readonly T[] | undefined): T[] {
   if (value === undefined) return []
   return value instanceof Array ? [...value] : [value]
 }

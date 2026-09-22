@@ -1,6 +1,6 @@
 import { Effect, Schema, flow } from 'effect'
 
-import { RecordSanitizedSchema } from '@news-research/ingestion-contracts/logging/v1'
+import { RecordSanitizedSchema } from '@fact-check-database/ingestion-contracts/logging/v1'
 
 function logEvent<Fields extends Schema.Struct.Fields>(
   schema: Schema.Struct<Fields>,

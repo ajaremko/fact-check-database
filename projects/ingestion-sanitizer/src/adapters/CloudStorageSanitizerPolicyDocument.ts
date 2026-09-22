@@ -8,10 +8,10 @@ import {
   Schema,
 } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
-import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
-import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
+import * as StorageBucket from '@fact-check-database/core-vendor/cloud-storage/StorageBucket'
+import * as StorageClient from '@fact-check-database/core-vendor/cloud-storage/StorageClient'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
 import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'

@@ -1,8 +1,8 @@
 import { Clock, Config, Effect, Layer, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import * as Node from '@news-research/core-data/Node'
-import { PubsubMessagePayload } from '@news-research/core-contracts/gcp/v1'
+import * as Node from '@fact-check-database/core-data/Node'
+import { PubsubMessagePayload } from '@fact-check-database/core-contracts/gcp/v1'
 
 import { Publisher, PublisherError } from '../ports/Publisher'
 

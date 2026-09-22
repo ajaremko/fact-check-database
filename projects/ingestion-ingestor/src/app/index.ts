@@ -1,6 +1,6 @@
 import { Array, Clock, Context, Effect, Option } from 'effect'
 
-import { SourceConfig } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfig } from '@fact-check-database/ingestion-contracts/config/v1'
 
 import { SourceList } from '../ports/SourceList'
 

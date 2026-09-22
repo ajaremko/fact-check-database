@@ -3,10 +3,10 @@
 import { Clock, Effect, Schema } from 'effect'
 import { redirect } from 'next/navigation'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
-import { AccessRequestSchema } from '@news-research/website-contracts/form-submissions/v1'
-import { writeFile } from '@news-research/core-io'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
+import { AccessRequestSchema } from '@fact-check-database/website-contracts/form-submissions/v1'
+import { writeFile } from '@fact-check-database/core-io'
 
 import { verifyRecaptcha } from '@/lib/forms/recaptcha-effect'
 import { appLayer } from '@/lib/effect/app-layer'

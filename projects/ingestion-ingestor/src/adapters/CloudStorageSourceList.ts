@@ -1,11 +1,11 @@
 import { Config, ConfigError, Effect, Layer, pipe, Schema } from 'effect'
 import { ParseError } from 'effect/ParseResult'
 
-import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
-import * as StorageBucket from '@news-research/core-vendor/cloud-storage/StorageBucket'
-import * as Node from '@news-research/core-data/Node'
-import * as Csv from '@news-research/core-data/Csv'
-import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
+import * as StorageClient from '@fact-check-database/core-vendor/cloud-storage/StorageClient'
+import * as StorageBucket from '@fact-check-database/core-vendor/cloud-storage/StorageBucket'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Csv from '@fact-check-database/core-data/Csv'
+import { SourceConfigSchema } from '@fact-check-database/ingestion-contracts/config/v1'
 
 import { SourceList } from '../ports/SourceList'
 

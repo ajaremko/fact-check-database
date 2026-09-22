@@ -6,16 +6,16 @@ This repository provides a containerized development environment defined in `.de
 
 The dev container is built on `mcr.microsoft.com/devcontainers/typescript-node:20` and includes:
 
-| Tool                        | Purpose                                                             |
-| --------------------------- | ------------------------------------------------------------------- |
-| Node.js 20                  | Runtime for all TypeScript applications and build tooling           |
-| Nx CLI                      | Task orchestration, code generation, and monorepo management        |
+| Tool                        | Purpose                                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------------------- |
+| Node.js 20                  | Runtime for all TypeScript applications and build tooling                                       |
+| Nx CLI                      | Task orchestration, code generation, and monorepo management                                    |
 | Pulumi CLI                  | Infrastructure provisioning via `projects/core-infra` and the other `projects/*-infra` projects |
-| Google Cloud SDK (`gcloud`) | Authenticating with GCP and managing cloud resources                |
-| Docker-in-Docker            | Building and running container images from within the dev container |
-| GitHub CLI (`gh`)           | Interacting with GitHub from the terminal                           |
-| Zsh                         | Default shell                                                       |
-| Claude Code                 | AI-assisted development via the Anthropic CLI                       |
+| Google Cloud SDK (`gcloud`) | Authenticating with GCP and managing cloud resources                                            |
+| Docker-in-Docker            | Building and running container images from within the dev container                             |
+| GitHub CLI (`gh`)           | Interacting with GitHub from the terminal                                                       |
+| Zsh                         | Default shell                                                                                   |
+| Claude Code                 | AI-assisted development via the Anthropic CLI                                                   |
 
 VS Code extensions are pre-configured for ESLint, Prettier, Nx Console, GitHub Actions, and Docker.
 
@@ -33,7 +33,7 @@ Then fill in the following values:
 | -------------------------------- | ------------------------------------------------------------------------------------ |
 | `PULUMI_ACCESS_TOKEN`            | Pulumi access token for managing infrastructure state                                |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Filename of a GCP service account key file (must be placed in `~/.gcp/` on the host) |
-| `PROJECT_ID`                     | GCP project ID for the target environment (e.g. `news-research-dev`)                 |
+| `PROJECT_ID`                     | GCP project ID for the target environment (e.g. `fact-check-database-dev`)           |
 | `GITHUB_TOKEN`                   | GitHub personal access token for the GitHub CLI                                      |
 
 ## GCP Credentials

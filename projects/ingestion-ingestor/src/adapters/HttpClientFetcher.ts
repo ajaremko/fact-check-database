@@ -1,7 +1,7 @@
 import { Effect, Layer } from 'effect'
 import { HttpClient } from '@effect/platform'
 
-import * as Node from '@news-research/core-data/Node'
+import * as Node from '@fact-check-database/core-data/Node'
 
 import {
   Fetcher,

@@ -2,7 +2,7 @@ import { describe, it } from 'vitest'
 import { Schema } from 'effect'
 import { expect } from '@effect/vitest'
 
-import { Timestamp } from '@news-research/ingestion-contracts/shared/v1'
+import { Timestamp } from '@fact-check-database/ingestion-contracts/shared/v1'
 
 import { FetchedBodyPathSchema } from './FetchedBody'
 

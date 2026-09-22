@@ -23,7 +23,8 @@ export function systemLogsTiles(x: number, y: number): object[] {
       widget: {
         title: 'Pipeline Logs',
         logsPanel: {
-          filter: 'jsonPayload.serviceContext.service=~"^@news-research/"',
+          filter:
+            'jsonPayload.serviceContext.service=~"^@fact-check-database/"',
           resourceNames: [
             `projects/${gcpProject}/locations/global/logScopes/_Default`,
           ],

@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/core-io",
+  "name": "@fact-check-database/core-io",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -30,9 +30,9 @@
     "@effect/platform": "^0.96.0",
     "@effect/platform-node": "^0.106.0",
     "@google-cloud/pubsub": "^5.2.2",
-    "@news-research/core-contracts": "0.0.1",
-    "@news-research/core-data": "0.0.1",
-    "@news-research/core-vendor": "0.0.1"
+    "@fact-check-database/core-contracts": "0.0.1",
+    "@fact-check-database/core-data": "0.0.1",
+    "@fact-check-database/core-vendor": "0.0.1"
   },
   "nx": {
     "name": "core-io"

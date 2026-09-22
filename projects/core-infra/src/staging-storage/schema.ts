@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { FactChecksTableDBSchema } from '@news-research/core-contracts/staging/v1'
+import { FactChecksTableDBSchema } from '@fact-check-database/core-contracts/staging/v1'
 
 import { tag } from '../config'
 import { provider } from '../project'

@@ -1,7 +1,7 @@
 /**
  * Barrel export for core-io's ports only. Adapters are intentionally not
  * re-exported here — import them via their own subpath, e.g.
- * `@news-research/core-io/adapters/FileSystemPublisher`, so consumers only
+ * `@fact-check-database/core-io/adapters/FileSystemPublisher`, so consumers only
  * pull in the transport dependencies they actually use.
  */
 export * from './ports/types/FilePointer'

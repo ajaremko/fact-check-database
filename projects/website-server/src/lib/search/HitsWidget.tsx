@@ -8,7 +8,7 @@ import { Schema, Either } from 'effect'
 import {
   SearchResultSchema,
   type SearchResult,
-} from '@news-research/website-contracts/search/v1'
+} from '@fact-check-database/website-contracts/search/v1'
 
 import { C, mono } from '@/lib/theme'
 

@@ -4,7 +4,7 @@ Effect `Schema` combinators for the serialization formats the platform reads and
 
 Every application in the platform validates data at its boundaries with Effect `Schema`. Those boundaries are rarely plain JSON: source lists arrive as CSV, sanitizer policies as YAML, feeds as XML, archive batches as NDJSON, Pub/Sub payloads as base64, and article bodies as HTML. This library provides one combinator per format so that an application can describe the shape of a record once and get a typed, bidirectional `decode` / `encode` for the raw form for free, instead of hand-rolling a parser in each service.
 
-The package is `@news-research/core-data`. Each format is a separate subpath export of `@news-research/core-data` (for example `@news-research/core-data/Yaml`) so a consumer only pulls in the parser dependency it actually uses. The package root exports only the object helpers `omitNullKeys` and `omitNullableKeys`.
+The package is `@fact-check-database/core-data`. Each format is a separate subpath export of `@fact-check-database/core-data` (for example `@fact-check-database/core-data/Yaml`) so a consumer only pulls in the parser dependency it actually uses. The package root exports only the object helpers `omitNullKeys` and `omitNullableKeys`.
 
 This library only handles format-level decode and encode: turning raw bytes or strings into a typed shape, and back. It does not validate content against business rules or policy — the sanitizer's policy evaluation, for example, runs after a record has already been decoded by this library.
 
@@ -31,8 +31,8 @@ This is the sanitizer's policy loader, unchanged from `projects/ingestion-saniti
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 
 const decodePolicy = pipe(
   SanitizerPolicy, // target: the typed policy record
@@ -66,7 +66,7 @@ Bridges between raw bytes, encoded strings, and the string that a text-format co
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Node from '@news-research/core-data/Node'
+import * as Node from '@fact-check-database/core-data/Node'
 
 // base64 ⇄ utf-8 (how Pub/Sub message `data` fields are decoded)
 const decode = pipe(
@@ -113,7 +113,7 @@ Transforms between a CSV string and an array of the wrapped schema's type. The `
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Csv from '@news-research/core-data/Csv'
+import * as Csv from '@fact-check-database/core-data/Csv'
 
 const Row = Schema.Struct({
   name: Schema.String,
@@ -146,7 +146,7 @@ Transforms between an XML string and a typed object using `fast-xml-parser`. Att
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Xml from '@news-research/core-data/Xml'
+import * as Xml from '@fact-check-database/core-data/Xml'
 
 const Item = Schema.Struct({ name: Schema.String, count: Schema.Number })
 
@@ -165,7 +165,7 @@ Transforms between a YAML string and a typed object. Because YAML is a superset 
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 
 const Item = Schema.Struct({ name: Schema.String, count: Schema.Number })
 
@@ -185,8 +185,8 @@ Transforms between a newline-delimited JSON string and an array of the wrapped s
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Ndjson from '@news-research/core-data/Ndjson'
-import * as Node from '@news-research/core-data/Node'
+import * as Ndjson from '@fact-check-database/core-data/Ndjson'
+import * as Node from '@fact-check-database/core-data/Node'
 
 const decodeBatch = pipe(
   Row,
@@ -206,7 +206,7 @@ Two combinators for text that arrives from feeds with HTML in it.
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Html from '@news-research/core-data/Html'
+import * as Html from '@fact-check-database/core-data/Html'
 
 const decode = pipe(Schema.String, Html.htmlToMarkdown(), Schema.decodeSync)
 decode('<p>Hello <a href="https://example.com">world</a></p>') // → "Hello [world](https://example.com)"
@@ -235,7 +235,7 @@ Transliterates a UTF-8 string to US-ASCII with `unidecode`. The transform is los
 
 ```ts
 import { pipe, Schema } from 'effect'
-import * as Unicode from '@news-research/core-data/Unicode'
+import * as Unicode from '@fact-check-database/core-data/Unicode'
 
 const decode = pipe(Schema.String, Unicode.parseUnicode(), Schema.decodeSync)
 decode('aéà)àçé') // → "aea)ace"
@@ -249,7 +249,7 @@ Prefer `Html.decodeHtmlEntities` when the goal is to preserve original-language 
 `stripMarkdown` reduces Markdown to its plain text content. It is a plain function rather than a schema combinator because there is no inverse: plain text cannot be turned back into the original Markdown, so a `Schema.transform` would be misleading.
 
 ```ts
-import { stripMarkdown } from '@news-research/core-data/Markdown'
+import { stripMarkdown } from '@fact-check-database/core-data/Markdown'
 
 stripMarkdown('A [link](https://example.com) and *bold* text') // → "A link and bold text"
 stripMarkdown('## Key results\n\n**1.** Text') // → "Key results\n\n1. Text"
@@ -260,7 +260,7 @@ stripMarkdown('## Key results\n\n**1.** Text') // → "Key results\n\n1. Text"
 Exported from the package root. `omitNullKeys` removes keys whose value is `null`; `omitNullableKeys` removes keys that are `null` or `undefined`. Both narrow the result type accordingly.
 
 ```ts
-import { omitNullKeys } from '@news-research/core-data'
+import { omitNullKeys } from '@fact-check-database/core-data'
 
 omitNullKeys({ title: 'Example', author: null, language: 'en' })
 // → { title: 'Example', language: 'en' }

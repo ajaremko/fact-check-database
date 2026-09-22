@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { stagingPathPrefix } from '@news-research/core-contracts/staging/v1'
+import { stagingPathPrefix } from '@fact-check-database/core-contracts/staging/v1'
 
 import { coreLabels, tag } from '../config'
 import { provider } from '../project'

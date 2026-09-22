@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/website-loader",
+  "name": "@fact-check-database/website-loader",
   "version": "0.0.1",
   "private": true,
   "nx": {

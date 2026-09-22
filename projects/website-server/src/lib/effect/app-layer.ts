@@ -1,9 +1,9 @@
 import { Config, Effect, Layer, Logger, LogLevel } from 'effect'
 import { NodeFileSystem } from '@effect/platform-node'
 
-import * as CloudStorageStorageWriter from '@news-research/core-io/adapters/CloudStorageStorageWriter'
-import * as FileSystemStorageWriter from '@news-research/core-io/adapters/FileSystemStorageWriter'
-import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
+import * as CloudStorageStorageWriter from '@fact-check-database/core-io/adapters/CloudStorageStorageWriter'
+import * as FileSystemStorageWriter from '@fact-check-database/core-io/adapters/FileSystemStorageWriter'
+import * as StorageClient from '@fact-check-database/core-vendor/cloud-storage/StorageClient'
 
 const LoggingModeConfig = Config.literal('gcp', 'console')('LOGGING_MODE')
 const LogLevelConfig = Config.logLevel('LOGGING_LEVEL')

@@ -1,16 +1,16 @@
 import { Effect, Metric, pipe, Schema } from 'effect'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 import {
   FilePointer,
   FilePointerSchema,
-} from '@news-research/ingestion-contracts/archive/v1'
+} from '@fact-check-database/ingestion-contracts/archive/v1'
 import {
   TimestampEncoded,
   TimestampSchema,
-} from '@news-research/ingestion-contracts/shared/v1'
-import { readFile, writeFile } from '@news-research/core-io'
+} from '@fact-check-database/ingestion-contracts/shared/v1'
+import { readFile, writeFile } from '@fact-check-database/core-io'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
 

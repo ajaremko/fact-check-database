@@ -2,7 +2,7 @@
 
 Versioned wire-format schemas for the ingestion pipeline's cross-app data contracts — the archived records, source configuration, and log-event payloads that flow between `ingestion-ingestor`, `ingestion-sanitizer`, and `ingestion-extractor`.
 
-The package is `@news-research/ingestion-contracts`. Every schema is reached by a flat named export from a specific versioned subpath (for example `@news-research/ingestion-contracts/archive/v1`) — this is the convention every real consumer in this repo actually uses; prefer it over the root package, which only re-exports each subpath under a namespace (`archiveV1`, `configV1`, `loggingV1`, `sharedV1`) for the rare case that's more convenient.
+The package is `@fact-check-database/ingestion-contracts`. Every schema is reached by a flat named export from a specific versioned subpath (for example `@fact-check-database/ingestion-contracts/archive/v1`) — this is the convention every real consumer in this repo actually uses; prefer it over the root package, which only re-exports each subpath under a namespace (`archiveV1`, `configV1`, `loggingV1`, `sharedV1`) for the rare case that's more convenient.
 
 ## Contracts
 
@@ -33,13 +33,13 @@ This package defines no custom error types. A decode or encode failure is a `Par
 
 ## Logging
 
-This package does no logging of its own. `logging/v1`'s schemas describe *other* services' log payloads — they aren't code that logs anything here.
+This package does no logging of its own. `logging/v1`'s schemas describe _other_ services' log payloads — they aren't code that logs anything here.
 
 ## Usage examples
 
 ```ts
 import { Schema } from 'effect'
-import { IngestionRecordSchema } from '@news-research/ingestion-contracts/archive/v1'
+import { IngestionRecordSchema } from '@fact-check-database/ingestion-contracts/archive/v1'
 
 const encode = Schema.encodeSync(IngestionRecordSchema)
 encode({
@@ -49,13 +49,18 @@ encode({
   content_lineage_id: '...',
   ingestion_batch_id: '...',
   fetched_at: 1704067200000,
-  source: { id: 'politifact', name: 'politifact.com', url: 'https://...', collection: 'rss' },
+  source: {
+    id: 'politifact',
+    name: 'politifact.com',
+    url: 'https://...',
+    collection: 'rss',
+  },
 })
 ```
 
 ```ts
 import { Schema } from 'effect'
-import { ArchivePathSchema } from '@news-research/ingestion-contracts/archive/v1'
+import { ArchivePathSchema } from '@fact-check-database/ingestion-contracts/archive/v1'
 
 Schema.encodeSync(ArchivePathSchema)({
   version: 1,
@@ -71,7 +76,7 @@ Schema.encodeSync(ArchivePathSchema)({
 
 ```ts
 import { Schema } from 'effect'
-import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
+import { SourceConfigSchema } from '@fact-check-database/ingestion-contracts/config/v1'
 
 Schema.decodeUnknownSync(SourceConfigSchema)({
   id: 'politifact',

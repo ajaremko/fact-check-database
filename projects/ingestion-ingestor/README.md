@@ -49,7 +49,7 @@ Target List (CSV)
 1. **Read configuration.** At startup the service generates a `runId` (UUID) and reads `MAX_CONCURRENCY` and `SUCCESS_THRESHOLD`. See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference.
 2. **Read the target list.** A CSV file with `collection`, `name`, `url`, and `id` columns, loaded entirely into memory before fetching begins.
 3. **Fetch targets.** All targets are fetched concurrently up to `MAX_CONCURRENCY`, in `either` mode: every target is attempted regardless of whether others fail, and a failed fetch doesn't cancel in-flight requests.
-4. **Archive results.** On success, the raw response body and a structured record are both written to storage. On failure, only the record is written (there's no body). Both writes go through `@news-research/core-io`'s `StorageWriter` port — this project owns no storage code of its own.
+4. **Archive results.** On success, the raw response body and a structured record are both written to storage. On failure, only the record is written (there's no body). Both writes go through `@fact-check-database/core-io`'s `StorageWriter` port — this project owns no storage code of its own.
 5. **Evaluate the success rate.** Once every target has been attempted, `successRate = successCount / totalTargets`. If it's below `SUCCESS_THRESHOLD`, the run fails — see [docs/runbook.md](./docs/runbook.md) for exactly what that failure looks like.
 
 ### How the hand-off to the sanitizer works
@@ -94,20 +94,20 @@ Copy the environment template and run against the local filesystem — no GCP cr
 cp projects/ingestion-ingestor/.env.template projects/ingestion-ingestor/.env
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `SOURCE_LIST_MODE=filesystem` | Read the target list from disk instead of GCS |
-| `TARGET_LIST_PATH` | Path to the target list CSV (defaults to `assets/target-list.csv` in the template) |
-| `STORAGE_MODE=filesystem` | Archive to a local directory instead of GCS |
-| `STORAGE_OUTPUT_DIR` | Directory archived bodies and records are written to |
-| `MESSAGING_MODE=filesystem` | Simulate the storage notification locally instead of using Pub/Sub |
-| `PUBLISHER_OUTPUT_DIR` | Directory the simulated notification is written to |
+| Variable                      | Purpose                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| `SOURCE_LIST_MODE=filesystem` | Read the target list from disk instead of GCS                                      |
+| `TARGET_LIST_PATH`            | Path to the target list CSV (defaults to `assets/target-list.csv` in the template) |
+| `STORAGE_MODE=filesystem`     | Archive to a local directory instead of GCS                                        |
+| `STORAGE_OUTPUT_DIR`          | Directory archived bodies and records are written to                               |
+| `MESSAGING_MODE=filesystem`   | Simulate the storage notification locally instead of using Pub/Sub                 |
+| `PUBLISHER_OUTPUT_DIR`        | Directory the simulated notification is written to                                 |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference, operations, and diagnosing failures |
+| Document                                                | Purpose                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| [docs/runbook.md](./docs/runbook.md)                    | Configuration reference, operations, and diagnosing failures |
 | [ingestion-contracts](../ingestion-contracts/README.md) | The canonical `IngestionRecord` schema this service archives |

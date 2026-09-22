@@ -1,5 +1,5 @@
 {
-  "name": "@news-research/ingestion-infra",
+  "name": "@fact-check-database/ingestion-infra",
   "version": "0.0.1",
   "private": true,
   "nx": {

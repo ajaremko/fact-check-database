@@ -1,8 +1,8 @@
 import { Config, Effect, Layer, pipe, Schema } from 'effect'
 import { FileSystem } from '@effect/platform'
 
-import * as Node from '@news-research/core-data/Node'
-import * as Yaml from '@news-research/core-data/Yaml'
+import * as Node from '@fact-check-database/core-data/Node'
+import * as Yaml from '@fact-check-database/core-data/Yaml'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
 import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'

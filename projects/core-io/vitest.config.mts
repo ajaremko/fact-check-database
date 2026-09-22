@@ -4,7 +4,7 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/packages/core-io',
   test: {
-    name: '@news-research/core-io',
+    name: '@fact-check-database/core-io',
     watch: false,
     globals: true,
     environment: 'node',

@@ -1,8 +1,8 @@
 import { describe, it, expect } from '@effect/vitest'
 import { Effect } from 'effect'
 
-import * as InMemoryStorageWriter from '@news-research/core-io/adapters/InMemoryStorageWriter'
-import * as InMemoryStorageReader from '@news-research/core-io/adapters/InMemoryStorageReader'
+import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
+import * as InMemoryStorageReader from '@fact-check-database/core-io/adapters/InMemoryStorageReader'
 
 import { extractFactChecks } from './extractFactChecks'
 

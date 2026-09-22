@@ -7,12 +7,12 @@ import { TraceExporter as CloudTraceTraceExporter } from '@google-cloud/opentele
 import { MetricExporter as CloudMonitoringMetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
 import { GcpDetectorSync } from '@google-cloud/opentelemetry-resource-util'
 
-import * as BigQueryClient from '@news-research/core-vendor/bigquery/BigQueryClient'
-import * as CloudStorageStorageReader from '@news-research/core-io/adapters/CloudStorageStorageReader'
-import * as GcpLoggingPinoConfig from '@news-research/core-vendor/pino-logging-gcp-config'
-import * as StorageClient from '@news-research/core-vendor/cloud-storage/StorageClient'
-import { cloudRunInstanceId } from '@news-research/core-vendor/cloud-run'
-import { pinoLogger } from '@news-research/core-vendor/pino'
+import * as BigQueryClient from '@fact-check-database/core-vendor/bigquery/BigQueryClient'
+import * as CloudStorageStorageReader from '@fact-check-database/core-io/adapters/CloudStorageStorageReader'
+import * as GcpLoggingPinoConfig from '@fact-check-database/core-vendor/pino-logging-gcp-config'
+import * as StorageClient from '@fact-check-database/core-vendor/cloud-storage/StorageClient'
+import { cloudRunInstanceId } from '@fact-check-database/core-vendor/cloud-run'
+import { pinoLogger } from '@fact-check-database/core-vendor/pino'
 
 import { App } from './app'
 

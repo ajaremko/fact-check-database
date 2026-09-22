@@ -9,11 +9,11 @@ import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
 
-import * as Node from '@news-research/core-data/Node'
+import * as Node from '@fact-check-database/core-data/Node'
 import {
   PubsubMessageEnvelope,
   parsePubsubMessagePayloadData,
-} from '@news-research/core-contracts/gcp/v1'
+} from '@fact-check-database/core-contracts/gcp/v1'
 
 import { MessageBody } from '../ports/types/MessageBody'
 

@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 
-import { SourceConfigSchema } from '@news-research/ingestion-contracts/config/v1'
-import { FilePointerSchema } from '@news-research/ingestion-contracts/archive/v1'
+import { SourceConfigSchema } from '@fact-check-database/ingestion-contracts/config/v1'
+import { FilePointerSchema } from '@fact-check-database/ingestion-contracts/archive/v1'
 
 /**
  * Schema for the event published by the ingestor per fetch attempt.
