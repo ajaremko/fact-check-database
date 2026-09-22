@@ -53,10 +53,6 @@ documents the ingestor and sanitizer actually read at runtime:
 2. Redeploy (`nx deploy ingestion-infra --stack=<dev|prod>`) — this creates a new Secret Manager
    version and updates the Cloud Run job/service to mount it.
 
-Note: `src/assets/ingestion-sources.csv` and `src/assets/sanitizer-policy.yml` (the non-suffixed
-files, uploaded to the assets bucket) are **not** what either service reads — see
-[docs/known-issues.md](./known-issues.md).
-
 ## Revoking access
 
 No service account in this project holds a downloaded key — every one is attached directly to its

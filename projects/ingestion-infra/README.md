@@ -38,7 +38,7 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 | Artifact Registry | `artifactregistry.googleapis.com` | Pulling container images from core-infra's registry |
 | Cloud Run | `run.googleapis.com` | The ingestor/extractor jobs and the sanitizer service |
 | Cloud Scheduler | `cloudscheduler.googleapis.com` | Triggering the ingestor and extractor jobs on a cron |
-| Cloud Storage | `storage.googleapis.com` | Archive, event-log, deadletter, and assets buckets |
+| Cloud Storage | `storage.googleapis.com` | Archive, event-log, and deadletter buckets |
 | Pub/Sub | `pubsub.googleapis.com` | Ingestor → sanitizer → extractor hand-off |
 | Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and the pipeline dashboard |
 | Secret Manager | `secretmanager.googleapis.com` | The source list and sanitizer policy documents |
@@ -50,7 +50,6 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 | `ingestion-archive-bucket` | Permanent store for raw fetch bodies and both ingestor and sanitizer records | CMEK-encrypted with core-infra's key; no lifecycle rule |
 | `ingestion-event-log-bucket` | Auto-archived copy of every message published to the ingestor and sanitizer topics | Age-based deletion, configurable per collection — see known-issues for a gap in what's covered |
 | `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription | Age-based deletion plus optional soft-delete |
-| `ingestion-assets-bucket` | Holds two static objects (a default source list and sanitizer policy) that aren't currently read by anything — see known-issues |
 
 ### Pipeline: ingestor → sanitizer → extractor
 

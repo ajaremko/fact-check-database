@@ -25,18 +25,3 @@ unset even though a code comment in `config.ts` recommends setting it in product
 as part of a documentation pass.
 **If this ever needs to be fixed:** Set real cron schedules and a `deadletterSoftDeleteDays` value
 in `Pulumi.prod.yml` once the production pipeline is meant to run unattended.
-
-## Two GCS objects are provisioned and exported but never read
-
-**Error:** No error — dead infrastructure.
-**Where:** `src/assets/storage.ts` uploads `ingestion-sources.csv` and `sanitizer-policy.yml` to
-the assets bucket and exports their object names (`ingestionSourcesObjectName`,
-`sanitizerPolicyObjectName`), but no service reads either object. The ingestor and sanitizer
-actually read their config from the per-stack Secret Manager secrets in `src/assets/secrets.ts`
-instead (see the README's "Updating the source list or sanitizer policy").
-**Root cause:** Likely an earlier design (config served from the assets bucket directly) that was
-superseded by the Secret Manager approach without removing the original objects.
-**Decision:** Leave as-is. Removing provisioned resources is an infra change, not a docs fix.
-**If this ever needs to be fixed:** Confirm nothing external depends on these two objects, then
-remove `ingestionSourcesObject`/`sanitizerPolicyObject` and their outputs from
-`src/assets/storage.ts`.

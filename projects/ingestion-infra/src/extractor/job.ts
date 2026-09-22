@@ -7,7 +7,6 @@ import {
   tag,
   logLevel,
 } from '../config'
-import { assetsBucketName } from '../assets'
 import { cloudRunService } from '../services'
 import { provider } from '../project'
 import { getImageUrl } from '../shared'
@@ -34,10 +33,6 @@ export const extractorJob = new gcp.cloudrunv2.Job(
           {
             image: getImageUrl('ingestion-extractor', dockerTag),
             envs: [
-              {
-                name: 'ASSETS_BUCKET_NAME',
-                value: assetsBucketName,
-              },
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',
                 value: extractorSubscription.id,
