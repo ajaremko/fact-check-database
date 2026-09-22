@@ -99,8 +99,6 @@ See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
 - [x] Remove the unnecessary `cloudRunArtifactRegistryReader` dependency from the translation
       service (it uses a public Docker Hub image, not the shared registry) — moot, the service is
       gone
-- [ ] Consider defining the curated fact-check table's schema as a shared `core-contracts` schema
-      instead of hand-duplicating it, if the shape stabilizes
 
 ### analysis-loader
 

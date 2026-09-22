@@ -81,5 +81,3 @@ holding its credentials directly.
 ```bash
 nx output analysis-infra --stack=<dev|prod>
 ```
-
-See [docs/known-issues.md](./known-issues.md) for this project's current accepted gaps.
