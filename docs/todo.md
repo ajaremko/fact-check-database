@@ -49,7 +49,7 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
       config, like the other three buckets, instead of hardcoding `forceDestroy`/`retainOnDelete`
 - [x] Remove the unused required config keys `ingestion:archiveLocation` and
       `ingestion:batchRetentionDays`, or wire them up
-- [ ] Add `'ingestor-events/'` to the event log bucket's lifecycle-delete `matchesPrefixes` (only
+- [x] Add `'ingestor-events/'` to the event log bucket's lifecycle-delete `matchesPrefixes` (only
       sanitizer/extractor events are currently pruned)
 - [ ] Set real cron schedules (`ingestorSchedule`/`extractorSchedule`) and a
       `deadletterSoftDeleteDays` value in `Pulumi.prod.yml` once the pipeline should run unattended

@@ -24,7 +24,7 @@ export const eventLogBucket = new gcp.storage.Bucket(
           {
             action: { type: 'Delete' },
             condition: {
-              matchesPrefixes: ['sanitizer-events/', 'extractor-events/'],
+              matchesPrefixes: ['ingestor-events/', 'sanitizer-events/'],
               age: eventLogRetentionDays,
             },
           },
