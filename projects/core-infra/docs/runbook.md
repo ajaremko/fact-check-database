@@ -17,12 +17,8 @@ directly in `Pulumi.<stack>.yml`) before the stack will deploy.
 | `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                        | `news-research`           | `news-research`            |
 | `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                              | `shared-identity-pool-01` | `shared-identity-pool-01`  |
 | `core:batchRetentionDays`     | Days before an object in the staging bucket is deleted by its lifecycle rule                                  | `1`                       | `1`                        |
-| `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                              | `true`                    | `true`                     |
-| `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`. | `false`                   | `false`                    |
-
-**Both stacks currently set `forceDestroyStorage: true` and `retainStorageOnDelete: false`, even
-in production.** See [docs/known-issues.md](./known-issues.md) for why this hasn't been changed
-yet and what to set before it matters.
+| `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                              | `true`                    | `false`                    |
+| `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`. | `false`                   | `true`                     |
 
 Every domain project points back at this stack through its own `<domain>:coreStackName` config
 key (for example `ingestion:coreStackName`) and a Pulumi `StackReference` — see the

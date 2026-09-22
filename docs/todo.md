@@ -24,9 +24,9 @@ to be a won't-fix.
 
 See [known-issues.md](../projects/core-infra/docs/known-issues.md).
 
-- [ ] Set `core:forceDestroyStorage: false` and `core:retainStorageOnDelete: true` in
+- [x] Set `core:forceDestroyStorage: false` and `core:retainStorageOnDelete: true` in
       `Pulumi.prod.yml` before any planned prod destroy
-- [ ] Audit `dependsOn` edges in `src/` against the API-enablement resources in `src/services.ts`,
+- [x] Audit `dependsOn` edges in `src/` against the API-enablement resources in `src/services.ts`,
       to stop first-deploy failures on freshly enabled APIs
 - [ ] Scope down the CI/CD identity's IAM roles (replace `roles/editor`; scope
       `roles/cloudkms.admin` to the `core-key-ring` key ring) once more than one team deploys

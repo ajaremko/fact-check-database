@@ -4,11 +4,16 @@ import * as pulumi from '@pulumi/pulumi'
 import { stagingPathPrefix } from '@news-research/core-contracts/staging/v1'
 
 import { coreLabels, tag } from '../config'
-import { provider, gcsAccount } from '../project'
-import { pubsubService } from '../services'
+import { provider } from '../project'
+import { pubsubService, storageService } from '../services'
 
 import { factChecksTableDBSchemaObject } from './schema'
 import { stagingStorageBucket } from './storage'
+
+const gcsAccount = gcp.storage.getProjectServiceAccountOutput(
+  {},
+  { provider, dependsOn: [storageService] }
+)
 
 export const stagingStorageTopic = new gcp.pubsub.Topic(
   `${tag}-staging-uploads-topic`,

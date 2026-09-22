@@ -4,6 +4,7 @@ import * as pulumi from '@pulumi/pulumi'
 import { gcpProject, githubOrg, githubRepo, tag } from '../config'
 import { identityPool } from '../identity-pool'
 import { provider } from '../project'
+import { IAMService, resourceManagerService } from '../services'
 
 /**
  * The service account to be impersonated by GitHub Actions runner to access GCP resources
@@ -15,7 +16,7 @@ export const githubActionServiceAccount = new gcp.serviceaccount.Account(
     displayName: 'GitHub Actions Service Account',
     description: 'Service account for GitHub Actions to access GCP resources',
   },
-  { provider }
+  { dependsOn: [IAMService], provider }
 )
 
 /**
@@ -58,7 +59,7 @@ export const githubActionServiceAccountEditorIamMember =
       role: 'roles/editor',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount], provider }
+    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
   )
 
 /**
@@ -72,7 +73,7 @@ export const githubActionServiceAccountServiceAdminIamMember =
       role: 'roles/serviceusage.serviceUsageAdmin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount], provider }
+    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
   )
 
 export const githubActionServiceAccountIamAdminIamMember =
@@ -83,7 +84,7 @@ export const githubActionServiceAccountIamAdminIamMember =
       role: 'roles/iam.serviceAccountAdmin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount], provider }
+    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
   )
 
 export const githubActionServiceAccountComputeIamMember =
@@ -94,7 +95,7 @@ export const githubActionServiceAccountComputeIamMember =
       role: 'roles/compute.admin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount], provider }
+    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
   )
 
 /**
@@ -109,5 +110,5 @@ export const githubActionServiceAccountKmsAdminIamMember =
       role: 'roles/cloudkms.admin',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount], provider }
+    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
   )
