@@ -16,8 +16,8 @@ Reference for the `analysis` Pulumi config namespace, read by `src/config.ts`. S
 | `analysis:region` | GCP region for regional resources | Yes | — |
 | `analysis:logLevel` | Log level passed to the staging loader | Yes | — |
 | `analysis:tag` | Docker image tag for the staging loader | No | none — falls back to a public placeholder image if unset |
-| `analysis:tableDeletionProtection` | Whether the BigQuery tables have Pulumi/GCP deletion protection | No | `true` — both stacks currently override to `false`, see known-issues |
-| `analysis:retainTablesOnDelete` | Whether the tables survive `pulumi destroy` | No | `true` — both stacks currently override to `false`, see known-issues |
+| `analysis:tableDeletionProtection` | Whether the BigQuery tables have Pulumi/GCP deletion protection | No | `true` — dev overrides to `false` for easy iteration |
+| `analysis:retainTablesOnDelete` | Whether the tables survive `pulumi destroy` | No | `true` — dev overrides to `false` for easy iteration |
 | `analysis:forceDestroyStorage` | Whether `pulumi destroy` may delete a non-empty dead-letter bucket | No | `false` |
 | `analysis:retainStorageOnDelete` | Whether the dead-letter bucket survives `pulumi destroy` | No | `true` |
 | `analysis:deadletterRetentionDays` | Age-based deletion window for the dead-letter bucket. Unset disables the rule | No | unset |

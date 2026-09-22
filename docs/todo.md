@@ -89,7 +89,7 @@ See [known-issues.md](../projects/ingestion-extractor/docs/known-issues.md).
 
 See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
 
-- [ ] Set `analysis:tableDeletionProtection: true` and `analysis:retainTablesOnDelete: true` in
+- [x] Set `analysis:tableDeletionProtection: true` and `analysis:retainTablesOnDelete: true` in
       `Pulumi.prod.yml` (or remove the overrides) before any planned prod destroy
 - [x] Remove the unused required config key `analysis:deployingServiceAccountEmail`, or finish the
       commented-out feature in `subscription.ts` that was meant to use it

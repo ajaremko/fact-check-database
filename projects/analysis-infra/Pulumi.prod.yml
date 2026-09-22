@@ -2,7 +2,7 @@ config:
   analysis:project: fact-check-database-analysis
   analysis:region: us-central1
   analysis:coreStackName: alfredsyoung/fact-check-database-core
-  analysis:tableDeletionProtection: false
-  analysis:retainTablesOnDelete: false
+  analysis:tableDeletionProtection: true
+  analysis:retainTablesOnDelete: true
   analysis:tag: 374-07.10.26-2bf3017
   analysis:logLevel: debug
