@@ -82,8 +82,8 @@ See [docs/iam-model.md](./docs/iam-model.md) for each service's service account 
 
 One Cloud Monitoring dashboard (`ingestion-dashboard`) with six sections: Overview (per-service
 result breakdowns), Content Ingestion and Data Extraction (log-analytics tables per pipeline
-stage), System Logs (currently broken — see known-issues), Messaging (Pub/Sub backlog/throughput),
-and Storage (bucket sizes).
+stage), System Logs (raw log output from all pipeline components), Messaging (Pub/Sub
+backlog/throughput), and Storage (bucket sizes).
 
 ## Consuming these outputs
 
@@ -99,4 +99,3 @@ core-infra treats its own: a stable interface, breaking to rename or repoint.
 | [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
 | [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
 | [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |

@@ -2,12 +2,12 @@ config:
   ingestion:project: fact-check-database-ingestion
   ingestion:region: us-central1
   ingestion:coreStackName: alfredsyoung/fact-check-database-core
-  # ingestion:ingestorSchedule: '0 */4 * * *'
-  # ingestion:extractorSchedule: '0 */12 * * *'
+  ingestion:ingestorSchedule: '0 */4 * * *'
+  ingestion:extractorSchedule: '0 */12 * * *'
   ingestion:tag: 374-07.10.26-2bf3017
   ingestion:logLevel: info
   ingestion:logRetentionDays: 1
   ingestion:eventLogRetentionDays: 3
-  ingestion:deadletterRetentionDays: 3
+  ingestion:deadletterSoftDeleteDays: 30
   ingestion:forceDestroyStorage: true
   ingestion:retainStorageOnDelete: false

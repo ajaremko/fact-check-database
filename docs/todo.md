@@ -51,7 +51,7 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
       `ingestion:batchRetentionDays`, or wire them up
 - [x] Add `'ingestor-events/'` to the event log bucket's lifecycle-delete `matchesPrefixes` (only
       sanitizer/extractor events are currently pruned)
-- [ ] Set real cron schedules (`ingestorSchedule`/`extractorSchedule`) and a
+- [x] Set real cron schedules (`ingestorSchedule`/`extractorSchedule`) and a
       `deadletterSoftDeleteDays` value in `Pulumi.prod.yml` once the pipeline should run unattended
 - [x] Interpolate `gcpProject` into the System Logs dashboard panel's `resourceNames` instead of
       the hardcoded dev project id

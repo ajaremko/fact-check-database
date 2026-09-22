@@ -15,13 +15,13 @@ Reference for the `ingestion` Pulumi config namespace, read by `src/config.ts`. 
 | `ingestion:project` | GCP project ID this stack deploys into | Yes | `fact-check-database-dev` | `fact-check-database-ingestion` |
 | `ingestion:region` | GCP region for regional resources | Yes | `us-central1` | `us-central1` |
 | `ingestion:tag` | Docker image tag for all three services | No | set per-deploy | set per-deploy |
-| `ingestion:ingestorSchedule` | Cron schedule for the ingestor job. Unset means manual-trigger only | No | `0 */4 * * *` | currently unset — see known-issues |
-| `ingestion:extractorSchedule` | Cron schedule for the extractor job. Unset means manual-trigger only | No | `0 */12 * * *` | currently unset — see known-issues |
+| `ingestion:ingestorSchedule` | Cron schedule for the ingestor job. Unset means manual-trigger only | No | `0 */4 * * *` | `0 */4 * * *` |
+| `ingestion:extractorSchedule` | Cron schedule for the extractor job. Unset means manual-trigger only | No | `0 */12 * * *` | `0 */12 * * *` |
 | `ingestion:logLevel` | Log level passed to all three services | Yes | `info` (or as configured) | `info` |
 | `ingestion:logRetentionDays` | Retention on the project's `_Default` log bucket | Yes | — | — |
 | `ingestion:eventLogRetentionDays` | Age-based deletion window for the event log bucket. Unset disables the rule; a code comment recommends leaving it unset in prod | No | set in dev | unset |
 | `ingestion:deadletterRetentionDays` | Age-based deletion window for the deadletter bucket. Same unset-in-prod recommendation | No | set in dev | unset |
-| `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be *set* in production | No | unset | unset — contradicts the recommendation, see known-issues |
+| `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be *set* in production | No | unset | `30` |
 | `ingestion:forceDestroyStorage` | Whether `pulumi destroy` may delete non-empty buckets, including the raw archive bucket | No, default `false` | `true` | `true` |
 | `ingestion:retainStorageOnDelete` | Whether buckets survive `pulumi destroy` instead of being deleted with the stack, including the raw archive bucket | No, default `true` | `false` | `false` |
 
@@ -68,8 +68,7 @@ service entirely.
 **Symptom:** the ingestor or extractor job has no recent executions, and there's no Cloud
 Scheduler job for it.
 **Cause:** `ingestion:ingestorSchedule`/`extractorSchedule` is unset for this stack — both
-services fall back to manual-trigger-only when their schedule config is empty (this is
-currently true for both in prod; see known-issues).
+services fall back to manual-trigger-only when their schedule config is empty.
 **Resolution:** set the schedule config and redeploy, or trigger the job manually:
 `gcloud run jobs execute ingestion-ingestor-job --region=<region> --project=<project>` (or
 `ingestion-extractor-job`).
@@ -116,5 +115,3 @@ config.
 ```bash
 nx output ingestion-infra --stack=<dev|prod>
 ```
-
-See [docs/known-issues.md](./known-issues.md) for this project's current accepted gaps.
