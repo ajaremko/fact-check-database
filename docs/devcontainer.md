@@ -21,20 +21,21 @@ VS Code extensions are pre-configured for ESLint, Prettier, Nx Console, GitHub A
 
 ## Prerequisites
 
-Before opening the dev container, create a `.env` file in `.devcontainer/node/` from the provided template:
+Before opening the dev container, create a `.env` file in `.devcontainer/` from the provided template:
 
 ```bash
-cp .devcontainer/node/.env.template .devcontainer/node/.env
+cp .devcontainer/.env.template .devcontainer/.env
 ```
 
 Then fill in the following values:
 
-| Variable                         | Description                                                                          |
-| -------------------------------- | ------------------------------------------------------------------------------------ |
-| `PULUMI_ACCESS_TOKEN`            | Pulumi access token for managing infrastructure state                                |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Filename of a GCP service account key file (must be placed in `~/.gcp/` on the host) |
-| `PROJECT_ID`                     | GCP project ID for the target environment (e.g. `fact-check-database-dev`)           |
-| `GITHUB_TOKEN`                   | GitHub personal access token for the GitHub CLI                                      |
+| Variable                         | Description                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `PULUMI_ACCESS_TOKEN`            | Pulumi access token for managing infrastructure state                                  |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Filename of a GCP service account key file (must be placed in `~/.gcp/` on the host)   |
+| `PROJECT_ID`                     | GCP project ID for the target environment (e.g. `fact-check-database-dev`)             |
+| `GITHUB_TOKEN`                   | GitHub personal access token for the GitHub CLI                                        |
+| `ALGOLIA_API_KEY`                | Algolia admin API key, read by the Algolia Pulumi SDK used in `projects/website-infra` |
 
 ## GCP Credentials
 
@@ -57,19 +58,19 @@ The `SSH_AUTH_SOCK` environment variable is set to `/ssh-agent.sock` inside the 
 
 ## Post-Create Setup
 
-After the container is created, `.devcontainer/node/setup.sh` runs automatically. It:
+After the container is created, `.devcontainer/setup.sh` runs automatically. It:
 
 1. Authenticates the `gcloud` CLI using the provided service account credentials
 2. Installs npm dependencies (`npm install`) if `node_modules` does not already exist
 
 ## Volume Mounts
 
-| Host path           | Container path    | Purpose                             |
-| ------------------- | ----------------- | ----------------------------------- |
-| `../..` (repo root) | `/workspaces/`    | Source code                         |
-| `~/.ssh`            | `/home/node/.ssh` | SSH config and known hosts          |
-| `~/.gcp`            | `/var/secrets`    | GCP service account key files       |
-| `$SSH_AUTH_SOCK`    | `/ssh-agent.sock` | SSH agent socket for key forwarding |
+| Host path                     | Container path    | Purpose                             |
+| ----------------------------- | ----------------- | ----------------------------------- |
+| `../..` (parent of repo root) | `/workspaces/`    | Source code                         |
+| `~/.ssh`                      | `/home/node/.ssh` | SSH config and known hosts          |
+| `~/.gcp`                      | `/var/secrets`    | GCP service account key files       |
+| `$SSH_AUTH_SOCK`              | `/ssh-agent.sock` | SSH agent socket for key forwarding |
 
 ## Known Issues
 
@@ -77,4 +78,4 @@ After the container is created, `.devcontainer/node/setup.sh` runs automatically
 
 Docker on macOS runs containers inside a Linux VM. Bind-mounting host directories into that VM introduces a filesystem translation layer that can significantly slow down disk-intensive operations — particularly `npm install`, build steps, and anything that reads or writes many small files.
 
-The source code mount (`../..:/workspaces`) covers the entire repo root, including `node_modules` once installed. This is the mount most likely to cause noticeable slowness on macOS.
+The source code mount (`../..:/workspaces`) covers the directory containing the repo, including `node_modules` once installed. This is the mount most likely to cause noticeable slowness on macOS.

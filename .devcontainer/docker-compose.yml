@@ -11,11 +11,9 @@ services:
       PULUMI_ACCESS_TOKEN: $PULUMI_ACCESS_TOKEN
       GITHUB_TOKEN: $GITHUB_TOKEN
       ALGOLIA_API_KEY: $ALGOLIA_API_KEY
-      RECAPTCHA_API_KEY: $RECAPTCHA_API_KEY
-      RECAPTCHA_SITE_KEY: $RECAPTCHA_SITE_KEY
       NX_TUI: false
     volumes:
-      - ../../..:/workspaces:cached
+      - ../..:/workspaces:cached
       - ~/.ssh:/home/node/.ssh:cached
       - ~/.gcp:/var/secrets:cached
       - type: bind
