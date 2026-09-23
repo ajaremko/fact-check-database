@@ -10,12 +10,12 @@ function encodeBatch(rows: readonly unknown[]): Uint8Array {
 }
 
 const fullRow = {
-  content_lineage_id: 'lineage-1',
+  fact_check_id: 'fact-check-1',
   content_sha256: 'sha-content-1',
   extracted_at: '2026-01-01T00:00:00.000Z',
   fetched_at: '2026-01-01T00:00:00.000Z',
-  ingestion_id: 'ingestion-1',
-  extraction_id: 'extraction-1',
+  ingestor_run_id: 'ingestor-run-1',
+  extractor_run_id: 'extractor-run-1',
   source: {
     id: 'politifact',
     name: 'politifact.com',
@@ -56,7 +56,7 @@ describe('transcodeBatch', () => {
       const [result] = yield* transcodeBatch(encodeBatch([fullRow]))
 
       expect(result).toStrictEqual({
-        objectID: 'lineage-1',
+        objectID: 'fact-check-1',
         content_type: 'application/rss+xml',
         content_length: '10648',
         final_url: 'https://example.com/final',
@@ -83,15 +83,15 @@ describe('transcodeBatch', () => {
     Effect.gen(function* () {
       const secondRow = {
         ...fullRow,
-        content_lineage_id: 'lineage-2',
+        fact_check_id: 'fact-check-2',
         source: { ...fullRow.source, id: 'snopes', name: 'snopes.com' },
       }
 
       const results = yield* transcodeBatch(encodeBatch([fullRow, secondRow]))
 
       expect(results.map((r) => r.objectID)).toStrictEqual([
-        'lineage-1',
-        'lineage-2',
+        'fact-check-1',
+        'fact-check-2',
       ])
       expect(results[1].source_id).toBe('snopes')
     })
@@ -121,12 +121,12 @@ describe('transcodeBatch', () => {
     () =>
       Effect.gen(function* () {
         const minimalRow = {
-          content_lineage_id: 'lineage-minimal',
+          fact_check_id: 'fact-check-minimal',
           content_sha256: 'sha-content-minimal',
           extracted_at: '2026-01-01T00:00:00.000Z',
           fetched_at: '2026-01-01T00:00:00.000Z',
-          ingestion_id: 'ingestion-1',
-          extraction_id: 'extraction-1',
+          ingestor_run_id: 'ingestor-run-1',
+          extractor_run_id: 'extractor-run-1',
           source: fullRow.source,
           extractor_id: 'extractor-1',
           extractor_version: '1',
@@ -139,7 +139,7 @@ describe('transcodeBatch', () => {
         const [result] = yield* transcodeBatch(encodeBatch([minimalRow]))
 
         expect(result).toStrictEqual({
-          objectID: 'lineage-minimal',
+          objectID: 'fact-check-minimal',
           extracted_at: '2026-01-01T00:00:00.000Z',
           source_collection: 'rss',
           source_id: 'politifact',

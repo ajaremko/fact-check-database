@@ -17,8 +17,7 @@ import { PolicyDecisionSchema } from './PolicyDecision'
 export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
   'SanitizedObservation'
 )({
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  ingestorRunId: Schema.String,
   fetchedAt: TimestampSchema,
   sanitizedAt: TimestampSchema,
   outcome: Schema.Struct({
@@ -79,8 +78,7 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
       const output: DeepMutable<SanitizerRecord> = {
         version: 1 as const,
         kind: 'sanitized_record' as const,
-        content_lineage_id: input.observationId,
-        ingestion_batch_id: input.ingestionId,
+        ingestor_run_id: input.ingestorRunId,
         fetched_at: input.fetchedAt,
         sanitized_at: input.sanitizedAt,
         source: {
@@ -154,8 +152,7 @@ export const SanitizedObservationMetaSchema = Schema.transformOrFail(
         sourceCollection: input.source.collection,
         fetchedAt: input.fetchedAt,
         sanitizedAt: input.sanitizedAt,
-        observationId: input.observationId,
-        ingestionId: input.ingestionId,
+        ingestorRunId: input.ingestorRunId,
       }),
   }
 )
@@ -180,8 +177,8 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
         ext: `yml`,
         sourceId: input.source.id,
         date: input.fetchedAt,
-        ingestionId: input.ingestionId,
-        observationId: input.observationId,
+        ingestorRunId: input.ingestorRunId,
+        fileName: 'fetch_attempt',
       }),
   }
 )

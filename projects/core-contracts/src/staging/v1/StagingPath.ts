@@ -20,7 +20,7 @@ export function stagingPathPrefix(type: string, version: number): string {
  * Schema for the object path under which the extractor stages a batch in the
  * staging bucket.
  *
- * The layout is `v{version}/type={type}/date={yyyy-MM-dd}/{extractionId}.{ext}`,
+ * The layout is `v{version}/type={type}/date={yyyy-MM-dd}/{extractorRunId}.{ext}`,
  * so paths sort by contract version, then record type, then day, and a bucket
  * listing or notification filter can select any of those levels by prefix.
  * The `date` component is a Unix-millisecond `number` in code and is
@@ -33,10 +33,10 @@ export function stagingPathPrefix(type: string, version: number): string {
  *   version: 1,
  *   type: 'fact_checks',
  *   date: 1704067200000,
- *   extractionId: 'extraction-1',
+ *   extractorRunId: 'run-1',
  *   ext: 'ndjson',
  * })
- * // → "v1/type=fact_checks/date=2024-01-01/extraction-1.ndjson"
+ * // → "v1/type=fact_checks/date=2024-01-01/run-1.ndjson"
  */
 export const StagingPathSchema = Schema.transformOrFail(
   Schema.String,
@@ -45,13 +45,13 @@ export const StagingPathSchema = Schema.transformOrFail(
     type: Schema.Literal('fact_checks'),
     ext: Schema.String,
     date: NumberFromFormattedDate('yyyy-MM-dd'),
-    extractionId: Schema.String,
+    extractorRunId: Schema.String,
   }),
   {
     strict: true,
     encode: (input) => {
       const prefix = stagingPathPrefix(input.type, input.version)
-      const output = `${prefix}/date=${input.date}/${input.extractionId}.${input.ext}`
+      const output = `${prefix}/date=${input.date}/${input.extractorRunId}.${input.ext}`
       return ParseResult.succeed(output)
     },
     decode: (input, _, ast) =>

@@ -11,8 +11,7 @@ import {
 import { TimestampSchema } from '@fact-check-database/ingestion-contracts/shared/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  ingestorRunId: Schema.String,
   fetchedAt: TimestampSchema,
   error: Schema.NullOr(Schema.String),
   source: SourceConfigSchema,
@@ -57,8 +56,7 @@ export const ObservationSchema = Schema.transformOrFail(
         typeof input.content === 'undefined'
       ) {
         return ParseResult.succeed({
-          observationId: input.content_lineage_id,
-          ingestionId: input.ingestion_batch_id,
+          ingestorRunId: input.ingestor_run_id,
           fetchedAt: input.fetched_at,
           error: input.error ?? null,
           finalUrl: input.final_url ?? null,
@@ -72,8 +70,7 @@ export const ObservationSchema = Schema.transformOrFail(
         })
       }
       return ParseResult.succeed({
-        observationId: input.content_lineage_id,
-        ingestionId: input.ingestion_batch_id,
+        ingestorRunId: input.ingestor_run_id,
         fetchedAt: input.fetched_at,
         error: input.error ?? null,
         source: {

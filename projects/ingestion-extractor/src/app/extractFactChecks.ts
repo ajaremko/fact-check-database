@@ -11,6 +11,7 @@ import { logExtractionSucceeded, logExtractionFailed } from './logging'
 import { contentPreview } from './NormalizedText'
 import { ObservationSchema } from './Observation'
 import { extractors } from '../integration/extraction-strategy'
+import { factCheckId } from '../integration/factCheckId'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -34,8 +35,7 @@ const CONTENT_BLOB_WRITE_CONCURRENCY = 10
 
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
-    extractionId: string
-    // observationId: string
+    extractorRunId: string
     pointer: FilePointer
     extractedAt: number
   }) {
@@ -86,12 +86,18 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
                 }
 
                 const row: FactCheckRow = {
-                  id: factCheck.sha256,
-                  observationId: observation.observationId,
-                  extractionId: ctx.extractionId,
+                  factCheckId: factCheckId({
+                    sourceId: observation.source.id,
+                    sourceUrl: observation.source.url,
+                    canonicalUrl: factCheck.canonicalUrl,
+                    link: factCheck.link,
+                    guid: factCheck.guid,
+                    title: factCheck.title,
+                  }),
+                  extractorRunId: ctx.extractorRunId,
                   fetchedAt: observation.fetchedAt,
                   extractedAt: ctx.extractedAt,
-                  ingestionId: observation.ingestionId,
+                  ingestorRunId: observation.ingestorRunId,
                   factCheck: factCheck.content
                     ? {
                         ...factCheck,

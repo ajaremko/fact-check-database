@@ -59,16 +59,11 @@ This service never calls a publisher directly — `ingestFromSource` only writes
 - **In development** (`STORAGE_MODE=filesystem`), `core-io`'s `FileSystemStorageWriterWithNotification` adapter synthesizes a GCS-style "object finalized" notification and publishes it after every write under the `records/` prefix, so a local run can be exercised end-to-end without GCP infrastructure.
 - **In production** (`STORAGE_MODE=gcp`), writing the record to the configured GCS bucket triggers a real bucket-level Pub/Sub notification — infrastructure provisioned by `ingestion-infra`, not application code in this project. The sanitizer's push subscription receives it from there.
 
-### Run and observation identity
+### Run and fetch identity
 
-Each run gets a UUID (`runId`) at startup, threaded through as `ingestionId`. It's included in every archived record and appears in the GCS archive path, making it possible to trace every output of one run.
+Each run gets a UUID at startup, carried as `ingestor_run_id` (`ingestorRunId` in code). It's included in every archived record and appears in the GCS archive path, making it possible to trace every output of one run.
 
-Each record also carries an `observationId` — a deterministic hash of the fetch outcome:
-
-- On success: `sha256("v1|url={url}|sha256={contentHash}")`
-- On failure: `sha256("v1|url={url}|t={fetchedAt}|error={error}")`
-
-Because it's derived from content rather than randomly generated, `observationId` is stable across runs for identical content fetched from the same URL, letting downstream consumers detect duplicate observations.
+A run fetches each source once, so `source.id` + `ingestor_run_id` identify a fetch attempt; there is no separate fetch or observation id. A successful fetch's body is archived under its `content_sha256`, so identical bytes fetched by different runs are recognizable by name. See [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) for how these identifiers carry through to BigQuery.
 
 ### Partial failure behavior
 
@@ -84,7 +79,7 @@ nx lint ingestion-ingestor
 nx build ingestion-ingestor
 ```
 
-Four spec files cover the schemas (`FetchedBody`, `Observation`, `ObservationId`) and the core `ingestFromSource` logic.
+Three spec files cover the schemas (`FetchedBody`, `Observation`) and the core `ingestFromSource` logic.
 
 ### Local setup
 
@@ -107,7 +102,9 @@ See [docs/runbook.md](./docs/runbook.md) for the complete configuration referenc
 
 ## Related documentation
 
-| Document                                                | Purpose                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------ |
-| [docs/runbook.md](./docs/runbook.md)                    | Configuration reference, operations, and diagnosing failures |
-| [ingestion-contracts](../ingestion-contracts/README.md) | The canonical `IngestionRecord` schema this service archives |
+| Document                                                           | Purpose                                                                                            |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)                               | Configuration reference, operations, and diagnosing failures                                       |
+| [ingestion-contracts](../ingestion-contracts/README.md)            | The canonical `IngestionRecord` schema this service archives                                       |
+| [docs/known-issues.md](./docs/known-issues.md)                     | Accepted, long-lived gaps and deferred fixes                                                       |
+| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | Identifiers this service mints (`ingestor_run_id`, `content_sha256`) and how they carry downstream |

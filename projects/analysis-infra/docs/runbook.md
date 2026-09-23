@@ -63,9 +63,10 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
    dataset and `bigquery.dataEditor` on the curated dataset, and that Google's own BigQuery Data
    Transfer Service agent still has `serviceAccountTokenCreator` on that service account — this
    impersonation grant is what lets DTS run the query as that identity at all.
-3. Remember the transfer only looks at rows with `extracted_at` in roughly the last 24 hours, and
-   only inserts rows that don't already match an existing curated row's dedup hash — a row that's
-   older than that window when the schedule catches up won't be picked up.
+3. Remember the transfer only looks at staging rows with `extracted_at` in the last 7 days (the
+   staging partition expiry), and a fact check that's already curated is only *updated* — not
+   re-inserted — and only when a newer fetch carries different content. A staging row older than
+   7 days when the schedule catches up won't be picked up.
 
 ## Access notes
 

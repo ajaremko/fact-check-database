@@ -7,10 +7,9 @@ describe('FactCheckRowSchema', () => {
   it('encodes to bigquery row', () => {
     expect(
       Schema.encodeUnknownSync(FactCheckRowSchema)({
-        id: 'lineage-id',
-        observationId: 'obs-id',
-        ingestionId: 'ing-id',
-        extractionId: 'ext-id',
+        factCheckId: 'fact-check-id',
+        ingestorRunId: 'ingestor-run-id',
+        extractorRunId: 'extractor-run-id',
         extractedAt: 0,
         fetchedAt: 0,
         extractor: {
@@ -50,11 +49,11 @@ describe('FactCheckRowSchema', () => {
         },
       })
     ).toEqual({
-      content_lineage_id: 'lineage-id',
+      fact_check_id: 'fact-check-id',
       content_sha256: 'sha256abc',
       extracted_at: '1970-01-01T00:00:00.000Z',
-      ingestion_id: 'ing-id',
-      extraction_id: 'ext-id',
+      ingestor_run_id: 'ingestor-run-id',
+      extractor_run_id: 'extractor-run-id',
       extractor_id: 'extractor-id',
       extractor_version: '1',
       fetched_at: '1970-01-01T00:00:00.000Z',
@@ -93,10 +92,9 @@ describe('FactCheckRowSchema', () => {
 
   it('does not corrupt Markdown syntax in summary/content when encoding', () => {
     const result = Schema.encodeUnknownSync(FactCheckRowSchema)({
-      id: 'lineage-id',
-      observationId: 'obs-id',
-      ingestionId: 'ing-id',
-      extractionId: 'ext-id',
+      factCheckId: 'fact-check-id',
+      ingestorRunId: 'ingestor-run-id',
+      extractorRunId: 'extractor-run-id',
       extractedAt: 0,
       fetchedAt: 0,
       extractor: { id: 'extractor-id', version: 1 },

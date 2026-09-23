@@ -45,7 +45,8 @@ core-project topic — the same staging-write notification analysis-loader consu
  Read the NDJSON batch from GCS
       │
       ▼
- Decode each row (FactChecksTableRowSchema) and transcode it into a SearchResult
+ Decode each row (FactChecksTableRowSchema) and transcode it into a SearchResult,
+ with objectID = fact_check_id
       │
       ▼
  Save the batch to Algolia (saveObjects, waitForTasks: true)
@@ -54,6 +55,10 @@ core-project topic — the same staging-write notification analysis-loader consu
       │
       └── Failure ──► error response (nacks; redelivered, dead-lettered after 5 attempts)
 ```
+
+Search records are keyed by `fact_check_id`, so Algolia's upsert keeps one record per fact check:
+a later batch carrying an edited title or summary overwrites the existing record instead of adding
+a second one. Within a batch, a later row for the same fact check overwrites an earlier one.
 
 ## Development
 
@@ -87,3 +92,4 @@ gap.
 | [core-vendor](../core-vendor/README.md) | `AlgoliaSearchClient`, used to save the transcoded batch |
 | [website-contracts](../website-contracts/README.md) | The `SearchResult` schema this service writes to Algolia |
 | [analysis-loader](../analysis-loader/README.md) | The other consumer of the same staging batches, loading into BigQuery instead |
+| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | Why search records are keyed by `fact_check_id` |

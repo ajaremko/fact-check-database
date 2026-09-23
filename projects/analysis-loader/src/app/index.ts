@@ -22,7 +22,7 @@ import { loadBatch } from './loadBatch'
 const decodePubsubMessageEnvelope = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
-  Schema.pick('bucketId', 'objectId'),
+  Schema.pick('bucketId', 'objectId', 'objectGeneration'),
   Schema.extend(
     Schema.Struct({
       schemaObjectId: Schema.String,
@@ -53,6 +53,7 @@ const loadJobs = HttpRouter.post(
         bucket: attributes.bucketId,
         object: attributes.objectId,
       },
+      generation: attributes.objectGeneration,
       sourceFormat: 'NEWLINE_DELIMITED_JSON',
       table: {
         dataset: ctx.datasetId,

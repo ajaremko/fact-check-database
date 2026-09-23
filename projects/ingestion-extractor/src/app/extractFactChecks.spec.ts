@@ -13,8 +13,7 @@ describe('extractFactChecks', () => {
         'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.sanitize.yml': `
           version: 1
           kind: sanitized_record
-          content_lineage_id: b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb
-          ingestion_batch_id: d8af0771-64e4-4e86-99ba-000c6550d2de
+          ingestor_run_id: d8af0771-64e4-4e86-99ba-000c6550d2de
           fetched_at: 0
           sanitized_at: 0
           source:
@@ -25,10 +24,10 @@ describe('extractFactChecks', () => {
           input:
             record:
               bucket: local
-              object: tmp/archive/v1/records/source=politifact.com/date=2026-04-29/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml
+              object: tmp/archive/v1/records/source=politifact.com/date=2026-04-29/ingestor_run_id=d8af0771-64e4-4e86-99ba-000c6550d2de/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.ingestion.yml
             raw:
               bucket: local
-              object: tmp/archive/v1/raw/source=politifact.com/date=2026-04-29/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.bin
+              object: tmp/archive/v1/raw/source=politifact.com/date=2026-04-29/ingestor_run_id=d8af0771-64e4-4e86-99ba-000c6550d2de/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.bin
           label: SAFE_PUBLIC
           actions: []
           bytes_rewritten: false
@@ -91,7 +90,7 @@ describe('extractFactChecks', () => {
           </rss>`,
       }
       const result = yield* extractFactChecks({
-        extractionId: 'run-1',
+        extractorRunId: 'run-1',
         extractedAt: 0,
         pointer: {
           bucket: 'inmemory',
@@ -104,16 +103,16 @@ describe('extractFactChecks', () => {
       )
       expect(result).toStrictEqual([
         {
-          content_lineage_id:
-            'a5083d02d4e0e0a8f99d12fba822cc0f6bc71cd83a8c9b158b4b6e8c4cfa7baa',
+          fact_check_id:
+            '697166d61ebb1ebff3319d16eda9578e7ca1dfb388e9c4d654b9c7d6a1672ab3',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           extracted_at: '1970-01-01T00:00:00.000Z',
-          extraction_id: 'run-1',
+          extractor_run_id: 'run-1',
           extractor_id: 'rss',
           extractor_version: '1',
           fetched_at: '1970-01-01T00:00:00.000Z',
-          ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+          ingestor_run_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           source: {
             collection: 'rss',
             id: 'politifact',
@@ -150,16 +149,16 @@ describe('extractFactChecks', () => {
           },
         },
         {
-          content_lineage_id:
-            'bf42f8ac30fc5dcea481f971bc2a9ed4c1e58ca61c67e11392063e4f16b64552',
+          fact_check_id:
+            '3e2b4197e10c50dbee4af1193ee834e48678c06efdd2e7b60be68b334099f190',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
           extracted_at: '1970-01-01T00:00:00.000Z',
-          extraction_id: 'run-1',
+          extractor_run_id: 'run-1',
           extractor_id: 'rss',
           extractor_version: '1',
           fetched_at: '1970-01-01T00:00:00.000Z',
-          ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+          ingestor_run_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           fact_check: {
             canonical_url:
               'http://www.politifact.com/article/2026/apr/28/missing-dead-scientists-nuclear-weapons-ufos/',
@@ -194,13 +193,13 @@ describe('extractFactChecks', () => {
           },
         },
         {
-          content_lineage_id:
-            'b4702ac341d644a67c43cd00170d4689c66aa76ebd2f059bc57200542845f95b',
+          fact_check_id:
+            'b1633795a4ece36c6c34716b7cac0e1e694857903b7de32cf65f7a97de08910b',
           content_sha256:
             '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
-          ingestion_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+          ingestor_run_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           extracted_at: '1970-01-01T00:00:00.000Z',
-          extraction_id: 'run-1',
+          extractor_run_id: 'run-1',
           extractor_id: 'rss',
           extractor_version: '1',
           fetched_at: '1970-01-01T00:00:00.000Z',
@@ -249,8 +248,7 @@ describe('extractFactChecks', () => {
           'content-blob-test.sanitize.yml': `
           version: 1
           kind: sanitized_record
-          content_lineage_id: content-blob-test
-          ingestion_batch_id: ing-1
+          ingestor_run_id: ing-1
           fetched_at: 0
           sanitized_at: 0
           source:
@@ -293,7 +291,7 @@ describe('extractFactChecks', () => {
           </rss>`,
         }
         const result = yield* extractFactChecks({
-          extractionId: 'run-1',
+          extractorRunId: 'run-1',
           extractedAt: 0,
           pointer: {
             bucket: 'inmemory',
@@ -325,8 +323,7 @@ describe('extractFactChecks', () => {
         '8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.sanitize.yml': `
           version: 1
           kind: sanitized_record
-          content_lineage_id: 8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4
-          ingestion_batch_id: d8af0771-64e4-4e86-99ba-000c6550d2de
+          ingestor_run_id: d8af0771-64e4-4e86-99ba-000c6550d2de
           fetched_at: 1777494908250
           sanitized_at: 1777494924164
           source:
@@ -337,10 +334,10 @@ describe('extractFactChecks', () => {
           input:
             record:
               bucket: local
-              object: tmp/archive/v1/records/source=africacheck.org/date=2026-04-29/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.ingestion.yml
+              object: tmp/archive/v1/records/source=africacheck.org/date=2026-04-29/ingestor_run_id=d8af0771-64e4-4e86-99ba-000c6550d2de/8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.ingestion.yml
             raw:
               bucket: local
-              object: tmp/archive/v1/raw/source=africacheck.org/date=2026-04-29/ingestion_id=d8af0771-64e4-4e86-99ba-000c6550d2de/8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.bin
+              object: tmp/archive/v1/raw/source=africacheck.org/date=2026-04-29/ingestor_run_id=d8af0771-64e4-4e86-99ba-000c6550d2de/8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.bin
           error: "Unexpected content-type: text/html; charset=UTF-8"
           label: QUARANTINED
           actions:
@@ -363,7 +360,7 @@ describe('extractFactChecks', () => {
               object: 8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.bin`,
       }
       const result = yield* extractFactChecks({
-        extractionId: 'run-1',
+        extractorRunId: 'run-1',
         extractedAt: 0,
         pointer: {
           bucket: 'inmemory',
@@ -386,8 +383,7 @@ describe('extractFactChecks', () => {
           'no-content.sanitize.yml': `
             version: 1
             kind: sanitized_record
-            content_lineage_id: no-content-obs
-            ingestion_batch_id: ing-1
+            ingestor_run_id: ing-1
             fetched_at: 0
             sanitized_at: 0
             source:
@@ -406,7 +402,7 @@ describe('extractFactChecks', () => {
               content_type: application/rss+xml`,
         }
         const result = yield* extractFactChecks({
-          extractionId: 'run-1',
+          extractorRunId: 'run-1',
           extractedAt: 0,
           pointer: { bucket: 'inmemory', object: 'no-content.sanitize.yml' },
         }).pipe(

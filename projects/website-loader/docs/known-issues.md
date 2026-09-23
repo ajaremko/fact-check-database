@@ -23,3 +23,17 @@ wires exactly one storage adapter, one logger, and one OTel configuration, all u
 **If this ever needs to be fixed:** Add a `STORAGE_MODE`-style switch (mirroring the
 ingestion/emailer services) with a filesystem-backed alternative for the batch read, plus a
 `.env.template`. A local Algolia sandbox index would also be needed to exercise the save step.
+
+## Search records indexed before 2026-09 are keyed by content hash
+
+**Error:** No error — duplicate search results for some older fact checks.
+**Where:** The Algolia index written by `src/transcodeBatch.ts`.
+**Root cause:** Before the pipeline-wide identity change (see
+[docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md)), `objectID` was the item's content hash, so every
+edit to a fact check's title or summary created an additional record. Records now use
+`fact_check_id`, which a later batch overwrites in place, but records written under the old scheme
+aren't overwritten — their `objectID`s never recur.
+**Decision:** Leave them for now. Clearing the index would also remove fact checks that no longer
+appear in any feed, because the loader only ever sees new staging batches.
+**If this ever needs to be fixed:** Rebuild the index from the curated BigQuery table (one record
+per `fact_check_id`), then delete every record whose `objectID` isn't in that set.

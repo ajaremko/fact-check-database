@@ -3,9 +3,13 @@ import { Schema, ParseResult } from 'effect'
 import { ArchivePathSchema } from '@fact-check-database/ingestion-contracts/archive/v1'
 import { TimestampSchema } from '@fact-check-database/ingestion-contracts/shared/v1'
 
+/**
+ * The raw response body of one fetch attempt, archived under its
+ * `contentSha256` so identical bytes are recognizable by name.
+ */
 export const FetchedBodySchema = Schema.Struct({
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  contentSha256: Schema.String,
+  ingestorRunId: Schema.String,
   body: Schema.instanceOf(Uint8Array),
   sourceId: Schema.String,
   fetchedAt: TimestampSchema,
@@ -32,8 +36,8 @@ export const FetchedBodyPathSchema = Schema.transformOrFail(
         ext: `bin`,
         sourceId: input.sourceId,
         date: input.fetchedAt,
-        ingestionId: input.ingestionId,
-        observationId: input.observationId,
+        ingestorRunId: input.ingestorRunId,
+        fileName: input.contentSha256,
       }),
   }
 )

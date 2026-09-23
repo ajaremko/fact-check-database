@@ -123,10 +123,10 @@ Every processed record is archived as a `SanitizerRecord` — see [ingestion-con
 Objects are written under (built by `ingestion-contracts`'s `ArchivePathSchema`, the same helper the ingestor uses):
 
 ```
-v1/records/sanitizer/source={sourceId}/date={YYYY-MM-DD}/ingestion_id={ingestionId}/{observationId}.yml
+v1/records/sanitizer/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/fetch_attempt.yml
 ```
 
-`{observationId}` is the same identity value carried over from the `IngestionRecord` this record was derived from — there's no separate "sanitization ID." No sanitized-body object path exists yet (see the README's Roadmap).
+The path mirrors the `IngestionRecord` it was derived from — `source` + `ingestor_run_id` identify the fetch attempt, and there's no separate "sanitization ID" (see [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md)). No sanitized-body object path exists yet (see the README's Roadmap).
 
 ## Logging
 

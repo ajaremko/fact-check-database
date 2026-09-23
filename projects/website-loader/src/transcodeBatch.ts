@@ -13,7 +13,7 @@ const decodeBatch = Schema.transformOrFail(
     strict: true,
     decode: (input, _, __, encoded) =>
       ParseResult.succeed({
-        objectID: input.content_lineage_id,
+        objectID: input.fact_check_id,
         content_type: input.http.content_type,
         content_length: input.http.headers?.['content-length'],
         final_url: input.http.final_url,

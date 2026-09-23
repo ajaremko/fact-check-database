@@ -16,8 +16,7 @@ describe('sanitizeObservation', () => {
             version: 1
             kind: fetch_attempt
             outcome: no_response
-            content_lineage_id: 526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1
-            ingestion_batch_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
+            ingestor_run_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
             fetched_at: 1777751768896
             source:
               id: baddata
@@ -55,7 +54,7 @@ describe('sanitizeObservation', () => {
         expect(result).toStrictEqual({
           bucket: 'inmemory',
           object:
-            'v1/records/sanitizer/source=baddata/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/526267ce9066cd5d1c035cc9e678a9ad485f355ecdfc80b73749c9579fcad5d1.yml',
+            'v1/records/sanitizer/source=baddata/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml',
         })
       })
   )
@@ -69,8 +68,7 @@ describe('sanitizeObservation', () => {
             version: 1
             kind: fetch_attempt
             outcome: data_fetched
-            content_lineage_id: 50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a
-            ingestion_batch_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
+            ingestor_run_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
             fetched_at: 1777751768881
             source:
               id: factcheck
@@ -91,7 +89,7 @@ describe('sanitizeObservation', () => {
               bytes: 256
               raw:
                 bucket: local
-                object: tmp/archive/v1/raw/source=factcheck/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.bin`,
+                object: tmp/archive/v1/raw/source=factcheck/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.bin`,
         }
         const result = yield* sanitizeObservation({
           policy: {
@@ -121,7 +119,7 @@ describe('sanitizeObservation', () => {
         expect(result).toStrictEqual({
           bucket: 'inmemory',
           object:
-            'v1/records/sanitizer/source=factcheck/date=2026-05-02/ingestion_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.yml',
+            'v1/records/sanitizer/source=factcheck/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml',
         })
       })
   )

@@ -7,11 +7,17 @@ export function archivePathPrefix(collection: string, version: number): string {
 }
 
 /**
- * Schema for the GCS object path where a sanitizer record is stored. Encodes the
- * `collectionName`, `sourceName`, `date`, `ingestionId`, `observationId`, and `ext` fields into a structured path for
- * queryable organization in GCS.
+ * Schema for the GCS object path of an archived object (raw body or record).
+ * Encodes the `collectionName`, `sourceId`, `date`, `ingestorRunId`,
+ * `fileName`, and `ext` fields into a structured path for queryable
+ * organization in GCS.
  *
- * Example path: `v1/records/ingestion/source=example_source/date=2024-01-01/ingestion_id=abc123/observation_id.sanitizer.yml`
+ * One ingestor run fetches each source once, so `source` + `ingestor_run_id`
+ * identify a single fetch attempt; `fileName` only distinguishes the objects
+ * written for that attempt (e.g. `fetch_attempt` for records, the body's
+ * `content_sha256` for raw bytes).
+ *
+ * Example path: `v1/records/ingestion/source=example_source/date=2024-01-01/ingestor_run_id=abc123/fetch_attempt.yml`
  */
 export const ArchivePathSchema = Schema.transformOrFail(
   Schema.String,
@@ -21,8 +27,8 @@ export const ArchivePathSchema = Schema.transformOrFail(
     ext: Schema.String,
     sourceId: Schema.String,
     date: NumberFromFormattedDate('yyyy-MM-dd'),
-    ingestionId: Schema.String,
-    observationId: Schema.String,
+    ingestorRunId: Schema.String,
+    fileName: Schema.String,
   }),
   {
     strict: true,
@@ -31,8 +37,8 @@ export const ArchivePathSchema = Schema.transformOrFail(
         archivePathPrefix(input.collectionName, input.version),
         `source=${input.sourceId}`,
         `date=${input.date}`,
-        `ingestion_id=${input.ingestionId}`,
-        `${input.observationId}.${input.ext}`,
+        `ingestor_run_id=${input.ingestorRunId}`,
+        `${input.fileName}.${input.ext}`,
       ].join('/')
       return ParseResult.succeed(output)
     },
@@ -49,5 +55,5 @@ export const ArchivePathSchema = Schema.transformOrFail(
   identifier: 'v1ArchivePath',
   title: 'ArchivePath',
   description: `
-    Schema for the GCS object path where a sanitizer record is stored.`,
+    Schema for the GCS object path of an archived body or record.`,
 })

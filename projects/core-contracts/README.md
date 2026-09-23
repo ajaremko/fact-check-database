@@ -120,12 +120,12 @@ Contracts for the staging area: the bucket and BigQuery table through which extr
 
 One row of the staging `fact_checks` table, as an Effect schema. This is the record contract for the staging area: a producer encodes rows with it when writing an NDJSON batch, and a consumer decodes the same batches on the way out.
 
-| Group                  | Fields                                                                                                                                                                                    | Notes                                                                                                                        |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Lineage and provenance | `content_lineage_id`, `content_sha256`, `ingestion_id`, `extraction_id`, `extractor_id`, `extractor_version`, `fetched_at`, `extracted_at`                                                | All required. `extractor_version` is a number in code and a string when encoded. The table is partitioned by `extracted_at`. |
-| `source`               | `id`, `collection`, `name`, `url`                                                                                                                                                         | The feed the item came from.                                                                                                 |
-| `fact_check`           | `sha256`, `guid`, `canonical_url`, `language`, `title`, `author`, `categories`, `summary`, `content`, `enclosure_url`, `image_url`, `link`, `published_at_raw`, `published_at_normalized` | Everything but `sha256` is optional, because feeds vary in what they publish. `summary` and `content` are Markdown.          |
-| `http`                 | `final_url`, `status_code`, `etag`, `content_type`, `last_modified`, `headers`                                                                                                            | Response metadata of the fetch that produced the content.                                                                    |
+| Group                   | Fields                                                                                                                                                                                    | Notes                                                                                                                                                                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity and provenance | `fact_check_id`, `content_sha256`, `ingestor_run_id`, `extractor_run_id`, `extractor_id`, `extractor_version`, `fetched_at`, `extracted_at`                                               | All required. What each identifier means is defined in [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md). `extractor_version` is a number in code and a string when encoded. The table is partitioned by `extracted_at`. |
+| `source`                | `id`, `collection`, `name`, `url`                                                                                                                                                         | The feed the item came from.                                                                                                                                                                                                              |
+| `fact_check`            | `sha256`, `guid`, `canonical_url`, `language`, `title`, `author`, `categories`, `summary`, `content`, `enclosure_url`, `image_url`, `link`, `published_at_raw`, `published_at_normalized` | Everything but `sha256` is optional, because feeds vary in what they publish. `summary` and `content` are Markdown.                                                                                                                       |
+| `http`                  | `final_url`, `status_code`, `etag`, `content_type`, `last_modified`, `headers`                                                                                                            | Response metadata of the fetch that produced the content.                                                                                                                                                                                 |
 
 `published_at_raw` preserves the publisher's original date string and `published_at_normalized` is the parsed form. Optional fields are absent rather than `null`; producers drop nulls with `omitNullKeys` from `core-data` before encoding.
 
@@ -164,7 +164,7 @@ Type names use BigQuery's canonical spellings (`RECORD`, `INTEGER`) because the 
 The object-path layout for staged batches:
 
 ```
-v{version}/type={type}/date={yyyy-MM-dd}/{extractionId}.{ext}
+v{version}/type={type}/date={yyyy-MM-dd}/{extractorRunId}.{ext}
 ```
 
 Paths sort by contract version, then record type, then day, so a bucket listing or a notification filter can select any level by prefix. The `date` part is a Unix-millisecond number in code and is formatted by `NumberFromFormattedDate`.
@@ -182,10 +182,10 @@ Schema.encodeSync(StagingPathSchema)({
   version: 1,
   type: 'fact_checks',
   date: 1704067200000,
-  extractionId: 'extraction-1',
+  extractorRunId: 'run-1',
   ext: 'ndjson',
 })
-// → "v1/type=fact_checks/date=2024-01-01/extraction-1.ndjson"
+// → "v1/type=fact_checks/date=2024-01-01/run-1.ndjson"
 
 stagingPathPrefix('fact_checks', 1) // → "v1/type=fact_checks"
 ```

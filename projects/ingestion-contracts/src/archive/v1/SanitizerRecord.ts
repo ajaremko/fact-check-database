@@ -62,8 +62,7 @@ export const InputRecordRefSchema = Schema.Struct({
 export const SanitizerRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('sanitized_record'),
-  content_lineage_id: Schema.String,
-  ingestion_batch_id: Schema.String,
+  ingestor_run_id: Schema.String,
   fetched_at: Schema.Number,
   sanitized_at: Schema.Number,
   source: SourceSchema,
@@ -120,8 +119,7 @@ export const SanitizerRecordMetadataSchema = Schema.Struct({
   sourceCollection: Schema.String,
   fetchedAt: Schema.NumberFromString,
   sanitizedAt: Schema.NumberFromString,
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  ingestorRunId: Schema.String,
 }).annotations({
   identifier: 'v1SanitizerRecordMetadata',
   title: 'SanitizerRecordMetadata',

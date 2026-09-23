@@ -38,8 +38,7 @@ describe('ObservationSchema', () => {
   it('encodes a successful fetch with pointer and all optional fields', () => {
     expect(
       Schema.encodeUnknownSync(ObservationSchema)({
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
+        ingestorRunId: 'run-1',
         result: fetchSuccess,
         fetchedAt: 0,
         source,
@@ -49,8 +48,7 @@ describe('ObservationSchema', () => {
       version: 1,
       kind: 'fetch_attempt',
       outcome: 'data_fetched',
-      content_lineage_id: 'obs-1',
-      ingestion_batch_id: 'run-1',
+      ingestor_run_id: 'run-1',
       fetched_at: 0,
       source,
       status: 200,
@@ -68,8 +66,7 @@ describe('ObservationSchema', () => {
 
   it('omits content_type, etag, and last_modified when null', () => {
     const record = Schema.encodeUnknownSync(ObservationSchema)({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
+      ingestorRunId: 'run-1',
       result: FetchSuccessSchema.make({
         ...fetchSuccess,
         contentType: null,
@@ -88,8 +85,7 @@ describe('ObservationSchema', () => {
 
   it('omits content when pointer is null', () => {
     const record = Schema.encodeUnknownSync(ObservationSchema)({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
+      ingestorRunId: 'run-1',
       result: fetchSuccess,
       fetchedAt: 0,
       source,
@@ -102,8 +98,7 @@ describe('ObservationSchema', () => {
   it('encodes a failed fetch with no_response outcome', () => {
     expect(
       Schema.encodeUnknownSync(ObservationSchema)({
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
+        ingestorRunId: 'run-1',
         result: fetchFailure,
         fetchedAt: 0,
         source,
@@ -113,8 +108,7 @@ describe('ObservationSchema', () => {
       version: 1,
       kind: 'fetch_attempt',
       outcome: 'no_response',
-      content_lineage_id: 'obs-1',
-      ingestion_batch_id: 'run-1',
+      ingestor_run_id: 'run-1',
       fetched_at: 0,
       source,
       error: 'Transport error (GET https://www.politifact.com/rss/all/)',
@@ -126,16 +120,14 @@ describe('ObservationMetadataSchema', () => {
   it('encodes metadata from a successful fetch observation', () => {
     expect(
       Schema.encodeUnknownSync(ObservationMetadataSchema)({
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
+        ingestorRunId: 'run-1',
         result: fetchSuccess,
         fetchedAt: 0,
         source,
         pointer: null,
       })
     ).toStrictEqual({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
+      ingestorRunId: 'run-1',
       fetchedAt: '0',
       url: 'https://www.politifact.com/rss/all/',
       sourceName: 'politifact.com',
@@ -146,16 +138,14 @@ describe('ObservationMetadataSchema', () => {
   it('encodes metadata from a failed fetch observation', () => {
     expect(
       Schema.encodeUnknownSync(ObservationMetadataSchema)({
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
+        ingestorRunId: 'run-1',
         result: fetchFailure,
         fetchedAt: 0,
         source,
         pointer: null,
       })
     ).toStrictEqual({
-      observationId: 'obs-1',
-      ingestionId: 'run-1',
+      ingestorRunId: 'run-1',
       fetchedAt: '0',
       url: 'https://www.politifact.com/rss/all/',
       sourceName: 'politifact.com',
@@ -168,30 +158,28 @@ describe('ObservationPathSchema', () => {
   it('encodes to a records archive path from a successful fetch', () => {
     expect(
       Schema.encodeUnknownSync(ObservationPathSchema)({
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
+        ingestorRunId: 'run-1',
         result: fetchSuccess,
         fetchedAt: 0,
         source,
         pointer: null,
       })
     ).toBe(
-      'v1/records/ingestion/source=politifact/date=1970-01-01/ingestion_id=run-1/obs-1.yml'
+      'v1/records/ingestion/source=politifact/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
     )
   })
 
   it('encodes to a records archive path from a failed fetch', () => {
     expect(
       Schema.encodeUnknownSync(ObservationPathSchema)({
-        observationId: 'obs-1',
-        ingestionId: 'run-1',
+        ingestorRunId: 'run-1',
         result: fetchFailure,
         fetchedAt: 0,
         source,
         pointer: null,
       })
     ).toBe(
-      'v1/records/ingestion/source=politifact/date=1970-01-01/ingestion_id=run-1/obs-1.yml'
+      'v1/records/ingestion/source=politifact/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
     )
   })
 })

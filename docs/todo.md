@@ -14,6 +14,13 @@ to be a won't-fix.
 - [x] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` into finished docs
 - [ ] Sort the website's fact-checks feed via Algolia queries instead of local sort
 - [ ] Verify fact checks are deduped correctly across ingestion and analysis
+- [ ] Decide the staging dedup strategy — one row per fact check per fetch attempt (current), per
+      distinct feed body, or per content version; see [fact-check-lifecycle.md](./fact-check-lifecycle.md). Only
+      `stagingDedupKey` in `ingestion-extractor` changes
+- [ ] Fix the extractor's throughput backlog — each run pulls a single 100-message batch twice a
+      day against ~360 sanitized records/day, so the backlog grows ~160/day and messages older
+      than the subscription's 7-day retention expire unextracted (silent data loss). Loop pulls
+      until the subscription is drained and/or run more often
 - [ ] Implement the bot-transparency policy in
       [docs/roadmap-bot-transparency.md](./roadmap-bot-transparency.md) (`robots.txt` honoring,
       per-host crawl delay, a real publisher opt-out channel)
@@ -58,9 +65,19 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
 - [x] Remove the unused `ingestion-sources.csv`/`sanitizer-policy.yml` GCS objects and their
       outputs from `src/assets/storage.ts` (config is actually served from Secret Manager)
 
+### ingestion-contracts
+
+See [known-issues.md](../projects/ingestion-contracts/docs/known-issues.md).
+
+- [ ] Convert (or add a decode path for) archive records written before the 2026-09 identity
+      change, if old records ever need to be reprocessed
+
 ### ingestion-ingestor
 
 See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
+
+- [ ] Send conditional requests (`If-None-Match`/`If-Modified-Since` from the last observation's
+      `etag`/`lastModified`) so unchanged feeds aren't re-fetched and re-archived every run
 
 - [x] Change `decodeContext` in `ingestFromSource.ts` to decode via `Schema.decodeUnknown` inside
       the `Effect.gen` body instead of `Schema.decodeUnknownSync` outside it, so a bad target
@@ -88,6 +105,9 @@ See [known-issues.md](../projects/ingestion-extractor/docs/known-issues.md).
 ### analysis-infra
 
 See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
+
+- [ ] Deduplicate curated rows written before the 2026-09 fact-check identity change (in-place
+      rewrite; staging no longer holds their source rows)
 
 - [x] Set `analysis:tableDeletionProtection: true` and `analysis:retainTablesOnDelete: true` in
       `Pulumi.prod.yml` (or remove the overrides) before any planned prod destroy
@@ -137,6 +157,8 @@ See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 
+- [ ] Rebuild the Algolia index from the curated table to remove records keyed by the pre-2026-09
+      content-hash `objectID`
 - [x] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
       the existing `AlgoliaSearchClientIOError` handling
 - [x] Remove `STAGING_BUCKET_NAME` from `website-infra`'s search loader service env list — it's

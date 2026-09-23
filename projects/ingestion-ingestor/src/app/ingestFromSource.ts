@@ -1,4 +1,4 @@
-import { Effect, Schema, Metric, flow, pipe } from 'effect'
+import { Effect, Schema, Metric, pipe } from 'effect'
 import { getReasonPhrase } from 'http-status-codes'
 
 import * as Node from '@fact-check-database/core-data/Node'
@@ -24,7 +24,6 @@ import {
 } from './Observation'
 import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
 import { logIngestionFailed, logIngestionSucceeded } from './logging'
-import { ObservationIdSchema } from './ObservationId'
 
 const encodeObservation = pipe(
   ObservationSchema,
@@ -37,14 +36,9 @@ const encodeObservationMetadata = Schema.encode(ObservationMetadataSchema)
 const encodeObservationPath = Schema.encode(ObservationPathSchema)
 const encodeFetchedBodyPath = Schema.encode(FetchedBodyPathSchema)
 
-const encodeHashedObservationId = flow(
-  Schema.encode(ObservationIdSchema),
-  Effect.andThen((base) => Node.sha256Hex(base, 'utf8'))
-)
-
 const decodeContext = Schema.decodeUnknown(
   Schema.Struct({
-    ingestionId: Schema.String,
+    ingestorRunId: Schema.String,
     source: SourceConfigSchema,
     timestamp: TimestampSchema,
   })
@@ -54,7 +48,7 @@ const contentRequestResults = Metric.counter('content_request_results')
 
 export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
-    ingestionId: string
+    ingestorRunId: string
     timestamp: TimestampEncoded
     source: SourceConfigEncoded
   }) {
@@ -62,13 +56,6 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     yield* Effect.logTrace('Fetching data from source target')
     const result = yield* fetch(ctx.source, ctx.timestamp)
-
-    // Derive a stable observation ID from fetch result
-    const observationId = yield* encodeHashedObservationId({
-      source: ctx.source,
-      result,
-      fetchedAt: ctx.timestamp,
-    })
 
     if (result._tag === 'FetchFailure') {
       // Record the failure for monitoring purposes
@@ -88,8 +75,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       // so we can skip straight to creating an observation
       // with no pointer to a body
       const observation = new Observation({
-        observationId,
-        ingestionId: ctx.ingestionId,
+        ingestorRunId: ctx.ingestorRunId,
         source: ctx.source,
         fetchedAt: ctx.timestamp,
         result,
@@ -116,8 +102,8 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
-      observationId,
-      ingestionId: ctx.ingestionId,
+      contentSha256: result.sha256,
+      ingestorRunId: ctx.ingestorRunId,
       fetchedAt: ctx.timestamp,
       sourceId: ctx.source.id,
       body: result.body,
@@ -140,8 +126,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     // We have archived the body so we create an
     // observation with a pointer to the body
     const observation = new Observation({
-      observationId,
-      ingestionId: ctx.ingestionId,
+      ingestorRunId: ctx.ingestorRunId,
       source: ctx.source,
       fetchedAt: ctx.timestamp,
       result,

@@ -36,6 +36,7 @@ export const pubsubServiceAccountDeadletterObjectCreator =
 export function createDeadletteredSubscription(opts: {
   name: string
   topic: pulumi.Input<string>
+  ackDeadlineSeconds?: pulumi.Input<number>
   retryPolicy?: pulumi.Input<gcp.types.input.pubsub.SubscriptionRetryPolicy>
   pushConfig?: pulumi.Input<gcp.types.input.pubsub.SubscriptionPushConfig>
   archive: {
@@ -77,6 +78,7 @@ export function createDeadletteredSubscription(opts: {
         deadLetterTopic: deadletterTopic.id,
         maxDeliveryAttempts: 5,
       },
+      ackDeadlineSeconds: opts.ackDeadlineSeconds,
       retryPolicy: opts.retryPolicy,
       pushConfig: opts.pushConfig,
       labels: ingestionLabels,

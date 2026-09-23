@@ -15,7 +15,7 @@ describe('ingestFromSourceTarget', () => {
       Effect.gen(function* () {
         const storage = {}
         const result = yield* ingestFromSource({
-          ingestionId: 'run-1',
+          ingestorRunId: 'run-1',
           timestamp: 0,
           source: {
             id: 'baddata',
@@ -37,14 +37,14 @@ describe('ingestFromSourceTarget', () => {
         expect(result).toStrictEqual({
           bucket: 'inmemory',
           object:
-            'v1/records/ingestion/source=baddata/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.yml',
+            'v1/records/ingestion/source=baddata/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
         })
 
-        expect(storage).not.toHaveProperty(
-          'v1/raw/source=baddata.com/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.bin'
-        )
+        expect(
+          Object.keys(storage).filter((key) => key.startsWith('v1/raw/'))
+        ).toEqual([])
         expect(storage).toHaveProperty(
-          'v1/records/ingestion/source=baddata/date=1970-01-01/ingestion_id=run-1/dc703a8a4070ee77dbac02410f3b06209435c6a545095f9bd998eeb61be5ddfe.yml'
+          'v1/records/ingestion/source=baddata/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
         )
       })
   )
@@ -55,7 +55,7 @@ describe('ingestFromSourceTarget', () => {
         const storage = {}
 
         const result = yield* ingestFromSource({
-          ingestionId: 'run-1',
+          ingestorRunId: 'run-1',
           timestamp: 0,
           source: {
             id: 'politifact',
@@ -95,14 +95,14 @@ describe('ingestFromSourceTarget', () => {
         expect(result).toStrictEqual({
           bucket: 'inmemory',
           object:
-            'v1/records/ingestion/source=politifact/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.yml',
+            'v1/records/ingestion/source=politifact/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
         })
 
         expect(storage).toHaveProperty(
-          'v1/raw/source=politifact/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.bin'
+          'v1/raw/source=politifact/date=1970-01-01/ingestor_run_id=run-1/311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6.bin'
         )
         expect(storage).toHaveProperty(
-          'v1/records/ingestion/source=politifact/date=1970-01-01/ingestion_id=run-1/b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.yml'
+          'v1/records/ingestion/source=politifact/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
         )
       })
   )
@@ -114,7 +114,7 @@ describe('ingestFromSourceTarget', () => {
         const storage = {}
 
         const result = yield* ingestFromSource({
-          ingestionId: 'run-1',
+          ingestorRunId: 'run-1',
           timestamp: 0,
           source: {
             id: 'politifact',

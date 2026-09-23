@@ -22,12 +22,12 @@ import { Schema } from 'effect'
  */
 export const FactChecksTableDBSchema = {
   fields: [
-    { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
+    { name: 'fact_check_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
     { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
     { name: 'fetched_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
-    { name: 'ingestion_id', type: 'STRING', mode: 'REQUIRED' },
-    { name: 'extraction_id', type: 'STRING', mode: 'REQUIRED' },
+    { name: 'ingestor_run_id', type: 'STRING', mode: 'REQUIRED' },
+    { name: 'extractor_run_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
     {
@@ -93,9 +93,14 @@ export const FactChecksTableDBSchema = {
  *
  * Field groups:
  *
- * - Lineage and provenance: `content_lineage_id` and `content_sha256`
- *   identify the fetched content; `ingestion_id`, `extraction_id`,
- *   `extractor_id`, and `extractor_version` record which run and which
+ * - Identity (see `docs/fact-check-lifecycle.md` at the repository root):
+ *   `fact_check_id` identifies the fact check itself (source + article URL)
+ *   and stays the same when its content is edited; `fact_check.sha256`
+ *   identifies the version of its content; `content_sha256` identifies the
+ *   fetched feed body the row was extracted from. `source.id` +
+ *   `ingestor_run_id` identify the fetch attempt, and `extractor_run_id` the
+ *   extractor run that wrote the row.
+ * - Provenance: `extractor_id` and `extractor_version` record which
  *   extractor produced the row; `fetched_at` and `extracted_at` are the
  *   pipeline timestamps (the table is partitioned on `extracted_at`).
  *   `extractor_version` is a `number` in code and a string in the encoded
@@ -112,12 +117,12 @@ export const FactChecksTableDBSchema = {
  * `omitNullKeys` from `core-data` to drop nulls before encoding.
  */
 export const FactChecksTableRowSchema = Schema.Struct({
-  content_lineage_id: Schema.String,
+  fact_check_id: Schema.String,
   content_sha256: Schema.String,
   extracted_at: Schema.Date,
   fetched_at: Schema.Date,
-  ingestion_id: Schema.String,
-  extraction_id: Schema.String,
+  ingestor_run_id: Schema.String,
+  extractor_run_id: Schema.String,
   source: Schema.Struct({
     id: Schema.String,
     name: Schema.String,

@@ -29,7 +29,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
     deletionProtection: tableDeletionProtection,
     schema: JSON.stringify([
       { name: 'fact_check_id', type: 'STRING', mode: 'REQUIRED' },
-      { name: 'content_lineage_id', type: 'STRING', mode: 'REQUIRED' },
+      { name: 'fact_check_sha256', type: 'STRING', mode: 'REQUIRED' },
       { name: 'content_sha256', type: 'STRING', mode: 'REQUIRED' },
       { name: 'source_id', type: 'STRING', mode: 'REQUIRED' },
       { name: 'source_name', type: 'STRING', mode: 'REQUIRED' },

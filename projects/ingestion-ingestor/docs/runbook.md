@@ -61,13 +61,13 @@ Every fetch attempt is archived as an `IngestionRecord` — see [ingestion-contr
 Objects are written under two path templates (built by `ingestion-contracts`'s `ArchivePathSchema`, not hand-assembled here):
 
 ```
-v1/records/ingestion/source={sourceId}/date={YYYY-MM-DD}/ingestion_id={ingestionId}/{observationId}.yml
-v1/raw/source={sourceId}/date={YYYY-MM-DD}/ingestion_id={ingestionId}/{observationId}.bin
+v1/records/ingestion/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/fetch_attempt.yml
+v1/raw/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/{contentSha256}.bin
 ```
 
 - `{sourceId}` — the target list's `id` column, not `name`.
-- `{ingestionId}` — the run's `runId`, threaded through under this name.
-- `{observationId}` — see "Run and observation identity" in the README.
+- `{ingestorRunId}` — the run's `runId`, logged as `job.runId` at startup.
+- `{contentSha256}` — SHA-256 of the response body. See [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md).
 - The raw body (`.bin`) is only written on a successful fetch; a failed attempt writes only the record (`.yml`).
 
 ## Logging
@@ -100,7 +100,7 @@ This app's own code uses five levels:
 **Steps:**
 
 1. Look for `Ingestion failed` log lines and their `result.error` annotation for the run's `runId`.
-2. In production, list the `records/` prefix in the archive bucket for that `ingestion_id` and inspect the `outcome: 'no_response'` records.
+2. In production, list the `records/` prefix in the archive bucket for that `ingestor_run_id` and inspect the `outcome: 'no_response'` records.
 3. If failures are transient (an upstream outage), the next scheduled run should recover on its own.
 4. If a source is permanently unreachable, remove its row from the target list.
 5. If the threshold itself is miscalibrated for the current source set's reliability, adjust `SUCCESS_THRESHOLD`.

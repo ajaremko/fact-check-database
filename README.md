@@ -108,6 +108,9 @@ submission) whose submissions flow back through GCS to trigger outbound email.
 > actual, distinct resources (tracked in [docs/todo.md](./docs/todo.md)). `core-infra`'s README
 > and `docs/` have been rewritten to match its current, post-domain-split scope.
 
+A fact check's lifecycle, identity and deduplication are documented in
+[docs/fact-check-lifecycle.md](./docs/fact-check-lifecycle.md).
+
 New or updated project docs follow [docs/documentation-guidelines.md](./docs/documentation-guidelines.md).
 
 ## TODOs

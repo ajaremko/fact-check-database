@@ -16,8 +16,7 @@ export const IngestionRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('fetch_attempt'),
   outcome: Schema.Literal('no_response', 'data_fetched'),
-  content_lineage_id: Schema.String,
-  ingestion_batch_id: Schema.String,
+  ingestor_run_id: Schema.String,
   fetched_at: Schema.Number,
   source: SourceSchema,
   error: Schema.optional(Schema.String),
@@ -49,8 +48,7 @@ export const IngestionRecordSchema = Schema.Struct({
 export type IngestionRecord = Schema.Schema.Type<typeof IngestionRecordSchema>
 
 export const IngestionRecordMetadataSchema = Schema.Struct({
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  ingestorRunId: Schema.String,
   sourceName: Schema.String,
   sourceCollection: Schema.String,
   fetchedAt: Schema.NumberFromString,

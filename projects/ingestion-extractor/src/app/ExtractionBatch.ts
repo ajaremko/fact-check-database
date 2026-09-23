@@ -4,15 +4,13 @@ import { StagingPathSchema } from '@fact-check-database/core-contracts/staging/v
 import { FilePointerSchema } from '@fact-check-database/ingestion-contracts/archive/v1'
 
 /**
- * Schema for the event published by the ingestor per fetch attempt.
- *
- * One event is emitted regardless of whether the fetch succeeded or failed.
- * The `observationId` is a deterministic hash of the fetch outcome, enabling
- * deduplication across runs. The `pointer` field references the archived
- * ingestor record in cloud storage.
+ * Schema for one extraction batch: the fact check rows written by a single
+ * extractor run. The file is named by `extractorRunId`, so each run writes a new file; rows
+ * are not deduplicated across batches (staging is an observation log). The
+ * `pointer` field references the batch file in cloud storage.
  */
 export const ExtractionBatchSchema = Schema.Struct({
-  batchId: Schema.String,
+  extractorRunId: Schema.String,
   extractedAt: Schema.Number,
   pointer: FilePointerSchema,
   type: Schema.Literal('fact_checks'),
@@ -25,7 +23,7 @@ export const ExtractionBatchSchema = Schema.Struct({
 export const ExtractionBatchPathSchema = Schema.transformOrFail(
   StagingPathSchema,
   Schema.Struct({
-    batchId: Schema.String,
+    extractorRunId: Schema.String,
     extractedAt: Schema.Number,
     type: Schema.Literal('fact_checks'),
   }),
@@ -45,7 +43,7 @@ export const ExtractionBatchPathSchema = Schema.transformOrFail(
         type: input.type,
         ext: 'batch.ndjson',
         date: input.extractedAt,
-        extractionId: input.batchId,
+        extractorRunId: input.extractorRunId,
       })
     },
   }

@@ -114,3 +114,47 @@ export function awaitJob(job: Job) {
       }),
   })
 }
+
+/**
+ * Fetches an existing BigQuery `Job` by id, with its metadata (including
+ * `status`) loaded. Requires `BigQueryClient` in context.
+ *
+ * Any rejection from the underlying `job.getMetadata()` call is caught and
+ * wrapped as a {@link BigQueryClientIOError}.
+ *
+ * @example
+ * const job = yield* getJob({ id: 'load_abc123', location: 'US' })
+ * job.metadata.status.state // 'DONE'
+ */
+export function getJob(options: { id: string; location?: string }) {
+  return BigQueryClient.pipe(
+    Effect.flatMap(({ client }) =>
+      Effect.tryPromise({
+        try: () => {
+          const job = client.job(options.id, { location: options.location })
+          return job.getMetadata().then(() => job)
+        },
+        catch: (cause) =>
+          new BigQueryClientIOError({
+            cause,
+            message: 'Failed to get BigQuery job',
+          }),
+      })
+    )
+  )
+}
+
+/**
+ * Whether a {@link BigQueryClientIOError} was caused by the resource already
+ * existing (HTTP 409) — e.g. {@link createJob} called with a `jobId` that has
+ * already been used.
+ */
+export function isAlreadyExists(error: BigQueryClientIOError): boolean {
+  const { cause } = error
+  return (
+    typeof cause === 'object' &&
+    cause !== null &&
+    'code' in cause &&
+    cause.code === 409
+  )
+}

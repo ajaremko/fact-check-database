@@ -23,7 +23,7 @@ function processTarget(source: SourceConfig, index: number) {
     yield* Effect.logDebug(`Requesting content from source ${index + 1}`)
 
     yield* ingestFromSource({
-      ingestionId: job.runId,
+      ingestorRunId: job.runId,
       timestamp,
       source,
     })

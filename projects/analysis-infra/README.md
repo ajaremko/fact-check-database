@@ -1,6 +1,6 @@
 # analysis-infra
 
-Infrastructure for the analysis domain: a staging BigQuery table fed from the ingestion pipeline's output, and a curated BigQuery table deduped and appended from staging on a schedule. Provisioned via Pulumi, depending on [core-infra](../core-infra/README.md) for the platform's shared identity, artifact registry, and the staging bucket/topic the ingestion pipeline writes to.
+Infrastructure for the analysis domain: a staging BigQuery table fed from the ingestion pipeline's output, and a curated BigQuery table holding one row per fact check, merged from staging on a schedule. Provisioned via Pulumi, depending on [core-infra](../core-infra/README.md) for the platform's shared identity, artifact registry, and the staging bucket/topic the ingestion pipeline writes to.
 
 ## Deployment
 
@@ -68,8 +68,25 @@ decode/encode boundary), so there's no shared `core-contracts` schema to import 
 by `extracted_at` (monthly, no expiration).
 
 Fed by a **BigQuery Data Transfer Service scheduled query** (not a Cloud Run job) running every 6
-hours: a `MERGE` that dedupes on a hash of `source id + canonical URL + title` and only inserts
-rows from staging that aren't already present — append-only, no update or delete path.
+hours. Staging is an observation log — the same fact check appears once for every fetch that
+listed it — and this `MERGE` collapses those observations into **one row per fact check**:
+
+- **Identity:** `fact_check_id` is computed by the extractor and read from staging as-is — a hash
+  of source id + article URL, excluding the title so a headline edit doesn't create a second fact
+  check. See [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) for the definition.
+- **Latest version wins:** within a run, only the most recent observation (by `fetched_at`) of
+  each fact check is used. An existing curated row is updated in place when a newer observation
+  carries a different content version (`fact_check_sha256`); an older
+  observation never overwrites a newer one. Because of this, `extracted_at` on a curated row is
+  when its _current_ version was extracted, not when the fact check was first seen.
+- **Window:** each run reads the last 7 days of staging (the staging partition expiry). The merge
+  is idempotent, so overlapping windows are harmless and a failed or skipped run is caught up by
+  the next one.
+- **No delete path:** fact checks that disappear from a feed stay in the curated table.
+
+Rows curated before this identity scheme was introduced (2026-09) keep their original ids — a hash
+of `source id + canonical URL (or feed URL) + title` — and were not backfilled, so those older
+fact checks can appear more than once (see [known-issues.md](./docs/known-issues.md)).
 
 | Output                                                              | Purpose                                                                                                                                    |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |

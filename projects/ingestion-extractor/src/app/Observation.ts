@@ -7,8 +7,7 @@ import {
 } from '@fact-check-database/ingestion-contracts/config/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  ingestorRunId: Schema.String,
   fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,
   shouldExtract: Schema.Boolean,
@@ -62,8 +61,7 @@ export const ObservationSchema = Schema.transformOrFail(
         )
       }
       return ParseResult.succeed({
-        observationId: input.content_lineage_id,
-        ingestionId: input.ingestion_batch_id,
+        ingestorRunId: input.ingestor_run_id,
         fetchedAt: input.fetched_at,
         sanitizedAt: input.sanitized_at,
         shouldExtract: input.label === 'SAFE_PUBLIC',

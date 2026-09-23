@@ -115,6 +115,10 @@ export const stagingStorageSubscription = new gcp.pubsub.Subscription(
       deadLetterTopic: loaderDeadletterTopic.id,
       maxDeliveryAttempts: 5,
     },
+    // The loader responds only after its BigQuery load job completes, which
+    // routinely takes longer than the 10s default. Redeliveries are safe (load
+    // jobs use a deterministic id), but a longer deadline avoids needless ones.
+    ackDeadlineSeconds: 300,
     retryPolicy: {
       minimumBackoff: '10s',
       maximumBackoff: '600s',

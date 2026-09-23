@@ -7,6 +7,8 @@ The extractor turns fetched, sanitized RSS/Atom feed content into structured `Fa
 - Read a batch of sanitizer-produced observations (one per fetched document)
 - Select a feed-format extraction strategy by `source.collection` (`rss` or `atom`)
 - Parse the feed and normalize each item into a `FactCheck` record
+- Compute each fact check's `fact_check_id` — the single definition of fact-check identity (see [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md))
+- Drop repeated rows for the same fact check from the same fetch attempt (e.g. a message delivered twice)
 - Write extracted records as an NDJSON batch to storage
 - Emit structured logs and metrics for successes, failures, and skipped observations
 
@@ -15,6 +17,10 @@ The extractor turns fetched, sanitized RSS/Atom feed content into structured `Fa
 - Fetch content from the network (the [ingestor](../ingestion-ingestor/README.md)'s job)
 - Apply content policy or sanitization (the sanitizer's job)
 - Perform verdict/claim classification
+- Deduplicate fact checks across fetches or runs. A fact check that appears in several fetches of a
+  feed produces one row per fetch — the staging table is an observation log. Collapsing observations
+  into one record per fact check is the analysis domain's curated `MERGE` (see
+  [analysis-infra](../analysis-infra/README.md#curated-dataset)).
 - Parse HTML/XHTML article bodies into structured content — `content` is captured as-is (may include raw markup) when the feed exposes it as plain text; structurally nested content (e.g. Atom `type="xhtml"`) is left unparsed
 
 ## Supported feed fields
@@ -97,8 +103,9 @@ See [docs/runbook.md](./docs/runbook.md) for the complete configuration referenc
 
 ## Related documentation
 
-| Document                                       | Purpose                                                                             |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [docs/runbook.md](./docs/runbook.md)           | Configuration reference, output contract, and diagnosing failures                   |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes                                        |
-| [core-contracts](../core-contracts/README.md)  | The canonical `FactChecksTableRowSchema`/`StagingPathSchema` this service writes to |
+| Document                                                           | Purpose                                                                             |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)                               | Configuration reference, output contract, and diagnosing failures                   |
+| [docs/known-issues.md](./docs/known-issues.md)                     | Accepted, long-lived gaps and deferred fixes                                        |
+| [core-contracts](../core-contracts/README.md)                      | The canonical `FactChecksTableRowSchema`/`StagingPathSchema` this service writes to |
+| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | `fact_check_id` (computed here) and the staging dedup rule                          |

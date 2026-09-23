@@ -23,13 +23,13 @@ const batchesWritten = Metric.counter('extracted_batches_written')
 
 export const writeBatch = Effect.fn('writeBatch')(
   function* (input: {
-    runId: string
+    extractorRunId: string
     rows: object[]
     timestamp: number
     type: 'fact_checks'
   }) {
     const path = yield* encodeExtractionBatchPath({
-      batchId: input.runId,
+      extractorRunId: input.extractorRunId,
       extractedAt: input.timestamp,
       type: input.type,
     })
@@ -42,7 +42,7 @@ export const writeBatch = Effect.fn('writeBatch')(
     })
 
     const batch = ExtractionBatchSchema.make({
-      batchId: input.runId,
+      extractorRunId: input.extractorRunId,
       extractedAt: input.timestamp,
       type: input.type,
       sourceFormat: 'NEWLINE_DELIMITED_JSON',

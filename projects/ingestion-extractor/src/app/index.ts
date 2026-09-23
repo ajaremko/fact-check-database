@@ -3,6 +3,8 @@ import { Array, Context, Effect, Option, Schema } from 'effect'
 import { MessageBatch, BatchMessage } from '@fact-check-database/core-io'
 import { StorageObjectAttributesSchema } from '@fact-check-database/core-contracts/gcp/v1'
 
+import { dedupeFactCheckRows } from '../integration/dedupeFactCheckRows'
+
 import { extractFactChecks } from './extractFactChecks'
 import { logExtractionJobCompleted } from './logging'
 import { writeBatch } from './writeBatch'
@@ -25,7 +27,7 @@ function processMessage(envelope: BatchMessage) {
     const job = yield* JobContext
     const incoming = yield* decodeAttributes(envelope.message.attributes)
     const rows = yield* extractFactChecks({
-      extractionId: job.runId,
+      extractorRunId: job.runId,
       pointer: {
         bucket: incoming.bucketId,
         object: incoming.objectId,
@@ -65,8 +67,20 @@ export const App = Effect.gen(function* () {
     `Processed ${successes.length} of ${messages.length} messages`
   )
 
+  // drop repeats of the same item from the same observation (e.g. a message
+  // delivered twice) before writing
+  const extracted = Array.flatten(successes)
+  const rows = dedupeFactCheckRows(extracted)
+  if (rows.length < extracted.length) {
+    yield* Effect.logInfo('Dropped duplicate fact check rows').pipe(
+      Effect.annotateLogs({
+        'job.rowsExtracted': extracted.length,
+        'job.duplicateRows': extracted.length - rows.length,
+      })
+    )
+  }
+
   // write rows to storage, exit if no fact checks were extracted
-  const rows = Array.flatten(successes)
   if (rows.length === 0) {
     yield* Effect.logWarning(
       'No fact checks extracted to be written to storage'
@@ -83,7 +97,7 @@ export const App = Effect.gen(function* () {
   })
 
   yield* writeBatch({
-    runId: job.runId,
+    extractorRunId: job.runId,
     rows,
     timestamp: job.startedAt,
     type: 'fact_checks',

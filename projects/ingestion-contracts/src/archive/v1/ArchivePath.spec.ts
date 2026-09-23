@@ -5,7 +5,7 @@ import { Schema } from 'effect'
 import { ArchivePathSchema } from './ArchivePath'
 
 describe('ArchivePath', () => {
-  it('can encode observation and file details into an archive path', () => {
+  it('can encode fetch attempt and file details into an archive path', () => {
     expect(
       Schema.encodeSync(ArchivePathSchema)({
         version: 1,
@@ -13,11 +13,11 @@ describe('ArchivePath', () => {
         ext: 'yml',
         sourceId: 'test-rss',
         date: 1704067200000,
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
+        fileName: 'fetch_attempt',
       })
     ).toBe(
-      'v1/test_collection/source=test-rss/date=2024-01-01/ingestion_id=run-1/obs-1.yml'
+      'v1/test_collection/source=test-rss/date=2024-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
     )
   })
 })

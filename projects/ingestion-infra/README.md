@@ -66,7 +66,10 @@ The three services chain together through storage notifications and Pub/Sub, not
    Secret Manager secret, and writes sanitized records back to the same archive bucket.
 4. That write triggers a GCS notification into the **sanitizer topic**
    (`ingestion-sanitizer-topic`), which the extractor pulls from (with a dead-letter topic after 5
-   failed delivery attempts).
+   failed delivery attempts). The subscription's ack deadline is 600s (the Pub/Sub maximum): the
+   extractor acknowledges a batch only after writing its output, so the deadline has to cover the
+   whole run — a shorter one causes messages still being processed to be redelivered and extracted
+   again by the next run.
 5. **Extractor** (`ingestion-extractor-job`, a Cloud Run Job) — triggered by Cloud Scheduler on
    `ingestion:extractorSchedule` if set. Writes extracted batches into **core-infra's** shared
    staging bucket for `analysis-infra`/`website-infra` to load.

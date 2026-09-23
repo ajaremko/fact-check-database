@@ -80,8 +80,7 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
 
     yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({
-      observationId: observation.observationId,
-      ingestionId: observation.ingestionId,
+      ingestorRunId: observation.ingestorRunId,
       fetchedAt: observation.fetchedAt,
       sanitizedAt: ctx.timestamp,
       source: observation.source,

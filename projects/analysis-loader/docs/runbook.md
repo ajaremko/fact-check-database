@@ -63,4 +63,10 @@ retries up to 5 times before routing to its dead-letter topic.
 exhaust its delivery attempts and inspect it in the dead-letter bucket rather than letting it
 retry indefinitely.
 
+Redeliveries (and replays from the dead-letter bucket) don't duplicate staging rows: each batch
+object version maps to one deterministic load job id (`load_<hash>`), so a batch that already
+loaded logs "Load job already exists for this batch, awaiting it" and returns success without a
+second append. To deliberately load a batch again, re-upload the object — a new generation gets a
+new job id.
+
 See [docs/known-issues.md](./known-issues.md) for this project's current accepted gaps.

@@ -45,7 +45,7 @@ Every batch is written as NDJSON via `core-contracts`'s `staging/v1` contracts â
 field reference. In short, the real paths are:
 
 ```
-v1/type=fact_checks/date={YYYY-MM-DD}/{extractionId}.batch.ndjson
+v1/type=fact_checks/date={YYYY-MM-DD}/{extractorRunId}.batch.ndjson
 v1/type=fact_checks_content/sha256={hash}.md
 ```
 

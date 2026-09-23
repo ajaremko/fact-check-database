@@ -34,10 +34,9 @@ export type FactCheck = Schema.Schema.Type<typeof FactCheckSchema>
 export const FactCheckRowSchema = Schema.transformOrFail(
   FactChecksTableRowSchema,
   Schema.Struct({
-    id: Schema.String,
-    observationId: Schema.String,
-    ingestionId: Schema.String,
-    extractionId: Schema.String,
+    factCheckId: Schema.String,
+    ingestorRunId: Schema.String,
+    extractorRunId: Schema.String,
     extractedAt: NumberFromDate,
     fetchedAt: NumberFromDate,
     factCheck: FactCheckSchema,
@@ -70,12 +69,12 @@ export const FactCheckRowSchema = Schema.transformOrFail(
       ),
     encode: (input) =>
       ParseResult.succeed({
-        content_lineage_id: input.id,
+        fact_check_id: input.factCheckId,
         content_sha256: input.http.contentSha256,
         extracted_at: input.extractedAt,
         fetched_at: input.fetchedAt,
-        ingestion_id: input.ingestionId,
-        extraction_id: input.extractionId,
+        ingestor_run_id: input.ingestorRunId,
+        extractor_run_id: input.extractorRunId,
         extractor_id: input.extractor.id,
         extractor_version: input.extractor.version,
         source: {

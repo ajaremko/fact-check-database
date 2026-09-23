@@ -23,8 +23,7 @@ describe('evaluatePolicy', () => {
         ],
       }),
       new Observation({
-        observationId: 'obs-1',
-        ingestionId: 'ingest-1',
+        ingestorRunId: 'ingest-1',
         fetchedAt: TimestampBrand(0),
         source: {
           id: 'source-1',
@@ -60,8 +59,7 @@ describe('evaluatePolicy', () => {
         ],
       }),
       new Observation({
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
         fetchedAt: TimestampBrand(0),
         error: null,
         source: {
@@ -114,8 +112,7 @@ describe('evaluatePolicy', () => {
         ],
       }),
       new Observation({
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
         fetchedAt: TimestampBrand(0),
         error: null,
         source: {
@@ -165,8 +162,7 @@ describe('evaluatePolicy', () => {
         ],
       }),
       new Observation({
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
         fetchedAt: TimestampBrand(0),
         error: null,
         source: {
@@ -216,8 +212,7 @@ describe('evaluatePolicy', () => {
         ],
       }),
       new Observation({
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
         fetchedAt: TimestampBrand(0),
         error: null,
         source: {
@@ -268,8 +263,7 @@ describe('evaluatePolicy', () => {
         overrides: [{ sourceName: 'source-1', defaultLabel: 'RESTRICTED' }],
       }),
       new Observation({
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
         fetchedAt: TimestampBrand(0),
         error: null,
         source: {
@@ -312,8 +306,7 @@ describe('evaluatePolicy', () => {
         collections: [],
       }),
       new Observation({
-        ingestionId: 'run-1',
-        observationId: 'obs-1',
+        ingestorRunId: 'run-1',
         fetchedAt: TimestampBrand(0),
         error: null,
         source: {

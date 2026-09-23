@@ -11,9 +11,13 @@ import { TimestampSchema } from '@fact-check-database/ingestion-contracts/shared
 
 import { FetchResultSchema } from '../ports/Fetcher'
 
+/**
+ * One fetch attempt: the result of fetching `source` once during the ingestor
+ * run `ingestorRunId`. The pair (`source.id`, `ingestorRunId`) identifies the
+ * attempt; there is no separate id.
+ */
 export class Observation extends Schema.Class<Observation>('Observation')({
-  observationId: Schema.String,
-  ingestionId: Schema.String,
+  ingestorRunId: Schema.String,
   fetchedAt: TimestampSchema,
   result: FetchResultSchema,
   source: SourceConfigSchema,
@@ -40,8 +44,7 @@ export const ObservationSchema = Schema.transformOrFail(
             version: 1,
             kind: 'fetch_attempt' as const,
             outcome: 'data_fetched' as const,
-            content_lineage_id: input.observationId,
-            ingestion_batch_id: input.ingestionId,
+            ingestor_run_id: input.ingestorRunId,
             fetched_at: input.fetchedAt,
             source: input.source,
             status: input.result.status,
@@ -71,8 +74,7 @@ export const ObservationSchema = Schema.transformOrFail(
             version: 1,
             kind: 'fetch_attempt' as const,
             outcome: 'no_response' as const,
-            content_lineage_id: input.observationId,
-            ingestion_batch_id: input.ingestionId,
+            ingestor_run_id: input.ingestorRunId,
             fetched_at: input.fetchedAt,
             source: input.source,
             error: input.result.error,
@@ -97,8 +99,7 @@ export const ObservationMetadataSchema = Schema.transformOrFail(
       ),
     encode: (input) => {
       return ParseResult.succeed({
-        observationId: input.observationId,
-        ingestionId: input.ingestionId,
+        ingestorRunId: input.ingestorRunId,
         fetchedAt: input.fetchedAt,
         url: input.source.url,
         sourceName: input.source.name,
@@ -132,8 +133,8 @@ export const ObservationPathSchema = Schema.transformOrFail(
         ext: `yml`,
         sourceId: input.source.id,
         date: input.fetchedAt,
-        ingestionId: input.ingestionId,
-        observationId: input.observationId,
+        ingestorRunId: input.ingestorRunId,
+        fileName: 'fetch_attempt',
       }),
   }
 )

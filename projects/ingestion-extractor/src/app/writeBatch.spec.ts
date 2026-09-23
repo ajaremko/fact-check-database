@@ -12,14 +12,12 @@ describe('writeBatch', () => {
       Effect.gen(function* () {
         const storage: Record<string, string> = {}
         const event = yield* writeBatch({
-          runId: 'run-001',
+          extractorRunId: 'run-001',
           rows: [
             {
-              id: '1b19c84b36375c70131c9dee078f1bb931fcbcdce18c18e6fffed7ca14d0c479',
-              observationId:
-                'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb',
-              ingestionId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
-              extractionId: 'run-001',
+              factCheckId: 'fact-check-1',
+              ingestorRunId: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
+              extractorRunId: 'run-001',
               extractedAt: 0,
               fetchedAt: 0,
               extractor: {
@@ -65,7 +63,7 @@ describe('writeBatch', () => {
         ).toBeDefined()
 
         expect(event).toStrictEqual({
-          batchId: 'run-001',
+          extractorRunId: 'run-001',
           extractedAt: 1_000,
           sourceFormat: 'NEWLINE_DELIMITED_JSON',
           type: 'fact_checks',
