@@ -87,7 +87,14 @@ export function pull(subscriptionId: string, maxMessages = 10) {
   return Effect.gen(function* () {
     const { client } = yield* PubsubSubscriberClient
     const result = yield* Effect.tryPromise({
-      try: () =>
+      try: (): Promise<
+        [
+          google.pubsub.v1.IPullResponse,
+          google.pubsub.v1.IPullRequest | undefined,
+          // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+          {} | undefined
+        ]
+      > =>
         client.pull({
           subscription: subscriptionId,
           maxMessages,

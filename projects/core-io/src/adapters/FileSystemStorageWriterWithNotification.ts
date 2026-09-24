@@ -11,6 +11,8 @@ import { Publisher } from '../ports/Publisher'
 
 import * as FileSystemStorageWriter from './FileSystemStorageWriter'
 
+const adapter = 'FileSystemStorageWriterWithNotification'
+
 const encodeStorageObjectData = StorageObjectDataSchema.pipe(
   Node.parseJson(),
   Node.parseBuffer({ encoding: 'utf-8' }),
@@ -52,19 +54,37 @@ export function make(prefix: string) {
           payloadFormat: 'JSON_API_V1',
         })
         yield* publisher.publish(data, attributes)
-      }).pipe(Effect.tapErrorCause(Effect.logWarning), Effect.orDie)
+        yield* Effect.logTrace('Notification published')
+      }).pipe(
+        Effect.tapErrorCause((cause) =>
+          Effect.logFatal('Failed to publish notification', cause)
+        ),
+        Effect.orDie
+      )
     }
 
     return StorageWriter.of({
       write: (opts) =>
         Effect.gen(function* () {
+          yield* Effect.annotateLogsScoped({
+            adapter,
+            prefix,
+            'opts.path': opts.path,
+          })
+
           const pointer = yield* writer.write(opts)
+          yield* Effect.annotateLogsScoped({
+            'pointer.bucket': pointer.bucket,
+            'pointer.object': pointer.object,
+          })
+
           if (!opts.path.includes(prefix)) {
+            yield* Effect.logTrace('Notification skipped')
             return pointer
           }
           yield* publishNotification(opts.path, pointer)
           return pointer
-        }),
+        }).pipe(Effect.scoped),
     })
   })
 }

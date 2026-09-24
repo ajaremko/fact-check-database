@@ -3,6 +3,8 @@ import { FileSystem } from '@effect/platform'
 
 import { StorageWriteError, StorageWriter } from '../ports/StorageWriter'
 
+const adapter = 'FileSystemStorageWriter'
+
 /** Returns the parent directory portion of a `/`-separated path. */
 function parentDir(filePath: string): string {
   return filePath.split('/').slice(0, -1).join('/')
@@ -26,29 +28,35 @@ function replaceExtension(filePath: string, suffix: string): string {
  */
 export const make = Effect.gen(function* () {
   const outputDir = yield* Config.string('STORAGE_OUTPUT_DIR')
+  yield* Effect.annotateLogsScoped({ adapter, outputDir })
 
-  yield* Effect.logTrace(
-    `Creating filesystem writer with output directory: ${outputDir}`
-  )
   const fs = yield* FileSystem.FileSystem
+  yield* Effect.logTrace('Storage writer created')
 
   return StorageWriter.of({
     write: (opts) =>
       Effect.gen(function* () {
         const filePath = `${outputDir}/${opts.path}`
+        yield* Effect.annotateLogsScoped({ adapter, outputDir, filePath })
+
         yield* fs.makeDirectory(parentDir(filePath), { recursive: true })
         yield* fs.writeFile(filePath, Buffer.from(opts.data))
 
         if (opts.meta) {
+          const metaPath = replaceExtension(filePath, 'meta.json')
+          yield* Effect.annotateLogsScoped({ metaPath })
           const metaData = Buffer.from(JSON.stringify(opts.meta))
-          yield* fs.writeFile(replaceExtension(filePath, 'meta.json'), metaData)
+          yield* fs.writeFile(metaPath, metaData)
         }
+
+        yield* Effect.logTrace('Object written')
 
         return {
           bucket: 'local',
           object: filePath,
         }
       }).pipe(
+        Effect.scoped,
         Effect.mapError(
           (cause) =>
             new StorageWriteError({
@@ -60,7 +68,7 @@ export const make = Effect.gen(function* () {
         )
       ),
   })
-})
+}).pipe(Effect.scoped)
 
 /** Layer providing {@link StorageWriter} backed by the `STORAGE_OUTPUT_DIR` local directory. Development adapter. */
 export const layer = Layer.effect(StorageWriter, make)

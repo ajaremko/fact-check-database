@@ -4,6 +4,8 @@ import { MessageQueue } from '../ports/MessageQueue'
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 import { readDirectoryMessages } from '../internal/readDirectoryMessages'
 
+const adapter = 'FileSystemMessageQueueFeeder'
+
 /**
  * Reads every file in the `MESSAGE_QUEUE_INPUT_DIR` directory and offers
  * each one onto an existing {@link MessageQueue} in turn, awaiting ack/nack
@@ -13,20 +15,26 @@ import { readDirectoryMessages } from '../internal/readDirectoryMessages'
 export const make = Effect.gen(function* () {
   const inputDir = yield* Config.string('MESSAGE_QUEUE_INPUT_DIR')
   const { messages } = yield* MessageQueue
+  yield* Effect.annotateLogsScoped({ adapter, inputDir })
 
-  yield* Effect.logTrace(`Processing messages in directory: ${inputDir}`)
   const entries = yield* readDirectoryMessages(inputDir)
+  yield* Effect.annotateLogsScoped({ 'entries.length': entries.length })
+  yield* Effect.logTrace('Directory messages read')
 
   for (const { path, message } of entries) {
-    yield* Effect.logTrace(`Processing message: ${path}`)
-    yield* enqueueAndAwaitOutcome({
-      message,
-      onAck: Effect.void,
-      onNack: Effect.void,
-    }).pipe(
-      Effect.withSpan('processMessage'),
-      Effect.annotateLogs({ 'message.path': path })
-    )
+    yield* Effect.gen(function* () {
+      yield* Effect.annotateLogsScoped({
+        'message.path': path,
+        'message.messageId': message.messageId,
+      })
+      const outcome = yield* enqueueAndAwaitOutcome({
+        message,
+        onAck: Effect.succeed('ack'),
+        onNack: Effect.succeed('nack'),
+      })
+      yield* Effect.annotateLogsScoped({ outcome })
+      yield* Effect.logTrace('Message processed')
+    }).pipe(Effect.scoped, Effect.withSpan('processMessage'))
   }
 
   // Interrupt the queue so that the consumer can exit gracefully
@@ -35,7 +43,8 @@ export const make = Effect.gen(function* () {
   // In production, the http message queue feeder will not shut
   // down the queue, but will instead run indefinitely
   yield* messages.shutdown
-})
+  yield* Effect.logTrace('Queue shut down')
+}).pipe(Effect.scoped)
 
 /**
  * Layer that feeds an existing {@link MessageQueue} from a local directory.

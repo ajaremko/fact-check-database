@@ -19,6 +19,8 @@ import { MessageBody } from '../ports/types/MessageBody'
 
 import { enqueueAndAwaitOutcome } from '../internal/enqueueAndAwaitOutcome'
 
+const adapter = 'HttpServerMessageQueueFeeder'
+
 const decodePubsubMessagePayload = Schema.decodeUnknown(PubsubMessageEnvelope)
 
 const decodePubsubMessagePayloadData = Schema.String.pipe(
@@ -62,59 +64,75 @@ function enqueueHttpMessage(message: MessageBody) {
  * server.
  */
 export function layer(path: HttpRouter.PathInput) {
-  const router = HttpRouter.empty.pipe(
-    HttpRouter.post(
-      path,
-      Effect.gen(function* () {
-        const req = yield* HttpServerRequest.HttpServerRequest
-        const body = yield* req.json
-        const payload = yield* decodePubsubMessagePayload(body)
-        const messageData = yield* decodePubsubMessagePayloadData(
-          payload.message.data
-        )
-        const data = yield* encodeMessageData(messageData)
-        const messageBody: MessageBody = {
-          data,
-          attributes: payload.message.attributes,
-          messageId: payload.message.messageId,
-          publishTime: payload.message.publishTime,
-        }
-        return yield* enqueueHttpMessage(messageBody).pipe(
-          Effect.withSpan('processHttpRequest'),
-          Effect.annotateLogs({
-            'request.url': req.url,
-            'request.method': req.method,
-            'message.id': payload.message.messageId,
-          })
-        )
-      }).pipe(
-        Effect.catchTags({
-          NoSuchElementException: () =>
-            HttpServerResponse.json(
-              {
-                message: 'Missing required field in request body',
-              },
-              { status: StatusCodes.BAD_REQUEST }
-            ),
-          ParseError: () =>
-            HttpServerResponse.json(
-              {
-                message: 'Invalid request body',
-              },
-              { status: StatusCodes.BAD_REQUEST }
-            ),
-          RequestError: () =>
-            HttpServerResponse.json(
-              {
-                message: 'Request error',
-              },
-              { status: StatusCodes.BAD_REQUEST }
-            ),
-        }),
-        Effect.withSpan('HttpServerMessageQueueFeeder', { root: true })
+  const handleRequest = Effect.gen(function* () {
+    const req = yield* HttpServerRequest.HttpServerRequest
+    yield* Effect.annotateLogsScoped({
+      adapter,
+      'request.url': req.url,
+      'request.method': req.method,
+    })
+
+    const response = yield* Effect.gen(function* () {
+      const body = yield* req.json
+      const payload = yield* decodePubsubMessagePayload(body)
+      yield* Effect.annotateLogsScoped({
+        'message.messageId': payload.message.messageId,
+      })
+      const messageData = yield* decodePubsubMessagePayloadData(
+        payload.message.data
       )
+      const data = yield* encodeMessageData(messageData)
+      const messageBody: MessageBody = {
+        data,
+        attributes: payload.message.attributes,
+        messageId: payload.message.messageId,
+        publishTime: payload.message.publishTime,
+      }
+      return yield* enqueueHttpMessage(messageBody).pipe(
+        Effect.withSpan('processHttpRequest')
+      )
+    }).pipe(
+      // Only the error tag is logged: parse errors embed the offending payload
+      Effect.tapError((error) =>
+        Effect.logDebug('Request rejected').pipe(
+          Effect.annotateLogs({ 'error._tag': error._tag })
+        )
+      ),
+      Effect.catchTags({
+        NoSuchElementException: () =>
+          HttpServerResponse.json(
+            {
+              message: 'Missing required field in request body',
+            },
+            { status: StatusCodes.BAD_REQUEST }
+          ),
+        ParseError: () =>
+          HttpServerResponse.json(
+            {
+              message: 'Invalid request body',
+            },
+            { status: StatusCodes.BAD_REQUEST }
+          ),
+        RequestError: () =>
+          HttpServerResponse.json(
+            {
+              message: 'Request error',
+            },
+            { status: StatusCodes.BAD_REQUEST }
+          ),
+      })
     )
+
+    yield* Effect.annotateLogsScoped({ 'response.status': response.status })
+    yield* Effect.logTrace('Request handled')
+
+    return response
+  }).pipe(
+    Effect.scoped,
+    Effect.withSpan('HttpServerMessageQueueFeeder', { root: true })
   )
+
+  const router = HttpRouter.empty.pipe(HttpRouter.post(path, handleRequest))
 
   const app = router.pipe(HttpServer.serve(), HttpServer.withLogAddress)
 

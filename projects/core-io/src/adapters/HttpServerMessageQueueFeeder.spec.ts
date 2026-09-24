@@ -152,9 +152,10 @@ describe('HttpServerMessageQueueFeeder', () => {
         yield* Fiber.interrupt(server)
 
         expect(message.annotations).toStrictEqual({
+          adapter: 'HttpServerMessageQueueFeeder',
           'request.url': '/test',
           'request.method': 'POST',
-          'message.id': 'test-message-id',
+          'message.messageId': 'test-message-id',
         })
 
         const span: any = message.span

@@ -1,10 +1,12 @@
-import { Config, ConfigError, Effect, Layer, Queue } from 'effect'
+import { Config, ConfigError, Effect, Layer, Queue, Record } from 'effect'
 import { Message as GcpsMessage } from '@google-cloud/pubsub'
 
 import * as PubsubClient from '@fact-check-database/core-vendor/cloud-pubsub/PubsubClient'
 import * as PubsubSubscription from '@fact-check-database/core-vendor/cloud-pubsub/PubsubSubscription'
 
 import { MessageQueue, MessageQueueError } from '../ports/MessageQueue'
+
+const adapter = 'CloudPubsubMessageQueueFeeder'
 
 /**
  * Registers `message`/`error` listeners on the Pub/Sub subscription that
@@ -19,31 +21,56 @@ import { MessageQueue, MessageQueueError } from '../ports/MessageQueue'
 const acquire = Effect.gen(function* () {
   const { subscription } = yield* PubsubSubscription.PubsubSubscription
   const { messages, errors } = yield* MessageQueue
+  yield* Effect.annotateLogsScoped({
+    adapter,
+    'subscription.name': subscription.name,
+  })
 
   function messageListener(message: GcpsMessage) {
     Effect.runFork(
-      messages.offer({
-        ack: Effect.sync(() => message.ack()),
-        nack: Effect.sync(() => message.nack()),
-        message: {
-          data: message.data,
-          attributes: {},
-          messageId: message.id,
-          publishTime: message.publishTime,
-        },
-      })
+      Effect.gen(function* () {
+        yield* Effect.annotateLogsScoped({
+          adapter,
+          'subscription.name': subscription.name,
+          'message.id': message.id,
+          'message.publishTime': message.publishTime.toISOString(),
+        })
+        const annotations = yield* Effect.logAnnotations.pipe(
+          Effect.map(Record.fromEntries)
+        )
+        yield* messages.offer({
+          ack: Effect.sync(() => message.ack()),
+          nack: Effect.sync(() => message.nack()),
+          message: {
+            data: message.data,
+            attributes: {},
+            messageId: message.id,
+            publishTime: message.publishTime,
+          },
+          annotations,
+        })
+        yield* Effect.logTrace('Message received')
+      }).pipe(Effect.scoped)
     )
   }
 
   function errorListener(error: Error) {
     Effect.runFork(
-      Queue.offer(
-        errors,
-        new MessageQueueError({
-          cause: error,
-          message: 'Pub/Sub subscription error',
+      Effect.gen(function* () {
+        yield* Effect.annotateLogsScoped({
+          adapter,
+          'subscription.name': subscription.name,
+          'error.name': error.name,
         })
-      )
+        yield* Effect.logDebug('Subscription error received')
+        yield* Queue.offer(
+          errors,
+          new MessageQueueError({
+            cause: error,
+            message: 'Pub/Sub subscription error',
+          })
+        )
+      }).pipe(Effect.scoped)
     )
   }
 
@@ -51,16 +78,24 @@ const acquire = Effect.gen(function* () {
     subscription.on('message', messageListener)
     subscription.on('error', errorListener)
   })
+  yield* Effect.logTrace('Listeners registered')
 
   return { subscription, messageListener, errorListener }
-})
+}).pipe(Effect.scoped)
 
 /** Removes the listeners registered by {@link acquire} from the subscription. */
 function release(resource: Effect.Effect.Success<typeof acquire>) {
-  return Effect.sync(() => {
-    resource.subscription.removeListener('message', resource.messageListener)
-    resource.subscription.removeListener('error', resource.errorListener)
-  })
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      adapter,
+      'subscription.name': resource.subscription.name,
+    })
+    yield* Effect.sync(() => {
+      resource.subscription.removeListener('message', resource.messageListener)
+      resource.subscription.removeListener('error', resource.errorListener)
+    })
+    yield* Effect.logTrace('Listeners removed')
+  }).pipe(Effect.scoped)
 }
 
 /** Scoped effect that registers the feeder's listeners on acquire and removes them on release. */

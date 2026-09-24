@@ -96,10 +96,28 @@ const program = pipe(
 
 ## Logging
 
-This library logs at two levels only, and never at `info`, `error`, or `fatal` — a consuming app's own logging owns everything above `trace`/`warning`:
+This library logs at three levels only. It never logs at `info`, `warning` or `error`: those levels belong to the consuming app, which decides what an adapter outcome means for its own workload.
 
-- **`trace`** — construction and lifecycle events (an adapter being created, a batch or directory being read, processing counts) and nothing else.
-- **`warning`** — recoverable anomalies the adapter chooses to continue past: a malformed message skipped in `CloudPubsubMessageBatch`, or a notification-publish failure swallowed in `FileSystemStorageWriterWithNotification` (the write itself still succeeds).
+- **`trace`**: expected steps, logged once each step has completed. Examples: an adapter was created, a batch was acquired, an object was written, a message was published.
+- **`debug`**: unexpected conditions that the adapter continues past or returns as a typed error. Examples: a malformed Pub/Sub message skipped in `CloudPubsubMessageBatch`, an HTTP request rejected with a 400 by `HttpServerMessageQueueFeeder`, a subscription error in `CloudPubsubMessageQueueFeeder`.
+- **`fatal`**: used only immediately before the adapter deliberately turns a failure into a defect (`Effect.die` / `Effect.orDie`), to record why the fiber is dying. Examples:
+  - a failed batch acknowledge in `CloudPubsubMessageBatch`;
+  - a failed payload encode in `FileSystemPublisher`;
+  - a failed notification publish in `FileSystemStorageWriterWithNotification`. The notification failure is not swallowed: the object has already been written, but the write call dies.
+
+### Annotations
+
+Log messages are constant strings, such as `Message published`. Values are attached as structured log annotations so that they can be queried, rather than interpolated into the message text.
+
+- Every adapter log carries `adapter`, set to the adapter's module name.
+- Other keys follow the expression the value came from, e.g. `bucket.name`, `topic.name`, `entries.length`, `message.messageId`, `request.url`.
+- Values are annotated with `Effect.annotateLogsScoped` as soon as they are computed, so later logs in the same operation carry them too.
+
+Annotations are scoped to a single operation, meaning one adapter construction or one method call, and are closed when that operation finishes. They never persist on a layer's scope. If they did, every log the consuming app writes after building the layer would inherit the adapter's annotations. `src/adapters/logAnnotationScope.spec.ts` guards this.
+
+Message adapters also copy the annotations that are active when a message is received into the message's `annotations` field. Consumers can re-apply them while processing that message.
+
+**Never annotated:** message `data` and `attributes`, HTTP request bodies, storage object metadata, and parse-error messages. All of these can carry payload content, including incidental PII. Error logs annotate only the error's tag or name.
 
 The port helper functions (`readFile`, `writeFile`, `publish`) are each wrapped in an `Effect.withSpan`, so calls through this library also show up as spans in whatever tracing backend the consuming app configures.
 
