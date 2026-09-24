@@ -103,11 +103,6 @@ submission) whose submissions flow back through GCS to trigger outbound email.
 | website-loader    | Service | Loads staged batches into Algolia      | [README.md](./projects/website-loader/README.md)    |
 | website-emailer   | Service | Sends confirmation/notification emails | [README.md](./projects/website-emailer/README.md)   |
 
-> Note: the `ingestion-infra`, `analysis-infra`, and `website-infra` READMEs are currently
-> near-identical copies of one another and need to be rewritten to reflect each stack's
-> actual, distinct resources (tracked in [docs/todo.md](./docs/todo.md)). `core-infra`'s README
-> and `docs/` have been rewritten to match its current, post-domain-split scope.
-
 A fact check's lifecycle, identity and deduplication are documented in
 [docs/fact-check-lifecycle.md](./docs/fact-check-lifecycle.md).
 
