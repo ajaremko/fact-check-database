@@ -1,95 +1,95 @@
-import { describe, it, expect } from '@effect/vitest'
+import { describe, it, expect, vi, afterEach } from '@effect/vitest'
 import { Effect, Layer } from 'effect'
-import type { BigQuery } from '@google-cloud/bigquery'
+import { BigQuery, Job } from '@google-cloud/bigquery'
 
 import { BigQueryClient } from '@fact-check-database/core-vendor/bigquery/BigQueryClient'
 
 import { loadBatch, loadJobId } from './loadBatch'
 
-const pointer = { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' }
-
-type FakeJob = {
-  id: string
-  metadata: { status: { state: string; errorResult?: unknown } }
-  getMetadata: () => Promise<unknown>
-  on: (event: string, cb: (arg?: unknown) => void) => FakeJob
-}
-
-function fakeJob(id: string, errorResult?: unknown): FakeJob {
-  const job: FakeJob = {
-    id,
-    metadata: { status: { state: 'DONE', errorResult } },
-    getMetadata: () => Promise.resolve([job.metadata]),
-    on: (event, cb) => {
-      if (event === 'complete' && !errorResult) queueMicrotask(() => cb())
-      if (event === 'error' && errorResult)
-        queueMicrotask(() => cb(errorResult))
-      return job
-    },
-  }
-  return job
-}
-
-/**
- * A fake BigQuery client backed by an in-memory job registry that, like the
- * real API, rejects a `createJob` whose `jobId` is already taken.
- */
-function fakeClient(existing: FakeJob[] = []) {
-  const jobs = new Map(existing.map((job) => [job.id, job]))
-  const created: string[] = []
-  const client = {
-    createJob: (options: { jobId: string }) => {
-      if (jobs.has(options.jobId)) {
-        return Promise.reject(
-          Object.assign(new Error('Already Exists'), { code: 409 })
-        )
-      }
-      const job = fakeJob(options.jobId)
-      jobs.set(options.jobId, job)
-      created.push(options.jobId)
-      return Promise.resolve([job])
-    },
-    job: (id: string) => {
-      const job = jobs.get(id)
-      if (!job) throw new Error(`no job ${id}`)
-      return job
-    },
-  }
-  const layer = Layer.succeed(BigQueryClient, {
-    client: client as unknown as BigQuery,
-  })
-  return { layer, created }
-}
-
-const input = {
-  projectId: 'project',
-  pointer,
-  generation: '123',
-  table: { dataset: 'staging', table: 'fact_checks' },
-  sourceFormat: 'NEWLINE_DELIMITED_JSON',
-  schema: {},
-}
-
 describe('loadJobId', () => {
   it('is deterministic for the same object version', () => {
-    expect(loadJobId(pointer, '1')).toEqual(loadJobId(pointer, '1'))
-    expect(loadJobId(pointer, '1')).toMatch(/^load_[0-9a-f]{64}$/)
+    const result = loadJobId(
+      { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' },
+      '1'
+    )
+    expect(result).toBe(
+      'load_9e4d060edfb663514250ee97d3797766793b2f1930e6b0fe3dad662a81e48fcc'
+    )
+    expect(result).toBe(
+      loadJobId(
+        { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' },
+        '1'
+      )
+    )
   })
 
-  it('differs across object versions and objects', () => {
-    expect(loadJobId(pointer, '1')).not.toEqual(loadJobId(pointer, '2'))
-    expect(loadJobId(pointer, '1')).not.toEqual(
-      loadJobId({ ...pointer, object: 'b.ndjson' }, '1')
+  it('differs across object versions', () => {
+    expect(
+      loadJobId(
+        { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' },
+        '2'
+      )
+    ).toBe(
+      'load_af2c3ed1ba97d08ce0393bc92bf05d85e21c67e9ae05e22c52e5092ccfbfd3ad'
+    )
+  })
+
+  it('differs across objects', () => {
+    expect(loadJobId({ bucket: 'staging', object: 'b.ndjson' }, '1')).toBe(
+      'load_3c09aac3353658ee24eccfe62328938acb3dad66fc56a6838c1212731ccb64c7'
     )
   })
 })
 
 describe('loadBatch', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it.effect('creates a load job with the deterministic id', () =>
     Effect.gen(function* () {
-      const { layer, created } = fakeClient()
-      yield* loadBatch(input).pipe(Effect.provide(layer))
-      expect(created).toEqual([loadJobId(pointer, '123')])
+      const client = new BigQuery({ projectId: 'project' })
+      vi.spyOn(client, 'createJob').mockImplementation(((options: {
+        jobId: string
+      }) => Promise.resolve([client.job(options.jobId)])) as never)
+      vi.spyOn(Job.prototype, 'getMetadata').mockImplementation(function (
+        this: Job,
+        callback?: unknown
+      ) {
+        this.metadata = { status: { state: 'DONE' } }
+        if (typeof callback === 'function') {
+          return callback(null, this.metadata)
+        }
+        return Promise.resolve([this.metadata])
+      } as never)
+
+      yield* loadBatch({
+        projectId: 'project',
+        pointer: { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' },
+        generation: '123',
+        table: { dataset: 'staging', table: 'fact_checks' },
+        sourceFormat: 'NEWLINE_DELIMITED_JSON',
+        schema: {},
+      }).pipe(Effect.provide(Layer.succeed(BigQueryClient, { client })))
+
+      expect(client.createJob).toHaveBeenCalledTimes(1)
+      expect(client.createJob).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jobId:
+            'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+          location: 'US',
+          configuration: expect.objectContaining({
+            load: expect.objectContaining({
+              destinationTable: {
+                projectId: 'project',
+                datasetId: 'staging',
+                tableId: 'fact_checks',
+              },
+              sourceUris: ['gs://staging/v1/type=fact_checks/a.ndjson'],
+            }),
+          }),
+        })
+      )
     })
   )
 
@@ -97,23 +97,84 @@ describe('loadBatch', () => {
     'does not create a second job when the batch was already loaded',
     () =>
       Effect.gen(function* () {
-        const { layer, created } = fakeClient([
-          fakeJob(loadJobId(pointer, '123')),
-        ])
-        yield* loadBatch(input).pipe(Effect.provide(layer))
-        expect(created).toEqual([])
+        const client = new BigQuery({ projectId: 'project' })
+        vi.spyOn(client, 'createJob').mockRejectedValue(
+          Object.assign(new Error('Already Exists'), { code: 409 })
+        )
+        vi.spyOn(Job.prototype, 'getMetadata').mockImplementation(function (
+          this: Job,
+          callback?: unknown
+        ) {
+          this.metadata = { status: { state: 'DONE' } }
+          if (typeof callback === 'function') {
+            return callback(null, this.metadata)
+          }
+          return Promise.resolve([this.metadata])
+        } as never)
+
+        yield* loadBatch({
+          projectId: 'project',
+          pointer: {
+            bucket: 'staging',
+            object: 'v1/type=fact_checks/a.ndjson',
+          },
+          generation: '123',
+          table: { dataset: 'staging', table: 'fact_checks' },
+          sourceFormat: 'NEWLINE_DELIMITED_JSON',
+          schema: {},
+        }).pipe(Effect.provide(Layer.succeed(BigQueryClient, { client })))
+
+        expect(client.createJob).toHaveBeenCalledTimes(1)
+        expect(client.createJob).toHaveBeenCalledWith(
+          expect.objectContaining({
+            jobId:
+              'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+          })
+        )
       })
   )
 
   it.effect('retries under a new id when the previous job failed', () =>
     Effect.gen(function* () {
-      const jobId = loadJobId(pointer, '123')
-      const { layer, created } = fakeClient([
-        fakeJob(jobId, { reason: 'backendError' }),
-      ])
-      yield* loadBatch(input).pipe(Effect.provide(layer))
-      expect(created).toHaveLength(1)
-      expect(created[0].startsWith(`${jobId}_`)).toBe(true)
+      const client = new BigQuery({ projectId: 'project' })
+      vi.spyOn(client, 'createJob')
+        .mockRejectedValueOnce(
+          Object.assign(new Error('Already Exists'), { code: 409 })
+        )
+        .mockImplementation(((options: { jobId: string }) =>
+          Promise.resolve([client.job(options.jobId)])) as never)
+      vi.spyOn(Job.prototype, 'getMetadata')
+        .mockImplementationOnce(function (this: Job) {
+          this.metadata = {
+            status: { state: 'DONE', errorResult: { reason: 'backendError' } },
+          }
+          return Promise.resolve([this.metadata])
+        } as never)
+        .mockImplementation(function (this: Job, callback?: unknown) {
+          this.metadata = { status: { state: 'DONE' } }
+          if (typeof callback === 'function') {
+            return callback(null, this.metadata)
+          }
+          return Promise.resolve([this.metadata])
+        } as never)
+
+      yield* loadBatch({
+        projectId: 'project',
+        pointer: { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' },
+        generation: '123',
+        table: { dataset: 'staging', table: 'fact_checks' },
+        sourceFormat: 'NEWLINE_DELIMITED_JSON',
+        schema: {},
+      }).pipe(Effect.provide(Layer.succeed(BigQueryClient, { client })))
+
+      expect(client.createJob).toHaveBeenCalledTimes(2)
+      expect(client.createJob).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          jobId: expect.stringMatching(
+            /^load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911_[0-9a-f-]{36}$/
+          ),
+        })
+      )
     })
   )
 })

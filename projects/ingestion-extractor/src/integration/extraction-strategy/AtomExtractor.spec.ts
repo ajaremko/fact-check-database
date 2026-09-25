@@ -3,7 +3,9 @@ import { Effect } from 'effect'
 
 import { AtomExtractor } from './AtomExtractor'
 
-const ATOM_FEED = `<?xml version="1.0" encoding="utf-8"?>
+describe('AtomExtractor', () => {
+  it('extracts a fully-populated entry from a real Atom feed shape', async () => {
+    const feed = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Example Fact Checks</title>
   <entry xml:lang="en">
@@ -21,14 +23,12 @@ const ATOM_FEED = `<?xml version="1.0" encoding="utf-8"?>
   </entry>
 </feed>`
 
-describe('AtomExtractor', () => {
-  it('extracts a fully-populated entry from a real Atom feed shape', async () => {
     const [factCheck] = await Effect.runPromise(
       AtomExtractor.extractor({
         timestamp: 0,
         // record is unused by AtomExtractor's mapping logic
         record: null as never,
-        data: new TextEncoder().encode(ATOM_FEED),
+        data: new TextEncoder().encode(feed),
       })
     )
 

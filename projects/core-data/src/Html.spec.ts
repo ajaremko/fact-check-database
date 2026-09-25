@@ -50,30 +50,23 @@ describe('htmlToMarkdown', () => {
 
   it('encode passes already-Markdown text through unchanged (does not re-convert it)', () => {
     const encode = pipe(Schema.String, htmlToMarkdown(), Schema.encodeSync)
-    const markdown = 'A [link](https://example.com) and *bold* text'
-    expect(encode(markdown)).toBe(markdown)
+    expect(encode('A [link](https://example.com) and *bold* text')).toBe(
+      'A [link](https://example.com) and *bold* text'
+    )
   })
 })
 
 describe('decodeHtmlEntities', () => {
   it('decodes numeric and named entities without interpreting tags', () => {
-    const decode = pipe(
-      Schema.String,
-      decodeHtmlEntities(),
-      Schema.decodeSync
-    )
+    const decode = pipe(Schema.String, decodeHtmlEntities(), Schema.decodeSync)
     expect(decode('Frank V&#246;hringer')).toBe('Frank Vöhringer')
-    expect(decode('Ben &amp; Jerry\'s <b>bold</b>')).toBe(
-      'Ben & Jerry\'s <b>bold</b>'
+    expect(decode("Ben &amp; Jerry's <b>bold</b>")).toBe(
+      "Ben & Jerry's <b>bold</b>"
     )
   })
 
   it('leaves plain text without entities unchanged', () => {
-    const decode = pipe(
-      Schema.String,
-      decodeHtmlEntities(),
-      Schema.decodeSync
-    )
+    const decode = pipe(Schema.String, decodeHtmlEntities(), Schema.decodeSync)
     expect(decode('no entities here')).toBe('no entities here')
   })
 })

@@ -3,31 +3,33 @@ import type { google } from '@google-cloud/pubsub/build/protos/protos'
 
 import { timestampToDate } from './timestampToDate'
 
-const expected = new Date('2026-09-24T12:34:56.789Z')
-const seconds = Math.floor(expected.getTime() / 1000)
-const nanos = 789_000_000
-
 describe('timestampToDate', () => {
   it('combines numeric seconds with nanos', () => {
-    expect(timestampToDate({ seconds, nanos })).toStrictEqual(expected)
+    const result = timestampToDate({ seconds: 1790253296, nanos: 789_000_000 })
+    expect(result).toStrictEqual(new Date('2026-09-24T12:34:56.789Z'))
   })
 
   it('accepts string seconds', () => {
-    expect(timestampToDate({ seconds: String(seconds), nanos })).toStrictEqual(
-      expected
-    )
+    const result = timestampToDate({
+      seconds: '1790253296',
+      nanos: 789_000_000,
+    })
+    expect(result).toStrictEqual(new Date('2026-09-24T12:34:56.789Z'))
   })
 
   it('accepts Long-like seconds', () => {
-    // Stand-in for a protobufjs Long, which stringifies to its decimal value
-    const long = {
-      toString: () => String(seconds),
-    } as unknown as google.protobuf.ITimestamp['seconds']
-    expect(timestampToDate({ seconds: long, nanos })).toStrictEqual(expected)
+    const result = timestampToDate({
+      seconds: {
+        toString: () => '1790253296',
+      } as unknown as google.protobuf.ITimestamp['seconds'],
+      nanos: 789_000_000,
+    })
+    expect(result).toStrictEqual(new Date('2026-09-24T12:34:56.789Z'))
   })
 
   it('treats missing nanos as zero', () => {
-    expect(timestampToDate({ seconds }).getTime()).toBe(seconds * 1000)
+    const result = timestampToDate({ seconds: 1790253296 })
+    expect(result.getTime()).toBe(1790253296 * 1000)
   })
 
   it('treats missing fields as the epoch', () => {

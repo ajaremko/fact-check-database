@@ -7,18 +7,16 @@ import * as InMemoryMessageQueue from '../adapters/InMemoryMessageQueue'
 
 import { enqueueAndAwaitOutcome } from './enqueueAndAwaitOutcome'
 
-const message = {
-  data: Buffer.from('test'),
-  attributes: {},
-  messageId: 'test-message-id',
-  publishTime: new Date(),
-}
-
 describe('enqueueAndAwaitOutcome', () => {
   it.effect('resolves with onAck when the queued message is acked', () =>
     Effect.gen(function* () {
       const fiber = yield* enqueueAndAwaitOutcome({
-        message,
+        message: {
+          data: Buffer.from('test'),
+          attributes: {},
+          messageId: 'test-message-id',
+          publishTime: new Date('2026-01-01T00:00:00.000Z'),
+        },
         onAck: Effect.succeed('acked'),
         onNack: Effect.succeed('nacked'),
       }).pipe(Effect.withSpan('test'), Effect.fork)
@@ -35,7 +33,12 @@ describe('enqueueAndAwaitOutcome', () => {
   it.effect('resolves with onNack when the queued message is nacked', () =>
     Effect.gen(function* () {
       const fiber = yield* enqueueAndAwaitOutcome({
-        message,
+        message: {
+          data: Buffer.from('test'),
+          attributes: {},
+          messageId: 'test-message-id',
+          publishTime: new Date('2026-01-01T00:00:00.000Z'),
+        },
         onAck: Effect.succeed('acked'),
         onNack: Effect.succeed('nacked'),
       }).pipe(Effect.withSpan('test'), Effect.fork)

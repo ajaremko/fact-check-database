@@ -303,18 +303,18 @@ describe('extractFactChecks', () => {
         )
 
         expect(result).toHaveLength(1)
-        const row = result[0]
 
         // The row stores a short plain-text preview, not the full Markdown.
-        expect(row.fact_check.content).toBe('A link and bold text.')
+        expect(result[0].fact_check.content).toBe('A link and bold text.')
 
         // The full Markdown (with intact link/emphasis syntax — this also
         // guards against the Html.ts encode-direction regression) is
         // written to a content-addressable blob keyed by fact_check.sha256.
-        const blobPath = `v1/type=fact_checks_content/sha256=${row.fact_check.sha256}.md`
-        expect(storage[blobPath]).toBe(
-          'A [link](https://example.com) and **bold** text.'
-        )
+        expect(
+          storage[
+            'v1/type=fact_checks_content/sha256=5802ab4c435b26ba50e3ae12b31138d79a5fcec5aac181f99c694288a2871553.md'
+          ]
+        ).toBe('A [link](https://example.com) and **bold** text.')
       })
   )
   it.effect('when observation is quarantined, returns an empty array', () =>

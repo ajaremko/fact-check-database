@@ -6,24 +6,11 @@ import { pinoLogger } from './pino'
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe('pinoLogger', () => {
-  const LOG_PATH = `tmp/pino-${Date.now()}.log`
-
-  const logger = Logger.addScoped(
-    pinoLogger({
-      level: 'trace',
-      transport: {
-        target: 'pino/file',
-        options: {
-          destination: LOG_PATH,
-          mkdir: true,
-        },
-      },
-    })
-  )
-
   it.sequential(
     'should create a logger and log at all log levels',
     async () => {
+      const logPath = `tmp/pino-levels-${Date.now()}.log`
+
       await Effect.gen(function* () {
         yield* Effect.logTrace('trace message')
         yield* Effect.logDebug('debug message')
@@ -33,14 +20,23 @@ describe('pinoLogger', () => {
         yield* Effect.logFatal('fatal message')
       }).pipe(
         Logger.withMinimumLogLevel(LogLevel.All),
-        Effect.provide(logger),
+        Effect.provide(
+          Logger.addScoped(
+            pinoLogger({
+              level: 'trace',
+              transport: {
+                target: 'pino/file',
+                options: { destination: logPath, mkdir: true },
+              },
+            })
+          )
+        ),
         Effect.runPromise
       )
 
       await delay(1000)
 
-      const data = await fs.readFile(LOG_PATH)
-      const lines = data
+      const lines = (await fs.readFile(logPath))
         .toString()
         .split('\n')
         .map((line) => line.trim())
@@ -79,12 +75,14 @@ describe('pinoLogger', () => {
     }
   )
 
-  class TestError extends Data.TaggedError('TestError')<{
-    readonly cause: unknown
-    readonly message: string
-  }> {}
-
   it.sequential('should pass cause information correctly', async () => {
+    class TestError extends Data.TaggedError('TestError')<{
+      readonly cause: unknown
+      readonly message: string
+    }> {}
+
+    const logPath = `tmp/pino-cause-${Date.now()}.log`
+
     await Effect.fail(
       new TestError({
         message: 'test error',
@@ -93,21 +91,30 @@ describe('pinoLogger', () => {
     ).pipe(
       Effect.catchAllCause(Effect.logError),
       Logger.withMinimumLogLevel(LogLevel.All),
-      Effect.provide(logger),
+      Effect.provide(
+        Logger.addScoped(
+          pinoLogger({
+            level: 'trace',
+            transport: {
+              target: 'pino/file',
+              options: { destination: logPath, mkdir: true },
+            },
+          })
+        )
+      ),
       Effect.runPromise
     )
 
     await delay(1000)
 
-    const data = await fs.readFile(LOG_PATH)
-    const lines = data
+    const lines = (await fs.readFile(logPath))
       .toString()
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line !== '')
       .map((line) => JSON.parse(line))
 
-    expect(lines[6].level).toBe('ERROR')
-    expect(lines[6].cause).toBeDefined()
+    expect(lines[0].level).toBe('ERROR')
+    expect(lines[0].cause).toBeDefined()
   })
 })

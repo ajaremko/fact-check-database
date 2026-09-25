@@ -80,19 +80,18 @@ describe('parseXml', () => {
   })
 
   it('encodes prefixed keys back into attributes', () => {
-    const schema = Schema.Struct({
-      item: Schema.Struct({
-        '@_id': Schema.String,
-        name: Schema.String,
+    const encode = pipe(
+      Schema.Struct({
+        item: Schema.Struct({
+          '@_id': Schema.String,
+          name: Schema.String,
+        }),
       }),
-    })
-    const xml = '<item id="7"><name>x</name></item>'
-    const decoded = pipe(schema, parseXml(), Schema.decodeUnknownSync)(xml)
-    const encoded = pipe(
-      schema,
       parseXml(),
-      Schema.encodeUnknownSync
-    )(decoded as never)
-    expect(encoded).toStrictEqual(xml)
+      Schema.encodeSync
+    )
+    expect(encode({ item: { '@_id': '7', name: 'x' } })).toStrictEqual(
+      '<item id="7"><name>x</name></item>'
+    )
   })
 })
