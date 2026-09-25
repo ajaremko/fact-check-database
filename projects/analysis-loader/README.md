@@ -79,9 +79,9 @@ complete configuration reference and [docs/known-issues.md](./docs/known-issues.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
-| [core-vendor](../core-vendor/README.md) | `BigQueryClient`, used to submit and await the load job |
-| [core-contracts](../core-contracts/README.md) | The canonical staging schema this service loads against |
+| Document                                       | Purpose                                                 |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)           | Configuration reference and diagnosing failures         |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes            |
+| [core-vendor](../core-vendor/README.md)        | `BigQueryClient`, used to submit and await the load job |
+| [core-contracts](../core-contracts/README.md)  | The canonical staging schema this service loads against |

@@ -84,12 +84,12 @@ gap.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
-| [core-io](../core-io/README.md) | `StorageReader`, used to read the staged batch |
-| [core-vendor](../core-vendor/README.md) | `AlgoliaSearchClient`, used to save the transcoded batch |
-| [website-contracts](../website-contracts/README.md) | The `SearchResult` schema this service writes to Algolia |
-| [analysis-loader](../analysis-loader/README.md) | The other consumer of the same staging batches, loading into BigQuery instead |
-| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | Why search records are keyed by `fact_check_id` |
+| Document                                                           | Purpose                                                                       |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)                               | Configuration reference and diagnosing failures                               |
+| [docs/known-issues.md](./docs/known-issues.md)                     | Accepted, long-lived gaps and deferred fixes                                  |
+| [core-io](../core-io/README.md)                                    | `StorageReader`, used to read the staged batch                                |
+| [core-vendor](../core-vendor/README.md)                            | `AlgoliaSearchClient`, used to save the transcoded batch                      |
+| [website-contracts](../website-contracts/README.md)                | The `SearchResult` schema this service writes to Algolia                      |
+| [analysis-loader](../analysis-loader/README.md)                    | The other consumer of the same staging batches, loading into BigQuery instead |
+| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | Why search records are keyed by `fact_check_id`                               |

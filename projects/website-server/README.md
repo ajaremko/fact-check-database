@@ -57,7 +57,7 @@ calls a `tip_submission` (written as `tip-{id}.yml`) — a naming mismatch betwe
 and the schema's own vocabulary, stated here so it doesn't read as a mistake later.
 
 Each form's client component wraps its submit call in a `try/catch` that re-throws
-`isRedirectError` errors and only shows an error message when the server action *returns*
+`isRedirectError` errors and only shows an error message when the server action _returns_
 normally. This is intentional, if easy to misread: Next's `redirect()` (called on success) works
 by throwing internally, so a normal return only happens on the failure path.
 
@@ -66,7 +66,7 @@ by throwing internally, so a normal return only happens on the failure path.
 `page.tsx` (a Server Component) reads `ALGOLIA_APP_ID`/`ALGOLIA_SEARCH_KEY`/`ALGOLIA_INDEX_NAME`/
 `ALGOLIA_INDEX_NAME_OLDEST` from the server environment and passes them as props into the
 client-side `Search`/`FactCheckSearch` components. None of these use the `NEXT_PUBLIC_` prefix —
-that's intentional, not an oversight: both an Algolia *search-only* key and a reCAPTCHA *site* key
+that's intentional, not an oversight: both an Algolia _search-only_ key and a reCAPTCHA _site_ key
 are meant to be embedded in client-side code by design, and passing them down as props avoids the
 `NEXT_PUBLIC_` build-time-inlining requirement, so the values can be changed without rebuilding
 the image.
@@ -95,9 +95,9 @@ is no `test` target and no automated test coverage exists for this project today
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference and diagnosing failures |
-| [website-contracts](../website-contracts/README.md) | The form submission schemas this service writes against |
-| [website-emailer](../website-emailer/README.md) | Sends the confirmation/notification emails triggered by a form submission |
-| [website-loader](../website-loader/README.md) | Populates the Algolia index this service searches against — from the ingestion pipeline, unrelated to form submissions |
+| Document                                            | Purpose                                                                                                                |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)                | Configuration reference and diagnosing failures                                                                        |
+| [website-contracts](../website-contracts/README.md) | The form submission schemas this service writes against                                                                |
+| [website-emailer](../website-emailer/README.md)     | Sends the confirmation/notification emails triggered by a form submission                                              |
+| [website-loader](../website-loader/README.md)       | Populates the Algolia index this service searches against — from the ingestion pipeline, unrelated to form submissions |

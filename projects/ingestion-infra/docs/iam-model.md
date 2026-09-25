@@ -8,8 +8,8 @@ deploys this stack — that identity is provisioned there, not here.
 
 The only IAM this project applies outside its own GCP project:
 
-| Principal | Role | On | Purpose |
-| --- | --- | --- | --- |
+| Principal                                        | Role                            | On                                               | Purpose                                                                       |
+| ------------------------------------------------ | ------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- |
 | Cloud Run service agent (this project's project) | `roles/artifactregistry.reader` | core-infra's shared Artifact Registry repository | Lets Cloud Run in this project pull images published to core-infra's registry |
 
 Applied via a second `gcp.Provider` (`coreProvider`) scoped to core-infra's project, with
@@ -20,22 +20,22 @@ project's identity reaching into core-infra, not something core-infra could defi
 
 One dedicated service account per pipeline stage, each scoped to only what that stage needs:
 
-| Service account | Used by | Roles |
-| --- | --- | --- |
-| `ingestion-ingestion-sa` (account ID `ingestion-ingestor`) | Ingestor job | Secret Accessor on the source-list secret; `roles/storage.objectCreator` on the raw archive bucket; `cloudtrace.agent`, `telemetry.tracesWriter`, `monitoring.metricWriter` at project level |
-| `ingestion-extractor-sa` | Extractor job | `roles/storage.objectViewer` on the raw archive bucket; `roles/storage.objectCreator` on core-infra's staging bucket; `roles/pubsub.subscriber` on its own subscription; the same trace/telemetry/monitoring writer roles |
-| `ingestion-sanitizer-sa` | Sanitizer service | Secret Accessor on the sanitizer-policy secret; `roles/storage.objectAdmin` on the raw archive bucket — broader than the other two (**admin**, not create/view-only), since the sanitizer both reads ingestor records and writes sanitizer records back to the same bucket; the same trace/telemetry/monitoring writer roles |
+| Service account                                            | Used by           | Roles                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ingestion-ingestion-sa` (account ID `ingestion-ingestor`) | Ingestor job      | Secret Accessor on the source-list secret; `roles/storage.objectCreator` on the raw archive bucket; `cloudtrace.agent`, `telemetry.tracesWriter`, `monitoring.metricWriter` at project level                                                                                                                                 |
+| `ingestion-extractor-sa`                                   | Extractor job     | `roles/storage.objectViewer` on the raw archive bucket; `roles/storage.objectCreator` on core-infra's staging bucket; `roles/pubsub.subscriber` on its own subscription; the same trace/telemetry/monitoring writer roles                                                                                                    |
+| `ingestion-sanitizer-sa`                                   | Sanitizer service | Secret Accessor on the sanitizer-policy secret; `roles/storage.objectAdmin` on the raw archive bucket — broader than the other two (**admin**, not create/view-only), since the sanitizer both reads ingestor records and writes sanitizer records back to the same bucket; the same trace/telemetry/monitoring writer roles |
 
 ## Invoker service accounts
 
 Three more service accounts exist solely to let one GCP service invoke another, via
 `createInvokerServiceAccount`:
 
-| Service account | Invokes | Grant |
-| --- | --- | --- |
-| `ingestion-ingestor-push-sa` | The ingestor Cloud Run **job** | `roles/run.invoker` on the job, plus `roles/iam.serviceAccountTokenCreator` granted to the Cloud Scheduler service agent so it can mint tokens as this SA |
-| `ingestion-extractor-push-sa` | The extractor Cloud Run **job** | Same pattern, for the extractor's Cloud Scheduler trigger |
-| `ingestion-sanitizer-push-sa` | The sanitizer Cloud Run **service** | `roles/run.invoker` on the service; used as the OIDC identity for the Pub/Sub push subscription that delivers ingestor events to it |
+| Service account               | Invokes                             | Grant                                                                                                                                                     |
+| ----------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ingestion-ingestor-push-sa`  | The ingestor Cloud Run **job**      | `roles/run.invoker` on the job, plus `roles/iam.serviceAccountTokenCreator` granted to the Cloud Scheduler service agent so it can mint tokens as this SA |
+| `ingestion-extractor-push-sa` | The extractor Cloud Run **job**     | Same pattern, for the extractor's Cloud Scheduler trigger                                                                                                 |
+| `ingestion-sanitizer-push-sa` | The sanitizer Cloud Run **service** | `roles/run.invoker` on the service; used as the OIDC identity for the Pub/Sub push subscription that delivers ingestor events to it                       |
 
 ## Pub/Sub service agent grants
 

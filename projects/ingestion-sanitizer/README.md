@@ -58,12 +58,12 @@ This service never consumes a domain-specific event. What arrives on its message
 
 ### Message acknowledgement
 
-| Condition | Outcome |
-| --- | --- |
-| Record processed successfully | `ack` |
-| Parse error (message body doesn't decode) | `ack` — discarded, not retried; retrying a message that can't be decoded wouldn't help |
-| Storage read or write failure | `nack` — redelivered |
-| Message-queue-level error | The service's error-handling fiber logs it and fails; not currently isolated per-message |
+| Condition                                 | Outcome                                                                                  |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Record processed successfully             | `ack`                                                                                    |
+| Parse error (message body doesn't decode) | `ack` — discarded, not retried; retrying a message that can't be decoded wouldn't help   |
+| Storage read or write failure             | `nack` — redelivered                                                                     |
+| Message-queue-level error                 | The service's error-handling fiber logs it and fails; not currently isolated per-message |
 
 ## Development
 
@@ -83,23 +83,23 @@ Two spec files give solid coverage of policy evaluation and the sanitize-one-rec
 cp projects/ingestion-sanitizer/.env.template projects/ingestion-sanitizer/.env
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `SANITIZER_POLICY_MODE=filesystem` | Read the policy document from disk instead of GCS |
-| `SANITIZER_POLICY_PATH` | Path to the policy YAML (defaults to `assets/policy.yml` in the template) |
-| `STORAGE_MODE=filesystem` | Read/write the archive on a local directory instead of GCS |
-| `STORAGE_OUTPUT_DIR` | Directory sanitizer records are written to (also where ingestor records are read from) |
-| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory and simulate the notification locally |
-| `MESSAGE_QUEUE_INPUT_DIR` | Directory to populate with notification JSON files (e.g. from a local ingestor run) |
-| `PUBLISHER_OUTPUT_DIR` | Directory the simulated notification is written to |
+| Variable                           | Purpose                                                                                |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
+| `SANITIZER_POLICY_MODE=filesystem` | Read the policy document from disk instead of GCS                                      |
+| `SANITIZER_POLICY_PATH`            | Path to the policy YAML (defaults to `assets/policy.yml` in the template)              |
+| `STORAGE_MODE=filesystem`          | Read/write the archive on a local directory instead of GCS                             |
+| `STORAGE_OUTPUT_DIR`               | Directory sanitizer records are written to (also where ingestor records are read from) |
+| `MESSAGING_MODE=filesystem`        | Read queued messages from a local directory and simulate the notification locally      |
+| `MESSAGE_QUEUE_INPUT_DIR`          | Directory to populate with notification JSON files (e.g. from a local ingestor run)    |
+| `PUBLISHER_OUTPUT_DIR`             | Directory the simulated notification is written to                                     |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference, policy format, and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
-| [ingestion-contracts](../ingestion-contracts/README.md) | The canonical `SanitizerRecord` schema this service archives |
-| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | The identifiers this service carries forward unchanged |
+| Document                                                           | Purpose                                                         |
+| ------------------------------------------------------------------ | --------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)                               | Configuration reference, policy format, and diagnosing failures |
+| [docs/known-issues.md](./docs/known-issues.md)                     | Accepted, long-lived gaps and deferred fixes                    |
+| [ingestion-contracts](../ingestion-contracts/README.md)            | The canonical `SanitizerRecord` schema this service archives    |
+| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | The identifiers this service carries forward unchanged          |

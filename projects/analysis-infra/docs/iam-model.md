@@ -6,8 +6,8 @@ deploys this stack — that identity is provisioned there, not here.
 
 ## Cross-project grant
 
-| Principal | Role | On | Purpose |
-| --- | --- | --- | --- |
+| Principal                                        | Role                            | On                                               | Purpose                                                                                   |
+| ------------------------------------------------ | ------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | Cloud Run service agent (this project's project) | `roles/artifactregistry.reader` | core-infra's shared Artifact Registry repository | Lets Cloud Run in this project pull the staging loader's image from core-infra's registry |
 
 Applied via a second `gcp.Provider` (`coreProvider`) scoped to core-infra's project, with
@@ -15,10 +15,10 @@ Applied via a second `gcp.Provider` (`coreProvider`) scoped to core-infra's proj
 
 ## Service accounts
 
-| Service account | Used by | Roles |
-| --- | --- | --- |
-| Staging loader SA | The staging loader Cloud Run service | `storage.objectViewer` on core-infra's staging bucket; `bigquery.dataEditor` and `bigquery.jobUser` on the staging table; `cloudtrace.agent`, `telemetry.tracesWriter`, `monitoring.metricWriter` at project level |
-| Curated loader SA | The BigQuery Data Transfer Service scheduled query | `bigquery.dataViewer` on the staging dataset; `bigquery.dataEditor` on the curated dataset; `bigquery.jobUser` at project level |
+| Service account   | Used by                                            | Roles                                                                                                                                                                                                              |
+| ----------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Staging loader SA | The staging loader Cloud Run service               | `storage.objectViewer` on core-infra's staging bucket; `bigquery.dataEditor` and `bigquery.jobUser` on the staging table; `cloudtrace.agent`, `telemetry.tracesWriter`, `monitoring.metricWriter` at project level |
+| Curated loader SA | The BigQuery Data Transfer Service scheduled query | `bigquery.dataViewer` on the staging dataset; `bigquery.dataEditor` on the curated dataset; `bigquery.jobUser` at project level                                                                                    |
 
 ## A distinct trust pattern: impersonation, not attachment
 
@@ -35,6 +35,7 @@ project's own resources.
 ## Pub/Sub-related grants
 
 The staging loader's push subscription setup also creates:
+
 - An invoker service account granted `roles/run.invoker` on the loader service, so Pub/Sub can
   push messages to it.
 - Storage grants (`legacyBucketReader`, `objectCreator`) for the Pub/Sub service agent on the

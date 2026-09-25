@@ -9,19 +9,19 @@ Reference for the `analysis` Pulumi config namespace, read by `src/config.ts`. S
 `pulumi config set analysis:<key> <value> --stack=<dev|prod>` (or directly in
 `Pulumi.<stack>.yml`).
 
-| Key | Description | Required | Default |
-| --- | --- | --- | --- |
-| `analysis:coreStackName` | The core-infra stack this project reads a `StackReference` from | Yes | — |
-| `analysis:project` | GCP project ID this stack deploys into | Yes | — |
-| `analysis:region` | GCP region for regional resources | Yes | — |
-| `analysis:logLevel` | Log level passed to the staging loader | Yes | — |
-| `analysis:tag` | Docker image tag for the staging loader | No | none — falls back to a public placeholder image if unset |
-| `analysis:tableDeletionProtection` | Whether the BigQuery tables have Pulumi/GCP deletion protection | No | `true` — dev overrides to `false` for easy iteration |
-| `analysis:retainTablesOnDelete` | Whether the tables survive `pulumi destroy` | No | `true` — dev overrides to `false` for easy iteration |
-| `analysis:forceDestroyStorage` | Whether `pulumi destroy` may delete a non-empty dead-letter bucket | No | `false` |
-| `analysis:retainStorageOnDelete` | Whether the dead-letter bucket survives `pulumi destroy` | No | `true` |
-| `analysis:deadletterRetentionDays` | Age-based deletion window for the dead-letter bucket. Unset disables the rule | No | unset |
-| `analysis:deadletterSoftDeleteDays` | Soft-delete window on the dead-letter bucket | No | unset |
+| Key                                 | Description                                                                   | Required | Default                                                  |
+| ----------------------------------- | ----------------------------------------------------------------------------- | -------- | -------------------------------------------------------- |
+| `analysis:coreStackName`            | The core-infra stack this project reads a `StackReference` from               | Yes      | —                                                        |
+| `analysis:project`                  | GCP project ID this stack deploys into                                        | Yes      | —                                                        |
+| `analysis:region`                   | GCP region for regional resources                                             | Yes      | —                                                        |
+| `analysis:logLevel`                 | Log level passed to the staging loader                                        | Yes      | —                                                        |
+| `analysis:tag`                      | Docker image tag for the staging loader                                       | No       | none — falls back to a public placeholder image if unset |
+| `analysis:tableDeletionProtection`  | Whether the BigQuery tables have Pulumi/GCP deletion protection               | No       | `true` — dev overrides to `false` for easy iteration     |
+| `analysis:retainTablesOnDelete`     | Whether the tables survive `pulumi destroy`                                   | No       | `true` — dev overrides to `false` for easy iteration     |
+| `analysis:forceDestroyStorage`      | Whether `pulumi destroy` may delete a non-empty dead-letter bucket            | No       | `false`                                                  |
+| `analysis:retainStorageOnDelete`    | Whether the dead-letter bucket survives `pulumi destroy`                      | No       | `true`                                                   |
+| `analysis:deadletterRetentionDays`  | Age-based deletion window for the dead-letter bucket. Unset disables the rule | No       | unset                                                    |
+| `analysis:deadletterSoftDeleteDays` | Soft-delete window on the dead-letter bucket                                  | No       | unset                                                    |
 
 ## Commands
 
@@ -44,6 +44,7 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
 ### The staging loader isn't receiving new batches
 
 **Steps:**
+
 1. Confirm core-infra's staging topic (`stagingStorageTopicName`) still exists and that this
    project's push subscription (`loaderSubscriptionName`) is attached to it.
 2. Confirm the invoker service account (`loaderInvokerServiceAccountEmail`) still has
@@ -55,6 +56,7 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
 ### Rows aren't appearing in the curated table
 
 **Steps:**
+
 1. Check the BigQuery Data Transfer Service run history for `transferJobName` (Cloud Console →
    BigQuery → Data Transfers) — this runs as a scheduled query, not a Cloud Run job, so its logs
    live there, not in Cloud Run/Cloud Logging the way every other service in this repo's infra
@@ -64,7 +66,7 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
    Transfer Service agent still has `serviceAccountTokenCreator` on that service account — this
    impersonation grant is what lets DTS run the query as that identity at all.
 3. Remember the transfer only looks at staging rows with `extracted_at` in the last 7 days (the
-   staging partition expiry), and a fact check that's already curated is only *updated* — not
+   staging partition expiry), and a fact check that's already curated is only _updated_ — not
    re-inserted — and only when a newer fetch carries different content. A staging row older than
    7 days when the schedule catches up won't be picked up.
 

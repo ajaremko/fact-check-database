@@ -13,10 +13,10 @@ a single GCS `OBJECT_FINALIZE` notification into one Pub/Sub topic
 subscribe to that same topic and deliver the same event twice, to two different routes on this
 service:
 
-| Route | Sends | To |
-| --- | --- | --- |
+| Route                      | Sends                | To                 |
+| -------------------------- | -------------------- | ------------------ |
 | `POST /confirmation-email` | a confirmation email | the form submitter |
-| `POST /notification-email` | a notification email | the site admin |
+| `POST /notification-email` | a notification email | the site admin     |
 
 Both routes share the same handler shape: decode the Pub/Sub push envelope, pull
 `bucketId`/`objectId` out of its attributes, read that object from storage, and decode it as YAML
@@ -24,10 +24,10 @@ into the `FormSubmission` union — then run whichever `Emailer` capability that
 
 ## Ports and adapters
 
-| Port | Production adapter | Development adapter |
-| --- | --- | --- |
-| `Emailer` | `ResendEmailer` — sends via the [Resend](https://resend.com) API | `LoggerEmailer` — logs instead of sending |
-| `StorageReader` (from [`core-io`](../core-io/README.md)) | GCS | local filesystem |
+| Port                                                     | Production adapter                                               | Development adapter                       |
+| -------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| `Emailer`                                                | `ResendEmailer` — sends via the [Resend](https://resend.com) API | `LoggerEmailer` — logs instead of sending |
+| `StorageReader` (from [`core-io`](../core-io/README.md)) | GCS                                                              | local filesystem                          |
 
 Selected via `EMAILER_MODE` and `STORAGE_MODE` — see [docs/runbook.md](./docs/runbook.md).
 
@@ -66,7 +66,7 @@ failed request, via `Effect.tapErrorCause`). The `LoggerEmailer` dev adapter add
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/runbook.md](./docs/runbook.md) | Configuration reference, Resend setup, and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted gaps and inconsistencies |
+| Document                                       | Purpose                                                        |
+| ---------------------------------------------- | -------------------------------------------------------------- |
+| [docs/runbook.md](./docs/runbook.md)           | Configuration reference, Resend setup, and diagnosing failures |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted gaps and inconsistencies                              |

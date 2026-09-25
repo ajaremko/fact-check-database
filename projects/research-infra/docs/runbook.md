@@ -7,13 +7,13 @@ this project provisions.
 
 Reference for the `research` Pulumi config namespace, read by `src/config.ts`.
 
-| Key | Description | Required | Default |
-| --- | --- | --- | --- |
-| `research:project` | GCP project ID this stack deploys into | Yes | — |
-| `research:region` | GCP region for the BigQuery dataset | Yes | — |
-| `research:analysisStackName` | The analysis-infra stack this project reads a `StackReference` from | Yes | — |
-| `research:tableDeletionProtection` | Whether the marts view has Pulumi/GCP deletion protection | No | `true` — both stacks currently override to `false` |
-| `research:retainTablesOnDelete` | Whether the marts view survives `pulumi destroy` | No | `true` — both stacks currently override to `false`, though see the README: this is a view, not data, so the practical risk is low |
+| Key                                | Description                                                         | Required | Default                                                                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `research:project`                 | GCP project ID this stack deploys into                              | Yes      | —                                                                                                                                 |
+| `research:region`                  | GCP region for the BigQuery dataset                                 | Yes      | —                                                                                                                                 |
+| `research:analysisStackName`       | The analysis-infra stack this project reads a `StackReference` from | Yes      | —                                                                                                                                 |
+| `research:tableDeletionProtection` | Whether the marts view has Pulumi/GCP deletion protection           | No       | `true` — both stacks currently override to `false`                                                                                |
+| `research:retainTablesOnDelete`    | Whether the marts view survives `pulumi destroy`                    | No       | `true` — both stacks currently override to `false`, though see the README: this is a view, not data, so the practical risk is low |
 
 ## Commands
 

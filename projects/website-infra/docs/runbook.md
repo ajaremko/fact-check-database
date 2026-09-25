@@ -9,24 +9,24 @@ Reference for the `website` Pulumi config namespace, read by `src/config.ts`. Se
 `pulumi config set website:<key> <value> --stack=<dev|prod>` (or directly in
 `Pulumi.<stack>.yml`).
 
-| Key | Description | Required | dev | prod |
-| --- | --- | --- | --- | --- |
-| `website:project` | GCP project ID this stack deploys into | Yes | `fact-check-database-dev` | `fact-check-database-website` |
-| `website:region` | GCP region for regional resources | Yes | `us-central1` | `us-central1` |
-| `website:coreStackName` | The core-infra stack this project reads a `StackReference` from | Yes | `alfredsyoung/fact-check-database-core` | same |
-| `website:tag` | Docker image tag for all four services | No | set per-deploy | set per-deploy |
-| `website:logLevel` | Log level passed to services that read it | Yes | `debug` | `debug` |
-| `website:verifiedDomains` | Domains verified for Cloud Run domain mapping and the reCAPTCHA key's allowed domains | Yes | `dev.factcheckdatabase.com` | `factcheckdatabase.com`, `thefactcheckdatabase.com` |
-| `website:algoliaAppId` / `algoliaSearchKey` | The Algolia application this stack's index lives in | Yes | same app as prod today | — |
-| `website:gaMeasurementId` | Google Analytics measurement ID, passed to the backend service. Unset in dev on purpose — dev/test traffic should never reach real analytics | No | unset | set |
-| `website:resendApiKeySecretVersion` | Which version of the `website-resend-api-key` secret to mount into the emailer | No, but the emailer fails to start without a real value | set | set |
-| `website:resendConfirmationTemplateId` | The Resend template used for confirmation emails | Yes | same template as prod today | — |
-| `website:adminEmail` | Notification-email recipient | Yes | — | — |
-| `website:htpasswdSecretVersion` | Which version of the dev basic-auth credentials to mount. Deployment throws if this is set in **prod** | No; required in practice for dev to be reachable | set | must stay unset |
-| `website:forceDestroyStorage` | Whether `pulumi destroy` may delete non-empty buckets (`backendBucket`, `deadletterBucket`) | No, default `false` | unset (defaults to `false`) | unset (defaults to `false`) |
-| `website:retainStorageOnDelete` | Whether those buckets survive `pulumi destroy` instead of being deleted with the stack | No, default `true` | unset (defaults to `true`) | unset (defaults to `true`) |
-| `website:deadletterRetentionDays` | Age-based deletion window for `deadletterBucket`. Unset disables the rule | No | unset | unset |
-| `website:deadletterSoftDeleteDays` | Soft-delete window on `deadletterBucket` | No | unset | unset |
+| Key                                         | Description                                                                                                                                  | Required                                                | dev                                     | prod                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| `website:project`                           | GCP project ID this stack deploys into                                                                                                       | Yes                                                     | `fact-check-database-dev`               | `fact-check-database-website`                       |
+| `website:region`                            | GCP region for regional resources                                                                                                            | Yes                                                     | `us-central1`                           | `us-central1`                                       |
+| `website:coreStackName`                     | The core-infra stack this project reads a `StackReference` from                                                                              | Yes                                                     | `alfredsyoung/fact-check-database-core` | same                                                |
+| `website:tag`                               | Docker image tag for all four services                                                                                                       | No                                                      | set per-deploy                          | set per-deploy                                      |
+| `website:logLevel`                          | Log level passed to services that read it                                                                                                    | Yes                                                     | `debug`                                 | `debug`                                             |
+| `website:verifiedDomains`                   | Domains verified for Cloud Run domain mapping and the reCAPTCHA key's allowed domains                                                        | Yes                                                     | `dev.factcheckdatabase.com`             | `factcheckdatabase.com`, `thefactcheckdatabase.com` |
+| `website:algoliaAppId` / `algoliaSearchKey` | The Algolia application this stack's index lives in                                                                                          | Yes                                                     | same app as prod today                  | —                                                   |
+| `website:gaMeasurementId`                   | Google Analytics measurement ID, passed to the backend service. Unset in dev on purpose — dev/test traffic should never reach real analytics | No                                                      | unset                                   | set                                                 |
+| `website:resendApiKeySecretVersion`         | Which version of the `website-resend-api-key` secret to mount into the emailer                                                               | No, but the emailer fails to start without a real value | set                                     | set                                                 |
+| `website:resendConfirmationTemplateId`      | The Resend template used for confirmation emails                                                                                             | Yes                                                     | same template as prod today             | —                                                   |
+| `website:adminEmail`                        | Notification-email recipient                                                                                                                 | Yes                                                     | —                                       | —                                                   |
+| `website:htpasswdSecretVersion`             | Which version of the dev basic-auth credentials to mount. Deployment throws if this is set in **prod**                                       | No; required in practice for dev to be reachable        | set                                     | must stay unset                                     |
+| `website:forceDestroyStorage`               | Whether `pulumi destroy` may delete non-empty buckets (`backendBucket`, `deadletterBucket`)                                                  | No, default `false`                                     | unset (defaults to `false`)             | unset (defaults to `false`)                         |
+| `website:retainStorageOnDelete`             | Whether those buckets survive `pulumi destroy` instead of being deleted with the stack                                                       | No, default `true`                                      | unset (defaults to `true`)              | unset (defaults to `true`)                          |
+| `website:deadletterRetentionDays`           | Age-based deletion window for `deadletterBucket`. Unset disables the rule                                                                    | No                                                      | unset                                   | unset                                               |
+| `website:deadletterSoftDeleteDays`          | Soft-delete window on `deadletterBucket`                                                                                                     | No                                                      | unset                                   | unset                                               |
 
 ## Commands
 
@@ -86,6 +86,7 @@ without their entry and deploy a new secret version.
 
 **Symptom:** the Cloud Run revision fails to become ready.
 **Steps:**
+
 1. For the emailer: confirm `website:resendApiKeySecretVersion`,
    `website:resendConfirmationTemplateId`, and `website:adminEmail` are all set — see
    [website-emailer's runbook](../website-emailer/docs/runbook.md) for what each does.

@@ -17,12 +17,12 @@ nx deploy ingestion-infra --stack=<dev|prod>    # Apply changes
 
 Read via a `StackReference` in `src/config.ts`, not owned here:
 
-| Output read | Used for |
-| --- | --- |
-| `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
-| `stagingStorageBucketName` / `stagingStorageTopicName` | Where the extractor writes its output batches |
-| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving each service's container image |
-| `gcsArchiveKeyId` | Encrypting this project's raw archive bucket |
+| Output read                                            | Used for                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `gcpProject` / `gcpRegion`                             | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
+| `stagingStorageBucketName` / `stagingStorageTopicName` | Where the extractor writes its output batches                                         |
+| `artifactRegistryLocation` / `Name` / `RepositoryId`   | Resolving each service's container image                                              |
+| `gcsArchiveKeyId`                                      | Encrypting this project's raw archive bucket                                          |
 
 This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub
 Actions CI/CD identity — those are core-infra's, documented in its own
@@ -31,25 +31,25 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 
 ### GCP service enablement
 
-| Service | API | Purpose |
-| --- | --- | --- |
-| Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
-| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
-| Artifact Registry | `artifactregistry.googleapis.com` | Pulling container images from core-infra's registry |
-| Cloud Run | `run.googleapis.com` | The ingestor/extractor jobs and the sanitizer service |
-| Cloud Scheduler | `cloudscheduler.googleapis.com` | Triggering the ingestor and extractor jobs on a cron |
-| Cloud Storage | `storage.googleapis.com` | Archive, event-log, and deadletter buckets |
-| Pub/Sub | `pubsub.googleapis.com` | Ingestor → sanitizer → extractor hand-off |
-| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and the pipeline dashboard |
-| Secret Manager | `secretmanager.googleapis.com` | The source list and sanitizer policy documents |
+| Service                                              | API                                                                     | Purpose                                               |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
+| Compute Engine                                       | `compute.googleapis.com`                                                | Required before enabling several other APIs           |
+| Cloud Resource Manager                               | `cloudresourcemanager.googleapis.com`                                   | Project-level IAM and metadata                        |
+| Artifact Registry                                    | `artifactregistry.googleapis.com`                                       | Pulling container images from core-infra's registry   |
+| Cloud Run                                            | `run.googleapis.com`                                                    | The ingestor/extractor jobs and the sanitizer service |
+| Cloud Scheduler                                      | `cloudscheduler.googleapis.com`                                         | Triggering the ingestor and extractor jobs on a cron  |
+| Cloud Storage                                        | `storage.googleapis.com`                                                | Archive, event-log, and deadletter buckets            |
+| Pub/Sub                                              | `pubsub.googleapis.com`                                                 | Ingestor → sanitizer → extractor hand-off             |
+| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and the pipeline dashboard          |
+| Secret Manager                                       | `secretmanager.googleapis.com`                                          | The source list and sanitizer policy documents        |
 
 ### Storage
 
-| Bucket | Purpose | Notes |
-| --- | --- | --- |
-| `ingestion-archive-bucket` | Permanent store for raw fetch bodies and both ingestor and sanitizer records | CMEK-encrypted with core-infra's key; no lifecycle rule |
-| `ingestion-event-log-bucket` | Auto-archived copy of every message published to the ingestor and sanitizer topics | Age-based deletion in dev only, via `eventLogRetentionDays`; unset (permanent) in prod by design |
-| `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription | Age-based deletion plus optional soft-delete |
+| Bucket                        | Purpose                                                                                  | Notes                                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `ingestion-archive-bucket`    | Permanent store for raw fetch bodies and both ingestor and sanitizer records             | CMEK-encrypted with core-infra's key; no lifecycle rule                                          |
+| `ingestion-event-log-bucket`  | Auto-archived copy of every message published to the ingestor and sanitizer topics       | Age-based deletion in dev only, via `eventLogRetentionDays`; unset (permanent) in prod by design |
+| `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription | Age-based deletion plus optional soft-delete                                                     |
 
 ### Pipeline: ingestor → sanitizer → extractor
 
@@ -97,8 +97,8 @@ core-infra treats its own: a stable interface, breaking to rename or repoint.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
+| Document                                 | Purpose                                                                |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
 | [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
-| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
-| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
+| [docs/runbook.md](./docs/runbook.md)     | Stack configuration, deployment, and troubleshooting                   |
+| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant               |

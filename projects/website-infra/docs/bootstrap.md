@@ -36,7 +36,7 @@ domain in Google Search Console — this isn't something Pulumi can automate, an
    add that service account email with **Owner** permission (neither "Full" nor "Restricted" is
    sufficient here).
 4. Manually create the Cloud Run domain mapping for each verified domain (`gcloud beta run
-   domain-mappings create --service=<backend-service> --domain=<domain> --region=<region>`), or
+domain-mappings create --service=<backend-service> --domain=<domain> --region=<region>`), or
    via the Cloud Console.
 
 reCAPTCHA's allowed domains (`website:verifiedDomains`) are managed by this project's own Pulumi

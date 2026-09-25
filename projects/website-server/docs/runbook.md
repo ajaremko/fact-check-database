@@ -5,21 +5,21 @@ Configuration reference and diagnosing failures for `website-server`. See the
 
 ## Configuration
 
-| Variable | Type | Required | Default | Purpose |
-| --- | --- | --- | --- | --- |
-| `STORAGE_MODE` | `gcp` \| `filesystem` | No | `gcp` | Selects the `core-io` `StorageWriter` adapter used by all three form actions |
-| `STORAGE_OUTPUT_DIR` | string | Only if `STORAGE_MODE=filesystem` | — | Local directory submissions are written to |
-| `LOGGING_MODE` | `gcp` \| `console` | No | `console` | Pretty console logger vs. JSON |
-| `LOGGING_LEVEL` | Effect `LogLevel` | No | `info` | Minimum log level |
-| `ALGOLIA_APP_ID` | string | Yes | — | Read server-side, passed as a prop to the client search UI |
-| `ALGOLIA_SEARCH_KEY` | string | Yes | — | A search-only Algolia key — safe to expose to the client by design |
-| `ALGOLIA_INDEX_NAME` | string | Yes | — | The primary search index |
-| `ALGOLIA_INDEX_NAME_OLDEST` | string | Yes | — | The oldest-first replica index, used for the "oldest first" sort |
-| `RECAPTCHA_SITE_KEY` | string | Yes | — | reCAPTCHA Enterprise site key — used both server-side (assessment requests) and passed to the client widget |
-| `RECAPTCHA_PROJECT_ID` | string | Yes | — | GCP project the reCAPTCHA Enterprise key lives in |
-| `GA_MEASUREMENT_ID` | string | No | — | Read server-side by the already-server-side `AnalyticsScript` component (no prop needed). Unset in dev by design — dev/test traffic should never reach real analytics; when unset, no analytics script renders at all |
-| `NEXT_PUBLIC_BUILD_NUMBER` | string | No | — | Displayed in the site footer; inlined at build time (real `NEXT_PUBLIC_` var, unlike the Algolia/reCAPTCHA/GA values above), set from the CI build-number step in both `ci.yml` and `release.yml` |
-| `PORT` | number | No | `3000` (Next.js default) | `website-infra` and the Dockerfile both set this explicitly to `3000`, matching Next's own default |
+| Variable                    | Type                  | Required                          | Default                  | Purpose                                                                                                                                                                                                               |
+| --------------------------- | --------------------- | --------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_MODE`              | `gcp` \| `filesystem` | No                                | `gcp`                    | Selects the `core-io` `StorageWriter` adapter used by all three form actions                                                                                                                                          |
+| `STORAGE_OUTPUT_DIR`        | string                | Only if `STORAGE_MODE=filesystem` | —                        | Local directory submissions are written to                                                                                                                                                                            |
+| `LOGGING_MODE`              | `gcp` \| `console`    | No                                | `console`                | Pretty console logger vs. JSON                                                                                                                                                                                        |
+| `LOGGING_LEVEL`             | Effect `LogLevel`     | No                                | `info`                   | Minimum log level                                                                                                                                                                                                     |
+| `ALGOLIA_APP_ID`            | string                | Yes                               | —                        | Read server-side, passed as a prop to the client search UI                                                                                                                                                            |
+| `ALGOLIA_SEARCH_KEY`        | string                | Yes                               | —                        | A search-only Algolia key — safe to expose to the client by design                                                                                                                                                    |
+| `ALGOLIA_INDEX_NAME`        | string                | Yes                               | —                        | The primary search index                                                                                                                                                                                              |
+| `ALGOLIA_INDEX_NAME_OLDEST` | string                | Yes                               | —                        | The oldest-first replica index, used for the "oldest first" sort                                                                                                                                                      |
+| `RECAPTCHA_SITE_KEY`        | string                | Yes                               | —                        | reCAPTCHA Enterprise site key — used both server-side (assessment requests) and passed to the client widget                                                                                                           |
+| `RECAPTCHA_PROJECT_ID`      | string                | Yes                               | —                        | GCP project the reCAPTCHA Enterprise key lives in                                                                                                                                                                     |
+| `GA_MEASUREMENT_ID`         | string                | No                                | —                        | Read server-side by the already-server-side `AnalyticsScript` component (no prop needed). Unset in dev by design — dev/test traffic should never reach real analytics; when unset, no analytics script renders at all |
+| `NEXT_PUBLIC_BUILD_NUMBER`  | string                | No                                | —                        | Displayed in the site footer; inlined at build time (real `NEXT_PUBLIC_` var, unlike the Algolia/reCAPTCHA/GA values above), set from the CI build-number step in both `ci.yml` and `release.yml`                     |
+| `PORT`                      | number                | No                                | `3000` (Next.js default) | `website-infra` and the Dockerfile both set this explicitly to `3000`, matching Next's own default                                                                                                                    |
 
 None of these are read via a `*_MODE`-style switch for reCAPTCHA, Algolia, or analytics — all are
 always live (or, for `GA_MEASUREMENT_ID`, simply absent); there's no logger/mock adapter for any
@@ -32,6 +32,7 @@ of them.
 **Symptom:** the form re-renders with "Something went wrong. Please try again." instead of
 redirecting to the success page.
 **Steps:**
+
 1. Check the logged cause (`Effect.tapErrorCause(Effect.logError)` in the relevant `actions.ts`).
 2. A `RecaptchaError` means either the token failed Enterprise assessment or the score was below
    the `0.5` threshold — legitimate users occasionally trip this; there's no retry-with-a-fresh-

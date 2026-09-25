@@ -9,21 +9,21 @@ Reference for the `ingestion` Pulumi config namespace, read by `src/config.ts`. 
 `pulumi config set ingestion:<key> <value> --stack=<dev|prod>` (or directly in
 `Pulumi.<stack>.yml`).
 
-| Key | Description | Required | dev | prod |
-| --- | --- | --- | --- | --- |
-| `ingestion:coreStackName` | The core-infra stack this project reads a `StackReference` from | Yes | `alfredsyoung/fact-check-database-core` | same |
-| `ingestion:project` | GCP project ID this stack deploys into | Yes | `fact-check-database-dev` | `fact-check-database-ingestion` |
-| `ingestion:region` | GCP region for regional resources | Yes | `us-central1` | `us-central1` |
-| `ingestion:tag` | Docker image tag for all three services | No | set per-deploy | set per-deploy |
-| `ingestion:ingestorSchedule` | Cron schedule for the ingestor job. Unset means manual-trigger only | No | `0 */4 * * *` | `0 */4 * * *` |
-| `ingestion:extractorSchedule` | Cron schedule for the extractor job. Unset means manual-trigger only | No | `0 */12 * * *` | `0 */12 * * *` |
-| `ingestion:logLevel` | Log level passed to all three services | Yes | `info` (or as configured) | `info` |
-| `ingestion:logRetentionDays` | Retention on the project's `_Default` log bucket | Yes | — | — |
-| `ingestion:eventLogRetentionDays` | Age-based deletion window for the event log bucket. Unset disables the rule; a code comment recommends leaving it unset in prod | No | set in dev | unset |
-| `ingestion:deadletterRetentionDays` | Age-based deletion window for the deadletter bucket. Same unset-in-prod recommendation | No | set in dev | unset |
-| `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be *set* in production | No | unset | `30` |
-| `ingestion:forceDestroyStorage` | Whether `pulumi destroy` may delete non-empty buckets, including the raw archive bucket | No, default `false` | `true` | `true` |
-| `ingestion:retainStorageOnDelete` | Whether buckets survive `pulumi destroy` instead of being deleted with the stack, including the raw archive bucket | No, default `true` | `false` | `false` |
+| Key                                  | Description                                                                                                                     | Required            | dev                                     | prod                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------- | ------------------------------- |
+| `ingestion:coreStackName`            | The core-infra stack this project reads a `StackReference` from                                                                 | Yes                 | `alfredsyoung/fact-check-database-core` | same                            |
+| `ingestion:project`                  | GCP project ID this stack deploys into                                                                                          | Yes                 | `fact-check-database-dev`               | `fact-check-database-ingestion` |
+| `ingestion:region`                   | GCP region for regional resources                                                                                               | Yes                 | `us-central1`                           | `us-central1`                   |
+| `ingestion:tag`                      | Docker image tag for all three services                                                                                         | No                  | set per-deploy                          | set per-deploy                  |
+| `ingestion:ingestorSchedule`         | Cron schedule for the ingestor job. Unset means manual-trigger only                                                             | No                  | `0 */4 * * *`                           | `0 */4 * * *`                   |
+| `ingestion:extractorSchedule`        | Cron schedule for the extractor job. Unset means manual-trigger only                                                            | No                  | `0 */12 * * *`                          | `0 */12 * * *`                  |
+| `ingestion:logLevel`                 | Log level passed to all three services                                                                                          | Yes                 | `info` (or as configured)               | `info`                          |
+| `ingestion:logRetentionDays`         | Retention on the project's `_Default` log bucket                                                                                | Yes                 | —                                       | —                               |
+| `ingestion:eventLogRetentionDays`    | Age-based deletion window for the event log bucket. Unset disables the rule; a code comment recommends leaving it unset in prod | No                  | set in dev                              | unset                           |
+| `ingestion:deadletterRetentionDays`  | Age-based deletion window for the deadletter bucket. Same unset-in-prod recommendation                                          | No                  | set in dev                              | unset                           |
+| `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be _set_ in production                              | No                  | unset                                   | `30`                            |
+| `ingestion:forceDestroyStorage`      | Whether `pulumi destroy` may delete non-empty buckets, including the raw archive bucket                                         | No, default `false` | `true`                                  | `true`                          |
+| `ingestion:retainStorageOnDelete`    | Whether buckets survive `pulumi destroy` instead of being deleted with the stack, including the raw archive bucket              | No, default `true`  | `false`                                 | `false`                         |
 
 ## Commands
 
@@ -78,6 +78,7 @@ services fall back to manual-trigger-only when their schedule config is empty.
 **Symptom:** a Cloud Run job/service revision fails to start with a permission or not-found error
 pulling its image.
 **Steps:**
+
 1. Confirm `ingestion:tag` is set to a real, published tag — if unset, the service silently falls
    back to a public placeholder image (`gcr.io/google-samples/hello-app`), which will look like it
    deployed but isn't running the real service.
@@ -90,6 +91,7 @@ pulling its image.
 **Symptom:** the sanitizer isn't receiving new work, or the extractor's subscription backlog is
 growing.
 **Steps:**
+
 1. For the sanitizer (push subscription on the ingestor's topic): confirm the push invoker service
    account has `roles/run.invoker` on the sanitizer service, and check the subscription's
    dead-letter topic (`ingestion-sanitizer-deadletter-topic`, reachable via its own archive
@@ -104,6 +106,7 @@ growing.
 **Symptom:** the ingestor job or sanitizer service fails to start, unable to read its mounted
 config.
 **Steps:**
+
 1. Confirm the service's own service account has `roles/secretmanager.secretAccessor` on the
    relevant secret (`ingestion-source-list` for the ingestor, `ingestion-sanitizer-policy` for the
    sanitizer) — see [docs/iam-model.md](./iam-model.md).

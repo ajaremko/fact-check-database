@@ -24,11 +24,11 @@ nx deploy website-infra --stack=<dev|prod>    # Apply changes
 
 Read via a `StackReference` in `src/config.ts`, not owned here:
 
-| Output read | Used for |
-| --- | --- |
-| `gcpProject` / `gcpRegion` | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
-| `stagingStorageBucketName` / `stagingStorageTopicName` | Where `website-loader` reads staged fact-check batches from |
-| `artifactRegistryLocation` / `Name` / `RepositoryId` | Resolving each service's container image |
+| Output read                                            | Used for                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `gcpProject` / `gcpRegion`                             | Scoping a second provider (`coreProvider`) to grant IAM on core-infra's own resources |
+| `stagingStorageBucketName` / `stagingStorageTopicName` | Where `website-loader` reads staged fact-check batches from                           |
+| `artifactRegistryLocation` / `Name` / `RepositoryId`   | Resolving each service's container image                                              |
 
 This project does **not** own or manage CMEK keys, the workload identity pool, or the GitHub
 Actions CI/CD identity — those are core-infra's, documented in its own
@@ -37,19 +37,19 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 
 ### GCP service enablement
 
-| Service | API | Purpose |
-| --- | --- | --- |
-| IAM | `iam.googleapis.com` | Identity and access management |
-| IAM Credentials | `iamcredentials.googleapis.com` | Service account credential generation |
-| Compute Engine | `compute.googleapis.com` | Required before enabling several other APIs |
-| Cloud Resource Manager | `cloudresourcemanager.googleapis.com` | Project-level IAM and metadata |
-| Artifact Registry | `artifactregistry.googleapis.com` | Pulling container images from core-infra's registry |
-| Cloud Run | `run.googleapis.com` | The backend, emailer, search loader, and redirect services |
-| Cloud Storage | `storage.googleapis.com` | The backend and dead-letter buckets |
-| Pub/Sub | `pubsub.googleapis.com` | Form-submission and staging-batch push subscriptions |
-| Secret Manager | `secretmanager.googleapis.com` | Envoy/htpasswd/oauth2-proxy config, the Resend and Algolia API keys |
-| reCAPTCHA Enterprise | `recaptchaenterprise.googleapis.com` | The form-abuse-protection key used by `website-server` |
-| Cloud Domains / DNS | `domains.googleapis.com`, `dns.googleapis.com` | Enabled for the public domains, but domain verification and Cloud Run domain mapping are done manually — see [docs/bootstrap.md](./docs/bootstrap.md); no Pulumi resource here creates a domain mapping |
+| Service                | API                                            | Purpose                                                                                                                                                                                                 |
+| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IAM                    | `iam.googleapis.com`                           | Identity and access management                                                                                                                                                                          |
+| IAM Credentials        | `iamcredentials.googleapis.com`                | Service account credential generation                                                                                                                                                                   |
+| Compute Engine         | `compute.googleapis.com`                       | Required before enabling several other APIs                                                                                                                                                             |
+| Cloud Resource Manager | `cloudresourcemanager.googleapis.com`          | Project-level IAM and metadata                                                                                                                                                                          |
+| Artifact Registry      | `artifactregistry.googleapis.com`              | Pulling container images from core-infra's registry                                                                                                                                                     |
+| Cloud Run              | `run.googleapis.com`                           | The backend, emailer, search loader, and redirect services                                                                                                                                              |
+| Cloud Storage          | `storage.googleapis.com`                       | The backend and dead-letter buckets                                                                                                                                                                     |
+| Pub/Sub                | `pubsub.googleapis.com`                        | Form-submission and staging-batch push subscriptions                                                                                                                                                    |
+| Secret Manager         | `secretmanager.googleapis.com`                 | Envoy/htpasswd/oauth2-proxy config, the Resend and Algolia API keys                                                                                                                                     |
+| reCAPTCHA Enterprise   | `recaptchaenterprise.googleapis.com`           | The form-abuse-protection key used by `website-server`                                                                                                                                                  |
+| Cloud Domains / DNS    | `domains.googleapis.com`, `dns.googleapis.com` | Enabled for the public domains, but domain verification and Cloud Run domain mapping are done manually — see [docs/bootstrap.md](./docs/bootstrap.md); no Pulumi resource here creates a domain mapping |
 
 ### Backend
 
@@ -93,12 +93,12 @@ own; exists purely as infrastructure.
 
 ## Related documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
-| [docs/runbook.md](./docs/runbook.md) | Stack configuration, deployment, and troubleshooting |
-| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant |
-| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |
-| [website-server](../website-server/README.md) | The public frontend running in the backend service |
-| [website-emailer](../website-emailer/README.md) | The service running behind the emailer routes |
-| [website-loader](../website-loader/README.md) | The service populating the Algolia index |
+| Document                                        | Purpose                                                                |
+| ----------------------------------------------- | ---------------------------------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)        | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md)            | Stack configuration, deployment, and troubleshooting                   |
+| [docs/iam-model.md](./docs/iam-model.md)        | Service accounts, roles, and the one cross-project grant               |
+| [docs/known-issues.md](./docs/known-issues.md)  | Accepted, long-lived gaps and deferred fixes                           |
+| [website-server](../website-server/README.md)   | The public frontend running in the backend service                     |
+| [website-emailer](../website-emailer/README.md) | The service running behind the emailer routes                          |
+| [website-loader](../website-loader/README.md)   | The service populating the Algolia index                               |

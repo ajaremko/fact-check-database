@@ -21,7 +21,7 @@ rotate through proxies, or spoof a browser's headers.
 - **`robots.txt` honoring.** There is no code anywhere in the ingestion domain that fetches or
   evaluates a source's `robots.txt` before requesting its feed. A source that disallows automated
   access today has no way to have that respected automatically.
-- **Per-host crawl delay.** `ingestion-ingestor` limits how many sources it fetches *concurrently*
+- **Per-host crawl delay.** `ingestion-ingestor` limits how many sources it fetches _concurrently_
   (`MAX_CONCURRENCY`, see [ingestion-ingestor's runbook](../projects/ingestion-ingestor/docs/runbook.md)),
   but that's a global parallelism cap, not a rate limit applied per host. There's no mechanism
   today that spaces out repeated requests to the same publisher.

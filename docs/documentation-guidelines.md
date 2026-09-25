@@ -47,6 +47,9 @@ These apply to every project regardless of kind.
   back to the README. Don't force a closing link to a doc that doesn't exist for this project —
   a library with no known issues doesn't need a manufactured pointer to a `known-issues.md` it
   doesn't have.
+- **Format every doc with Prettier.** Run `npx prettier --write <file>` after editing Markdown, the
+  same as for code. Consistent formatting keeps diffs limited to real content changes and removes
+  style debates from review.
 
 ## Common documentation types and their purpose
 
@@ -175,7 +178,7 @@ The root `README.md` should cover:
 `docs/todo.md` is a related but separate artifact: a consolidated, manually-curated action list —
 open repository-wide roadmap items plus one line per open entry across every project's
 `known-issues.md`. It's a working backlog, meant to be pruned as items are done or decided as
-won't-fix. It doesn't replace `known-issues.md`, which remains the permanent record of *why*
+won't-fix. It doesn't replace `known-issues.md`, which remains the permanent record of _why_
 something wasn't fixed, even after the corresponding backlog line is gone.
 
 ### What belongs in root `docs/`

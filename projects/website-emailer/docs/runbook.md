@@ -5,28 +5,28 @@ Configuration reference, Resend setup, and diagnosing failures for `website-emai
 
 ## Configuration
 
-| Variable | Type | Required | Default | Purpose |
-| --- | --- | --- | --- | --- |
-| `EMAILER_MODE` | `resend` \| `logger` | No | `resend` | Selects the `Emailer` adapter |
-| `RESEND_API_KEY` | string | Only if `EMAILER_MODE=resend` | — | Resend API key |
-| `ADMIN_EMAIL` | string | Only if `EMAILER_MODE=resend` | — | Recipient of the notification email |
-| `RESEND_CONFIRMATION_TEMPLATE_ID` | string | Only if `EMAILER_MODE=resend` | — | Resend template ID for the confirmation email |
-| `STORAGE_MODE` | `gcp` \| `filesystem` | No | `gcp` | Selects the `core-io` `StorageReader` adapter |
-| `LOGGING_MODE` | `gcp` \| `console` | No | `gcp` | Pretty console logger vs. Pino/Cloud Logging JSON |
-| `LOGGING_LEVEL` | Effect `LogLevel` | No | `info` | Minimum log level |
-| `OTEL_MODE` | `gcp` \| `local` | No | `gcp` | Cloud Trace/Monitoring exporters vs. local OTLP |
-| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string | Yes (one of the two) | — | Service name attached to traces/metrics. In production this comes from the `SERVICE_NAME` build `ARG` baked into the image by the Nx-generated `Dockerfile`, not from a Pulumi-provisioned env var |
-| `OTEL_METRIC_EXPORT_INTERVAL` | integer (ms) | No | `60000` | How often metrics are exported |
-| `OTEL_CLOUD_MONITORING_PREFIX` | string | No, only used if `OTEL_MODE=gcp` | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | string | Only if `OTEL_MODE=local` | — | Read directly by the OpenTelemetry OTLP exporter, not by this app's own `Config` calls |
-| `PORT` | number | Yes | — | In production, Cloud Run injects this automatically; set it explicitly for local development |
+| Variable                              | Type                  | Required                         | Default                   | Purpose                                                                                                                                                                                            |
+| ------------------------------------- | --------------------- | -------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EMAILER_MODE`                        | `resend` \| `logger`  | No                               | `resend`                  | Selects the `Emailer` adapter                                                                                                                                                                      |
+| `RESEND_API_KEY`                      | string                | Only if `EMAILER_MODE=resend`    | —                         | Resend API key                                                                                                                                                                                     |
+| `ADMIN_EMAIL`                         | string                | Only if `EMAILER_MODE=resend`    | —                         | Recipient of the notification email                                                                                                                                                                |
+| `RESEND_CONFIRMATION_TEMPLATE_ID`     | string                | Only if `EMAILER_MODE=resend`    | —                         | Resend template ID for the confirmation email                                                                                                                                                      |
+| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                               | `gcp`                     | Selects the `core-io` `StorageReader` adapter                                                                                                                                                      |
+| `LOGGING_MODE`                        | `gcp` \| `console`    | No                               | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                                                                                                                                  |
+| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                               | `info`                    | Minimum log level                                                                                                                                                                                  |
+| `OTEL_MODE`                           | `gcp` \| `local`      | No                               | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                                                                                                                                    |
+| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)             | —                         | Service name attached to traces/metrics. In production this comes from the `SERVICE_NAME` build `ARG` baked into the image by the Nx-generated `Dockerfile`, not from a Pulumi-provisioned env var |
+| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                               | `60000`                   | How often metrics are exported                                                                                                                                                                     |
+| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp` | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                                                                                                                             |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`        | —                         | Read directly by the OpenTelemetry OTLP exporter, not by this app's own `Config` calls                                                                                                             |
+| `PORT`                                | number                | Yes                              | —                         | In production, Cloud Run injects this automatically; set it explicitly for local development                                                                                                       |
 
 ## Mode matrix
 
-| Variable | `filesystem` / `logger` | `gcp` / `resend` (default) |
-| --- | --- | --- |
-| `STORAGE_MODE` | `core-io`'s `FileSystemStorageReader` (reads the object's path directly off local disk) | `core-io`'s `CloudStorageStorageReader` |
-| `EMAILER_MODE` | `LoggerEmailer` — logs both emails instead of sending | `ResendEmailer` — sends via the Resend API |
+| Variable       | `filesystem` / `logger`                                                                 | `gcp` / `resend` (default)                 |
+| -------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `STORAGE_MODE` | `core-io`'s `FileSystemStorageReader` (reads the object's path directly off local disk) | `core-io`'s `CloudStorageStorageReader`    |
+| `EMAILER_MODE` | `LoggerEmailer` — logs both emails instead of sending                                   | `ResendEmailer` — sends via the Resend API |
 
 For local development, `EMAILER_MODE=logger` avoids sending real email, but `STORAGE_MODE`
 defaults to `gcp` — set it to `filesystem` explicitly (as `.env.template` does) unless you
