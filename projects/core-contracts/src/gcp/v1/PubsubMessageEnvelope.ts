@@ -38,7 +38,9 @@ export type PubsubMessagePayload = Schema.Schema.Type<
  * Decode the request body with this schema before looking at the message
  * inside. `subscription` is the fully qualified subscription resource name,
  * useful for logging and for rejecting deliveries from an unexpected
- * subscription.
+ * subscription. `deliveryAttempt` is set by Pub/Sub only when the subscription
+ * has a dead-letter policy: it counts deliveries of this message, starting at
+ * 1, so a value above 1 marks a redelivery.
  * @example
  * // A decoded envelope
  * {
@@ -54,6 +56,7 @@ export type PubsubMessagePayload = Schema.Schema.Type<
 export const PubsubMessageEnvelope = Schema.Struct({
   message: PubsubMessagePayload,
   subscription: Schema.String,
+  deliveryAttempt: Schema.optional(Schema.Number),
 })
 
 export type PubsubMessageEnvelope = Schema.Schema.Type<

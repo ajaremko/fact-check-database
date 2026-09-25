@@ -34,7 +34,7 @@ Schemas for the two Google Cloud event payloads the platform's services receive.
 
 ### PubsubMessageEnvelope
 
-The JSON body that Pub/Sub POSTs to a push-subscription endpoint. `message` is a `PubsubMessagePayload` with the base64 `data`, optional `attributes`, `messageId`, and `publishTime` (decoded to a `Date`). `subscription` is the fully qualified subscription resource name, useful for logging and for rejecting deliveries from an unexpected subscription.
+The JSON body that Pub/Sub POSTs to a push-subscription endpoint. `message` is a `PubsubMessagePayload` with the base64 `data`, optional `attributes`, `messageId`, and `publishTime` (decoded to a `Date`). `subscription` is the fully qualified subscription resource name, useful for logging and for rejecting deliveries from an unexpected subscription. `deliveryAttempt` is optional: Pub/Sub sets it only when the subscription has a dead-letter policy, counting deliveries of the message from 1, so a value above 1 marks a redelivery.
 
 ```ts
 import { Schema } from 'effect'

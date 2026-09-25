@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from '@effect/vitest'
-import { Effect, Layer } from 'effect'
+import { Effect, HashMap, Layer, Logger } from 'effect'
 import { BigQuery, Job } from '@google-cloud/bigquery'
 
 import { BigQueryClient } from '@fact-check-database/core-vendor/bigquery/BigQueryClient'
@@ -48,6 +48,11 @@ describe('loadBatch', () => {
 
   it.effect('creates a load job with the deterministic id', () =>
     Effect.gen(function* () {
+      const logs: Array<{
+        level: string
+        message: unknown
+        annotations: object
+      }> = []
       const client = new BigQuery({ projectId: 'project' })
       vi.spyOn(client, 'createJob').mockImplementation(((options: {
         jobId: string
@@ -70,8 +75,50 @@ describe('loadBatch', () => {
         table: { dataset: 'staging', table: 'fact_checks' },
         sourceFormat: 'NEWLINE_DELIMITED_JSON',
         schema: {},
-      }).pipe(Effect.provide(Layer.succeed(BigQueryClient, { client })))
+      }).pipe(
+        Effect.provide(Layer.succeed(BigQueryClient, { client })),
+        Effect.provide(
+          Logger.replace(
+            Logger.defaultLogger,
+            Logger.make(({ logLevel, message, annotations }) => {
+              logs.push({
+                level: logLevel.label,
+                message,
+                annotations: Object.fromEntries(HashMap.toEntries(annotations)),
+              })
+            })
+          )
+        )
+      )
 
+      expect(logs).toStrictEqual([
+        {
+          level: 'INFO',
+          message: ['Load job created'],
+          annotations: {
+            'batch.bucket': 'staging',
+            'batch.object': 'v1/type=fact_checks/a.ndjson',
+            'batch.generation': '123',
+            'batch.datasetId': 'staging',
+            'batch.tableId': 'fact_checks',
+            'job.id':
+              'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+          },
+        },
+        {
+          level: 'INFO',
+          message: ['Load job completed'],
+          annotations: {
+            'batch.bucket': 'staging',
+            'batch.object': 'v1/type=fact_checks/a.ndjson',
+            'batch.generation': '123',
+            'batch.datasetId': 'staging',
+            'batch.tableId': 'fact_checks',
+            'job.id':
+              'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+          },
+        },
+      ])
       expect(client.createJob).toHaveBeenCalledTimes(1)
       expect(client.createJob).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -97,6 +144,11 @@ describe('loadBatch', () => {
     'does not create a second job when the batch was already loaded',
     () =>
       Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const client = new BigQuery({ projectId: 'project' })
         vi.spyOn(client, 'createJob').mockRejectedValue(
           Object.assign(new Error('Already Exists'), { code: 409 })
@@ -122,7 +174,23 @@ describe('loadBatch', () => {
           table: { dataset: 'staging', table: 'fact_checks' },
           sourceFormat: 'NEWLINE_DELIMITED_JSON',
           schema: {},
-        }).pipe(Effect.provide(Layer.succeed(BigQueryClient, { client })))
+        }).pipe(
+          Effect.provide(Layer.succeed(BigQueryClient, { client })),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
+        )
 
         expect(client.createJob).toHaveBeenCalledTimes(1)
         expect(client.createJob).toHaveBeenCalledWith(
@@ -131,11 +199,23 @@ describe('loadBatch', () => {
               'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
           })
         )
+        expect(logs).toMatchObject([
+          {
+            level: 'INFO',
+            message: ['Load job already exists for this batch, awaiting it'],
+          },
+          { level: 'INFO', message: ['Load job completed'] },
+        ])
       })
   )
 
   it.effect('retries under a new id when the previous job failed', () =>
     Effect.gen(function* () {
+      const logs: Array<{
+        level: string
+        message: unknown
+        annotations: object
+      }> = []
       const client = new BigQuery({ projectId: 'project' })
       vi.spyOn(client, 'createJob')
         .mockRejectedValueOnce(
@@ -165,8 +245,35 @@ describe('loadBatch', () => {
         table: { dataset: 'staging', table: 'fact_checks' },
         sourceFormat: 'NEWLINE_DELIMITED_JSON',
         schema: {},
-      }).pipe(Effect.provide(Layer.succeed(BigQueryClient, { client })))
+      }).pipe(
+        Effect.provide(Layer.succeed(BigQueryClient, { client })),
+        Effect.provide(
+          Logger.replace(
+            Logger.defaultLogger,
+            Logger.make(({ logLevel, message, annotations }) => {
+              logs.push({
+                level: logLevel.label,
+                message,
+                annotations: Object.fromEntries(HashMap.toEntries(annotations)),
+              })
+            })
+          )
+        )
+      )
 
+      expect(logs).toMatchObject([
+        {
+          level: 'WARN',
+          message: ['Previous load job for this batch failed, retrying'],
+        },
+        { level: 'INFO', message: ['Load job created'] },
+        { level: 'INFO', message: ['Load job completed'] },
+      ])
+      expect(logs[0].annotations).toMatchObject({
+        'job.retryId': expect.stringMatching(
+          /^load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911_[0-9a-f-]{36}$/
+        ),
+      })
       expect(client.createJob).toHaveBeenCalledTimes(2)
       expect(client.createJob).toHaveBeenLastCalledWith(
         expect.objectContaining({

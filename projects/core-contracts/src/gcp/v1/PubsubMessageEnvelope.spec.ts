@@ -83,5 +83,28 @@ describe('PubsubMessageEnvelope', () => {
           'projects/my-gcp-project/subscriptions/my-push-subscription',
       })
     })
+    it('can decode a gcp message with a delivery attempt', () => {
+      expect(
+        Schema.decodeSync(PubsubMessageEnvelope)({
+          message: {
+            data: 'SGVsbG8gV29ybGQh',
+            messageId: '123456789012345',
+            publishTime: '2026-07-08T12:00:00Z',
+          },
+          subscription:
+            'projects/my-gcp-project/subscriptions/my-push-subscription',
+          deliveryAttempt: 3,
+        })
+      ).toStrictEqual({
+        message: {
+          data: 'SGVsbG8gV29ybGQh',
+          messageId: '123456789012345',
+          publishTime: new Date('2026-07-08T12:00:00Z'),
+        },
+        subscription:
+          'projects/my-gcp-project/subscriptions/my-push-subscription',
+        deliveryAttempt: 3,
+      })
+    })
   })
 })

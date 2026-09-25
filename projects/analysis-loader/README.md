@@ -67,7 +67,7 @@ nx typecheck analysis-loader
 nx lint analysis-loader
 ```
 
-**No automated tests exist for this project today** — see [docs/known-issues.md](./docs/known-issues.md).
+`nx test analysis-loader` runs the unit specs for `loadBatch` and the `POST /load-jobs` route. They spy on a real BigQuery client and stub storage in memory, so they need no GCP access. See [docs/known-issues.md](./docs/known-issues.md) for what isn't covered yet.
 
 ### Local setup
 

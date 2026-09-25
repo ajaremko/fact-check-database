@@ -57,12 +57,19 @@ export const loadBatch = Effect.fn('loadBatch')(
         },
       }).pipe(Effect.map(([job]) => job))
 
+    yield* Effect.annotateLogsScoped({
+      'batch.bucket': input.pointer.bucket,
+      'batch.object': input.pointer.object,
+      'batch.generation': input.generation ?? '',
+      'batch.datasetId': input.table.dataset,
+      'batch.tableId': input.table.table,
+    })
+
     const jobId = loadJobId(input.pointer, input.generation)
-    yield* Effect.logInfo(
-      'Loading data from GCS object into BigQuery table'
-    ).pipe(Effect.annotateLogs({ 'batch.jobId': jobId }))
+    yield* Effect.annotateLogsScoped({ 'job.id': jobId })
 
     const job = yield* createLoadJob(jobId).pipe(
+      Effect.tap(() => Effect.logInfo('Load job created')),
       Effect.catchIf(BigQueryClient.isAlreadyExists, () =>
         Effect.gen(function* () {
           // this batch version was submitted before (e.g. a redelivered
@@ -78,25 +85,23 @@ export const loadBatch = Effect.fn('loadBatch')(
             return existing
           }
           const retryJobId = `${jobId}_${randomUUID()}`
+          yield* Effect.annotateLogsScoped({ 'job.retryId': retryJobId })
           yield* Effect.logWarning(
             'Previous load job for this batch failed, retrying'
-          ).pipe(Effect.annotateLogs({ 'batch.retryJobId': retryJobId }))
-          return yield* createLoadJob(retryJobId)
+          )
+          const retry = yield* createLoadJob(retryJobId)
+          yield* Effect.logInfo('Load job created')
+          return retry
         })
       )
     )
     yield* BigQueryClient.awaitJob(job)
+    yield* Effect.logInfo('Load job completed')
     yield* Metric.increment(batchesLoadedCounter)
   },
+  Effect.scoped,
   (effect, input) =>
     effect.pipe(
-      Effect.annotateLogs({
-        'batch.tableId': input.table.table,
-        'batch.datasetId': input.table.dataset,
-        'batch.bucket': input.pointer.bucket,
-        'batch.object': input.pointer.object,
-        'batch.generation': input.generation ?? '',
-      }),
       Effect.tagMetrics({
         table_dataset_id: input.table.dataset,
         table_table_id: input.table.table,

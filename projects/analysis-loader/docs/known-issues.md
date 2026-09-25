@@ -1,16 +1,27 @@
 # Known Issues
 
-## No automated test coverage
+## Partial test coverage
 
-**Error:** No error — an accepted test-coverage gap.
-**Where:** The whole project. Zero `.spec.ts` files exist anywhere in `src/`.
-**Root cause:** Unknown — every other service in this pipeline
-(`ingestion-ingestor`, `ingestion-sanitizer`, `ingestion-extractor`) has real spec coverage; this
-one was apparently never given any.
-**Decision:** Leave as-is for now. Closing this means writing real coverage, not a small fix.
-**If this ever needs to be fixed:** Add specs for `loadBatch` (mock `BigQueryClient`) and
-`readSchema` (mock `StorageReader`) at minimum, following the pattern used in the sibling
-services' `*.spec.ts` files.
+**Error:** No error. This is an accepted test-coverage gap.
+
+**Where:** `app/loadBatch.spec.ts` covers `loadJobId` and all three `loadBatch` paths (new job,
+job already exists, retry after a failed job), including the log lines each writes.
+`app/index.spec.ts` covers the `POST /load-jobs` route: a successful load, a schema read failure,
+and a redelivered message. These are not covered:
+
+- `readSchema`'s cache: that a second request for the same schema doesn't fetch it again
+- the route's `BigQueryClientIOError` and `ParseError` failure responses
+- `main.ts` wiring: the pino logger, OpenTelemetry export and the `LOGGING_LEVEL` default
+
+**Root cause:** Coverage was added alongside the logging work, where behavior changed. The rest was
+not prioritized.
+
+**Decision:** Leave the remaining gap for now, and add coverage when the relevant code next
+changes.
+
+**If this ever needs to be fixed:** Follow the existing specs. Spy on a real `BigQuery` client with
+`vi.spyOn`, stub storage with `InMemoryStorageReader.layer({...})`, and capture logs with an inline
+test logger.
 
 ## No local development path
 

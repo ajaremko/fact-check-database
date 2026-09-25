@@ -3,9 +3,8 @@ import {
   HttpServer,
   HttpServerRequest,
   HttpServerResponse,
-  HttpMiddleware,
 } from '@effect/platform'
-import { Config, Effect, Layer, Schema } from 'effect'
+import { Cause, Config, Effect, Layer, Option, Schema } from 'effect'
 import { StatusCodes } from 'http-status-codes'
 import { NodeHttpServer } from '@effect/platform-node'
 import { createServer } from 'node:http'
@@ -31,15 +30,63 @@ const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.decodeUnknown
 )
 
-const loadJobs = HttpRouter.post(
-  '/load-jobs',
-  Effect.gen(function* () {
-    const ctx = yield* ServiceContext
-    const req = yield* HttpServerRequest.HttpServerRequest
+/** The client-facing message for each way a load request can fail. */
+function failureMessage(tag: string): string {
+  switch (tag) {
+    case 'BigQueryClientIOError':
+      return 'Something went wrong submitting the batch load job'
+    case 'StorageReadError':
+      return 'Something went wrong reading the batch schema from storage'
+    case 'ParseError':
+      return 'Something went wrong decoding the batch or schema'
+    case 'RequestError':
+      return 'Something went wrong reading the request'
+    default:
+      return 'Something went wrong loading the batch'
+  }
+}
 
+/**
+ * Handles one Pub/Sub push delivery: reads the batch's table schema, loads
+ * the batch into BigQuery and responds `201`. Any failure is logged once, at
+ * `error`, and answered with a `500` so Pub/Sub redelivers the message.
+ *
+ * Every log line for the request carries the annotations set here, including
+ * library `debug`/`trace` lines emitted while the request runs.
+ */
+const handleLoadRequest = Effect.gen(function* () {
+  const ctx = yield* ServiceContext
+  const req = yield* HttpServerRequest.HttpServerRequest
+  yield* Effect.annotateLogsScoped({
+    'batch.datasetId': ctx.datasetId,
+    'batch.tableId': ctx.tableId,
+  })
+
+  return yield* Effect.gen(function* () {
     const body = yield* req.json
-    const { message } = yield* decodePubsubMessageEnvelope(body)
+    const { message, subscription, deliveryAttempt } =
+      yield* decodePubsubMessageEnvelope(body)
+    yield* Effect.annotateLogsScoped({
+      'message.messageId': message.messageId,
+      subscription,
+    })
+    if (deliveryAttempt !== undefined) {
+      yield* Effect.annotateLogsScoped({
+        'message.deliveryAttempt': deliveryAttempt,
+      })
+    }
+    yield* Effect.logInfo('Load request received')
+    if (deliveryAttempt !== undefined && deliveryAttempt > 1) {
+      yield* Effect.logWarning('Message redelivered')
+    }
+
     const attributes = yield* decodeAttributes(message.attributes)
+    yield* Effect.annotateLogsScoped({
+      'batch.bucket': attributes.bucketId,
+      'batch.object': attributes.objectId,
+      'batch.generation': attributes.objectGeneration,
+      'schema.object': attributes.schemaObjectId,
+    })
 
     const schema = yield* readSchema({
       object: attributes.schemaObjectId,
@@ -61,6 +108,8 @@ const loadJobs = HttpRouter.post(
       },
       schema,
     })
+    yield* Effect.logInfo('Batch loaded')
+
     // return a 201 response to the subscription
     return yield* HttpServerResponse.json(
       {
@@ -69,40 +118,33 @@ const loadJobs = HttpRouter.post(
       { status: StatusCodes.CREATED }
     )
   }).pipe(
-    Effect.tapErrorCause(Effect.logError),
-    Effect.catchTags({
-      BigQueryClientIOError: () =>
-        HttpServerResponse.json(
-          {
-            message: 'Something went wrong submitting the batch load job',
-          },
-          { status: StatusCodes.INTERNAL_SERVER_ERROR }
-        ),
-      StorageReadError: () =>
-        HttpServerResponse.json(
-          {
-            message:
-              'Something went wrong reading the batch schema from storage',
-          },
-          { status: StatusCodes.INTERNAL_SERVER_ERROR }
-        ),
-      ParseError: () =>
-        HttpServerResponse.json(
-          {
-            message: 'Something went wrong decoding the batch or schema',
-          },
-          { status: StatusCodes.INTERNAL_SERVER_ERROR }
-        ),
+    Effect.catchAllCause((cause) => {
+      const tag = Option.match(Cause.failureOption(cause), {
+        onNone: () => 'Defect',
+        onSome: (error) => error._tag,
+      })
+      return Effect.logError('Load request failed', cause).pipe(
+        Effect.annotateLogs({
+          'error._tag': tag,
+          'response.status': StatusCodes.INTERNAL_SERVER_ERROR,
+        }),
+        Effect.andThen(
+          HttpServerResponse.json(
+            { message: failureMessage(tag) },
+            { status: StatusCodes.INTERNAL_SERVER_ERROR }
+          )
+        )
+      )
     })
   )
+}).pipe(Effect.scoped, Effect.withLogSpan('loadRequest'))
+
+/** Routes Pub/Sub push deliveries to {@link handleLoadRequest}. */
+export const router = HttpRouter.empty.pipe(
+  HttpRouter.post('/load-jobs', handleLoadRequest)
 )
 
-const router = HttpRouter.empty.pipe(loadJobs)
-
-const app = router.pipe(
-  HttpServer.serve(HttpMiddleware.logger),
-  HttpServer.withLogAddress
-)
+const app = router.pipe(HttpServer.serve(), HttpServer.withLogAddress)
 
 const server = Layer.unwrapEffect(
   Effect.gen(function* () {
@@ -115,5 +157,5 @@ export const App = Layer.provide(app, server).pipe(
   Layer.launch,
   provideSchemaReader,
   provideServiceContext,
-  Effect.tapErrorCause(Effect.logError)
+  Effect.tapErrorCause((cause) => Effect.logFatal('Server stopped', cause))
 )
