@@ -120,6 +120,7 @@ When implementing:
 - **Schema validation**: Validate all data crossing system boundaries (inbound events, outbound records, config) with Effect `Schema`. Extract TypeScript types from schemas via `Schema.Schema.Type<typeof ...>` — do not define types separately from schemas. Schema transformations should support both `decode` and `encode` directions whenever possible.
 - **Naming**: PascalCase for classes, interfaces, and schema variables (`FetcherError`, `IngestionAttemptedSchema`). camelCase for functions and variables (`parseJson`, `runId`). `UPPER_CASE` for environment variable names.
 - **Tooling**: Run all builds, tests, and lint via `nx` (e.g. `nx run project:target`). Do not invoke `tsc`, `vitest`, or `eslint` directly.
+- **Tests**: Follow [docs/testing-guidelines.md](docs/testing-guidelines.md).
 
 ## App Coding Style Guidelines
 

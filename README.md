@@ -107,6 +107,7 @@ A fact check's lifecycle, identity and deduplication are documented in
 [docs/fact-check-lifecycle.md](./docs/fact-check-lifecycle.md).
 
 New or updated project docs follow [docs/documentation-guidelines.md](./docs/documentation-guidelines.md).
+Tests follow [docs/testing-guidelines.md](./docs/testing-guidelines.md).
 
 ## TODOs
 
