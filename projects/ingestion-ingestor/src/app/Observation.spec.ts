@@ -10,38 +10,30 @@ import {
   ObservationPathSchema,
 } from './Observation'
 
-const source = {
-  id: 'politifact',
-  name: 'politifact.com',
-  url: 'https://www.politifact.com/rss/all/',
-  collection: 'rss' as const,
-}
-
-const fetchSuccess = FetchSuccessSchema.make({
-  finalUrl: 'https://www.politifact.com/rss/all/',
-  status: 200,
-  headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
-  contentType: 'application/rss+xml; charset=utf-8',
-  etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
-  lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
-  bytes: 1024,
-  sha256: 'abc123sha256',
-  body: new Uint8Array(),
-  error: null,
-})
-
-const fetchFailure = FetchFailureSchema.make({
-  error: 'Transport error (GET https://www.politifact.com/rss/all/)',
-})
-
 describe('ObservationSchema', () => {
   it('encodes a successful fetch with pointer and all optional fields', () => {
     expect(
       Schema.encodeUnknownSync(ObservationSchema)({
         ingestorRunId: 'run-1',
-        result: fetchSuccess,
+        result: FetchSuccessSchema.make({
+          finalUrl: 'https://www.politifact.com/rss/all/',
+          status: 200,
+          headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
+          contentType: 'application/rss+xml; charset=utf-8',
+          etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+          lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+          bytes: 1024,
+          sha256: 'abc123sha256',
+          body: new Uint8Array(),
+          error: null,
+        }),
         fetchedAt: 0,
-        source,
+        source: {
+          id: 'politifact',
+          name: 'politifact.com',
+          url: 'https://www.politifact.com/rss/all/',
+          collection: 'rss',
+        },
         pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
       })
     ).toStrictEqual({
@@ -50,7 +42,12 @@ describe('ObservationSchema', () => {
       outcome: 'data_fetched',
       ingestor_run_id: 'run-1',
       fetched_at: 0,
-      source,
+      source: {
+        id: 'politifact',
+        name: 'politifact.com',
+        url: 'https://www.politifact.com/rss/all/',
+        collection: 'rss',
+      },
       status: 200,
       headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
       content_type: 'application/rss+xml; charset=utf-8',
@@ -65,43 +62,77 @@ describe('ObservationSchema', () => {
   })
 
   it('omits content_type, etag, and last_modified when null', () => {
-    const record = Schema.encodeUnknownSync(ObservationSchema)({
+    const result = Schema.encodeUnknownSync(ObservationSchema)({
       ingestorRunId: 'run-1',
       result: FetchSuccessSchema.make({
-        ...fetchSuccess,
+        finalUrl: 'https://www.politifact.com/rss/all/',
+        status: 200,
+        headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
         contentType: null,
         etag: null,
         lastModified: null,
+        bytes: 1024,
+        sha256: 'abc123sha256',
+        body: new Uint8Array(),
+        error: null,
       }),
       fetchedAt: 0,
-      source,
+      source: {
+        id: 'politifact',
+        name: 'politifact.com',
+        url: 'https://www.politifact.com/rss/all/',
+        collection: 'rss',
+      },
       pointer: { bucket: 'my-bucket', object: 'path/to/file.bin' },
     })
-    expect(record).not.toHaveProperty('content_type')
-    expect(record).not.toHaveProperty('etag')
-    expect(record).not.toHaveProperty('last_modified')
-    expect(record.outcome).toBe('data_fetched')
+    expect(result).not.toHaveProperty('content_type')
+    expect(result).not.toHaveProperty('etag')
+    expect(result).not.toHaveProperty('last_modified')
+    expect(result.outcome).toBe('data_fetched')
   })
 
   it('omits content when pointer is null', () => {
-    const record = Schema.encodeUnknownSync(ObservationSchema)({
+    const result = Schema.encodeUnknownSync(ObservationSchema)({
       ingestorRunId: 'run-1',
-      result: fetchSuccess,
+      result: FetchSuccessSchema.make({
+        finalUrl: 'https://www.politifact.com/rss/all/',
+        status: 200,
+        headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
+        contentType: 'application/rss+xml; charset=utf-8',
+        etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+        lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+        bytes: 1024,
+        sha256: 'abc123sha256',
+        body: new Uint8Array(),
+        error: null,
+      }),
       fetchedAt: 0,
-      source,
+      source: {
+        id: 'politifact',
+        name: 'politifact.com',
+        url: 'https://www.politifact.com/rss/all/',
+        collection: 'rss',
+      },
       pointer: null,
     })
-    expect(record).not.toHaveProperty('content')
-    expect(record.outcome).toBe('data_fetched')
+    expect(result).not.toHaveProperty('content')
+    expect(result.outcome).toBe('data_fetched')
   })
 
   it('encodes a failed fetch with no_response outcome', () => {
     expect(
       Schema.encodeUnknownSync(ObservationSchema)({
         ingestorRunId: 'run-1',
-        result: fetchFailure,
+        result: FetchFailureSchema.make({
+          error: 'Transport error (GET https://www.politifact.com/rss/all/)',
+        }),
         fetchedAt: 0,
-        source,
+        source: {
+          id: 'politifact',
+          name: 'politifact.com',
+          url: 'https://www.politifact.com/rss/all/',
+          collection: 'rss',
+        },
         pointer: null,
       })
     ).toStrictEqual({
@@ -110,7 +141,12 @@ describe('ObservationSchema', () => {
       outcome: 'no_response',
       ingestor_run_id: 'run-1',
       fetched_at: 0,
-      source,
+      source: {
+        id: 'politifact',
+        name: 'politifact.com',
+        url: 'https://www.politifact.com/rss/all/',
+        collection: 'rss',
+      },
       error: 'Transport error (GET https://www.politifact.com/rss/all/)',
     })
   })
@@ -121,9 +157,25 @@ describe('ObservationMetadataSchema', () => {
     expect(
       Schema.encodeUnknownSync(ObservationMetadataSchema)({
         ingestorRunId: 'run-1',
-        result: fetchSuccess,
+        result: FetchSuccessSchema.make({
+          finalUrl: 'https://www.politifact.com/rss/all/',
+          status: 200,
+          headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
+          contentType: 'application/rss+xml; charset=utf-8',
+          etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+          lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+          bytes: 1024,
+          sha256: 'abc123sha256',
+          body: new Uint8Array(),
+          error: null,
+        }),
         fetchedAt: 0,
-        source,
+        source: {
+          id: 'politifact',
+          name: 'politifact.com',
+          url: 'https://www.politifact.com/rss/all/',
+          collection: 'rss',
+        },
         pointer: null,
       })
     ).toStrictEqual({
@@ -139,9 +191,16 @@ describe('ObservationMetadataSchema', () => {
     expect(
       Schema.encodeUnknownSync(ObservationMetadataSchema)({
         ingestorRunId: 'run-1',
-        result: fetchFailure,
+        result: FetchFailureSchema.make({
+          error: 'Transport error (GET https://www.politifact.com/rss/all/)',
+        }),
         fetchedAt: 0,
-        source,
+        source: {
+          id: 'politifact',
+          name: 'politifact.com',
+          url: 'https://www.politifact.com/rss/all/',
+          collection: 'rss',
+        },
         pointer: null,
       })
     ).toStrictEqual({
@@ -159,9 +218,25 @@ describe('ObservationPathSchema', () => {
     expect(
       Schema.encodeUnknownSync(ObservationPathSchema)({
         ingestorRunId: 'run-1',
-        result: fetchSuccess,
+        result: FetchSuccessSchema.make({
+          finalUrl: 'https://www.politifact.com/rss/all/',
+          status: 200,
+          headers: { 'content-type': 'application/rss+xml; charset=utf-8' },
+          contentType: 'application/rss+xml; charset=utf-8',
+          etag: '33a64df551425fcc55e4d42a148795d9f25f89d4',
+          lastModified: 'Wed, 29 Apr 2026 16:20:04 GMT',
+          bytes: 1024,
+          sha256: 'abc123sha256',
+          body: new Uint8Array(),
+          error: null,
+        }),
         fetchedAt: 0,
-        source,
+        source: {
+          id: 'politifact',
+          name: 'politifact.com',
+          url: 'https://www.politifact.com/rss/all/',
+          collection: 'rss',
+        },
         pointer: null,
       })
     ).toBe(
@@ -173,9 +248,16 @@ describe('ObservationPathSchema', () => {
     expect(
       Schema.encodeUnknownSync(ObservationPathSchema)({
         ingestorRunId: 'run-1',
-        result: fetchFailure,
+        result: FetchFailureSchema.make({
+          error: 'Transport error (GET https://www.politifact.com/rss/all/)',
+        }),
         fetchedAt: 0,
-        source,
+        source: {
+          id: 'politifact',
+          name: 'politifact.com',
+          url: 'https://www.politifact.com/rss/all/',
+          collection: 'rss',
+        },
         pointer: null,
       })
     ).toBe(

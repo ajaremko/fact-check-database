@@ -9,51 +9,53 @@ function encodeBatch(rows: readonly unknown[]): Uint8Array {
   )
 }
 
-const fullRow = {
-  fact_check_id: 'fact-check-1',
-  content_sha256: 'sha-content-1',
-  extracted_at: '2026-01-01T00:00:00.000Z',
-  fetched_at: '2026-01-01T00:00:00.000Z',
-  ingestor_run_id: 'ingestor-run-1',
-  extractor_run_id: 'extractor-run-1',
-  source: {
-    id: 'politifact',
-    name: 'politifact.com',
-    url: 'https://www.politifact.com/rss/all/',
-    collection: 'rss',
-  },
-  extractor_id: 'extractor-1',
-  extractor_version: '1',
-  fact_check: {
-    sha256: 'sha-factcheck-1',
-    title: 'A false claim about something',
-    author: 'Jane Doe',
-    categories: ['Politics', 'Health'],
-    summary: 'The claim is false.',
-    link: 'https://example.com/fact-check-1',
-    image_url: 'https://example.com/image.png',
-    published_at_raw: '2026-01-01T00:00:00.000Z',
-    published_at_normalized: '2026-01-01T00:00:00.000Z',
-    canonical_url: 'https://example.com/canonical',
-    language: 'en',
-  },
-  http: {
-    final_url: 'https://example.com/final',
-    status_code: 200,
-    etag: 'W/"abc123"',
-    content_type: 'application/rss+xml',
-    last_modified: '2026-01-01T00:00:00.000Z',
-    headers: {
-      'content-length': '10648',
-      'content-type': 'application/rss+xml',
-    },
-  },
-}
-
 describe('transcodeBatch', () => {
   it.effect('maps every field of a fully-populated row', () =>
     Effect.gen(function* () {
-      const [result] = yield* transcodeBatch(encodeBatch([fullRow]))
+      const [result] = yield* transcodeBatch(
+        encodeBatch([
+          {
+            fact_check_id: 'fact-check-1',
+            content_sha256: 'sha-content-1',
+            extracted_at: '2026-01-01T00:00:00.000Z',
+            fetched_at: '2026-01-01T00:00:00.000Z',
+            ingestor_run_id: 'ingestor-run-1',
+            extractor_run_id: 'extractor-run-1',
+            source: {
+              id: 'politifact',
+              name: 'politifact.com',
+              url: 'https://www.politifact.com/rss/all/',
+              collection: 'rss',
+            },
+            extractor_id: 'extractor-1',
+            extractor_version: '1',
+            fact_check: {
+              sha256: 'sha-factcheck-1',
+              title: 'A false claim about something',
+              author: 'Jane Doe',
+              categories: ['Politics', 'Health'],
+              summary: 'The claim is false.',
+              link: 'https://example.com/fact-check-1',
+              image_url: 'https://example.com/image.png',
+              published_at_raw: '2026-01-01T00:00:00.000Z',
+              published_at_normalized: '2026-01-01T00:00:00.000Z',
+              canonical_url: 'https://example.com/canonical',
+              language: 'en',
+            },
+            http: {
+              final_url: 'https://example.com/final',
+              status_code: 200,
+              etag: 'W/"abc123"',
+              content_type: 'application/rss+xml',
+              last_modified: '2026-01-01T00:00:00.000Z',
+              headers: {
+                'content-length': '10648',
+                'content-type': 'application/rss+xml',
+              },
+            },
+          },
+        ])
+      )
 
       expect(result).toStrictEqual({
         objectID: 'fact-check-1',
@@ -81,19 +83,95 @@ describe('transcodeBatch', () => {
 
   it.effect('transcodes every row in a multi-line batch', () =>
     Effect.gen(function* () {
-      const secondRow = {
-        ...fullRow,
-        fact_check_id: 'fact-check-2',
-        source: { ...fullRow.source, id: 'snopes', name: 'snopes.com' },
-      }
+      const result = yield* transcodeBatch(
+        encodeBatch([
+          {
+            fact_check_id: 'fact-check-1',
+            content_sha256: 'sha-content-1',
+            extracted_at: '2026-01-01T00:00:00.000Z',
+            fetched_at: '2026-01-01T00:00:00.000Z',
+            ingestor_run_id: 'ingestor-run-1',
+            extractor_run_id: 'extractor-run-1',
+            source: {
+              id: 'politifact',
+              name: 'politifact.com',
+              url: 'https://www.politifact.com/rss/all/',
+              collection: 'rss',
+            },
+            extractor_id: 'extractor-1',
+            extractor_version: '1',
+            fact_check: {
+              sha256: 'sha-factcheck-1',
+              title: 'A false claim about something',
+              author: 'Jane Doe',
+              categories: ['Politics', 'Health'],
+              summary: 'The claim is false.',
+              link: 'https://example.com/fact-check-1',
+              image_url: 'https://example.com/image.png',
+              published_at_raw: '2026-01-01T00:00:00.000Z',
+              published_at_normalized: '2026-01-01T00:00:00.000Z',
+              canonical_url: 'https://example.com/canonical',
+              language: 'en',
+            },
+            http: {
+              final_url: 'https://example.com/final',
+              status_code: 200,
+              etag: 'W/"abc123"',
+              content_type: 'application/rss+xml',
+              last_modified: '2026-01-01T00:00:00.000Z',
+              headers: {
+                'content-length': '10648',
+                'content-type': 'application/rss+xml',
+              },
+            },
+          },
+          {
+            fact_check_id: 'fact-check-2',
+            content_sha256: 'sha-content-1',
+            extracted_at: '2026-01-01T00:00:00.000Z',
+            fetched_at: '2026-01-01T00:00:00.000Z',
+            ingestor_run_id: 'ingestor-run-1',
+            extractor_run_id: 'extractor-run-1',
+            source: {
+              id: 'snopes',
+              name: 'snopes.com',
+              url: 'https://www.politifact.com/rss/all/',
+              collection: 'rss',
+            },
+            extractor_id: 'extractor-1',
+            extractor_version: '1',
+            fact_check: {
+              sha256: 'sha-factcheck-1',
+              title: 'A false claim about something',
+              author: 'Jane Doe',
+              categories: ['Politics', 'Health'],
+              summary: 'The claim is false.',
+              link: 'https://example.com/fact-check-1',
+              image_url: 'https://example.com/image.png',
+              published_at_raw: '2026-01-01T00:00:00.000Z',
+              published_at_normalized: '2026-01-01T00:00:00.000Z',
+              canonical_url: 'https://example.com/canonical',
+              language: 'en',
+            },
+            http: {
+              final_url: 'https://example.com/final',
+              status_code: 200,
+              etag: 'W/"abc123"',
+              content_type: 'application/rss+xml',
+              last_modified: '2026-01-01T00:00:00.000Z',
+              headers: {
+                'content-length': '10648',
+                'content-type': 'application/rss+xml',
+              },
+            },
+          },
+        ])
+      )
 
-      const results = yield* transcodeBatch(encodeBatch([fullRow, secondRow]))
-
-      expect(results.map((r) => r.objectID)).toStrictEqual([
-        'fact-check-1',
-        'fact-check-2',
+      expect(result).toMatchObject([
+        { objectID: 'fact-check-1', source_id: 'politifact' },
+        { objectID: 'fact-check-2', source_id: 'snopes' },
       ])
-      expect(results[1].source_id).toBe('snopes')
     })
   )
 
@@ -101,16 +179,44 @@ describe('transcodeBatch', () => {
     'omits content_length when http.headers is absent, rather than falling back to etag',
     () =>
       Effect.gen(function* () {
-        const row = {
-          ...fullRow,
-          http: {
-            final_url: fullRow.http.final_url,
-            etag: 'W/"abc123"',
-            content_type: fullRow.http.content_type,
-          },
-        }
-
-        const [result] = yield* transcodeBatch(encodeBatch([row]))
+        const [result] = yield* transcodeBatch(
+          encodeBatch([
+            {
+              fact_check_id: 'fact-check-1',
+              content_sha256: 'sha-content-1',
+              extracted_at: '2026-01-01T00:00:00.000Z',
+              fetched_at: '2026-01-01T00:00:00.000Z',
+              ingestor_run_id: 'ingestor-run-1',
+              extractor_run_id: 'extractor-run-1',
+              source: {
+                id: 'politifact',
+                name: 'politifact.com',
+                url: 'https://www.politifact.com/rss/all/',
+                collection: 'rss',
+              },
+              extractor_id: 'extractor-1',
+              extractor_version: '1',
+              fact_check: {
+                sha256: 'sha-factcheck-1',
+                title: 'A false claim about something',
+                author: 'Jane Doe',
+                categories: ['Politics', 'Health'],
+                summary: 'The claim is false.',
+                link: 'https://example.com/fact-check-1',
+                image_url: 'https://example.com/image.png',
+                published_at_raw: '2026-01-01T00:00:00.000Z',
+                published_at_normalized: '2026-01-01T00:00:00.000Z',
+                canonical_url: 'https://example.com/canonical',
+                language: 'en',
+              },
+              http: {
+                final_url: 'https://example.com/final',
+                etag: 'W/"abc123"',
+                content_type: 'application/rss+xml',
+              },
+            },
+          ])
+        )
 
         expect(result).not.toHaveProperty('content_length')
       })
@@ -120,23 +226,30 @@ describe('transcodeBatch', () => {
     'omits optional fields entirely when absent, rather than carrying them as undefined',
     () =>
       Effect.gen(function* () {
-        const minimalRow = {
-          fact_check_id: 'fact-check-minimal',
-          content_sha256: 'sha-content-minimal',
-          extracted_at: '2026-01-01T00:00:00.000Z',
-          fetched_at: '2026-01-01T00:00:00.000Z',
-          ingestor_run_id: 'ingestor-run-1',
-          extractor_run_id: 'extractor-run-1',
-          source: fullRow.source,
-          extractor_id: 'extractor-1',
-          extractor_version: '1',
-          fact_check: {
-            sha256: 'sha-factcheck-minimal',
-          },
-          http: {},
-        }
-
-        const [result] = yield* transcodeBatch(encodeBatch([minimalRow]))
+        const [result] = yield* transcodeBatch(
+          encodeBatch([
+            {
+              fact_check_id: 'fact-check-minimal',
+              content_sha256: 'sha-content-minimal',
+              extracted_at: '2026-01-01T00:00:00.000Z',
+              fetched_at: '2026-01-01T00:00:00.000Z',
+              ingestor_run_id: 'ingestor-run-1',
+              extractor_run_id: 'extractor-run-1',
+              source: {
+                id: 'politifact',
+                name: 'politifact.com',
+                url: 'https://www.politifact.com/rss/all/',
+                collection: 'rss',
+              },
+              extractor_id: 'extractor-1',
+              extractor_version: '1',
+              fact_check: {
+                sha256: 'sha-factcheck-minimal',
+              },
+              http: {},
+            },
+          ])
+        )
 
         expect(result).toStrictEqual({
           objectID: 'fact-check-minimal',
