@@ -2,6 +2,8 @@ import { Context, Effect, Config, flow, Layer, Data } from 'effect'
 import { ClientConfig, v1 } from '@google-cloud/pubsub'
 import type { google } from '@google-cloud/pubsub/build/protos/protos'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
 /**
  * Provides a shared Google Cloud Pub/Sub v1 `SubscriberClient` instance, for
  * pull-based access to a subscription (see `pull` and `acknowledge` below).
@@ -9,7 +11,8 @@ import type { google } from '@google-cloud/pubsub/build/protos/protos'
  * This is a separate client from `PubsubClient`: `PubsubTopic` and
  * `PubsubSubscription` do not depend on it. Credentials default to
  * Application Default Credentials (ADC), which are resolved automatically in
- * Cloud Run via the attached service account.
+ * Cloud Run via the attached service account. The layer is **scoped**: the
+ * client is closed when the enclosing scope is released.
  */
 export class PubsubSubscriberClient extends Context.Tag(
   'PubsubSubscriberClient'
@@ -24,17 +27,37 @@ type PubsubOptionsConfig = {
   [k in keyof ClientConfig]?: Config.Config<NonNullable<ClientConfig[k]>>
 }
 
+const moduleName = 'PubsubSubscriberClient'
+
 function make(config?: PubsubOptionsConfig) {
-  return Effect.gen(function* () {
-    yield* Effect.logTrace('Creating v1 pubsub subscriber client')
-    if (config) {
-      const options = yield* Config.all(config)
-      const client = new v1.SubscriberClient(options)
-      return { client }
-    }
-    const client = new v1.SubscriberClient()
+  const acquire = Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName })
+    const client = config
+      ? new v1.SubscriberClient(yield* Config.all(config))
+      : new v1.SubscriberClient()
+    yield* Effect.logTrace('Client created')
     return { client }
-  })
+  }).pipe(Effect.scoped)
+
+  function release({ client }: Effect.Effect.Success<typeof acquire>) {
+    return Effect.gen(function* () {
+      yield* Effect.annotateLogsScoped({ module: moduleName })
+      yield* Effect.tryPromise({
+        try: () => client.close(),
+        catch: (cause) =>
+          new PubsubSubscriberClientIOError({
+            cause,
+            message: 'Failed to close client',
+          }),
+      }).pipe(
+        Effect.tap(() => Effect.logTrace('Client closed')),
+        logSdkFailure('Client close failed'),
+        Effect.ignore
+      )
+    }).pipe(Effect.scoped)
+  }
+
+  return Effect.acquireRelease(acquire, release)
 }
 
 /**
@@ -51,7 +74,7 @@ function make(config?: PubsubOptionsConfig) {
  * // With explicit project
  * Effect.provide(PubsubSubscriberClient.layer({ projectId: Config.string('PUBSUB_PROJECT_ID') }))
  */
-export const layer = flow(make, Layer.effect(PubsubSubscriberClient))
+export const layer = flow(make, Layer.scoped(PubsubSubscriberClient))
 
 /**
  * Thrown when a `pull()` or `acknowledge()` call rejects.
@@ -85,6 +108,11 @@ export type AckId = google.pubsub.v1.IReceivedMessage['ackId']
  */
 export function pull(subscriptionId: string, maxMessages = 10) {
   return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      subscriptionId,
+      maxMessages,
+    })
     const { client } = yield* PubsubSubscriberClient
     const result = yield* Effect.tryPromise({
       try: (): Promise<
@@ -104,9 +132,15 @@ export function pull(subscriptionId: string, maxMessages = 10) {
           cause,
           message: 'Failed to pull messages from subscription',
         }),
+    }).pipe(logSdkFailure('Pull failed'))
+
+    yield* Effect.annotateLogsScoped({
+      'receivedMessages.length': result[0].receivedMessages?.length ?? 0,
     })
+    yield* Effect.logTrace('Messages pulled')
+
     return result
-  })
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -125,6 +159,11 @@ export function pull(subscriptionId: string, maxMessages = 10) {
  */
 export function acknowledge(subscriptionId: string, ackIds: string[]) {
   return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      subscriptionId,
+      'ackIds.length': ackIds.length,
+    })
     const { client } = yield* PubsubSubscriberClient
     yield* Effect.tryPromise({
       try: () =>
@@ -137,6 +176,8 @@ export function acknowledge(subscriptionId: string, ackIds: string[]) {
           cause,
           message: 'Failed to acknowledge messages',
         }),
-    })
-  })
+    }).pipe(logSdkFailure('Acknowledge failed'))
+
+    yield* Effect.logTrace('Messages acknowledged')
+  }).pipe(Effect.scoped)
 }

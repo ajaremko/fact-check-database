@@ -1,6 +1,10 @@
 import { Context, Effect, Config, flow, Layer, Data } from 'effect'
 import { Algoliasearch, algoliasearch } from 'algoliasearch'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
+const moduleName = 'AlgoliaSearchClient'
+
 /**
  * Provides a shared Algolia search client instance.
  *
@@ -35,11 +39,13 @@ type AlgoliaSearchClientOptionsConfig = {
 
 function make(config: AlgoliaSearchClientOptionsConfig) {
   return Effect.gen(function* () {
-    yield* Effect.logTrace('Creating Algolia client')
+    yield* Effect.annotateLogsScoped({ module: moduleName })
     const { apiKey, appId, ...options } = yield* Config.all(config)
+    yield* Effect.annotateLogsScoped({ appId })
     const client = algoliasearch(appId, apiKey, options)
+    yield* Effect.logTrace('Client created')
     return { client }
-  })
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -70,18 +76,24 @@ export const layer = flow(make, Layer.effect(AlgoliaSearchClient))
 export function saveObjectsWithTransformation(
   ...params: Parameters<Algoliasearch['saveObjectsWithTransformation']>
 ) {
-  return AlgoliaSearchClient.pipe(
-    Effect.flatMap(({ client }) =>
-      Effect.tryPromise({
-        try: () => client.saveObjectsWithTransformation(...params),
-        catch: (cause) =>
-          new AlgoliaSearchClientIOError({
-            cause,
-            message: 'Failed to save objects with transformation',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      indexName: params[0].indexName,
+      'objects.length': params[0].objects.length,
+    })
+    const { client } = yield* AlgoliaSearchClient
+    const result = yield* Effect.tryPromise({
+      try: () => client.saveObjectsWithTransformation(...params),
+      catch: (cause) =>
+        new AlgoliaSearchClientIOError({
+          cause,
+          message: 'Failed to save objects with transformation',
+        }),
+    }).pipe(logSdkFailure('Save with transformation failed'))
+    yield* Effect.logTrace('Objects saved with transformation')
+    return result
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -97,16 +109,22 @@ export function saveObjectsWithTransformation(
 export function saveObjects(
   ...params: Parameters<Algoliasearch['saveObjects']>
 ) {
-  return AlgoliaSearchClient.pipe(
-    Effect.flatMap(({ client }) =>
-      Effect.tryPromise({
-        try: () => client.saveObjects(...params),
-        catch: (cause) =>
-          new AlgoliaSearchClientIOError({
-            cause,
-            message: 'Failed to save objects',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      indexName: params[0].indexName,
+      'objects.length': params[0].objects.length,
+    })
+    const { client } = yield* AlgoliaSearchClient
+    const result = yield* Effect.tryPromise({
+      try: () => client.saveObjects(...params),
+      catch: (cause) =>
+        new AlgoliaSearchClientIOError({
+          cause,
+          message: 'Failed to save objects',
+        }),
+    }).pipe(logSdkFailure('Save failed'))
+    yield* Effect.logTrace('Objects saved')
+    return result
+  }).pipe(Effect.scoped)
 }

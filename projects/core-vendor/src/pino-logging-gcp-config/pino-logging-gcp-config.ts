@@ -29,7 +29,14 @@ export const make = Effect.gen(function* () {
   const service = yield* Config.string('SERVICE_NAME')
   const version = yield* Config.string('SERVICE_VERSION')
   const level = yield* PinoLogLevel('LOGGING_LEVEL')
-  yield* Effect.logTrace(`Creating pino logging config with level ${level}`)
+  yield* Effect.logTrace('Logging config created').pipe(
+    Effect.annotateLogs({
+      module: 'pino-logging-gcp-config',
+      service,
+      version,
+      level,
+    })
+  )
   const config = createGcpLoggingPinoConfig(
     {
       serviceContext: {

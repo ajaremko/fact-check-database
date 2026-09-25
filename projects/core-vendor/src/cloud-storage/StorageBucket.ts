@@ -21,7 +21,11 @@ import {
 } from '@google-cloud/storage'
 import { NodeStream } from '@effect/platform-node'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
 import { StorageClient } from './StorageClient'
+
+const moduleName = 'StorageBucket'
 
 export type {
   File,
@@ -64,15 +68,17 @@ type StorageOptionsConfig = {
  */
 export function make(bucketName: string, config?: BucketOptions) {
   return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'bucket.name': bucketName,
+    })
     const { client } = yield* StorageClient
-    yield* Effect.logTrace(`Accessing gcs bucket: ${bucketName}`)
-    if (config) {
-      const bucket = client.bucket(bucketName, config)
-      return { bucket }
-    }
-    const bucket = client.bucket(bucketName)
+    const bucket = config
+      ? client.bucket(bucketName, config)
+      : client.bucket(bucketName)
+    yield* Effect.logTrace('Bucket opened')
     return { bucket }
-  })
+  }).pipe(Effect.scoped)
 }
 
 function makeConfig(
@@ -80,17 +86,16 @@ function makeConfig(
   config?: StorageOptionsConfig
 ) {
   return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName })
     const { client } = yield* StorageClient
-    yield* Effect.logTrace(`Accessing gcs bucket: ${bucketName}`)
     const name = yield* bucketName
-    if (config) {
-      const options = yield* Config.all(config)
-      const bucket = client.bucket(name, options)
-      return { bucket }
-    }
-    const bucket = client.bucket(name)
+    yield* Effect.annotateLogsScoped({ 'bucket.name': name })
+    const bucket = config
+      ? client.bucket(name, yield* Config.all(config))
+      : client.bucket(name)
+    yield* Effect.logTrace('Bucket opened')
     return { bucket }
-  })
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -140,15 +145,23 @@ export function writeFile(
   data: SaveData,
   options?: SaveOptions
 ): Effect.Effect<void, StorageBucketIOError, StorageBucket> {
-  return StorageBucket.pipe(
-    Effect.andThen(({ bucket }) =>
-      Effect.tryPromise({
-        try: () => bucket.file(name).save(data, options),
-        catch: (cause) =>
-          new StorageBucketIOError({ cause, message: 'Failed to write file' }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    const { bucket } = yield* StorageBucket
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'bucket.name': bucket.name,
+      'file.name': name,
+    })
+    if (options?.contentType) {
+      yield* Effect.annotateLogsScoped({ contentType: options.contentType })
+    }
+    yield* Effect.tryPromise({
+      try: () => bucket.file(name).save(data, options),
+      catch: (cause) =>
+        new StorageBucketIOError({ cause, message: 'Failed to write file' }),
+    }).pipe(logSdkFailure('File write failed'))
+    yield* Effect.logTrace('File written')
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -166,15 +179,22 @@ export function moveFile(
   destination: string,
   options?: MoveOptions
 ): Effect.Effect<MoveResponse, StorageBucketIOError, StorageBucket> {
-  return StorageBucket.pipe(
-    Effect.andThen(({ bucket }) =>
-      Effect.tryPromise({
-        try: () => bucket.file(name).move(destination, options),
-        catch: (cause) =>
-          new StorageBucketIOError({ cause, message: 'Failed to move file' }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    const { bucket } = yield* StorageBucket
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'bucket.name': bucket.name,
+      'file.name': name,
+      destination,
+    })
+    const result = yield* Effect.tryPromise({
+      try: () => bucket.file(name).move(destination, options),
+      catch: (cause) =>
+        new StorageBucketIOError({ cause, message: 'Failed to move file' }),
+    }).pipe(logSdkFailure('File move failed'))
+    yield* Effect.logTrace('File moved')
+    return result
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -193,18 +213,25 @@ export function moveFile(
 export function downloadFile(
   name: string
 ): Effect.Effect<[Buffer], StorageBucketIOError, StorageBucket> {
-  return StorageBucket.pipe(
-    Effect.andThen(({ bucket }) =>
-      Effect.tryPromise({
-        try: () => bucket.file(name).download(),
-        catch: (cause) =>
-          new StorageBucketIOError({
-            cause,
-            message: 'Failed to download file',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    const { bucket } = yield* StorageBucket
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'bucket.name': bucket.name,
+      'file.name': name,
+    })
+    const result = yield* Effect.tryPromise({
+      try: () => bucket.file(name).download(),
+      catch: (cause) =>
+        new StorageBucketIOError({
+          cause,
+          message: 'Failed to download file',
+        }),
+    }).pipe(logSdkFailure('File download failed'))
+    yield* Effect.annotateLogsScoped({ 'data.length': result[0].length })
+    yield* Effect.logTrace('File downloaded')
+    return result
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -221,18 +248,27 @@ export function downloadFile(
 export function getFiles(
   options?: GetFilesOptions
 ): Effect.Effect<GetFilesResponse, StorageBucketIOError, StorageBucket> {
-  return StorageBucket.pipe(
-    Effect.andThen(({ bucket }) =>
-      Effect.tryPromise({
-        try: () => bucket.getFiles(options),
-        catch: (cause) =>
-          new StorageBucketIOError({
-            cause,
-            message: 'Failed to list files',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    const { bucket } = yield* StorageBucket
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'bucket.name': bucket.name,
+    })
+    if (options?.prefix) {
+      yield* Effect.annotateLogsScoped({ prefix: options.prefix })
+    }
+    const result = yield* Effect.tryPromise({
+      try: () => bucket.getFiles(options),
+      catch: (cause) =>
+        new StorageBucketIOError({
+          cause,
+          message: 'Failed to list files',
+        }),
+    }).pipe(logSdkFailure('File listing failed'))
+    yield* Effect.annotateLogsScoped({ 'files.length': result[0].length })
+    yield* Effect.logTrace('Files listed')
+    return result
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -254,16 +290,35 @@ export function getFilesStream(
   never,
   StorageBucket
 > {
-  return StorageBucket.pipe(
-    Effect.map(({ bucket }) =>
-      NodeStream.fromReadable(
-        () => bucket.getFilesStream(options),
-        (cause) =>
-          new StorageBucketIOError({
-            cause,
-            message: 'Failed to get file stream',
-          })
+  return Effect.gen(function* () {
+    const { bucket } = yield* StorageBucket
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'bucket.name': bucket.name,
+    })
+    if (options?.prefix) {
+      yield* Effect.annotateLogsScoped({ prefix: options.prefix })
+    }
+    const annotations = yield* Effect.logAnnotations
+    const stream = NodeStream.fromReadable<StorageBucketIOError, File>(
+      () => bucket.getFilesStream(options),
+      (cause) =>
+        new StorageBucketIOError({
+          cause,
+          message: 'Failed to get file stream',
+        })
+    ).pipe(
+      // The stream runs later, outside this scope, so the annotations
+      // captured here are re-applied to its failure log explicitly.
+      Stream.tapError((error) =>
+        Effect.fail(error).pipe(
+          logSdkFailure('File stream failed'),
+          Effect.ignore,
+          Effect.annotateLogs(Object.fromEntries(annotations))
+        )
       )
     )
-  )
+    yield* Effect.logTrace('File stream opened')
+    return stream
+  }).pipe(Effect.scoped)
 }

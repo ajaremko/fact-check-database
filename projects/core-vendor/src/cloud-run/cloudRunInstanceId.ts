@@ -1,5 +1,9 @@
 import { Data, Effect } from 'effect'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
+const moduleName = 'cloudRunInstanceId'
+
 /**
  * Thrown when the Cloud Run metadata server request in {@link cloudRunInstanceId}
  * fails or is interrupted.
@@ -34,11 +38,17 @@ async function fetchMetadata(signal: AbortSignal) {
  * @example
  * const instanceId = yield* cloudRunInstanceId
  */
-export const cloudRunInstanceId = Effect.tryPromise({
-  try: fetchMetadata,
-  catch: (cause) =>
-    new CloudRunInstanceError({
-      cause,
-      message: 'Failed to fetch Cloud Run instance ID from metadata server',
-    }),
-})
+export const cloudRunInstanceId = Effect.gen(function* () {
+  yield* Effect.annotateLogsScoped({ module: moduleName })
+  const instanceId = yield* Effect.tryPromise({
+    try: fetchMetadata,
+    catch: (cause) =>
+      new CloudRunInstanceError({
+        cause,
+        message: 'Failed to fetch Cloud Run instance ID from metadata server',
+      }),
+  }).pipe(logSdkFailure('Instance id fetch failed'))
+  yield* Effect.annotateLogsScoped({ instanceId })
+  yield* Effect.logTrace('Instance id fetched')
+  return instanceId
+}).pipe(Effect.scoped)

@@ -71,16 +71,16 @@ Client layers (`PubsubClient`, `StorageClient`, `BigQueryClient`) take this conf
 
 | Layer                            | Provides                 | Requires        | Lifetime       |
 | -------------------------------- | ------------------------ | --------------- | -------------- |
-| `PubsubClient.layer()`           | `PubsubClient`           | —               | `Layer.effect` |
+| `PubsubClient.layer()`           | `PubsubClient`           | —               | `Layer.scoped` |
 | `PubsubTopic.layer(name)`        | `PubsubTopic`            | `PubsubClient`  | `Layer.effect` |
 | `PubsubSubscription.layer(name)` | `PubsubSubscription`     | `PubsubClient`  | `Layer.scoped` |
-| `PubsubSubscriberClient.layer()` | `PubsubSubscriberClient` | —               | `Layer.effect` |
+| `PubsubSubscriberClient.layer()` | `PubsubSubscriberClient` | —               | `Layer.scoped` |
 | `StorageClient.layer()`          | `StorageClient`          | —               | `Layer.effect` |
 | `StorageBucket.layer(name)`      | `StorageBucket`          | `StorageClient` | `Layer.effect` |
 | `BigQueryClient.layer()`         | `BigQueryClient`         | —               | `Layer.effect` |
 | `AlgoliaSearchClient.layer()`    | `AlgoliaSearchClient`    | —               | `Layer.effect` |
 
-`PubsubSubscription` is the one scoped layer: the subscription is closed via `subscription.close()` automatically when the enclosing Effect scope is released, so it must be provided through `Layer.scoped` or used inside `Effect.scoped`.
+Three layers are scoped, because they hold open connections: `PubsubClient`, `PubsubSubscriberClient` and `PubsubSubscription`. Each calls the SDK's `close()` when the enclosing Effect scope is released. Providing them with `Layer.provide` or `Effect.provide` handles this automatically. Because `PubsubSubscription` depends on `PubsubClient`, subscriptions close before the client that created them, which is the order the Pub/Sub SDK requires. A failed `close()` is logged at `debug` and otherwise ignored, since releasing a resource cannot fail.
 
 ## Pub/Sub
 
@@ -189,15 +189,34 @@ const logger = Logger.addScoped(
 Effect.logInfo('started').pipe(Effect.provide(logger))
 ```
 
-Every other module in this package — every Pub/Sub, Cloud Storage, BigQuery, and Algolia client, plus `cloudRunInstanceId` — logs at `trace` only, and only at construction time (creating a client, accessing a topic or bucket). None of them log at `info`, `warning`, `error`, or `fatal`, so a consuming app's own logging owns every level above `trace` without needing to work around anything this package does.
+### This library's own log output
+
+Every module in this package logs at two levels only. It never logs at `info`, `warning`, `error` or `fatal`. Those levels belong to the consuming app, which decides what a vendor outcome means for its own workload.
+
+- **`trace`**: expected steps, logged once each has completed. That covers acquiring and releasing resources ("Client created", "Bucket opened", "Subscription closed", "Logger flushed") and each SDK action ("Messages pulled", "File written", "Job created", "Objects saved").
+- **`debug`**: unexpected conditions. Every SDK call that fails logs a debug entry ("File write failed", "Job creation failed") before its typed error reaches the caller. A failed `close()` or log flush during release is logged at debug and otherwise ignored.
+
+This package never deliberately kills the process, so it has no use for `fatal`.
+
+#### Annotations
+
+Log messages are constant strings. Values are attached as structured annotations so they can be queried.
+
+- Every log carries `module`, set to the module's name, e.g. `module=StorageBucket`. When a `core-io` adapter calls into this package, both keys appear: `adapter=CloudStorageStorageWriter module=StorageBucket`.
+- Other keys follow the value's source, e.g. `bucket.name`, `file.name`, `topic.name`, `subscriptionId`, `ackIds.length`, `job.id`, `indexName`, `objects.length`.
+- Annotations are scoped to one construction, action or release, and are closed when it finishes. They never persist on a layer's scope, so they don't leak into the consuming app's logs. `src/logAnnotationScope.spec.ts` guards this.
+
+A failure's debug entry is annotated with only the error's tag (`error._tag`) and the SDK's status code (`cause.code`) when there is one. The raw SDK error is never logged, because its message can echo request contents. The full error is still available to the caller on the typed error's `cause`.
+
+**Never annotated:** message data and attributes, file contents, SDK option objects (which can carry credentials such as Algolia's `apiKey`), and records sent to Algolia.
 
 ## Error convention
 
 Each module exports one `Data.TaggedError` named after the module, carrying `cause` and `message`, so a caller can handle every failure from that vendor with a single `Effect.catchTag`:
 
-`AlgoliaSearchClientIOError`, `BigQueryClientIOError`, `PubsubTopicIOError`, `PubsubSubscriberClientIOError`, `PubsubSubscriptionIOError`, `StorageBucketIOError`, `CloudRunInstanceError`.
+`AlgoliaSearchClientIOError`, `BigQueryClientIOError`, `PubsubClientIOError`, `PubsubTopicIOError`, `PubsubSubscriberClientIOError`, `PubsubSubscriptionIOError`, `StorageBucketIOError`, `CloudRunInstanceError`.
 
-`PubsubSubscriptionIOError` is declared but not currently thrown by `PubsubSubscription`'s layer itself; it is reserved for subscription-related failures a caller may want to distinguish.
+`PubsubClientIOError` and `PubsubSubscriptionIOError` are raised only when `close()` fails during release. They are logged at `debug` and swallowed there, so callers never receive them.
 
 ```ts
 PubsubTopic.publishMessage(message).pipe(
@@ -207,4 +226,4 @@ PubsubTopic.publishMessage(message).pipe(
 )
 ```
 
-See [docs/known-issues.md](./docs/known-issues.md) for this package's current test-coverage gap.
+See [docs/known-issues.md](./docs/known-issues.md) for this package's remaining test-coverage gaps.

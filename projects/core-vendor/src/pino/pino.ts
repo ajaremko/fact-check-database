@@ -1,6 +1,17 @@
-import { Cause, Effect, Logger, LogLevel, Record, FiberId, flow } from 'effect'
+import {
+  Cause,
+  Data,
+  Effect,
+  Logger,
+  LogLevel,
+  Record,
+  FiberId,
+  flow,
+} from 'effect'
 import { pino, type Level } from 'pino'
 import type { Logger as PinoLogger } from 'pino'
+
+import { logSdkFailure } from '../internal/logSdkFailure'
 
 /**
  * Maps each Effect `LogLevel` label to the Pino level used to emit it.
@@ -18,18 +29,38 @@ const levels: Record<LogLevel.LogLevel['label'], Level | null> = {
   OFF: null,
 }
 
-const acquire = flow(pino, Effect.succeed)
+const moduleName = 'pino'
+
+class PinoFlushError extends Data.TaggedError('PinoFlushError')<{
+  readonly cause: unknown
+}> {}
+
+function acquire(...options: Parameters<typeof pino>) {
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName })
+    const logger = pino(...options)
+    yield* Effect.logTrace('Logger created')
+    return logger
+  }).pipe(Effect.scoped)
+}
 
 function release(logger: PinoLogger<string, boolean>) {
-  return Effect.async<void, Error>((cb) => {
-    logger.flush((err?: Error) => {
-      if (err) {
-        cb(Effect.fail(err))
-      } else {
-        cb(Effect.void)
-      }
-    })
-  }).pipe(Effect.ignore)
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName })
+    yield* Effect.async<void, PinoFlushError>((cb) => {
+      logger.flush((err?: Error) => {
+        if (err) {
+          cb(Effect.fail(new PinoFlushError({ cause: err })))
+        } else {
+          cb(Effect.void)
+        }
+      })
+    }).pipe(
+      Effect.tap(() => Effect.logTrace('Logger flushed')),
+      logSdkFailure('Logger flush failed'),
+      Effect.ignore
+    )
+  }).pipe(Effect.scoped)
 }
 
 /**

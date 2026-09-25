@@ -6,6 +6,10 @@ import {
   JobOptions,
 } from '@google-cloud/bigquery'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
+const moduleName = 'BigQueryClient'
+
 /**
  * Provides a shared Google Cloud `BigQuery` client instance.
  *
@@ -36,15 +40,13 @@ type BigQueryOptionsConfig = {
 
 function make(config?: BigQueryOptionsConfig) {
   return Effect.gen(function* () {
-    yield* Effect.logTrace('Creating bq client')
-    if (config) {
-      const options = yield* Config.all(config)
-      const client = new BigQuery(options)
-      return { client }
-    }
-    const client = new BigQuery()
+    yield* Effect.annotateLogsScoped({ module: moduleName })
+    const client = config
+      ? new BigQuery(yield* Config.all(config))
+      : new BigQuery()
+    yield* Effect.logTrace('Client created')
     return { client }
-  })
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -76,18 +78,24 @@ export const layer = flow(make, Layer.effect(BigQueryClient))
  * yield* awaitJob(job)
  */
 export function createJob(options: JobOptions) {
-  return BigQueryClient.pipe(
-    Effect.flatMap(({ client }) =>
-      Effect.tryPromise({
-        try: () => client.createJob(options),
-        catch: (cause) =>
-          new BigQueryClientIOError({
-            cause,
-            message: 'Failed to create BigQuery job',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'job.id': options.jobId,
+      'job.location': options.location,
+    })
+    const { client } = yield* BigQueryClient
+    const result = yield* Effect.tryPromise({
+      try: () => client.createJob(options),
+      catch: (cause) =>
+        new BigQueryClientIOError({
+          cause,
+          message: 'Failed to create BigQuery job',
+        }),
+    }).pipe(logSdkFailure('Job creation failed'))
+    yield* Effect.logTrace('Job created')
+    return result
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -102,17 +110,21 @@ export function createJob(options: JobOptions) {
  * yield* awaitJob(job)
  */
 export function awaitJob(job: Job) {
-  return Effect.tryPromise({
-    try: () =>
-      new Promise<void>((resolve, reject) => {
-        job.on('error', reject).on('complete', () => resolve())
-      }),
-    catch: (cause) =>
-      new BigQueryClientIOError({
-        cause,
-        message: 'BigQuery job failed',
-      }),
-  })
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName, 'job.id': job.id })
+    yield* Effect.tryPromise({
+      try: () =>
+        new Promise<void>((resolve, reject) => {
+          job.on('error', reject).on('complete', () => resolve())
+        }),
+      catch: (cause) =>
+        new BigQueryClientIOError({
+          cause,
+          message: 'BigQuery job failed',
+        }),
+    }).pipe(logSdkFailure('Job failed'))
+    yield* Effect.logTrace('Job completed')
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -127,21 +139,30 @@ export function awaitJob(job: Job) {
  * job.metadata.status.state // 'DONE'
  */
 export function getJob(options: { id: string; location?: string }) {
-  return BigQueryClient.pipe(
-    Effect.flatMap(({ client }) =>
-      Effect.tryPromise({
-        try: () => {
-          const job = client.job(options.id, { location: options.location })
-          return job.getMetadata().then(() => job)
-        },
-        catch: (cause) =>
-          new BigQueryClientIOError({
-            cause,
-            message: 'Failed to get BigQuery job',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'job.id': options.id,
+      'job.location': options.location,
+    })
+    const { client } = yield* BigQueryClient
+    const job = yield* Effect.tryPromise({
+      try: () => {
+        const job = client.job(options.id, { location: options.location })
+        return job.getMetadata().then(() => job)
+      },
+      catch: (cause) =>
+        new BigQueryClientIOError({
+          cause,
+          message: 'Failed to get BigQuery job',
+        }),
+    }).pipe(logSdkFailure('Job fetch failed'))
+    yield* Effect.annotateLogsScoped({
+      'job.status.state': job.metadata?.status?.state,
+    })
+    yield* Effect.logTrace('Job fetched')
+    return job
+  }).pipe(Effect.scoped)
 }
 
 /**

@@ -1,7 +1,11 @@
 import { Config, Context, Data, Effect, flow, Layer } from 'effect'
 import { Subscription, SubscriberOptions } from '@google-cloud/pubsub'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
 import { PubsubClient } from './PubsubClient'
+
+const moduleName = 'PubsubSubscription'
 
 /**
  * Provides a Google Cloud Pub/Sub `Subscription` for receiving messages.
@@ -28,22 +32,36 @@ function make(
   config?: SubscriptionOptionsConfig
 ) {
   const acquire = Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName })
     const { client } = yield* PubsubClient
     const name = yield* subscriptionName
-    yield* Effect.logTrace(`Acquiring pubsub subscription ${name}`)
-    if (config) {
-      const options = yield* Config.all(config)
-      const subscription = client.subscription(name, options)
-      return { subscription }
-    }
-    const subscription = client.subscription(name)
+    yield* Effect.annotateLogsScoped({ 'subscription.name': name })
+    const subscription = config
+      ? client.subscription(name, yield* Config.all(config))
+      : client.subscription(name)
+    yield* Effect.logTrace('Subscription opened')
     return { subscription }
-  })
+  }).pipe(Effect.scoped)
 
-  function release(resource: Effect.Effect.Success<typeof acquire>) {
-    return Effect.logTrace('Closing pubsub subscription').pipe(
-      Effect.andThen(Effect.promise(() => resource.subscription.close()))
-    )
+  function release({ subscription }: Effect.Effect.Success<typeof acquire>) {
+    return Effect.gen(function* () {
+      yield* Effect.annotateLogsScoped({
+        module: moduleName,
+        'subscription.name': subscription.name,
+      })
+      yield* Effect.tryPromise({
+        try: () => subscription.close(),
+        catch: (cause) =>
+          new PubsubSubscriptionIOError({
+            cause,
+            message: 'Failed to close subscription',
+          }),
+      }).pipe(
+        Effect.tap(() => Effect.logTrace('Subscription closed')),
+        logSdkFailure('Subscription close failed'),
+        Effect.ignore
+      )
+    }).pipe(Effect.scoped)
   }
 
   return Effect.acquireRelease(acquire, release)
@@ -62,8 +80,8 @@ function make(
 export const layer = flow(make, Layer.scoped(PubsubSubscription))
 
 /**
- * Error type for subscription IO failures. Reserved for future use —
- * not currently thrown by the layer itself.
+ * Raised when closing the subscription fails on release. It is logged at
+ * debug and swallowed, since a finalizer cannot fail.
  */
 export class PubsubSubscriptionIOError extends Data.TaggedError(
   'PubsubSubscriptionIOError'

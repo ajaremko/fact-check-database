@@ -1,6 +1,8 @@
 import { Context, Effect, Config, flow, Layer, ConfigError } from 'effect'
 import { Storage, StorageOptions } from '@google-cloud/storage'
 
+const moduleName = 'StorageClient'
+
 /**
  * Provides a shared Google Cloud `Storage` client instance.
  *
@@ -21,15 +23,13 @@ type StorageOptionsConfig = {
 
 function make(config?: StorageOptionsConfig) {
   return Effect.gen(function* () {
-    yield* Effect.logTrace(`Creating Google Cloud Storage client`)
-    if (config) {
-      const options = yield* Config.all(config)
-      const client = new Storage(options)
-      return { client }
-    }
-    const client = new Storage()
+    yield* Effect.annotateLogsScoped({ module: moduleName })
+    const client = config
+      ? new Storage(yield* Config.all(config))
+      : new Storage()
+    yield* Effect.logTrace('Client created')
     return { client }
-  })
+  }).pipe(Effect.scoped)
 }
 
 /**

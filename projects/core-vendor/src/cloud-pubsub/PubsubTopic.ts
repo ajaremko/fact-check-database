@@ -2,7 +2,11 @@ import { Config, Context, Data, Effect, flow, Layer } from 'effect'
 import { Topic, PublishOptions } from '@google-cloud/pubsub'
 import type { MessageOptions } from '@google-cloud/pubsub/build/src/topic'
 
+import { logSdkFailure } from '../internal/logSdkFailure'
+
 import { PubsubClient } from './PubsubClient'
+
+const moduleName = 'PubsubTopic'
 
 /**
  * Provides a Google Cloud Pub/Sub `Topic` for publishing messages.
@@ -20,17 +24,16 @@ type TopicOptionsConfig = {
 
 function make(topicName: Config.Config<string>, config?: TopicOptionsConfig) {
   return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({ module: moduleName })
     const { client } = yield* PubsubClient
     const name = yield* topicName
-    yield* Effect.logTrace(`Accessing pubsub topic ${name}`)
-    if (config) {
-      const options = yield* Config.all(config)
-      const topic = client.topic(name, options)
-      return { topic }
-    }
-    const topic = client.topic(name)
+    yield* Effect.annotateLogsScoped({ 'topic.name': name })
+    const topic = config
+      ? client.topic(name, yield* Config.all(config))
+      : client.topic(name)
+    yield* Effect.logTrace('Topic opened')
     return { topic }
-  })
+  }).pipe(Effect.scoped)
 }
 
 /**
@@ -67,16 +70,24 @@ export class PubsubTopicIOError extends Data.TaggedError('PubsubTopicIOError')<{
  * yield* PubsubTopic.publishMessage({ data: Buffer.from(JSON.stringify(payload)) })
  */
 export function publishMessage(message: MessageOptions) {
-  return PubsubTopic.pipe(
-    Effect.andThen(({ topic }) =>
-      Effect.tryPromise({
-        try: () => topic.publishMessage(message),
-        catch: (cause) =>
-          new PubsubTopicIOError({
-            cause,
-            message: 'Failed to publish message',
-          }),
-      })
-    )
-  )
+  return Effect.gen(function* () {
+    const { topic } = yield* PubsubTopic
+    yield* Effect.annotateLogsScoped({
+      module: moduleName,
+      'topic.name': topic.name,
+    })
+    const messageId = yield* Effect.tryPromise({
+      try: () => topic.publishMessage(message),
+      catch: (cause) =>
+        new PubsubTopicIOError({
+          cause,
+          message: 'Failed to publish message',
+        }),
+    }).pipe(logSdkFailure('Publish failed'))
+
+    yield* Effect.annotateLogsScoped({ messageId })
+    yield* Effect.logTrace('Message published')
+
+    return messageId
+  }).pipe(Effect.scoped)
 }
