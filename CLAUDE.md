@@ -124,10 +124,6 @@ When implementing:
 
 ## App Coding Style Guidelines
 
-Apps follow a **hexagonal (ports & adapters)** architecture.
-
-- **Ports** (`src/ports/`): Define interfaces as `Context.Tag` classes. One file per port. Ports define capability only — no implementation.
-- **Adapters** (`src/adapters/`): Each adapter implements one port. Adapters export a `make` function and a `layer` constant (`Layer.effect(Port, make)`). Group adapters by transport (e.g. `adapters/cloud-storage/`, `adapters/filesystem/`).
 - **Composition root** (`src/environments/`): Wire layers together here. Maintain separate files for dev and prod environments. Development layers typically use the filesystem for IO rather than GCP infrastructure. No business logic in environment files.
 - **Program** (`src/program.ts`): Core logic only. Receives all dependencies via Effect context. Should read clearly as a sequence of operations.
 - **Entry point** (`src/main.ts`): Minimal — runs the program with the appropriate environment. No logic.
