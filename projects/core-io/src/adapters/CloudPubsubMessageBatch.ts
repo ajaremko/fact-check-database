@@ -1,4 +1,4 @@
-import { Array, Config, Effect, Layer, Ref, Option, Record } from 'effect'
+import { Array, Config, Effect, Exit, Layer, Ref, Option, Record } from 'effect'
 import type { google } from '@google-cloud/pubsub/build/protos/protos'
 
 import * as PubsubSubscriberClient from '@fact-check-database/core-vendor/cloud-pubsub/PubsubSubscriberClient'
@@ -35,12 +35,19 @@ function acquire(subscriptionId: string, maxMessages: number) {
     function wrapMessage({
       message,
       ackId,
+      deliveryAttempt,
     }: google.pubsub.v1.IReceivedMessage) {
       return Effect.gen(function* () {
         yield* Effect.annotateLogsScoped({
           ackId,
           'message.messageId': message?.messageId,
         })
+        // Pub/Sub reports 0 when the subscription has no dead-letter policy
+        if (deliveryAttempt) {
+          yield* Effect.annotateLogsScoped({
+            'message.deliveryAttempt': deliveryAttempt,
+          })
+        }
 
         if (
           !message ||
@@ -71,6 +78,7 @@ function acquire(subscriptionId: string, maxMessages: number) {
             attributes: message.attributes ?? {},
             messageId: message.messageId,
             publishTime,
+            ...(deliveryAttempt ? { deliveryAttempt } : {}),
           },
           ack: Ref.update(ackIds, (ids) => new Set(ids).add(ackId)),
           annotations,
@@ -92,17 +100,28 @@ function acquire(subscriptionId: string, maxMessages: number) {
 type Resource = Effect.Effect.Success<ReturnType<typeof acquire>>
 
 /**
- * Acknowledges every message pulled by {@link acquire} in a single Pub/Sub
- * RPC when the batch's scope closes. Logs and no-ops if nothing was acked
- * (e.g. an empty pull), since Pub/Sub rejects an empty acknowledge request.
+ * Acknowledges every message acked during the batch's lifetime in a single
+ * Pub/Sub RPC when the batch's scope closes successfully. Logs and no-ops if
+ * nothing was acked (e.g. an empty pull), since Pub/Sub rejects an empty
+ * acknowledge request.
+ *
+ * If the scope closes with a failure, nothing is acknowledged, even messages
+ * that were acked: the work that depended on them (e.g. writing their
+ * results) didn't complete, so Pub/Sub redelivers them once their ack
+ * deadline passes.
  */
 function release(subscriptionId: string) {
-  return function (resource: Resource) {
+  return function (resource: Resource, exit: Exit.Exit<unknown, unknown>) {
     return Effect.gen(function* () {
       yield* Effect.annotateLogsScoped({ adapter, subscriptionId })
 
       const ackIds = yield* Ref.get(resource.ackIds)
       yield* Effect.annotateLogsScoped({ 'ackIds.size': ackIds.size })
+
+      if (Exit.isFailure(exit)) {
+        yield* Effect.logDebug('Batch released without acknowledging')
+        return
+      }
 
       if (ackIds.size === 0) {
         yield* Effect.logTrace('No messages to acknowledge')

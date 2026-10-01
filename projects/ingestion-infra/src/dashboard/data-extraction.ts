@@ -96,7 +96,7 @@ const extractionErrorsWidget = {
                 STRING(json_payload['extractor.id'])      AS Extractor,
                 INT64(json_payload['extractor.version'])  AS Version,
                 STRING(json_payload['type'])              AS \`Error Type\`,
-                STRING(json_payload['message'])           AS Message,
+                STRING(json_payload['error'])             AS Error,
                 STRING(json_payload['source.id'])         AS \`Source ID\`,
                 STRING(json_payload['source.name'])       AS Source,
                 STRING(json_payload['source.collection']) AS Collection,

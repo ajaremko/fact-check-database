@@ -1,12 +1,17 @@
-import { Effect, Metric, pipe, Schema } from 'effect'
+import { Effect, Metric, ParseResult, pipe, Schema } from 'effect'
 
 import * as Node from '@fact-check-database/core-data/Node'
 import * as Yaml from '@fact-check-database/core-data/Yaml'
 
 import { FilePointer, readFile } from '@fact-check-database/core-io'
+import {
+  ExtractionFailedKey,
+  ExtractionFailedSchema,
+  ExtractionSucceededKey,
+  ExtractionSucceededSchema,
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
-import { logExtractionSucceeded, logExtractionFailed } from './logging'
 import { contentPreview } from './NormalizedText'
 import { ObservationSchema } from './Observation'
 import { extractors } from '../integration/extraction-strategy'
@@ -23,35 +28,60 @@ const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
 
 const extractedFactCheckRows = Metric.counter('extracted_fact_check_rows')
 
+/**
+ * A bounded description of why a feed failed to decode: the first failing
+ * field's issue type and path. The raw error message is not used, since it
+ * can embed large parts of the feed, article text included.
+ */
+function describeExtractionError(error: { readonly _tag: string }): string {
+  if (!ParseResult.isParseError(error)) {
+    return error._tag
+  }
+  const [issue] = ParseResult.ArrayFormatter.formatErrorSync(error)
+  if (!issue) {
+    return error._tag
+  }
+  return `${issue._tag} at ${issue.path.join('.') || '(root)'}`
+}
+
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
     extractorRunId: string
     pointer: FilePointer
     extractedAt: number
   }) {
+    yield* Effect.annotateLogsScoped({
+      'input.bucket': ctx.pointer.bucket,
+      'input.object': ctx.pointer.object,
+    })
     const recordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(recordData)
+    const extractor = extractors[observation.source.collection]
+    yield* Effect.annotateLogsScoped({
+      'source.id': observation.source.id,
+      'source.name': observation.source.name,
+      'source.url': observation.source.url,
+      'source.collection': observation.source.collection,
+      'extractor.id': extractor.id,
+      'extractor.version': extractor.version,
+    })
     const { content, http } = observation
 
     if (!http || !content || !observation.shouldExtract) {
-      yield* Effect.logInfo(`Skipping extraction for observation`)
-      return []
-    }
-
-    const extractor = extractors[observation.source.collection]
-
-    const responsePointer = observation.sanitized ?? observation.raw
-
-    if (!responsePointer) {
-      yield* Effect.logWarning(
-        `No pointer available for observation, skipping extraction`
+      yield* Effect.logInfo('Observation skipped').pipe(
+        Effect.annotateLogs({ 'skip.reason': 'not_extractable' })
       )
       return []
     }
 
-    yield* Effect.logInfo(
-      `Extracting fact checks for observation from sanitized record`
-    )
+    const responsePointer = observation.sanitized ?? observation.raw
+
+    if (!responsePointer) {
+      yield* Effect.logWarning('Observation skipped').pipe(
+        Effect.annotateLogs({ 'skip.reason': 'no_body_pointer' })
+      )
+      return []
+    }
 
     const responseData = yield* readFile(responsePointer)
     const factChecks = yield* extractor
@@ -102,28 +132,33 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
             })
           )
         ),
+        // The event fields feed the extraction dashboard, which counts one
+        // line per event, so they are attached to these lines only rather
+        // than scoped
         Effect.tap((factChecks) =>
-          logExtractionSucceeded({
-            event: 'extraction_succeeded',
-            count: factChecks.length,
-          })
+          Effect.logInfo('Fact checks extracted').pipe(
+            Effect.annotateLogs(
+              ExtractionSucceededSchema.make({
+                event: ExtractionSucceededKey,
+                count: factChecks.length,
+              })
+            )
+          )
         ),
-        Effect.tapError((err) =>
-          logExtractionFailed({
-            event: 'extraction_failed',
-            type: err._tag,
-            error: err.message,
-          })
+        // A feed that can't be parsed won't parse on a retry either, so the
+        // failure is logged and the message is acked with no rows
+        Effect.catchAll((error) =>
+          Effect.logWarning('Extraction failed').pipe(
+            Effect.annotateLogs(
+              ExtractionFailedSchema.make({
+                event: ExtractionFailedKey,
+                type: error._tag,
+                error: describeExtractionError(error),
+              })
+            ),
+            Effect.as([])
+          )
         ),
-        Effect.catchAll(() => Effect.succeed([])),
-        Effect.annotateLogs({
-          'source.collection': observation.source.collection,
-          'source.name': observation.source.name,
-          'source.url': observation.source.url,
-          'source.id': observation.source.id,
-          'extractor.id': extractor.id,
-          'extractor.version': extractor.version,
-        }),
         Effect.withSpan('extractor')
       )
 
@@ -138,11 +173,5 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
 
     return rows
   },
-  (effect, ctx) =>
-    effect.pipe(
-      Effect.annotateLogs({
-        'pointer.bucket': ctx.pointer.bucket,
-        'pointer.object': ctx.pointer.object,
-      })
-    )
+  Effect.scoped
 )

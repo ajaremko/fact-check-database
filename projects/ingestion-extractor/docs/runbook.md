@@ -63,28 +63,78 @@ defines.
 
 ## Logging
 
-This service's own code uses three levels, never `trace` or `error`:
+This service's own code logs only at `info` and above. `trace` and `debug` belong to the shared
+libraries it runs on, so `LOGGING_LEVEL` works as a dial for how deep to look.
 
-| Level     | Used for                                                                                                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `debug`   | Startup mode selection, and per-run progress (`Processing {n} messages`, `Processed {k} of {n} messages`)                                                                                   |
-| `info`    | Job start, `Skipping extraction for observation`, `Extracting fact checks for observation...`, and — notably — `Extraction failed`, despite the name, logs at `info`, not `warning`/`error` |
-| `warning` | No fact checks extracted for the whole run; no pointer available for an observation (also skipped)                                                                                          |
+### Levels this service uses
 
-`core-io` (which every storage/messaging call in this app goes through) separately logs at
-`trace`/`warning` only, and `core-data` logs nothing — see each package's own README.
+| Level   | Used for                                                                                                                                                                                                                                                                                                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `info`  | Startup: one `… mode selected` line per component (`mode.storage`, `mode.messaging`, `mode.otel`) and `Extractor job started`. Per message: `Observation skipped` (`skip.reason: not_extractable`) or `Fact checks extracted`. Per run: `Dropped duplicate fact check rows`, `Batch written` or `No batch written`, then `Extractor job completed` when no message failed |
+| `warn`  | `Extraction failed`: the feed couldn't be parsed. `Observation skipped` with `skip.reason: no_body_pointer`. `Message redelivered`. `Extractor job completed` when some messages failed                                                                                                                                                                                   |
+| `error` | `Message processing failed`: one line per message whose record couldn't be read or decoded, with `error._tag` and the failure attached as the log's cause                                                                                                                                                                                                                 |
+| `fatal` | `Extractor job stopped`: the run is exiting non-zero, e.g. because the batch write failed or config is missing. `Extractor failed to start` only if the logger itself couldn't be configured                                                                                                                                                                              |
 
-### A monitoring gap worth knowing about
+### What happens to each message
 
-A skipped observation and an observation whose extraction step throws are **both** recorded as
-"succeeded, 0 rows" at the job level — `extractFactChecks`' own errors are caught locally and
-turned into an empty result before they ever reach the per-message `Effect.all(..., {mode:
-'either'})`. Only a failure reading or decoding the observation itself (before the extractor
-runs) counts as a genuine job-level failure. There's also no dedicated skip/failure `Metric` —
-`extracted_fact_check_rows` and `extracted_batches_written` only increment on the successful
-path. **A run that skips or silently fails every observation looks identical, by metrics alone,
-to a healthy run that extracted nothing because there was nothing to extract.** Distinguishing
-them requires reading the per-item `info`/`warning` log lines, not just the job-completion metric.
+| Outcome                                                     | Acknowledged? | Meaning                                                                                        |
+| ----------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------- |
+| `Fact checks extracted` or `Observation skipped`            | Yes           | Processed; its rows, if any, are in this run's batch                                           |
+| `Extraction failed`                                         | Yes           | Dropped: a feed that can't be parsed won't parse on a retry either                             |
+| `Message processing failed`                                 | No            | Redelivered to a later run, and dead-lettered after the subscription's limit                   |
+| Any message, when the run ends with `Extractor job stopped` | No            | Nothing is acknowledged, so a failed batch write loses no rows. The whole batch is redelivered |
+
+Messages are acknowledged together, in one Pub/Sub call, when the run ends successfully, after the
+batch is written.
+
+### Choosing `LOGGING_LEVEL`
+
+| Level   | What you see                                                                                                                                              | Use it when                                                                               |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `info`  | This service's own lines above: one outcome line per message, bracketed by the job's start and completion                                                 | Normal operation (the default)                                                            |
+| `debug` | Adds the libraries' unexpected conditions: every failed SDK call with `module`, `error._tag` and `cause.code`, and a batch released without acknowledging | A message or the batch write fails and you need to know which storage call failed and how |
+| `trace` | Adds every library step: the pull, each file read and written, the acknowledge                                                                            | Something hangs or behaves oddly and you need the exact call sequence                     |
+
+The library levels are documented in the [core-io](../../core-io/README.md#logging) and
+[core-vendor](../../core-vendor/README.md#logging) READMEs.
+
+### Annotations
+
+| Key                                                                                                | Set on                                                    |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `job.runId`, `job.concurrency`, `job.startedAt`                                                    | Every line in the run, including library lines            |
+| `message.messageId`, `message.deliveryAttempt`, `subscriptionId`, `ackId`                          | Every line for a message (carried from the batch adapter) |
+| `input.bucket`, `input.object`                                                                     | Every line for a message: the sanitizer record being read |
+| `source.id`, `source.name`, `source.url`, `source.collection`, `extractor.id`, `extractor.version` | A message's lines once its record is decoded              |
+| `skip.reason`                                                                                      | `Observation skipped`                                     |
+| `batch.type`, `batch.rows`                                                                         | `Batch written`                                           |
+| `error._tag`                                                                                       | `Message processing failed`                               |
+
+### Dashboard events
+
+Four lines carry an `event` payload from `ingestion-contracts`' `logging/v1`, which the
+`ingestion-infra` data-extraction dashboard queries. Their names, fields and levels are a
+contract:
+
+| `event`                   | Logged on                                                       | Dashboard dependency                                                                              |
+| ------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `extraction_succeeded`    | `Fact checks extracted`                                         | Filtered on `severity = 'INFO'`; reads `count`, `source.*`, `extractor.*`, `job.runId`            |
+| `extraction_failed`       | `Extraction failed`                                             | Filtered on `severity = 'WARNING'`; reads `type`, `error`, `source.*`, `extractor.*`, `job.runId` |
+| `batch_written`           | `Batch written`                                                 | Filtered on `severity = 'INFO'`; reads `batch.rows`, `batch.format`, `batch.path`                 |
+| `extractor_job_completed` | `Extractor job completed` (info, or warning if messages failed) | No severity filter; reads `job.tasks`, `job.failures`, `job.rowsExtracted`                        |
+
+`extraction_failed`'s `error` is a short summary of the first field that failed to decode (for
+example `Missing at rss`), never the raw parse error, which can embed large parts of the feed.
+Each event is attached to its one line only, never as a scoped annotation, so the dashboard
+counts it once.
+
+### A monitoring note
+
+`Extraction failed` and `Observation skipped` both count as a successful message at the job level:
+the message was handled and acknowledged, with no rows. `job.failures` counts only messages
+whose record couldn't be read or decoded. To tell a run that extracted nothing because there was
+nothing to extract from one where every feed failed to parse, look at the `Extraction failed`
+warnings (or the dashboard's Extraction Errors panel), not the job-completed counts.
 
 ## Diagnosing failures
 
@@ -92,26 +142,32 @@ them requires reading the per-item `info`/`warning` log lines, not just the job-
 
 **Steps:**
 
-1. Find that observation's log line: `Skipping extraction for observation` (no content/http, or
-   `shouldExtract: false`), `No pointer available for observation, skipping extraction` (no
-   sanitized or raw body to read), or `Extraction failed` (the extractor itself threw — check the
-   annotated cause).
-2. If the cause is a `ParseError` from `decodeFeedXml`, the feed's XML likely doesn't match the
-   RSS/Atom shape the selected extractor expects — check the source's `collection` value against
-   the feed's actual format.
-3. None of these fail the run — see "A monitoring gap worth knowing about" above for why metrics
-   alone won't show this.
+1. Filter by `input.object` or `source.id` to find that message's outcome line:
+   - `Observation skipped` with `skip.reason: not_extractable`: the record was quarantined, has
+     no content or HTTP data, or isn't marked for extraction. Expected for quarantined sources.
+   - `Observation skipped` with `skip.reason: no_body_pointer`: the record has neither a
+     sanitized nor a raw body pointer, so there is nothing to read.
+   - `Extraction failed`: the feed couldn't be parsed. Its `error` names the first failing field.
+     The feed's XML likely doesn't match the RSS/Atom shape the selected extractor expects, so
+     check the source's `collection` value against the feed's actual format.
+   - `Message processing failed`: the sanitizer record couldn't be read (`StorageReadError`) or
+     decoded (`ParseError`). The message is redelivered to a later run.
+2. A `ParseError` decoding the sanitizer record itself (as opposed to the feed inside it) means
+   the sanitizer's output no longer matches `ObservationSchema`. Check for a contract change
+   upstream.
+3. To see which storage call failed and with what status code, rerun with
+   `LOGGING_LEVEL=debug` and filter on the same `input.object`.
 
 ### The whole run fails
 
+**Symptom:** a fatal `Extractor job stopped`, and the process exits non-zero.
+
 **Steps:**
 
-1. Look for a `StorageReadError` (reading the observation record failed — check
-   `STORAGE_BUCKET_NAME`/`STORAGE_OUTPUT_DIR` and service-account permissions) or
-   `StorageWriteError` (writing the batch failed) in the logged cause.
-2. A `ParseError` decoding the observation record itself (as opposed to the feed XML inside it)
-   means the sanitizer's output no longer matches `ObservationSchema` — check for a contract
-   change upstream.
+1. Read the fatal line's cause. A `StorageWriteError` means writing the batch failed: check
+   `STORAGE_BUCKET_NAME`/`STORAGE_OUTPUT_DIR` and the service account's permissions.
+2. No message was acknowledged, so the next run receives the same batch again, logged as
+   `Message redelivered`. No rows are lost.
 
 ## Checking output locally
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@effect/vitest'
-import { Effect } from 'effect'
+import { Effect, HashMap, Logger } from 'effect'
 
 import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
 import * as InMemoryStorageReader from '@fact-check-database/core-io/adapters/InMemoryStorageReader'
@@ -9,6 +9,11 @@ import { extractFactChecks } from './extractFactChecks'
 describe('extractFactChecks', () => {
   it.effect('when observation is safe, extracts array of claims', () =>
     Effect.gen(function* () {
+      const logs: Array<{
+        level: string
+        message: unknown
+        annotations: object
+      }> = []
       const storage = {
         'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.sanitize.yml': `
           version: 1
@@ -99,7 +104,19 @@ describe('extractFactChecks', () => {
         },
       }).pipe(
         Effect.provide(InMemoryStorageReader.layer(storage)),
-        Effect.provide(InMemoryStorageWriter.layer(storage))
+        Effect.provide(InMemoryStorageWriter.layer(storage)),
+        Effect.provide(
+          Logger.replace(
+            Logger.defaultLogger,
+            Logger.make(({ logLevel, message, annotations }) => {
+              logs.push({
+                level: logLevel.label,
+                message,
+                annotations: Object.fromEntries(HashMap.toEntries(annotations)),
+              })
+            })
+          )
+        )
       )
       expect(result).toStrictEqual([
         {
@@ -238,12 +255,29 @@ describe('extractFactChecks', () => {
           },
         },
       ])
+      expect(logs).toMatchObject([
+        {
+          level: 'INFO',
+          message: ['Fact checks extracted'],
+          annotations: {
+            event: 'extraction_succeeded',
+            count: 3,
+            'source.id': 'politifact',
+            'extractor.id': 'rss',
+          },
+        },
+      ])
     })
   )
   it.effect(
     'stores a plain-text preview of the content in the row and writes no article file',
     () =>
       Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const storage: Record<string, string> = {
           'content-preview-test.sanitize.yml': `
           version: 1
@@ -299,7 +333,21 @@ describe('extractFactChecks', () => {
           },
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
 
         expect(result).toHaveLength(1)
@@ -312,8 +360,101 @@ describe('extractFactChecks', () => {
         ])
       })
   )
+  it.effect(
+    'logs a warning and returns no rows when the feed cannot be parsed',
+    () =>
+      Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
+        const storage: Record<string, string> = {
+          'unparseable-feed-test.sanitize.yml': `
+          version: 1
+          kind: sanitized_record
+          ingestor_run_id: ing-1
+          fetched_at: 0
+          sanitized_at: 0
+          source:
+            id: politifact
+            name: politifact.com
+            url: https://www.politifact.com/rss/all/
+            collection: rss
+          input:
+            record:
+              bucket: local
+              object: record.yml
+          label: SAFE_PUBLIC
+          actions: []
+          http:
+            status_code: 200
+            content_type: application/rss+xml
+          content:
+            sha256: unparseable-feed-test-sha256
+            bytes: 1
+            sanitized:
+              bucket: local
+              object: unparseable-feed-test.bin`,
+          'unparseable-feed-test.bin': `
+          <?xml version="1.0" encoding="utf-8"?>
+          <html><body>Not a feed</body></html>`,
+        }
+        const result = yield* extractFactChecks({
+          extractorRunId: 'run-1',
+          extractedAt: 0,
+          pointer: {
+            bucket: 'inmemory',
+            object: 'unparseable-feed-test.sanitize.yml',
+          },
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
+        )
+
+        expect(result).toStrictEqual([])
+        expect(logs).toStrictEqual([
+          {
+            level: 'WARN',
+            message: ['Extraction failed'],
+            annotations: {
+              'input.bucket': 'inmemory',
+              'input.object': 'unparseable-feed-test.sanitize.yml',
+              'source.id': 'politifact',
+              'source.name': 'politifact.com',
+              'source.url': 'https://www.politifact.com/rss/all/',
+              'source.collection': 'rss',
+              'extractor.id': 'rss',
+              'extractor.version': 1,
+              event: 'extraction_failed',
+              type: 'ParseError',
+              error: 'Missing at rss',
+            },
+          },
+        ])
+      })
+  )
   it.effect('when observation is quarantined, returns an empty array', () =>
     Effect.gen(function* () {
+      const logs: Array<{
+        level: string
+        message: unknown
+        annotations: object
+      }> = []
       const storage = {
         '8ca9078baa5189bd08868c5fcefcf0eefdc9077ac0fbbb3f7ca88852f44e18e4.sanitize.yml': `
           version: 1
@@ -364,9 +505,28 @@ describe('extractFactChecks', () => {
         },
       }).pipe(
         Effect.provide(InMemoryStorageReader.layer(storage)),
-        Effect.provide(InMemoryStorageWriter.layer(storage))
+        Effect.provide(InMemoryStorageWriter.layer(storage)),
+        Effect.provide(
+          Logger.replace(
+            Logger.defaultLogger,
+            Logger.make(({ logLevel, message, annotations }) => {
+              logs.push({
+                level: logLevel.label,
+                message,
+                annotations: Object.fromEntries(HashMap.toEntries(annotations)),
+              })
+            })
+          )
+        )
       )
       expect(result).toStrictEqual([])
+      expect(logs).toMatchObject([
+        {
+          level: 'INFO',
+          message: ['Observation skipped'],
+          annotations: { 'skip.reason': 'not_extractable' },
+        },
+      ])
     })
   )
 
@@ -374,6 +534,11 @@ describe('extractFactChecks', () => {
     'when observation is SAFE_PUBLIC but has no content, returns an empty array',
     () =>
       Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const storage = {
           'no-content.sanitize.yml': `
             version: 1
@@ -402,9 +567,30 @@ describe('extractFactChecks', () => {
           pointer: { bucket: 'inmemory', object: 'no-content.sanitize.yml' },
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
         expect(result).toStrictEqual([])
+        expect(logs).toMatchObject([
+          {
+            level: 'INFO',
+            message: ['Observation skipped'],
+            annotations: { 'skip.reason': 'not_extractable' },
+          },
+        ])
       })
   )
 })

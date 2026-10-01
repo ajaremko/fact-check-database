@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@effect/vitest'
-import { Effect } from 'effect'
+import { Effect, HashMap, Logger } from 'effect'
 
 import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
 
@@ -10,6 +10,11 @@ describe('writeBatch', () => {
     'writes NDJSON file to storage and returns an ExtractionBatchReady event',
     () =>
       Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const storage: Record<string, string> = {}
         const event = yield* writeBatch({
           extractorRunId: 'run-001',
@@ -56,7 +61,23 @@ describe('writeBatch', () => {
           ],
           timestamp: 1_000,
           type: 'fact_checks',
-        }).pipe(Effect.provide(InMemoryStorageWriter.layer(storage)))
+        }).pipe(
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
+        )
 
         expect(
           storage['v1/type=fact_checks/date=1970-01-01/run-001.batch.ndjson']
@@ -72,6 +93,21 @@ describe('writeBatch', () => {
             object: 'v1/type=fact_checks/date=1970-01-01/run-001.batch.ndjson',
           },
         })
+
+        expect(logs).toStrictEqual([
+          {
+            level: 'INFO',
+            message: ['Batch written'],
+            annotations: {
+              'batch.type': 'fact_checks',
+              'batch.rows': 1,
+              event: 'batch_written',
+              'batch.path':
+                'v1/type=fact_checks/date=1970-01-01/run-001.batch.ndjson',
+              'batch.format': 'NEWLINE_DELIMITED_JSON',
+            },
+          },
+        ])
       })
   )
 })

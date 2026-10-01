@@ -3,12 +3,15 @@ import { Effect, Metric, pipe, Schema } from 'effect'
 import * as Ndjson from '@fact-check-database/core-data/Ndjson'
 import * as Node from '@fact-check-database/core-data/Node'
 import { writeFile } from '@fact-check-database/core-io'
+import {
+  ExtractionBatchWrittenKey,
+  ExtractionBatchWrittenSchema,
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 import {
   ExtractionBatchSchema,
   ExtractionBatchPathSchema,
 } from './ExtractionBatch'
-import { logExtractionBatchWritten } from './logging'
 
 const encodeNdjson = pipe(
   Schema.Object,
@@ -28,6 +31,10 @@ export const writeBatch = Effect.fn('writeBatch')(
     timestamp: number
     type: 'fact_checks'
   }) {
+    yield* Effect.annotateLogsScoped({
+      'batch.type': input.type,
+      'batch.rows': input.rows.length,
+    })
     const path = yield* encodeExtractionBatchPath({
       extractorRunId: input.extractorRunId,
       extractedAt: input.timestamp,
@@ -49,22 +56,25 @@ export const writeBatch = Effect.fn('writeBatch')(
       pointer,
     })
 
-    yield* logExtractionBatchWritten({
-      event: 'batch_written',
-      'batch.path': path,
-      'batch.format': batch.sourceFormat,
-    })
+    // The event fields feed the extraction dashboard, which counts one line
+    // per event, so they are attached to this line only rather than scoped
+    yield* Effect.logInfo('Batch written').pipe(
+      Effect.annotateLogs(
+        ExtractionBatchWrittenSchema.make({
+          event: ExtractionBatchWrittenKey,
+          'batch.path': path,
+          'batch.format': batch.sourceFormat,
+        })
+      )
+    )
 
     yield* Metric.increment(batchesWritten)
 
     return batch
   },
+  Effect.scoped,
   (effect, input) =>
     effect.pipe(
-      Effect.annotateLogs({
-        'batch.type': input.type,
-        'batch.rows': input.rows.length,
-      }),
       Effect.tagMetrics({
         batch_type: input.type,
       })

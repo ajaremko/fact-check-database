@@ -1,4 +1,15 @@
-import { Config, Effect, Logger, Layer, Schema, Clock, LogLevel } from 'effect'
+import {
+  Cause,
+  Clock,
+  Config,
+  Data,
+  Effect,
+  Layer,
+  Logger,
+  LogLevel,
+  Option,
+  Schema,
+} from 'effect'
 import { NodeRuntime, NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
@@ -29,8 +40,10 @@ const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')
 const storage = Layer.unwrapEffect(
   Effect.gen(function* () {
     const storageMode = yield* Config.withDefault(StorageModeConfig, 'gcp')
+    yield* Effect.logInfo('Storage mode selected').pipe(
+      Effect.annotateLogs({ 'mode.storage': storageMode })
+    )
     if (storageMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem storage')
       return Layer.empty.pipe(
         Layer.merge(FileSystemStorageReader.layer),
         Layer.merge(FileSystemStorageWriter.layer),
@@ -53,8 +66,10 @@ const MessagingModeConfig = Config.literal(
 const messaging = Layer.unwrapEffect(
   Effect.gen(function* () {
     const messagingMode = yield* Config.withDefault(MessagingModeConfig, 'gcp')
+    yield* Effect.logInfo('Messaging mode selected').pipe(
+      Effect.annotateLogs({ 'mode.messaging': messagingMode })
+    )
     if (messagingMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem messaging')
       return Layer.empty.pipe(
         Layer.merge(FileSystemMessageBatch.layer),
         Layer.provide(NodeFileSystem.layer)
@@ -120,7 +135,9 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
-      yield* Effect.logDebug('Using local otel configuration')
+      yield* Effect.logInfo('Telemetry mode selected').pipe(
+        Effect.annotateLogs({ 'mode.otel': otelMode })
+      )
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -139,7 +156,9 @@ const otel = Layer.unwrapEffect(
     const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp otel configuration')
+    yield* Effect.logInfo('Telemetry mode selected').pipe(
+      Effect.annotateLogs({ 'mode.otel': otelMode })
+    )
     return NodeSdk.layer(() => ({
       resource: {
         ...resource,
@@ -179,20 +198,25 @@ const job = Layer.effect(
   })
 )
 
+/**
+ * Runs the job with its run-level annotations on every log line, including
+ * the lines logged while the layers above are built.
+ */
 function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   return Effect.gen(function* () {
     const ctx = yield* JobContext
-    yield* Effect.logInfo(`Starting extractor job run ${ctx.runId}`)
-    return yield* self.pipe(
-      Effect.withSpan('jobRun'),
-      Effect.annotateLogs({
-        'job.runId': ctx.runId,
-        'job.concurrency': ctx.concurrency,
-        'job.startedAt': ctx.startedAt,
-      })
-    )
-  })
+    yield* Effect.annotateLogsScoped({
+      'job.runId': ctx.runId,
+      'job.concurrency': ctx.concurrency,
+      'job.startedAt': ctx.startedAt,
+    })
+    yield* Effect.logInfo('Extractor job started')
+    return yield* self.pipe(Effect.withSpan('jobRun'))
+  }).pipe(Effect.scoped)
 }
+
+/** Marks a failure that has already been logged as fatal. */
+class ExtractorStopped extends Data.TaggedError('ExtractorStopped') {}
 
 App.pipe(
   Effect.provide(storage),
@@ -200,7 +224,26 @@ App.pipe(
   Effect.provide(otel),
   withJobAnnotations,
   Effect.provide(job),
+  // Logged here, while the configured logger is still installed. The batch's
+  // messages are not acknowledged when the job stops with a failure
+  Effect.tapErrorCause((cause) =>
+    Effect.logFatal('Extractor job stopped', cause)
+  ),
+  Effect.catchAllCause(() => Effect.fail(new ExtractorStopped())),
   Effect.provide(logger),
+  // Only a failure to build the logger itself reaches this point unlogged,
+  // so it falls back to the default logger
+  Effect.tapErrorCause((cause) =>
+    Cause.failureOption(cause).pipe(
+      Option.exists((error) => error instanceof ExtractorStopped)
+    )
+      ? Effect.void
+      : Effect.logFatal('Extractor failed to start', cause)
+  ),
   withMinimumLogLevel,
-  NodeRuntime.runMain({ disablePrettyLogger: true })
+  // every failure is logged above, so the runtime's own report is disabled
+  NodeRuntime.runMain({
+    disablePrettyLogger: true,
+    disableErrorReporting: true,
+  })
 )

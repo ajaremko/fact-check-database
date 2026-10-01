@@ -1,17 +1,21 @@
 # Known Issues
 
-## Skipped and failed observations are indistinguishable from success by metrics alone
+## Skipped and unparseable observations have no metrics of their own
 
-**Error:** No error — a monitoring gap.
-**Where:** `src/app/extractFactChecks.ts`'s error handling (`Effect.catchAll(() =>
-Effect.succeed([]))` around the extraction step) and `src/app/logging/index.ts`'s
-`logExtractionFailed`, which logs at `info` despite its name.
-**Root cause:** Skips (no content, no pointer) and in-extractor failures are both intentionally
-non-fatal, so the run keeps going — but that design choice also means neither is visible in the
-job-level success/failure counts or in the two `Metric` counters, only in per-item log lines.
-**Decision:** Leave as-is. The non-fatal behavior itself is correct (one bad observation shouldn't
-fail a batch); only the observability gap around it is the issue.
-**If this ever needs to be fixed:** Add a dedicated `Metric.counter` for skips and for
-in-extractor failures (distinct from the existing `extracted_fact_check_rows`/
-`extracted_batches_written`), and consider moving `logExtractionFailed` to `Effect.logWarning` so
-it's distinguishable from routine `info` traffic by level, not just by message text.
+**Error:** No error. This is a monitoring gap.
+
+**Where:** `src/app/extractFactChecks.ts`. A skipped observation and a feed that can't be parsed
+are both handled as a successful message with no rows: they are acknowledged, and they don't
+count towards `job.failures`.
+
+**Root cause:** Both are intentionally non-fatal: one bad observation shouldn't fail a batch, and
+retrying an unparseable feed can't help. They are visible in the logs (`Observation skipped`, and
+`Extraction failed` at `warning`, which also feeds the dashboard's Extraction Errors panel). But
+the two `Metric` counters, `extracted_fact_check_rows` and `extracted_batches_written`, only count
+the successful path, so neither shows up in metrics.
+
+**Decision:** Leave as-is. The logs and the dashboard panel are enough to tell an empty run from
+one where every feed failed.
+
+**If this ever needs to be fixed:** Add a `Metric.counter` for skips (tagged with `skip.reason`)
+and one for extraction failures (tagged with the error type), alongside the existing counters.

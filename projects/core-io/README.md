@@ -21,13 +21,13 @@ nx build core-io
 - **`StorageReader`** — a single `read(pointer: FilePointer)` capability returning the raw bytes at that pointer. Use this for anything that needs to fetch a previously-archived object.
 - **`StorageWriter`** — a single `write({path, data, meta?, contentType?})` capability returning a `FilePointer` to the written object. Use this for anything that archives or persists a blob.
 
-Both message ports carry each message as a `MessageBody`: its `data`, optional `attributes`, `messageId` and `publishTime`, plus an optional `deliveryAttempt`. Only `HttpServerMessageQueueFeeder` sets `deliveryAttempt` today. It copies it from the Pub/Sub push envelope, where Pub/Sub includes it only for subscriptions with a dead-letter policy. A value above 1 marks a redelivery.
+Both message ports carry each message as a `MessageBody`: its `data`, optional `attributes`, `messageId` and `publishTime`, plus an optional `deliveryAttempt`. `HttpServerMessageQueueFeeder` and `CloudPubsubMessageBatch` set `deliveryAttempt`, from the push envelope and the pull response respectively. Pub/Sub includes it only for subscriptions with a dead-letter policy. A value above 1 marks a redelivery.
 
 ## Adapters
 
 | Adapter                                   | Port implemented | Environment | Notes                                                                                                                                                                     |
 | ----------------------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CloudPubsubMessageBatch`                 | `MessageBatch`   | Production  | Pulls a batch from a Pub/Sub subscription; acks batch as one RPC when the scope closes                                                                                    |
+| `CloudPubsubMessageBatch`                 | `MessageBatch`   | Production  | Pulls a batch from a Pub/Sub subscription; acks the batch as one RPC when the scope closes successfully, and acks nothing if it closes with a failure                     |
 | `CloudPubsubMessageQueueFeeder`           | `MessageQueue`   | Production  | Feeds the queue via native Pub/Sub SDK event listeners; ack/nack delegate to the SDK message                                                                              |
 | `CloudPubsubPublisher`                    | `Publisher`      | Production  | Publishes to a Pub/Sub topic                                                                                                                                              |
 | `FileSystemMessageBatch`                  | `MessageBatch`   | Development | Reads every file in a directory into a batch                                                                                                                              |
