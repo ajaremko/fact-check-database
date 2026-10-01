@@ -3,9 +3,8 @@ import { Effect, Metric, pipe, Schema } from 'effect'
 import * as Node from '@fact-check-database/core-data/Node'
 import * as Yaml from '@fact-check-database/core-data/Yaml'
 
-import { FilePointer, readFile, writeFile } from '@fact-check-database/core-io'
+import { FilePointer, readFile } from '@fact-check-database/core-io'
 
-import { contentBlobPath } from './ContentBlob'
 import { FactCheckRow, FactCheckRowSchema } from './FactCheck'
 import { logExtractionSucceeded, logExtractionFailed } from './logging'
 import { contentPreview } from './NormalizedText'
@@ -21,17 +20,8 @@ const decodeObservation = pipe(
 )
 
 const encodeFactCheckRows = Schema.encode(Schema.Array(FactCheckRowSchema))
-const encodeUtf8 = Schema.encode(
-  pipe(Schema.String, Node.parseUint8Array({ encoding: 'utf-8' }))
-)
 
 const extractedFactCheckRows = Metric.counter('extracted_fact_check_rows')
-
-/**
- * Bounds how many content blobs are written concurrently for a single
- * observation's fact checks (a feed poll can yield up to ~1000 items).
- */
-const CONTENT_BLOB_WRITE_CONCURRENCY = 10
 
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
@@ -71,57 +61,45 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
         data: responseData,
       })
       .pipe(
-        Effect.flatMap((factChecks) =>
-          Effect.forEach(
-            factChecks,
-            (factCheck) =>
-              Effect.gen(function* () {
-                if (factCheck.content) {
-                  const data = yield* encodeUtf8(factCheck.content)
-                  yield* writeFile({
-                    path: contentBlobPath(factCheck.sha256),
-                    data,
-                    contentType: 'text/markdown',
-                  })
-                }
-
-                const row: FactCheckRow = {
-                  factCheckId: factCheckId({
-                    sourceId: observation.source.id,
-                    sourceUrl: observation.source.url,
-                    canonicalUrl: factCheck.canonicalUrl,
-                    link: factCheck.link,
-                    guid: factCheck.guid,
-                    title: factCheck.title,
-                  }),
-                  extractorRunId: ctx.extractorRunId,
-                  fetchedAt: observation.fetchedAt,
-                  extractedAt: ctx.extractedAt,
-                  ingestorRunId: observation.ingestorRunId,
-                  factCheck: factCheck.content
-                    ? {
-                        ...factCheck,
-                        content: contentPreview(factCheck.content),
-                      }
-                    : factCheck,
-                  extractor: {
-                    id: extractor.id,
-                    version: extractor.version,
-                  },
-                  http: {
-                    contentSha256: content.sha256,
-                    finalUrl: http.finalUrl,
-                    status: http.status,
-                    contentType: http.contentType,
-                    etag: http.etag,
-                    lastModified: http.lastModified,
-                    headers: http.headers,
-                  },
-                  source: observation.source,
-                }
-                return row
+        Effect.map((factChecks) =>
+          factChecks.map(
+            (factCheck): FactCheckRow => ({
+              factCheckId: factCheckId({
+                sourceId: observation.source.id,
+                sourceUrl: observation.source.url,
+                canonicalUrl: factCheck.canonicalUrl,
+                link: factCheck.link,
+                guid: factCheck.guid,
+                title: factCheck.title,
               }),
-            { concurrency: CONTENT_BLOB_WRITE_CONCURRENCY }
+              extractorRunId: ctx.extractorRunId,
+              fetchedAt: observation.fetchedAt,
+              extractedAt: ctx.extractedAt,
+              ingestorRunId: observation.ingestorRunId,
+              // Only a short plain-text preview of the article body is
+              // kept, for research queries. Full articles are not stored,
+              // since serving them would republish third-party content.
+              factCheck: factCheck.content
+                ? {
+                    ...factCheck,
+                    content: contentPreview(factCheck.content),
+                  }
+                : factCheck,
+              extractor: {
+                id: extractor.id,
+                version: extractor.version,
+              },
+              http: {
+                contentSha256: content.sha256,
+                finalUrl: http.finalUrl,
+                status: http.status,
+                contentType: http.contentType,
+                etag: http.etag,
+                lastModified: http.lastModified,
+                headers: http.headers,
+              },
+              source: observation.source,
+            })
           )
         ),
         Effect.tap((factChecks) =>

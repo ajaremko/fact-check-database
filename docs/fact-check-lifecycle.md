@@ -98,7 +98,8 @@ inspection.
 - **Does:** parses each `SAFE_PUBLIC` feed into fact checks, assigns each a `fact_check_id`, and
   writes one batch file per run.
 - **Writes:** `v1/type=fact_checks/date={day}/{extractor_run_id}.batch.ndjson` in the core staging
-  bucket. Full article bodies go to `v1/type=fact_checks_content/sha256={fact_check.sha256}.md`.
+  bucket. Full article bodies are deliberately not stored or republished: a row keeps the feed's
+  own `summary` and a 500-character plain-text preview of the article for research queries.
 - **Mints:** `extractor_run_id`, `fact_check_id` and `fact_check.sha256`.
 - **Duplicates:**
   - The subscription's ack deadline is 600 seconds. The extractor only acknowledges after its

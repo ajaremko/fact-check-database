@@ -46,13 +46,14 @@ field reference. In short, the real paths are:
 
 ```
 v1/type=fact_checks/date={YYYY-MM-DD}/{extractorRunId}.batch.ndjson
-v1/type=fact_checks_content/sha256={hash}.md
 ```
 
-The batch file holds one row per extracted fact-check; a row's `content` field is a bounded
-plain-text preview (500 characters, truncated at a word boundary), not the full Markdown — the
-full content lives in the separate, content-addressed blob object, written once per fact-check
-that has content and shared across re-fetches with identical content (same `sha256`, same blob).
+The batch file holds one row per extracted fact-check. A row's `content` field is a short
+plain-text preview of the article body: 500 characters, cut at a word boundary. It is kept for
+research queries in BigQuery and is never sent to the website's search index. The full article
+is deliberately not stored by the pipeline, because serving it would republish third-party
+content. The raw feed body, article text included, remains only in the encrypted ingestion
+archive.
 
 Input decoding (the sanitizer's `SanitizerRecord` and the platform's `SourceConfig`) uses
 `@fact-check-database/ingestion-contracts` instead — this project's _output_ contract and its _input_
@@ -107,7 +108,7 @@ them requires reading the per-item `info`/`warning` log lines, not just the job-
 
 1. Look for a `StorageReadError` (reading the observation record failed — check
    `STORAGE_BUCKET_NAME`/`STORAGE_OUTPUT_DIR` and service-account permissions) or
-   `StorageWriteError` (writing the batch or a content blob failed) in the logged cause.
+   `StorageWriteError` (writing the batch failed) in the logged cause.
 2. A `ParseError` decoding the observation record itself (as opposed to the feed XML inside it)
    means the sanitizer's output no longer matches `ObservationSchema` — check for a contract
    change upstream.

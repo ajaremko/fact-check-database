@@ -72,34 +72,75 @@ v1/raw/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/{cont
 
 ## Logging
 
-This app's own code uses five levels:
+This service's own code logs only at `info` and above. `trace` and `debug` belong to the shared
+libraries it runs on, so `LOGGING_LEVEL` works as a dial for how deep to look.
 
-| Level     | Used for                                                                                                                                                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `trace`   | Low-level step tracing inside a single fetch attempt (`Fetching data from source target`, `Writing fetch failure record`, `Writing raw response body`), and source-list construction                                                        |
-| `debug`   | Mode-selection at startup (`Using filesystem/gcs source list`, `...storage`, `...messaging`, `...otel configuration`) and per-run progress (`Processing {n} targets`, `Requesting content from source {i}`, `Processed {k} of {n} targets`) |
-| `info`    | Job start (`Starting ingestor job run {runId}`) and a successful fetch attempt (`Ingestion succeeded`)                                                                                                                                      |
-| `warning` | A failed fetch attempt (`Ingestion failed`) — recoverable and isolated to that target, distinguishable from a success by level as well as message text                                                                                      |
-| `error`   | A per-target failure's full cause, dumped once via `Effect.tapErrorCause(Effect.logError)` when any step in that target's pipeline fails                                                                                                    |
+### Levels this service uses
 
-`core-io` (which every storage/messaging call in this app goes through) separately logs at `trace`/`warning` only, and `core-data` logs nothing at all — see each package's own README. There's no overlap to reconcile: this app's `error` level isn't used by either dependency.
+| Level   | Used for                                                                                                                                                                                                                                                                                      |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `info`  | Startup: one `… mode selected` line per component (`mode.sourceList`, `mode.storage`, `mode.messaging`, `mode.otel`), `Ingestor job started` and `Source list loaded`. Per source: `Source fetched` once a 2xx response is archived. At the end: `Ingestor job completed` when the run passes |
+| `warn`  | `Source returned an error status`: a non-2xx response, archived as usual. `Source unreachable`: no response at all, so only the attempt record is archived                                                                                                                                    |
+| `error` | `Source ingestion failed`: one line per source whose pipeline failed (a storage write, or encoding its record), with the failure attached as the log's cause. `Ingestor job completed` when the run falls below `SUCCESS_THRESHOLD`                                                           |
+| `fatal` | `Ingestor job stopped`: the run is exiting non-zero, either because the success rate was too low (`error._tag: SuccessThresholdNotMet`) or because startup failed (e.g. an unreadable target list). `Ingestor failed to start` only if the logger itself couldn't be configured               |
 
-### Spans and annotations
+Each source produces exactly one outcome line: `Source fetched`, `Source returned an error status`,
+`Source unreachable` or `Source ingestion failed`. An outcome line is logged only after the
+attempt's record has been written to the archive.
 
-- `jobRun` span (whole run): annotated with `job.runId`, `job.concurrency`, `job.startedAt`, `job.successThreshold`.
-- `processTarget` span (one target): annotated with `source.index`.
-- `ingestFromSource` span (nested inside `processTarget`): annotated with `source.id`, `source.name`, `source.url`, `source.collection`.
-- The `content_request_results` metric counter is tagged with `result_status`/`result_status_code`/`result_content_type` per attempt, and `source_name`/`source_collection`.
+### Choosing `LOGGING_LEVEL`
+
+| Level   | What you see                                                                                                                          | Use it when                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `info`  | This service's own lines above: one outcome line per source, bracketed by the job's start and completion                              | Normal operation (the default)                                                   |
+| `debug` | Adds the libraries' unexpected conditions: every failed SDK call, with `module`, `error._tag` and the SDK status code as `cause.code` | A source's pipeline fails and you need to know which storage call failed and how |
+| `trace` | Adds every library step: clients created, buckets opened, each file written                                                           | Something hangs or behaves oddly and you need the exact call sequence            |
+
+The library levels are documented in the [core-io](../../core-io/README.md#logging) and
+[core-vendor](../../core-vendor/README.md#logging) READMEs.
+
+### Annotations
+
+| Key                                                                           | Set on                                            |
+| ----------------------------------------------------------------------------- | ------------------------------------------------- |
+| `job.runId`, `job.concurrency`, `job.startedAt`, `job.successThreshold`       | Every line in the run, including library lines    |
+| `source.index`, `source.id`, `source.name`, `source.url`, `source.collection` | Every line logged while that source is processed  |
+| `result.status_code`, `result.final_url`, `content.bytes`, `content.sha256`   | A source's lines once its response has arrived    |
+| `body.object`, `record.object`                                                | A source's lines once each has been archived      |
+| `sourceList.uri` or `sourceList.path`, `sources.length`                       | `Source list loaded`                              |
+| `error._tag`                                                                  | `Source ingestion failed`, `Ingestor job stopped` |
+
+### Dashboard events
+
+Three lines also carry an `event` payload from `ingestion-contracts`' `logging/v1`, and the
+`ingestion-infra` dashboards query them. Their event names and fields are a contract:
+
+| `event`                  | Logged on                                                               | Dashboard dependency                                                      |
+| ------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `fetch_success`          | `Source fetched` (info) and `Source returned an error status` (warning) | `source.*`, `result.status`, `result.status_code`, `result.content_type`  |
+| `fetch_failure`          | `Source unreachable`                                                    | Must stay at **warning**; the dashboard filters on `severity = 'WARNING'` |
+| `ingestor_job_completed` | `Ingestor job completed` (info on success, error on failure)            | `job.tasks`, `job.failures`, `job.successThreshold`, `job.result`         |
+
+Each event is attached to its one line only, never as a scoped annotation, so the dashboards count
+each event once.
+
+### Spans and metrics
+
+- `jobRun` span (whole run), `processTarget` span (one source), and `ingestFromSource` nested
+  inside it.
+- The `content_request_results` metric counter is tagged with
+  `result_status`/`result_status_code`/`result_content_type` per attempt, and
+  `source_name`/`source_collection`.
 
 ## Diagnosing failures
 
 ### Success rate below threshold
 
-**Symptom:** the run exits with a failure whose message is exactly `Success rate {r} is below threshold {t}`. This isn't a logged error line — it's an `Effect.fail`, surfaced by the runtime's own unhandled-failure reporting when the process exits non-zero.
+**Symptom:** the run ends with an error-level `Ingestor job completed` line (`job.result: failure`), followed by a fatal `Ingestor job stopped` with `error._tag: SuccessThresholdNotMet`, and exits non-zero.
 
 **Steps:**
 
-1. Look for `Ingestion failed` log lines and their `result.error` annotation for the run's `runId`.
+1. Filter the run's lines by `job.runId`, and look at each source's outcome line. `Source unreachable` carries `result.error`, and `Source ingestion failed` carries `error._tag` and the full cause.
 2. In production, list the `records/` prefix in the archive bucket for that `ingestor_run_id` and inspect the `outcome: 'no_response'` records.
 3. If failures are transient (an upstream outage), the next scheduled run should recover on its own.
 4. If a source is permanently unreachable, remove its row from the target list.
@@ -109,13 +150,14 @@ This app's own code uses five levels:
 
 **Steps:**
 
-1. Find that target's `error` log line (`Effect.tapErrorCause(Effect.logError)`) and read the dumped cause.
-2. The cause will be one of: a `FetcherError` (network/DNS/timeout/non-2xx — see `HttpClientFetcher`'s error message), a `StorageWriteError` from `core-io` (permission or connectivity issue writing the archive), or a `ParseResult.ParseError` (either a schema encode failure when writing the record, or `ingestFromSource`'s own `decodeContext` step rejecting a malformed target-list row, e.g. an invalid `collection` value — both are isolated to that one target, same as every other failure mode here).
-3. If failures for that source are consistent across runs, consider removing it from the target list.
+1. Filter by `source.id` to find that source's outcome line. `Source unreachable` and `Source returned an error status` are warnings about the source itself. `Source ingestion failed` is an error in this service's own pipeline.
+2. For `Source ingestion failed`, the cause is one of: a `FetcherError` (the response arrived but its body couldn't be read. Network, DNS and timeout failures are logged as `Source unreachable` instead, and non-2xx responses as `Source returned an error status`), a `StorageWriteError` from `core-io` (permission or connectivity issue writing the archive), or a `ParseResult.ParseError` (either a schema encode failure when writing the record, or `ingestFromSource`'s own `decodeContext` step rejecting a malformed target-list row, e.g. an invalid `collection` value — both are isolated to that one target, same as every other failure mode here).
+3. To see which storage call failed and with what status code, rerun with `LOGGING_LEVEL=debug` and filter on the same `source.id`.
+4. If failures for that source are consistent across runs, consider removing it from the target list.
 
 ### Target list unreadable
 
-**Symptom:** the run fails immediately, before any `Processing {n} targets` log line appears.
+**Symptom:** the run logs a fatal `Ingestor job stopped` before any `Source list loaded` line appears.
 
 **Steps:**
 

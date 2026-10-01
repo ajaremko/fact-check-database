@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest'
 import { Schema } from 'effect'
 
-import { NormalizedTextSSchema, NormalizedMarkdownSchema } from './NormalizedText'
+import {
+  NormalizedTextSSchema,
+  NormalizedMarkdownSchema,
+} from './NormalizedText'
 
 describe('NormalizedTextSSchema', () => {
   it('preserves non-ASCII text and non-Latin scripts unchanged', () => {
     const decode = Schema.decodeSync(NormalizedTextSSchema(64))
     expect(decode('it’s a test')).toBe('it’s a test')
     expect(decode('café au lait')).toBe('café au lait')
-    expect(decode('Говорил ли')).toBe(
-      'Говорил ли'
-    )
+    expect(decode('Говорил ли')).toBe('Говорил ли')
   })
 
   it('decodes HTML entity references', () => {
@@ -48,19 +49,17 @@ describe('NormalizedTextSSchema', () => {
 describe('NormalizedMarkdownSchema', () => {
   it('converts HTML to Markdown, preserving links and structure', () => {
     const decode = Schema.decodeSync(NormalizedMarkdownSchema)
-    expect(
-      decode('<p>Hello <a href="https://example.com">world</a></p>')
-    ).toBe('Hello [world](https://example.com)')
-    expect(decode('<h2>Key results</h2><ul><li>one</li><li>two</li></ul>')).toBe(
-      '## Key results\n\n-   one\n-   two'
+    expect(decode('<p>Hello <a href="https://example.com">world</a></p>')).toBe(
+      'Hello [world](https://example.com)'
     )
+    expect(
+      decode('<h2>Key results</h2><ul><li>one</li><li>two</li></ul>')
+    ).toBe('## Key results\n\n-   one\n-   two')
   })
 
   it('preserves non-Latin scripts unchanged (no transliteration)', () => {
     const decode = Schema.decodeSync(NormalizedMarkdownSchema)
-    expect(decode('<p>Говорил ли Нильс Бор?</p>')).toBe(
-      'Говорил ли Нильс Бор?'
-    )
+    expect(decode('<p>Говорил ли Нильс Бор?</p>')).toBe('Говорил ли Нильс Бор?')
   })
 
   it('collapses spurious blank-line runs without touching nested-list indentation', () => {

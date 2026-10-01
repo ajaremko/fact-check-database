@@ -90,8 +90,7 @@ export const AtomExtractor = makeExtractionStrategy({
 
       for (const item of toArray(feed.entry)) {
         const link = pickAlternateLink(item.link)
-        const canonicalUrl =
-          link ?? (isUrlShaped(item.id) ? item.id : null)
+        const canonicalUrl = link ?? (isUrlShaped(item.id) ? item.id : null)
         const categories = toArray(item.category)
           .map(categoryText)
           .filter((c): c is string => c !== null)

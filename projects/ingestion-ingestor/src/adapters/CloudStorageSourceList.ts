@@ -24,11 +24,13 @@ const decodeSources = pipe(
 
 export const make = Effect.gen(function* () {
   const uri = yield* Config.string('TARGET_LIST_URI')
-  yield* Effect.logTrace(`Creating source list from ${uri}`)
+  yield* Effect.annotateLogsScoped({ 'sourceList.uri': uri })
   const [buf] = yield* StorageBucket.downloadFile(uri)
   const sources = yield* decodeSources(buf)
+  yield* Effect.annotateLogsScoped({ 'sources.length': sources.length })
+  yield* Effect.logInfo('Source list loaded')
   return SourceList.of({ sources })
-})
+}).pipe(Effect.scoped)
 
 export const layer: Layer.Layer<
   SourceList,

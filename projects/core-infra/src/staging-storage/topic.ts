@@ -38,7 +38,10 @@ export const stagingStorageUploadNofication = new gcp.storage.Notification(
     payloadFormat: 'JSON_API_V1',
     topic: stagingStorageTopic.id,
     eventTypes: ['OBJECT_FINALIZE'],
-    objectNamePrefix: stagingPathPrefix('fact_checks', 1),
+    // The trailing slash matters: GCS matches prefixes as literal strings,
+    // so without it any sibling type such as `v1/type=fact_checks_<x>/`
+    // would also notify the loaders, which can only load batch files.
+    objectNamePrefix: `${stagingPathPrefix('fact_checks', 1)}/`,
     customAttributes: {
       schemaObjectId: factChecksTableDBSchemaObject.name,
     },

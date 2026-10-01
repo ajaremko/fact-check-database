@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@effect/vitest'
-import { Effect } from 'effect'
+import { Effect, HashMap, Logger } from 'effect'
 
 import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
 
@@ -14,6 +14,11 @@ describe('ingestFromSourceTarget', () => {
     () =>
       Effect.gen(function* () {
         const storage = {}
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const result = yield* ingestFromSource({
           ingestorRunId: 'run-1',
           timestamp: 0,
@@ -31,7 +36,21 @@ describe('ingestFromSourceTarget', () => {
               })
             )
           ),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
 
         expect(result).toStrictEqual({
@@ -46,6 +65,19 @@ describe('ingestFromSourceTarget', () => {
         expect(storage).toHaveProperty(
           'v1/records/ingestion/source=baddata/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
         )
+        expect(logs).toStrictEqual([
+          {
+            level: 'WARN',
+            message: ['Source unreachable'],
+            annotations: {
+              'record.object':
+                'v1/records/ingestion/source=baddata/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
+              event: 'fetch_failure',
+              'result.error':
+                'Transport error (GET https://baddata.com/rss.xml)',
+            },
+          },
+        ])
       })
   )
   it.effect(
@@ -53,6 +85,11 @@ describe('ingestFromSourceTarget', () => {
     () =>
       Effect.gen(function* () {
         const storage = {}
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
 
         const result = yield* ingestFromSource({
           ingestorRunId: 'run-1',
@@ -89,7 +126,21 @@ describe('ingestFromSourceTarget', () => {
               })
             )
           ),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
 
         expect(result).toStrictEqual({
@@ -104,6 +155,26 @@ describe('ingestFromSourceTarget', () => {
         expect(storage).toHaveProperty(
           'v1/records/ingestion/source=politifact/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
         )
+        expect(logs).toStrictEqual([
+          {
+            level: 'INFO',
+            message: ['Source fetched'],
+            annotations: {
+              'content.bytes': 10648,
+              'content.sha256':
+                '311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6',
+              'result.final_url': 'https://www.politifact.com/rss/all/',
+              'body.object':
+                'v1/raw/source=politifact/date=1970-01-01/ingestor_run_id=run-1/311512f7305c79593e1732ed514850722c5c80929c371e499c4cc3cb517492c6.bin',
+              'record.object':
+                'v1/records/ingestion/source=politifact/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
+              event: 'fetch_success',
+              'result.status': 'OK',
+              'result.status_code': 200,
+              'result.content_type': 'application/rss+xml; charset=utf-8',
+            },
+          },
+        ])
       })
   )
 
@@ -112,6 +183,11 @@ describe('ingestFromSourceTarget', () => {
     () =>
       Effect.gen(function* () {
         const storage = {}
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
 
         const result = yield* ingestFromSource({
           ingestorRunId: 'run-1',
@@ -140,7 +216,21 @@ describe('ingestFromSourceTarget', () => {
               })
             )
           ),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
 
         expect(result).not.toHaveProperty('content_type')
@@ -151,6 +241,77 @@ describe('ingestFromSourceTarget', () => {
         expect(Object.keys(storage).some((k) => k.includes('/records/'))).toBe(
           true
         )
+      })
+  )
+
+  it.effect(
+    'when the source responds with a non-2xx status, archives it and logs a warning',
+    () =>
+      Effect.gen(function* () {
+        const storage = {}
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
+
+        yield* ingestFromSource({
+          ingestorRunId: 'run-1',
+          timestamp: 0,
+          source: {
+            id: 'politifact',
+            name: 'politifact.com',
+            url: 'https://www.politifact.com/rss/all/',
+            collection: 'rss',
+          },
+        }).pipe(
+          Effect.provide(
+            InMemoryFetcher.layer(
+              FetchSuccessSchema.make({
+                finalUrl: 'https://www.politifact.com/rss/all/',
+                status: 404,
+                headers: {},
+                contentType: 'text/html',
+                etag: null,
+                lastModified: null,
+                bytes: 0,
+                sha256:
+                  'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+                body: new Uint8Array(),
+                error:
+                  'StatusCode: non 2xx status code (404 GET https://www.politifact.com/rss/all/)',
+              })
+            )
+          ),
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
+        )
+
+        expect(logs).toMatchObject([
+          {
+            level: 'WARN',
+            message: ['Source returned an error status'],
+            annotations: {
+              event: 'fetch_success',
+              'result.status': 'Not Found',
+              'result.status_code': 404,
+              'result.content_type': 'text/html',
+            },
+          },
+        ])
       })
   )
 })

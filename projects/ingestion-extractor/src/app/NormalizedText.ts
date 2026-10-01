@@ -79,12 +79,11 @@ function truncateAtWordBoundary(text: string, maxLength: number): string {
 }
 
 /**
- * A short, plain-text preview of Markdown content, safe to store inline
- * even where the full Markdown (uncapped, via `NormalizedMarkdownSchema`)
- * would exceed a downstream document-size limit — the full text is stored
- * separately as a content-addressable blob (see `ContentBlob.ts`) and
- * referenced by `fact_check.sha256`. Plain text has no syntax left to
- * break, so truncating it (unlike Markdown) is safe.
+ * A short, plain-text preview of Markdown content, kept in the row for
+ * research queries. The full article is deliberately not stored anywhere in
+ * the pipeline, since serving it would republish third-party content. Plain
+ * text has no syntax left to break, so truncating it (unlike Markdown) is
+ * safe.
  */
 export function contentPreview(markdown: string): NormalizedMarkdown {
   return NormalizedMarkdownBrand(

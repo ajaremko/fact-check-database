@@ -241,11 +241,11 @@ describe('extractFactChecks', () => {
     })
   )
   it.effect(
-    'writes full Markdown content to blob storage and stores a plain-text preview in the row',
+    'stores a plain-text preview of the content in the row and writes no article file',
     () =>
       Effect.gen(function* () {
         const storage: Record<string, string> = {
-          'content-blob-test.sanitize.yml': `
+          'content-preview-test.sanitize.yml': `
           version: 1
           kind: sanitized_record
           ingestor_run_id: ing-1
@@ -266,12 +266,12 @@ describe('extractFactChecks', () => {
             status_code: 200
             content_type: application/rss+xml
           content:
-            sha256: content-blob-test-sha256
+            sha256: content-preview-test-sha256
             bytes: 1
             sanitized:
               bucket: local
-              object: content-blob-test.bin`,
-          'content-blob-test.bin': `
+              object: content-preview-test.bin`,
+          'content-preview-test.bin': `
           <?xml version="1.0" encoding="utf-8"?>
           <rss version="2.0">
             <channel>
@@ -295,7 +295,7 @@ describe('extractFactChecks', () => {
           extractedAt: 0,
           pointer: {
             bucket: 'inmemory',
-            object: 'content-blob-test.sanitize.yml',
+            object: 'content-preview-test.sanitize.yml',
           },
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
@@ -304,17 +304,12 @@ describe('extractFactChecks', () => {
 
         expect(result).toHaveLength(1)
 
-        // The row stores a short plain-text preview, not the full Markdown.
         expect(result[0].fact_check.content).toBe('A link and bold text.')
-
-        // The full Markdown (with intact link/emphasis syntax — this also
-        // guards against the Html.ts encode-direction regression) is
-        // written to a content-addressable blob keyed by fact_check.sha256.
-        expect(
-          storage[
-            'v1/type=fact_checks_content/sha256=5802ab4c435b26ba50e3ae12b31138d79a5fcec5aac181f99c694288a2871553.md'
-          ]
-        ).toBe('A [link](https://example.com) and **bold** text.')
+        // Only the two inputs are in storage: no full-article file is written
+        expect(Object.keys(storage)).toStrictEqual([
+          'content-preview-test.sanitize.yml',
+          'content-preview-test.bin',
+        ])
       })
   )
   it.effect('when observation is quarantined, returns an empty array', () =>

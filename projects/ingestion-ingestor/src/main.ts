@@ -1,4 +1,15 @@
-import { Config, Effect, Logger, Layer, Schema, Clock, LogLevel } from 'effect'
+import {
+  Cause,
+  Clock,
+  Config,
+  Data,
+  Effect,
+  Layer,
+  Logger,
+  LogLevel,
+  Option,
+  Schema,
+} from 'effect'
 import {
   NodeRuntime,
   NodeFileSystem,
@@ -46,13 +57,17 @@ const sourceList = Layer.unwrapEffect(
       'gcp'
     )
     if (sourceListMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem source list')
+      yield* Effect.logInfo('Source list mode selected').pipe(
+        Effect.annotateLogs({ 'mode.sourceList': sourceListMode })
+      )
       return Layer.empty.pipe(
         Layer.merge(FileSystemSourceList.layer),
         Layer.provide(NodeFileSystem.layer)
       )
     }
-    yield* Effect.logDebug('Using gcs source list')
+    yield* Effect.logInfo('Source list mode selected').pipe(
+      Effect.annotateLogs({ 'mode.sourceList': sourceListMode })
+    )
     return Layer.empty.pipe(
       Layer.merge(CloudStorageSourceList.layer),
       Layer.provide(StorageClient.layer())
@@ -66,13 +81,17 @@ const storage = Layer.unwrapEffect(
   Effect.gen(function* () {
     const storageMode = yield* Config.withDefault(StorageModeConfig, 'gcp')
     if (storageMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem storage')
+      yield* Effect.logInfo('Storage mode selected').pipe(
+        Effect.annotateLogs({ 'mode.storage': storageMode })
+      )
       return Layer.empty.pipe(
         Layer.merge(FileSystemStorageWriterWithNotification.layer('records')),
         Layer.provide(NodeFileSystem.layer)
       )
     }
-    yield* Effect.logDebug('Using gcs storage')
+    yield* Effect.logInfo('Storage mode selected').pipe(
+      Effect.annotateLogs({ 'mode.storage': storageMode })
+    )
     return Layer.empty.pipe(
       Layer.merge(CloudStorageStorageWriter.layer),
       Layer.provide(StorageClient.layer())
@@ -89,13 +108,17 @@ const messaging = Layer.unwrapEffect(
   Effect.gen(function* () {
     const messagingMode = yield* Config.withDefault(MessagingModeConfig, 'gcp')
     if (messagingMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem messaging')
+      yield* Effect.logInfo('Messaging mode selected').pipe(
+        Effect.annotateLogs({ 'mode.messaging': messagingMode })
+      )
       return Layer.empty.pipe(
         Layer.merge(FileSystemPublisher.layer),
         Layer.provide(NodeFileSystem.layer)
       )
     }
-    yield* Effect.logDebug('Using gcp messaging')
+    yield* Effect.logInfo('Messaging mode selected').pipe(
+      Effect.annotateLogs({ 'mode.messaging': messagingMode })
+    )
     return Layer.empty.pipe(
       Layer.merge(CloudPubsubPublisher.layer),
       Layer.provide(PubsubClient.layer())
@@ -161,7 +184,9 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
-      yield* Effect.logDebug('Using local otel configuration')
+      yield* Effect.logInfo('Telemetry mode selected').pipe(
+        Effect.annotateLogs({ 'mode.otel': otelMode })
+      )
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -180,7 +205,9 @@ const otel = Layer.unwrapEffect(
     const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp otel configuration')
+    yield* Effect.logInfo('Telemetry mode selected').pipe(
+      Effect.annotateLogs({ 'mode.otel': otelMode })
+    )
     return NodeSdk.layer(() => ({
       resource: {
         ...resource,
@@ -230,21 +257,26 @@ const job = Layer.effect(
   })
 )
 
+/**
+ * Runs the job with its run-level annotations on every log line, including
+ * the lines logged while the layers above are built.
+ */
 function withJobAnnotations<A, E, R>(self: Effect.Effect<A, E, R>) {
   return Effect.gen(function* () {
     const ctx = yield* JobContext
-    yield* Effect.logInfo(`Starting ingestor job run ${ctx.runId}`)
-    return yield* self.pipe(
-      Effect.withSpan('jobRun'),
-      Effect.annotateLogs({
-        'job.runId': ctx.runId,
-        'job.concurrency': ctx.concurrency,
-        'job.startedAt': ctx.startedAt,
-        'job.successThreshold': ctx.successThreshold,
-      })
-    )
-  })
+    yield* Effect.annotateLogsScoped({
+      'job.runId': ctx.runId,
+      'job.concurrency': ctx.concurrency,
+      'job.startedAt': ctx.startedAt,
+      'job.successThreshold': ctx.successThreshold,
+    })
+    yield* Effect.logInfo('Ingestor job started')
+    return yield* self.pipe(Effect.withSpan('jobRun'))
+  }).pipe(Effect.scoped)
 }
+
+/** Marks a failure that has already been logged as fatal. */
+class IngestorStopped extends Data.TaggedError('IngestorStopped') {}
 
 App.pipe(
   Effect.provide(fetcher),
@@ -253,8 +285,26 @@ App.pipe(
   Effect.provide(messaging),
   Effect.provide(otel),
   withJobAnnotations,
-  Effect.provide(logger),
   Effect.provide(job),
+  // Logged here, while the configured logger is still installed
+  Effect.tapErrorCause((cause) =>
+    Effect.logFatal('Ingestor job stopped', cause)
+  ),
+  Effect.catchAllCause(() => Effect.fail(new IngestorStopped())),
+  Effect.provide(logger),
+  // Only a failure to build the logger itself reaches this point unlogged,
+  // so it falls back to the default logger
+  Effect.tapErrorCause((cause) =>
+    Cause.failureOption(cause).pipe(
+      Option.exists((error) => error instanceof IngestorStopped)
+    )
+      ? Effect.void
+      : Effect.logFatal('Ingestor failed to start', cause)
+  ),
   withMinimumLogLevel,
-  NodeRuntime.runMain({ disablePrettyLogger: true })
+  // every failure is logged above, so the runtime's own report is disabled
+  NodeRuntime.runMain({
+    disablePrettyLogger: true,
+    disableErrorReporting: true,
+  })
 )

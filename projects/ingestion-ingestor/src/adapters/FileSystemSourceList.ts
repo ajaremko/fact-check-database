@@ -22,12 +22,14 @@ const decodeSources = pipe(
 
 export const make = Effect.gen(function* () {
   const sourcesPath = yield* Config.string('TARGET_LIST_PATH')
-  yield* Effect.logTrace(`Creating source list from ${sourcesPath}`)
+  yield* Effect.annotateLogsScoped({ 'sourceList.path': sourcesPath })
   const fs = yield* FileSystem.FileSystem
   const sourcesData = yield* fs.readFile(sourcesPath)
   const sources = yield* decodeSources(sourcesData)
+  yield* Effect.annotateLogsScoped({ 'sources.length': sources.length })
+  yield* Effect.logInfo('Source list loaded')
 
   return SourceList.of({ sources })
-})
+}).pipe(Effect.scoped)
 
 export const layer = Layer.effect(SourceList, make)

@@ -1,10 +1,13 @@
-import { Array, Clock, Context, Effect, Option } from 'effect'
+import { Array, Cause, Clock, Context, Data, Effect, Option } from 'effect'
 
 import { SourceConfig } from '@fact-check-database/ingestion-contracts/config/v1'
+import {
+  IngestionJobCompletedKey,
+  IngestionJobCompletedSchema,
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 
 import { SourceList } from '../ports/SourceList'
 
-import { logIngestionJobCompleted } from './logging'
 import { ingestFromSource } from './ingestFromSource'
 
 export interface JobContext {
@@ -16,24 +19,43 @@ export interface JobContext {
 
 export const JobContext = Context.GenericTag<JobContext>('JobContext')
 
+/** The run's share of successfully ingested sources fell below `successThreshold`. */
+export class SuccessThresholdNotMet extends Data.TaggedError(
+  'SuccessThresholdNotMet'
+)<{
+  readonly successRate: number
+  readonly successThreshold: number
+}> {}
+
 function processTarget(source: SourceConfig, index: number) {
   return Effect.gen(function* () {
+    yield* Effect.annotateLogsScoped({
+      'source.index': index,
+      'source.id': source.id,
+      'source.name': source.name,
+      'source.url': source.url,
+      'source.collection': source.collection,
+    })
     const job = yield* JobContext
     const timestamp = yield* Clock.currentTimeMillis
-    yield* Effect.logDebug(`Requesting content from source ${index + 1}`)
 
     yield* ingestFromSource({
       ingestorRunId: job.runId,
       timestamp,
       source,
-    })
-  }).pipe(
-    Effect.tapErrorCause(Effect.logError),
-    Effect.annotateLogs({
-      'source.index': index,
-    }),
-    Effect.withSpan('processTarget')
-  )
+    }).pipe(
+      Effect.tapErrorCause((cause) =>
+        Effect.logError('Source ingestion failed', cause).pipe(
+          Effect.annotateLogs({
+            'error._tag': Option.match(Cause.failureOption(cause), {
+              onNone: () => 'Defect',
+              onSome: (error) => error._tag,
+            }),
+          })
+        )
+      )
+    )
+  }).pipe(Effect.scoped, Effect.withSpan('processTarget'))
 }
 
 export const App = Effect.gen(function* () {
@@ -41,7 +63,6 @@ export const App = Effect.gen(function* () {
   const { sources } = yield* SourceList
 
   // process all targets with configured concurrency
-  yield* Effect.logDebug(`Processing ${sources.length} targets`)
   const tasks = Array.map(sources, processTarget)
   const results = yield* Effect.all(tasks, {
     concurrency: ctx.concurrency,
@@ -50,28 +71,33 @@ export const App = Effect.gen(function* () {
 
   // compute success rate
   const successes = Array.filterMap(results, Option.getRight)
-  yield* Effect.logDebug(
-    `Processed ${successes.length} of ${sources.length} targets`
-  )
-
   const successRate = successes.length / sources.length
   const result = successRate >= ctx.successThreshold ? 'success' : 'failure'
 
-  yield* logIngestionJobCompleted({
-    event: 'ingestor_job_completed',
-    'job.successRate': successRate,
-    'job.tasks': tasks.length,
-    'job.successes': successes.length,
-    'job.failures': tasks.length - successes.length,
-    'job.result': result,
-  })
+  // The event fields feed the ingestion dashboards, which count one line per
+  // event, so they are attached to this line only rather than scoped
+  const completed =
+    result === 'success'
+      ? Effect.logInfo('Ingestor job completed')
+      : Effect.logError('Ingestor job completed')
+  yield* completed.pipe(
+    Effect.annotateLogs(
+      IngestionJobCompletedSchema.make({
+        event: IngestionJobCompletedKey,
+        'job.successRate': successRate,
+        'job.tasks': tasks.length,
+        'job.successes': successes.length,
+        'job.failures': tasks.length - successes.length,
+        'job.result': result,
+      })
+    )
+  )
 
   // fail if below threshold
   if (result === 'failure') {
-    yield* Effect.fail(
-      new Error(
-        `Success rate ${successRate} is below threshold ${ctx.successThreshold}`
-      )
-    )
+    return yield* new SuccessThresholdNotMet({
+      successRate,
+      successThreshold: ctx.successThreshold,
+    })
   }
 })

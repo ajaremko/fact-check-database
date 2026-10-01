@@ -96,10 +96,12 @@ Exported as stack outputs:
 
 The hand-off point between the ingestion domain and the analysis and website domains: a GCS
 bucket (`core-staging-bucket`), a Pub/Sub topic that fires on every finalized object under the
-`fact_checks` path prefix, and a JSON object describing the BigQuery schema those objects
+`v1/type=fact_checks/` path prefix, and a JSON object describing the BigQuery schema those objects
 conform to. `ingestion-infra`'s extractor writes batches here; `analysis-infra`'s staging loader
 and `website-infra`'s search loader each subscribe to the topic directly, from their own
-projects.
+projects. The prefix ends in a slash on purpose: GCS matches prefixes as literal strings, so
+without it any sibling path such as `v1/type=fact_checks_<x>/` would also notify the loaders,
+which can only load batch files.
 
 Exported as stack outputs:
 

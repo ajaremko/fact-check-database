@@ -11,6 +11,12 @@ import {
   SourceConfigEncoded,
   SourceConfigSchema,
 } from '@fact-check-database/ingestion-contracts/config/v1'
+import {
+  IngestionFailedKey,
+  IngestionFailedSchema,
+  IngestionSucceededKey,
+  IngestionSucceededSchema,
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 import { omitNullKeys } from '@fact-check-database/core-data'
 import { writeFile } from '@fact-check-database/core-io'
 
@@ -23,7 +29,6 @@ import {
   ObservationPathSchema,
 } from './Observation'
 import { FetchedBodySchema, FetchedBodyPathSchema } from './FetchedBody'
-import { logIngestionFailed, logIngestionSucceeded } from './logging'
 
 const encodeObservation = pipe(
   ObservationSchema,
@@ -53,17 +58,9 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     source: SourceConfigEncoded
   }) {
     const ctx = yield* decodeContext(args)
-
-    yield* Effect.logTrace('Fetching data from source target')
     const result = yield* fetch(ctx.source, ctx.timestamp)
 
     if (result._tag === 'FetchFailure') {
-      // Record the failure for monitoring purposes
-      yield* logIngestionFailed({
-        event: 'fetch_failure',
-        'result.error': String(result.error),
-      })
-
       yield* Metric.increment(contentRequestResults).pipe(
         Effect.tagMetrics({
           result_status: 'Client Failure',
@@ -83,7 +80,6 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       })
 
       // Encode to a record of the failed attempt, without a pointer
-      yield* Effect.logTrace('Writing fetch failure record')
       const recordPath = yield* encodeObservationPath(observation)
       const recordData = yield* encodeObservation(observation)
       const recordMeta = yield* encodeObservationMetadata(observation)
@@ -95,10 +91,31 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
         meta: recordMeta,
         contentType: 'application/yaml',
       })
+      yield* Effect.annotateLogsScoped({
+        'record.object': recordPointer.object,
+      })
+
+      // The event fields feed the ingestion dashboards, which count one line
+      // per event, so they are attached to this line only rather than scoped
+      yield* Effect.logWarning('Source unreachable').pipe(
+        Effect.annotateLogs(
+          IngestionFailedSchema.make({
+            event: IngestionFailedKey,
+            'result.error': String(result.error),
+          })
+        )
+      )
 
       // Return a pointer to the attempt record, since there is no body to archive
       return recordPointer
     }
+
+    yield* Effect.annotateLogsScoped({
+      'result.status_code': result.status,
+      'content.bytes': result.bytes,
+      'content.sha256': result.sha256,
+      'result.final_url': result.finalUrl,
+    })
 
     // For a successful fetch, we need to archive the body
     const fetchedBody = FetchedBodySchema.make({
@@ -111,10 +128,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     })
 
     // Write the raw response body to the archive
-    yield* Effect.logTrace('Writing raw response body')
     const bodyPath = yield* encodeFetchedBodyPath(fetchedBody)
-
-    // write the body to storage
     const bodyPointer = yield* writeFile(
       omitNullKeys({
         path: bodyPath,
@@ -122,6 +136,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
         contentType: fetchedBody.contentType,
       })
     )
+    yield* Effect.annotateLogsScoped({ 'body.object': bodyPointer.object })
 
     // We have archived the body so we create an
     // observation with a pointer to the body
@@ -133,26 +148,18 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       pointer: bodyPointer,
     })
 
-    // Write a record of the successful attempt, including a
-    // pointer to the archived body
-    yield* logIngestionSucceeded({
-      event: 'fetch_success',
-      'result.status': getReasonPhrase(result.status),
-      'result.status_code': result.status,
-      'result.content_type': result.contentType || 'unknown',
-    })
-
     const recordPath = yield* encodeObservationPath(observation)
     const recordData = yield* encodeObservation(observation)
     const recordMeta = yield* encodeObservationMetadata(observation)
 
-    // write the record to storage
+    // Write a record of the attempt, including a pointer to the archived body
     const recordPointer = yield* writeFile({
       path: recordPath,
       data: recordData,
       meta: recordMeta,
       contentType: 'application/yaml',
     })
+    yield* Effect.annotateLogsScoped({ 'record.object': recordPointer.object })
 
     // Record the response code for sent requests to
     // allow monitoring of source health
@@ -164,18 +171,32 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       })
     )
 
+    // The event fields feed the ingestion dashboards, which count one line
+    // per event, so they are attached to this line only rather than scoped.
+    // A non-2xx response is still archived, so it keeps the same event but
+    // is logged at warning.
+    const outcome =
+      result.status >= 200 && result.status < 300
+        ? Effect.logInfo('Source fetched')
+        : Effect.logWarning('Source returned an error status')
+    yield* outcome.pipe(
+      Effect.annotateLogs(
+        IngestionSucceededSchema.make({
+          event: IngestionSucceededKey,
+          'result.status': getReasonPhrase(result.status),
+          'result.status_code': result.status,
+          'result.content_type': result.contentType || 'unknown',
+        })
+      )
+    )
+
     // Return a pointer to the attempt record, which
     // references the archived body
     return recordPointer
   },
+  Effect.scoped,
   (effect, args) =>
     effect.pipe(
-      Effect.annotateLogs({
-        'source.id': args.source.id,
-        'source.name': args.source.name,
-        'source.url': args.source.url,
-        'source.collection': args.source.collection,
-      }),
       Effect.tagMetrics({
         source_name: args.source.name,
         source_collection: args.source.collection,

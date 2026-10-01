@@ -21,7 +21,7 @@ The extractor turns fetched, sanitized RSS/Atom feed content into structured `Fa
   feed produces one row per fetch — the staging table is an observation log. Collapsing observations
   into one record per fact check is the analysis domain's curated `MERGE` (see
   [analysis-infra](../analysis-infra/README.md#curated-dataset)).
-- Parse HTML/XHTML article bodies into structured content — `content` is captured as-is (may include raw markup) when the feed exposes it as plain text; structurally nested content (e.g. Atom `type="xhtml"`) is left unparsed
+- Store or republish full article bodies. HTML in `summary` and `content` is converted to Markdown, and `content` is then reduced to a 500-character plain-text preview for research queries. Structurally nested content (e.g. Atom `type="xhtml"`) is left unparsed
 
 ## Supported feed fields
 
@@ -59,7 +59,6 @@ projects/ingestion-extractor/
 │   │   ├── writeBatch.ts                # NDJSON batch write
 │   │   ├── NormalizedText.ts            # Size-bounded, Unicode-normalized string schema
 │   │   ├── NumberFromDate.ts            # Date <-> epoch-ms schema
-│   │   ├── ContentBlob.ts               # Content-addressed (sha256) blob path, written per fact-check
 │   │   └── logging/                     # Structured job/event log helpers
 │   └── integration/
 │       └── extraction-strategy/         # Pure feed-parsing logic, one file per format
@@ -92,12 +91,12 @@ Seven spec files cover both extraction strategies against real-world feed quirks
 cp projects/ingestion-extractor/.env.template projects/ingestion-extractor/.env
 ```
 
-| Variable                    | Purpose                                                                                                  |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `STORAGE_MODE=filesystem`   | Read/write the archive and staging output on a local directory instead of GCS                            |
-| `STORAGE_OUTPUT_DIR`        | Directory batches and content blobs are written to (also where sanitizer/ingestor records are read from) |
-| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory                                                              |
-| `MESSAGE_QUEUE_INPUT_DIR`   | Directory to populate with notification JSON files (e.g. from a local sanitizer run)                     |
+| Variable                    | Purpose                                                                                |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `STORAGE_MODE=filesystem`   | Read/write the archive and staging output on a local directory instead of GCS          |
+| `STORAGE_OUTPUT_DIR`        | Directory batches are written to (also where sanitizer/ingestor records are read from) |
+| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory                                            |
+| `MESSAGE_QUEUE_INPUT_DIR`   | Directory to populate with notification JSON files (e.g. from a local sanitizer run)   |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 

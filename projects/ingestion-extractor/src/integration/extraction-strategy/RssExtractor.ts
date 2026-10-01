@@ -86,7 +86,8 @@ function unwrapGuid(guid: typeof GuidSchema.Type | undefined): {
   isPermaLink: boolean
 } {
   if (guid === undefined) return { value: null, isPermaLink: true }
-  if (typeof guid === 'string') return { value: guid || null, isPermaLink: true }
+  if (typeof guid === 'string')
+    return { value: guid || null, isPermaLink: true }
   return {
     value: guid['#text'] || null,
     isPermaLink: guid.isPermaLink !== 'false',
@@ -161,7 +162,10 @@ export const RssExtractor = makeExtractionStrategy({
           content: item['content:encoded'] ?? null,
           language: channelLanguage,
           enclosureUrl: pickEnclosureUrl(item.enclosure),
-          imageUrl: pickImageUrl(item['media:thumbnail'], item['media:content']),
+          imageUrl: pickImageUrl(
+            item['media:thumbnail'],
+            item['media:content']
+          ),
           publishedAtRaw: item.pubDate ?? null,
         })
         extractedFactChecks.push(factCheck)
