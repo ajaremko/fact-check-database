@@ -16,12 +16,16 @@ const decodePolicy = pipe(
 
 export const make = Effect.gen(function* () {
   const path = yield* Config.string('SANITIZER_POLICY_PATH')
-
-  yield* Effect.logTrace(`Reading sanitizer policy from path: ${path}`)
+  yield* Effect.annotateLogsScoped({ 'policy.path': path })
   const fs = yield* FileSystem.FileSystem
   const buf = yield* fs.readFile(path)
   const policy = yield* decodePolicy(buf)
+  yield* Effect.annotateLogsScoped({
+    'policy.version': policy.version,
+    'policy.collections.length': policy.collections.length,
+  })
+  yield* Effect.logInfo('Sanitizer policy loaded')
   return SanitizerPolicyConfig.of(policy)
-})
+}).pipe(Effect.scoped)
 
 export const layer = Layer.effect(SanitizerPolicyConfig, make)

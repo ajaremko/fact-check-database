@@ -170,4 +170,50 @@ describe('HttpServerMessageQueueFeeder', () => {
         )
       )
   )
+  it.effect('message carries the delivery attempt when Pub/Sub sends one', () =>
+    Effect.gen(function* () {
+      const server = yield* HttpServerMessageQueueFeeder.layer('/test').pipe(
+        Layer.launch,
+        Effect.forkDaemon
+      )
+
+      const request = yield* HttpClientRequest.post(
+        'http://localhost:3000/test'
+      ).pipe(
+        HttpClientRequest.bodyJson({
+          message: {
+            data: Buffer.from('test').toString('base64'),
+            messageId: 'test-message-id',
+            publishTime: '2026-10-01T00:00:00.000Z',
+          },
+          subscription: 'test-subscription',
+          deliveryAttempt: 3,
+        }),
+        Effect.andThen(HttpClient.execute),
+        Effect.fork
+      )
+
+      const { messages } = yield* MessageQueue
+      const message = yield* messages.take
+      yield* message.ack
+
+      yield* Fiber.join(request)
+      yield* Fiber.interrupt(server)
+
+      expect(message.message.deliveryAttempt).toBe(3)
+      expect(message.annotations).toStrictEqual({
+        adapter: 'HttpServerMessageQueueFeeder',
+        'request.url': '/test',
+        'request.method': 'POST',
+        'message.messageId': 'test-message-id',
+        'message.deliveryAttempt': 3,
+      })
+    }).pipe(
+      Effect.provide(InMemoryMessageQueue.layer),
+      Effect.provide(NodeHttpClient.layer),
+      Effect.withConfigProvider(
+        ConfigProvider.fromMap(new Map([['PORT', '3000']]))
+      )
+    )
+  )
 })

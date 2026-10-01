@@ -10,6 +10,10 @@ import {
   TimestampEncoded,
   TimestampSchema,
 } from '@fact-check-database/ingestion-contracts/shared/v1'
+import {
+  RecordSanitizedKey,
+  RecordSanitizedSchema,
+} from '@fact-check-database/ingestion-contracts/logging/v1'
 import { readFile, writeFile } from '@fact-check-database/core-io'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
@@ -22,7 +26,6 @@ import {
 } from './SanitizedObservation'
 import { ObservationSchema } from './Observation'
 import { evaluatePolicy } from './evaluatePolicy'
-import { logRecordSanitized } from './logging'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -45,7 +48,7 @@ const encodeSanitizedObservationPath = Schema.encode(
   SanitizedObservationPathSchema
 )
 
-const decodeArgs = Schema.decodeSync(
+const decodeArgs = Schema.decode(
   Schema.Struct({
     policy: SanitizerPolicy,
     pointer: FilePointerSchema,
@@ -61,14 +64,26 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
     pointer: FilePointer
     timestamp: TimestampEncoded
   }) {
-    const ctx = decodeArgs(args)
+    yield* Effect.annotateLogsScoped({
+      'input.bucket': args.pointer.bucket,
+      'input.object': args.pointer.object,
+    })
+    const ctx = yield* decodeArgs(args)
 
-    yield* Effect.logDebug(`Reading observation from pointer`)
     const inputRecordData = yield* readFile(ctx.pointer)
     const observation = yield* decodeObservation(inputRecordData)
+    yield* Effect.annotateLogsScoped({
+      'source.id': observation.source.id,
+      'source.name': observation.source.name,
+      'source.url': observation.source.url,
+      'source.collection': observation.source.collection,
+    })
 
-    yield* Effect.logDebug(`Evaluating policy for observation`)
     const decision = evaluatePolicy(ctx.policy, observation)
+    yield* Effect.annotateLogsScoped({
+      'decision.label': decision.label,
+      'decision.actions': decision.actions.join(','),
+    })
 
     yield* Metric.increment(contentRecordsSanitized).pipe(
       Effect.tagMetrics({
@@ -78,7 +93,6 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       })
     )
 
-    yield* Effect.logDebug(`Observation labeled: ${decision.label}`)
     const sanitizedObservation = new SanitizedObservation({
       ingestorRunId: observation.ingestorRunId,
       fetchedAt: observation.fetchedAt,
@@ -98,16 +112,6 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       error: decision.error,
     })
 
-    yield* logRecordSanitized({
-      event: 'record_sanitized',
-      'decision.label': decision.label,
-      'decision.error': decision.error,
-      'source.collection': observation.source.collection,
-      'source.id': observation.source.id,
-      'source.name': observation.source.name,
-      'source.url': observation.source.url,
-    })
-
     // Encode a record of the sanitization with a pointer
     // to the raw response and sanitized record if applicable.
     const recordPath = yield* encodeSanitizedObservationPath(
@@ -123,14 +127,26 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       data: recordData,
       meta: recordMetadata,
     })
+    yield* Effect.annotateLogsScoped({ 'record.object': recordPointer.object })
+
+    // The event fields feed the ingestion dashboard, which counts one line per
+    // event at info, so they are attached to this line only rather than
+    // scoped. Every decision label, quarantines included, is logged at info.
+    yield* Effect.logInfo('Record sanitized').pipe(
+      Effect.annotateLogs(
+        RecordSanitizedSchema.make({
+          event: RecordSanitizedKey,
+          'decision.label': decision.label,
+          'decision.error': decision.error,
+          'source.collection': observation.source.collection,
+          'source.id': observation.source.id,
+          'source.name': observation.source.name,
+          'source.url': observation.source.url,
+        })
+      )
+    )
 
     return recordPointer
   },
-  (effect, args) =>
-    effect.pipe(
-      Effect.annotateLogs({
-        'pointer.bucket': args.pointer.bucket,
-        'pointer.object': args.pointer.object,
-      })
-    )
+  Effect.scoped
 )

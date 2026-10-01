@@ -1,4 +1,13 @@
-import { Config, Effect, Logger, Layer, LogLevel } from 'effect'
+import {
+  Cause,
+  Config,
+  Data,
+  Effect,
+  Layer,
+  Logger,
+  LogLevel,
+  Option,
+} from 'effect'
 import { NodeRuntime, NodeFileSystem } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
@@ -41,14 +50,18 @@ const sanitizerPolicy = Layer.unwrapEffect(
     )
 
     if (sanitizerPolicyMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem sanitizer policy document')
+      yield* Effect.logInfo('Sanitizer policy mode selected').pipe(
+        Effect.annotateLogs({ 'mode.sanitizerPolicy': sanitizerPolicyMode })
+      )
       return Layer.empty.pipe(
         Layer.merge(FileSystemSanitizerPolicyDocument.layer),
         Layer.provide(NodeFileSystem.layer)
       )
     }
 
-    yield* Effect.logDebug('Using gcs sanitizer policy document')
+    yield* Effect.logInfo('Sanitizer policy mode selected').pipe(
+      Effect.annotateLogs({ 'mode.sanitizerPolicy': sanitizerPolicyMode })
+    )
     return Layer.empty.pipe(
       Layer.merge(CloudStorageSanitizerPolicyDocument.layer),
       Layer.provide(StorageClient.layer())
@@ -65,14 +78,18 @@ const storage = Layer.unwrapEffect(
   Effect.gen(function* () {
     const storageMode = yield* Config.withDefault(StorageModeConfig, 'gcp')
     if (storageMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem storage')
+      yield* Effect.logInfo('Storage mode selected').pipe(
+        Effect.annotateLogs({ 'mode.storage': storageMode })
+      )
       return Layer.empty.pipe(
         Layer.merge(FileSystemStorageWriterWithNotification.layer('records')),
         Layer.merge(FileSystemStorageReader.layer),
         Layer.provide(NodeFileSystem.layer)
       )
     }
-    yield* Effect.logDebug('Using gcs storage')
+    yield* Effect.logInfo('Storage mode selected').pipe(
+      Effect.annotateLogs({ 'mode.storage': storageMode })
+    )
     return Layer.empty.pipe(
       Layer.merge(CloudStorageStorageWriter.layer),
       Layer.merge(CloudStorageStorageReader.layer),
@@ -90,13 +107,17 @@ const messaging = Layer.unwrapEffect(
   Effect.gen(function* () {
     const messagingMode = yield* Config.withDefault(MessagingModeConfig, 'gcp')
     if (messagingMode === 'filesystem') {
-      yield* Effect.logDebug('Using filesystem messaging')
+      yield* Effect.logInfo('Messaging mode selected').pipe(
+        Effect.annotateLogs({ 'mode.messaging': messagingMode })
+      )
       return Layer.empty.pipe(
         Layer.merge(FileSystemPublisher.layer),
         Layer.provide(NodeFileSystem.layer)
       )
     }
-    yield* Effect.logDebug('Using gcp messaging')
+    yield* Effect.logInfo('Messaging mode selected').pipe(
+      Effect.annotateLogs({ 'mode.messaging': messagingMode })
+    )
     return Layer.empty.pipe(
       Layer.merge(CloudPubsubPublisher.layer),
       Layer.provide(PubsubClient.layer())
@@ -126,7 +147,9 @@ const otel = Layer.unwrapEffect(
     )
 
     if (otelMode === 'local') {
-      yield* Effect.logDebug('Using local otel configuration')
+      yield* Effect.logInfo('Telemetry mode selected').pipe(
+        Effect.annotateLogs({ 'mode.otel': otelMode })
+      )
       return NodeSdk.layer(() => ({
         resource: { serviceName },
         spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
@@ -145,7 +168,9 @@ const otel = Layer.unwrapEffect(
     const resource = new GcpDetectorSync().detect()
     const instanceId = yield* cloudRunInstanceId
 
-    yield* Effect.logDebug('Using gcp otel configuration')
+    yield* Effect.logInfo('Telemetry mode selected').pipe(
+      Effect.annotateLogs({ 'mode.otel': otelMode })
+    )
     return NodeSdk.layer(() => ({
       resource: {
         ...resource,
@@ -203,10 +228,11 @@ const logger = Layer.unwrapEffect(
 
 function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
   return Effect.gen(function* () {
-    yield* Effect.logInfo('Starting message queue feeder')
     const messagingMode = yield* Config.withDefault(MessagingModeConfig, 'gcp')
     if (messagingMode === 'filesystem') {
-      yield* Effect.logInfo('Using filesystem message queue feeder')
+      yield* Effect.logInfo('Message queue feeder selected').pipe(
+        Effect.annotateLogs({ 'mode.messageQueueFeeder': 'filesystem' })
+      )
       const layer = Layer.empty.pipe(
         Layer.merge(FilesystemMessageQueueFeeder.layer),
         Layer.provide(NodeFileSystem.layer)
@@ -215,7 +241,9 @@ function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
         concurrency: 'unbounded',
       })
     }
-    yield* Effect.logInfo('Using http server message queue feeder')
+    yield* Effect.logInfo('Message queue feeder selected').pipe(
+      Effect.annotateLogs({ 'mode.messageQueueFeeder': 'http' })
+    )
     const server = HttpServerMessageQueueFeeder.layer(
       '/ingestor-topic-messages'
     )
@@ -225,13 +253,32 @@ function withMessageQueueFeeder<A, E, R>(self: Effect.Effect<A, E, R>) {
   })
 }
 
+/** Marks a failure that has already been logged as fatal. */
+class SanitizerStopped extends Data.TaggedError('SanitizerStopped') {}
+
 withMessageQueueFeeder(App).pipe(
   Effect.provide(sanitizerPolicy),
   Effect.provide(storage),
   Effect.provide(messaging),
   Effect.provide(otel),
+  // Logged here, while the configured logger is still installed
+  Effect.tapErrorCause((cause) => Effect.logFatal('Sanitizer stopped', cause)),
+  Effect.catchAllCause(() => Effect.fail(new SanitizerStopped())),
   Effect.provide(logger),
+  // Only a failure to build the logger itself reaches this point unlogged,
+  // so it falls back to the default logger
+  Effect.tapErrorCause((cause) =>
+    Cause.failureOption(cause).pipe(
+      Option.exists((error) => error instanceof SanitizerStopped)
+    )
+      ? Effect.void
+      : Effect.logFatal('Sanitizer failed to start', cause)
+  ),
   Effect.provide(InMemoryMessageQueue.layer),
   withMinimumLogLevel,
-  NodeRuntime.runMain({ disablePrettyLogger: true })
+  // every failure is logged above, so the runtime's own report is disabled
+  NodeRuntime.runMain({
+    disablePrettyLogger: true,
+    disableErrorReporting: true,
+  })
 )

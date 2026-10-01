@@ -78,6 +78,11 @@ export function layer(path: HttpRouter.PathInput) {
       yield* Effect.annotateLogsScoped({
         'message.messageId': payload.message.messageId,
       })
+      if (payload.deliveryAttempt !== undefined) {
+        yield* Effect.annotateLogsScoped({
+          'message.deliveryAttempt': payload.deliveryAttempt,
+        })
+      }
       const messageData = yield* decodePubsubMessagePayloadData(
         payload.message.data
       )
@@ -87,6 +92,9 @@ export function layer(path: HttpRouter.PathInput) {
         attributes: payload.message.attributes,
         messageId: payload.message.messageId,
         publishTime: payload.message.publishTime,
+        ...(payload.deliveryAttempt === undefined
+          ? {}
+          : { deliveryAttempt: payload.deliveryAttempt }),
       }
       return yield* enqueueHttpMessage(messageBody).pipe(
         Effect.withSpan('processHttpRequest')

@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@effect/vitest'
-import { Effect } from 'effect'
+import { Effect, HashMap, Logger } from 'effect'
 
 import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
 import * as InMemoryStorageReader from '@fact-check-database/core-io/adapters/InMemoryStorageReader'
@@ -11,6 +11,11 @@ describe('sanitizeObservation', () => {
     'quarantines and writes a sanitizer record for non-data_fetched (no_response) records',
     () =>
       Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const storage: Record<string, string> = {
           '9bc46db65960ee6554a644a4abdf7c954146a6ba4843ee067dad576c01a8ceab.yml': `
             version: 1
@@ -48,7 +53,21 @@ describe('sanitizeObservation', () => {
           timestamp: 0,
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
 
         expect(result).toStrictEqual({
@@ -56,6 +75,21 @@ describe('sanitizeObservation', () => {
           object:
             'v1/records/sanitizer/source=baddata/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml',
         })
+        // A quarantine is a normal policy outcome, logged at info like any
+        // other decision
+        expect(logs).toMatchObject([
+          {
+            level: 'INFO',
+            message: ['Record sanitized'],
+            annotations: {
+              event: 'record_sanitized',
+              'decision.label': 'QUARANTINED',
+              'source.id': 'baddata',
+              'record.object':
+                'v1/records/sanitizer/source=baddata/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml',
+            },
+          },
+        ])
       })
   )
 
@@ -63,6 +97,11 @@ describe('sanitizeObservation', () => {
     'writes sanitizer record and returns event for data_fetched records',
     () =>
       Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
         const storage: Record<string, string> = {
           '50d94538a271e9af89a43eedddd173552cad9f8b0a24bbe317246979c74bd75a.sanitize.yml': `
             version: 1
@@ -113,7 +152,21 @@ describe('sanitizeObservation', () => {
           timestamp: 0,
         }).pipe(
           Effect.provide(InMemoryStorageReader.layer(storage)),
-          Effect.provide(InMemoryStorageWriter.layer(storage))
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
         )
 
         expect(result).toStrictEqual({
@@ -121,6 +174,19 @@ describe('sanitizeObservation', () => {
           object:
             'v1/records/sanitizer/source=factcheck/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml',
         })
+        expect(logs).toMatchObject([
+          {
+            level: 'INFO',
+            message: ['Record sanitized'],
+            annotations: {
+              event: 'record_sanitized',
+              'decision.label': 'SAFE_PUBLIC',
+              'source.id': 'factcheck',
+              'record.object':
+                'v1/records/sanitizer/source=factcheck/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml',
+            },
+          },
+        ])
       })
   )
 })

@@ -130,22 +130,67 @@ The path mirrors the `IngestionRecord` it was derived from — `source` + `inges
 
 ## Logging
 
-This service's own code uses three levels, never `warning` and almost never `trace`:
+This service's own code logs only at `info` and above. `trace` and `debug` belong to the shared
+libraries it runs on, so `LOGGING_LEVEL` works as a dial for how deep to look.
 
-| Level   | Used for                                                                                                                                                                       |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `trace` | Policy-document construction only (`Reading sanitizer policy from path: ...`), in the filesystem adapter                                                                       |
-| `debug` | Startup mode selection, and per-message steps (`Listening for messages...`, `Reading observation from pointer`, `Evaluating policy for observation`, `Observation labeled: X`) |
-| `info`  | `Sanitizing observation` at the start of each message, and `Record sanitized` (with `decision.label`, `decision.error`, and `source.*` annotations) at the end                 |
-| `error` | A message's full failure cause, dumped via `Effect.tapErrorCause(Effect.logError)`; also used for message-queue-level errors                                                   |
+### Levels this service uses
 
-`core-io` (which every storage/messaging call in this app goes through) separately logs at `trace`/`warning` only, and `core-data` logs nothing — see each package's own README.
+| Level   | Used for                                                                                                                                                                                                                                                                                                                                                          |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `info`  | Startup: one `… mode selected` line per component (`mode.sanitizerPolicy`, `mode.storage`, `mode.messaging`, `mode.otel`), `Message queue feeder selected`, `Sanitizer policy loaded` and `Listening for messages`. Per message: `Message received`, then `Record sanitized` once the sanitizer record is written, for every decision label, quarantines included |
+| `warn`  | `Message redelivered`: Pub/Sub's delivery attempt for this message is above 1                                                                                                                                                                                                                                                                                     |
+| `error` | `Sanitization failed`: one line per failed message, with `error._tag`, `message.outcome` and the failure attached as the log's cause                                                                                                                                                                                                                              |
+| `fatal` | `Sanitizer stopped`: the service is exiting, because the message queue failed or startup failed (e.g. the policy document couldn't be read). `Sanitizer failed to start` only if the logger itself couldn't be configured                                                                                                                                         |
+
+Every message ends in exactly one outcome line: `Record sanitized` or `Sanitization failed`. A
+failure's `message.outcome` says what happened to the message:
+
+| `error._tag`                            | `message.outcome` | Meaning                                                                       |
+| --------------------------------------- | ----------------- | ----------------------------------------------------------------------------- |
+| `ParseError`                            | `ack`             | Dropped for good: retrying an unparseable message or record can't succeed     |
+| `StorageReadError`, `StorageWriteError` | `nack`            | Retried by Pub/Sub, and dead-lettered after the subscription's limit          |
+| `Defect` or any other tag               | `nack`            | An unexpected failure. Retried, then dead-lettered; the service keeps running |
+
+### Choosing `LOGGING_LEVEL`
+
+| Level   | What you see                                                                                                                                                      | Use it when                                                            |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `info`  | This service's own lines above: two lines per message                                                                                                             | Normal operation (the default)                                         |
+| `debug` | Adds the libraries' unexpected conditions: every failed SDK call, with `module`, `error._tag` and the SDK status code as `cause.code`, and rejected push requests | A message fails and you need to know which storage call failed and how |
+| `trace` | Adds every library step: push requests handled, files read and written                                                                                            | Something hangs or behaves oddly and you need the exact call sequence  |
+
+The library levels are documented in the [core-io](../../core-io/README.md#logging) and
+[core-vendor](../../core-vendor/README.md#logging) READMEs.
+
+### Annotations
+
+| Key                                                                             | Set on                                                                                           |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `message.messageId`, `message.deliveryAttempt`, `request.url`, `request.method` | Every line for a message pushed over HTTP (carried from core-io's feeder)                        |
+| `input.bucket`, `input.object`                                                  | Every line for a message, once its notification is decoded: the ingestion record being sanitized |
+| `source.id`, `source.name`, `source.url`, `source.collection`                   | `Record sanitized`                                                                               |
+| `decision.label`, `decision.actions`                                            | `Record sanitized`                                                                               |
+| `record.object`                                                                 | `Record sanitized`: the sanitizer record written                                                 |
+| `policy.uri` or `policy.path`, `policy.version`, `policy.collections.length`    | `Sanitizer policy loaded`                                                                        |
+| `error._tag`, `message.outcome`                                                 | `Sanitization failed`                                                                            |
+
+### Dashboard event
+
+`Record sanitized` also carries the `record_sanitized` payload from `ingestion-contracts`'
+`logging/v1`, which an `ingestion-infra` dashboard queries. It is a contract:
+
+- The dashboard filters on `severity = 'INFO'`, so the line stays at `info` for every decision
+  label. A quarantine is a normal policy outcome, not a warning; logging it higher would drop it
+  from the panel.
+- It reads `source.*` and `decision.label`, so those field names are fixed.
+- The payload is attached to that one line only, never as a scoped annotation, so the dashboard
+  counts each record once.
 
 ## Diagnosing failures
 
 ### High volume of parse failures
 
-**Symptom:** messages are acknowledged without producing sanitizer records; `ParseError` appears in the logged cause.
+**Symptom:** `Sanitization failed` lines with `error._tag: ParseError` and `message.outcome: ack`. These messages are dropped, so no sanitizer record is written for them.
 **Steps:**
 
 1. Confirm the message actually is a GCS object-finalized-style notification with `bucketId`/`objectId` attributes — not some other message shape.
@@ -153,16 +198,19 @@ This service's own code uses three levels, never `warning` and almost never `tra
 
 ### Messages redelivered repeatedly (nack loop)
 
-**Symptom:** the same message keeps reappearing; `StorageReadError` or `StorageWriteError` appears in the logged cause.
+**Symptom:** `Message redelivered` warnings with a rising `message.deliveryAttempt`, and `Sanitization failed` lines with `error._tag` `StorageReadError` or `StorageWriteError` and `message.outcome: nack` for the same `message.messageId`.
 **Steps:**
 
 1. For a read failure: verify the service account has `storage.objects.get` on the archive bucket, and that the object referenced by the notification's `bucketId`/`objectId` actually exists — if the ingestor's own write failed, it won't.
 2. For a write failure: verify `storage.objects.create` on the archive bucket, and check bucket quotas/availability.
-3. Once the underlying issue is fixed, the next redelivery should succeed.
+3. To see which storage call failed and with what status code, set `LOGGING_LEVEL=debug` and filter on the same `message.messageId`.
+4. Once the underlying issue is fixed, the next redelivery should succeed.
+
+The same pattern with `error._tag: Defect` is an unexpected bug in this service. The message is nacked and eventually dead-lettered, and the service keeps processing other messages. The failure's cause carries the stack trace.
 
 ### Policy document unreadable
 
-**Symptom:** the service fails to start.
+**Symptom:** the service logs a fatal `Sanitizer stopped` before any `Sanitizer policy loaded` line.
 **Steps:**
 
 1. In development, verify `SANITIZER_POLICY_PATH` points to a valid, readable YAML file.
@@ -171,9 +219,9 @@ This service's own code uses three levels, never `warning` and almost never `tra
 
 ### Message-queue-level errors
 
-**Symptom:** the service logs an error and stops processing.
-**Cause:** the queue feeder itself failed (e.g. a lost connection or an invalid message the feeder couldn't parse into a `QueueMessage` at all) — this is handled by a separate fiber from per-message processing and isn't currently isolated the way a single message's failure is.
-**Steps:** check the logged cause for specifics; restart the service once the underlying issue (permissions, connectivity) is resolved.
+**Symptom:** the service logs a fatal `Sanitizer stopped` after it has been processing messages, and exits.
+**Cause:** the message queue itself reported an error. It's handled by a separate fiber from per-message processing, so unlike a single message's failure it stops the service. The HTTP feeder rejects a malformed push request with a `400` (visible at `debug`) rather than failing the queue.
+**Steps:** read the fatal line's cause, and restart the service once the underlying issue (permissions, connectivity) is resolved.
 
 ## Checking output locally
 

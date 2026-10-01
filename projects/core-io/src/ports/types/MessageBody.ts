@@ -11,4 +11,10 @@ export interface MessageBody {
   readonly messageId: string
   /** Time the message was published/produced, as reported by the transport. */
   readonly publishTime: Date
+  /**
+   * Which delivery of this message this is, starting at 1, when the transport
+   * reports it. Pub/Sub sets it only for subscriptions with a dead-letter
+   * policy, so a value above 1 marks a redelivery.
+   */
+  readonly deliveryAttempt?: number
 }
