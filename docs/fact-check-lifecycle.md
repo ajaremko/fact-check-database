@@ -87,14 +87,18 @@ inspection.
 - **Writes:**
   `v1/records/sanitizer/source={source.id}/date={day}/ingestor_run_id={id}/fetch_attempt.yml`
 - **Mints:** nothing. It copies the fetch record's identifiers.
-- **Duplicates:** the output path is fixed for each fetch attempt, so a redelivered message
-  overwrites the same object instead of creating a second one. The overwrite still sends a new
+- **Duplicates:** the push subscription's ack deadline is 60 seconds, well above the sanitizer's
+  slowest requests during an ingestor burst, so a message isn't redelivered while it is still
+  being processed. When one is redelivered anyway, the output path is fixed for each fetch
+  attempt, so it overwrites the same object instead of creating a second one. The overwrite still sends a new
   notification to the extractor. If that lands in a later extractor run, staging gets a repeat
   row, which the curated MERGE absorbs.
 
 ### 3. Extract (extractor)
 
-- **Trigger:** Cloud Scheduler, `0 */12 * * *`. Each run pulls up to 100 sanitizer records.
+- **Trigger:** Cloud Scheduler, `0 */12 * * *`. Each run pulls up to 1,000 sanitizer records, the
+  most one Pub/Sub pull returns. A run must take in more records than arrive between runs, or the
+  backlog grows until records reach the subscription's 7-day retention and are deleted unread.
 - **Does:** parses each `SAFE_PUBLIC` feed into fact checks, assigns each a `fact_check_id`, and
   writes one batch file per run.
 - **Writes:** `v1/type=fact_checks/date={day}/{extractor_run_id}.batch.ndjson` in the core staging

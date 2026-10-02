@@ -60,7 +60,9 @@ The three services chain together through storage notifications and Pub/Sub, not
    Manager secret and writes fetch records to the archive bucket.
 2. That write triggers a GCS notification into the **ingestor topic**
    (`ingestion-ingestor-topic`), which auto-archives every message to the event log bucket and
-   push-delivers to the sanitizer.
+   push-delivers to the sanitizer. The push subscription's ack deadline is 60s: a request still
+   running at the deadline is redelivered, and each ingestor run publishes one notification per
+   source at once, so the deadline must cover the sanitizer's slowest requests during that burst.
 3. **Sanitizer** (`ingestion-sanitizer-service`, a Cloud Run Service — always running, not
    scheduled) — receives work via an OIDC-authenticated push subscription, reads its policy from a
    Secret Manager secret, and writes sanitized records back to the same archive bucket.

@@ -78,6 +78,7 @@ See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
 
 - [ ] Send conditional requests (`If-None-Match`/`If-Modified-Since` from the last observation's
       `etag`/`lastModified`) so unchanged feeds aren't re-fetched and re-archived every run
+- [ ] Ask Africa Check and AFP to allow the crawler's User-Agent: both return `403` on every run
 
 - [x] Change `decodeContext` in `ingestFromSource.ts` to decode via `Schema.decodeUnknown` inside
       the `Effect.gen` body instead of `Schema.decodeUnknownSync` outside it, so a bad target

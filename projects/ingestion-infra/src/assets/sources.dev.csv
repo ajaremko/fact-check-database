@@ -1,5 +1,5 @@
 id,name,collection,url
-politifact,politifact.com,rss,https://www.politifact.com/rss/all/
+politifact,politifact.com,rss,https://www.politifact.com/rss/factchecks/
 snopes,snopes.com,rss,https://www.snopes.com/feed/
 factcheck,factcheck.afp.com,rss,https://factcheck.afp.com/rss.xml
 africacheck,Africa Check,rss,https://africacheck.org/feed/
@@ -24,9 +24,8 @@ tsekph,Tsek.ph,rss,https://www.tsek.ph/feed/
 taiwanfactcheck,Taiwan FactCheck Center,rss,https://tfc-taiwan.org.tw/feed/
 factcheckbg,Factcheck.bg,rss,https://factcheck.bg/feed/
 faktograf,Faktograf.hr,rss,https://faktograf.hr/feed/
-lesdecodeurs,Les Décodeurs (Le Monde),rss,https://www.lemonde.fr/feed/
-sciencefeedback,Science Feedback,rss,https://sciencefeedback.co/feed/
-climatefeedback,Climate Feedback,rss,https://climatefeedback.org/feed/
+lesdecodeurs,Les Décodeurs (Le Monde),rss,https://www.lemonde.fr/les-decodeurs/rss_full.xml
+sciencefeedback,Science Feedback,rss,https://science.feedback.org/feed/
 correctiv,Correctiv,rss,https://correctiv.org/feed/
 volksverpetzer,Volksverpetzer,rss,https://www.volksverpetzer.de/feed/
 factreview,FactReview,rss,https://factreview.gr/feed/

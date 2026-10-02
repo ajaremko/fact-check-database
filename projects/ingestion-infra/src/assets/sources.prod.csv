@@ -1,5 +1,5 @@
 id,collection,name,url
-politifact,rss,politifact.com,https://www.politifact.com/rss/all/
+politifact,rss,politifact.com,https://www.politifact.com/rss/factchecks/
 snopes,rss,snopes.com,https://www.snopes.com/feed/
 factcheck,rss,factcheck.org,https://www.factcheck.org/feed/
 leadstories,atom,leadstories.com,https://leadstories.com/atom.xml

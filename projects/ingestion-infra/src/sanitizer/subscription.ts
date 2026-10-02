@@ -39,6 +39,13 @@ export const {
 } = createDeadletteredSubscription({
   name: 'sanitizer',
   topic: ingestorTopicName,
+  // A push request that hasn't returned within the deadline is redelivered,
+  // even though the first attempt is still running. Each ingestor run
+  // publishes one notification per source at once, and while new instances
+  // start, sanitizer requests take up to ~15 s. With the default 10 s, about
+  // a third of each burst was sanitized twice, writing every record twice and
+  // sending the extractor duplicate notifications.
+  ackDeadlineSeconds: 60,
   archive: {
     messageRetentionDuration: '604800s', // 7 days
     cloudStorageConfig: {

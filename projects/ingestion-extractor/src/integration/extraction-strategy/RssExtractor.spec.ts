@@ -145,4 +145,37 @@ describe('RssExtractor', () => {
       language: 'el',
     })
   })
+
+  it('keeps numeric-looking text as strings instead of failing the feed', async () => {
+    // Real shape seen from PressOne.PH: WordPress split the tag "P360,000" at
+    // its comma, leaving a tag "000". Parsed as the number 0, it failed the
+    // category schema and with it every item in the feed.
+    const feed = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <item>
+      <title>2026</title>
+      <link>https://example.com/article</link>
+      <guid isPermaLink="false">0123</guid>
+      <category>Duterte bail P360</category>
+      <category>000</category>
+      <category>000 total</category>
+    </item>
+  </channel>
+</rss>`
+
+    const [factCheck] = await Effect.runPromise(
+      RssExtractor.extractor({
+        timestamp: 0,
+        record: null as never,
+        data: new TextEncoder().encode(feed),
+      })
+    )
+
+    expect(factCheck).toMatchObject({
+      title: '2026',
+      guid: '0123',
+      categories: ['Duterte bail P360', '000', '000 total'],
+    })
+  })
 })
