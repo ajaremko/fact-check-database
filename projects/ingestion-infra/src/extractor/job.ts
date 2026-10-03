@@ -42,11 +42,13 @@ export const extractorJob = new gcp.cloudrunv2.Job(
                 value: stagingStorageBucketName,
               },
               {
-                // The most messages a single Pub/Sub pull returns. Each run
-                // must take in more than arrives between runs (one record
-                // per source per ingestor run), or the backlog grows until
-                // messages reach the subscription's 7-day retention and are
-                // deleted unprocessed. 100 per 12-hour run fell short.
+                // The most messages one run takes, gathered over as many
+                // pulls as needed. Each run must take in more than arrives
+                // between runs (one record per source per ingestor run), or
+                // the backlog grows until messages reach the subscription's
+                // 7-day retention and are deleted unprocessed. 100 per
+                // 12-hour run fell short. At ~0.15 s per message, 1000 keeps
+                // a run well inside the subscription's 600 s ack deadline.
                 name: 'MESSAGE_BATCH_SIZE',
                 value: '1000',
               },

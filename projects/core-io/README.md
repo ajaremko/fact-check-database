@@ -25,23 +25,23 @@ Both message ports carry each message as a `MessageBody`: its `data`, optional `
 
 ## Adapters
 
-| Adapter                                   | Port implemented | Environment | Notes                                                                                                                                                                     |
-| ----------------------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CloudPubsubMessageBatch`                 | `MessageBatch`   | Production  | Pulls a batch from a Pub/Sub subscription; acks the batch as one RPC when the scope closes successfully, and acks nothing if it closes with a failure                     |
-| `CloudPubsubMessageQueueFeeder`           | `MessageQueue`   | Production  | Feeds the queue via native Pub/Sub SDK event listeners; ack/nack delegate to the SDK message                                                                              |
-| `CloudPubsubPublisher`                    | `Publisher`      | Production  | Publishes to a Pub/Sub topic                                                                                                                                              |
-| `FileSystemMessageBatch`                  | `MessageBatch`   | Development | Reads every file in a directory into a batch                                                                                                                              |
-| `FileSystemMessageQueueFeeder`            | `MessageQueue`   | Development | Reads every file in a directory and offers each onto the queue                                                                                                            |
-| `FileSystemPublisher`                     | `Publisher`      | Development | Writes each published message to a timestamped file                                                                                                                       |
-| `HttpServerMessageQueueFeeder`            | `MessageQueue`   | Production  | Push-based ingestion entry point — accepts messages over an HTTP POST route                                                                                               |
-| `InMemoryMessageQueue`                    | `MessageQueue`   | Test        | In-memory queue used as a test double                                                                                                                                     |
-| `CloudStorageStorageReader`               | `StorageReader`  | Production  | Reads an object from GCS; re-derives the bucket per call from the pointer                                                                                                 |
-| `CloudStorageStorageWriter`               | `StorageWriter`  | Production  | Writes an object to a fixed GCS bucket configured at startup                                                                                                              |
-| `FileSystemStorageReader`                 | `StorageReader`  | Development | Reads a file from the local filesystem                                                                                                                                    |
-| `FileSystemStorageWriter`                 | `StorageWriter`  | Development | Writes a file (and an optional `.meta.json` sidecar) to a local output directory                                                                                          |
-| `FileSystemStorageWriterWithNotification` | `StorageWriter`  | Development | Wraps `FileSystemStorageWriter`; also depends on `Publisher` and publishes a GCS-object-finalized-style notification for any write whose path matches a configured prefix |
-| `InMemoryStorageReader`                   | `StorageReader`  | Test        | Reads from an in-memory key/value store used as a test double                                                                                                             |
-| `InMemoryStorageWriter`                   | `StorageWriter`  | Test        | Writes to an in-memory key/value store used as a test double                                                                                                              |
+| Adapter                                   | Port implemented | Environment | Notes                                                                                                                                                                                                               |
+| ----------------------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CloudPubsubMessageBatch`                 | `MessageBatch`   | Production  | Pulls up to `MESSAGE_BATCH_SIZE` messages from a Pub/Sub subscription, over as many pulls as that takes; acks the batch as one RPC when the scope closes successfully, and acks nothing if it closes with a failure |
+| `CloudPubsubMessageQueueFeeder`           | `MessageQueue`   | Production  | Feeds the queue via native Pub/Sub SDK event listeners; ack/nack delegate to the SDK message                                                                                                                        |
+| `CloudPubsubPublisher`                    | `Publisher`      | Production  | Publishes to a Pub/Sub topic                                                                                                                                                                                        |
+| `FileSystemMessageBatch`                  | `MessageBatch`   | Development | Reads every file in a directory into a batch                                                                                                                                                                        |
+| `FileSystemMessageQueueFeeder`            | `MessageQueue`   | Development | Reads every file in a directory and offers each onto the queue                                                                                                                                                      |
+| `FileSystemPublisher`                     | `Publisher`      | Development | Writes each published message to a timestamped file                                                                                                                                                                 |
+| `HttpServerMessageQueueFeeder`            | `MessageQueue`   | Production  | Push-based ingestion entry point — accepts messages over an HTTP POST route                                                                                                                                         |
+| `InMemoryMessageQueue`                    | `MessageQueue`   | Test        | In-memory queue used as a test double                                                                                                                                                                               |
+| `CloudStorageStorageReader`               | `StorageReader`  | Production  | Reads an object from GCS; re-derives the bucket per call from the pointer                                                                                                                                           |
+| `CloudStorageStorageWriter`               | `StorageWriter`  | Production  | Writes an object to a fixed GCS bucket configured at startup                                                                                                                                                        |
+| `FileSystemStorageReader`                 | `StorageReader`  | Development | Reads a file from the local filesystem                                                                                                                                                                              |
+| `FileSystemStorageWriter`                 | `StorageWriter`  | Development | Writes a file (and an optional `.meta.json` sidecar) to a local output directory                                                                                                                                    |
+| `FileSystemStorageWriterWithNotification` | `StorageWriter`  | Development | Wraps `FileSystemStorageWriter`; also depends on `Publisher` and publishes a GCS-object-finalized-style notification for any write whose path matches a configured prefix                                           |
+| `InMemoryStorageReader`                   | `StorageReader`  | Test        | Reads from an in-memory key/value store used as a test double                                                                                                                                                       |
+| `InMemoryStorageWriter`                   | `StorageWriter`  | Test        | Writes to an in-memory key/value store used as a test double                                                                                                                                                        |
 
 Each adapter is imported via its own subpath export (e.g. `@fact-check-database/core-io/adapters/FileSystemPublisher`) rather than the package root, so consumers only pull in the transport dependencies they actually use.
 
@@ -55,17 +55,25 @@ Each adapter is imported via its own subpath export (e.g. `@fact-check-database/
 
 ## Required environment variables
 
-| Variable                   | Used by                                                  |
-| -------------------------- | -------------------------------------------------------- |
-| `PUBSUB_SUBSCRIPTION_ID`   | `CloudPubsubMessageBatch`                                |
-| `MESSAGE_BATCH_SIZE`       | `CloudPubsubMessageBatch`                                |
-| `PUBSUB_SUBSCRIPTION_NAME` | `CloudPubsubMessageQueueFeeder`                          |
-| `PUBSUB_TOPIC_NAME`        | `CloudPubsubPublisher`                                   |
-| `MESSAGE_QUEUE_INPUT_DIR`  | `FileSystemMessageBatch`, `FileSystemMessageQueueFeeder` |
-| `PUBLISHER_OUTPUT_DIR`     | `FileSystemPublisher`                                    |
-| `PORT`                     | `HttpServerMessageQueueFeeder`                           |
-| `STORAGE_BUCKET_NAME`      | `CloudStorageStorageWriter`                              |
-| `STORAGE_OUTPUT_DIR`       | `FileSystemStorageWriter`                                |
+| Variable                        | Used by                                                  |
+| ------------------------------- | -------------------------------------------------------- |
+| `PUBSUB_SUBSCRIPTION_ID`        | `CloudPubsubMessageBatch`                                |
+| `MESSAGE_BATCH_SIZE`            | `CloudPubsubMessageBatch`                                |
+| `MESSAGE_BATCH_PULL_TIMEOUT_MS` | `CloudPubsubMessageBatch` (optional, default `10000`)    |
+| `PUBSUB_SUBSCRIPTION_NAME`      | `CloudPubsubMessageQueueFeeder`                          |
+| `PUBSUB_TOPIC_NAME`             | `CloudPubsubPublisher`                                   |
+| `MESSAGE_QUEUE_INPUT_DIR`       | `FileSystemMessageBatch`, `FileSystemMessageQueueFeeder` |
+| `PUBLISHER_OUTPUT_DIR`          | `FileSystemPublisher`                                    |
+| `PORT`                          | `HttpServerMessageQueueFeeder`                           |
+
+`MESSAGE_BATCH_SIZE` is the most messages one batch holds, not the size of one pull. A single
+Pub/Sub pull returns whatever is immediately available, which can be far fewer than requested even
+with a large backlog, so `CloudPubsubMessageBatch` keeps pulling until the batch is full or a pull
+returns nothing. `MESSAGE_BATCH_PULL_TIMEOUT_MS` bounds each pull after the first: on a drained
+subscription a pull waits for its deadline rather than returning empty, so this is how long the
+adapter waits to learn there is nothing more.
+| `STORAGE_BUCKET_NAME` | `CloudStorageStorageWriter` |
+| `STORAGE_OUTPUT_DIR` | `FileSystemStorageWriter` |
 
 ## Error handling
 

@@ -10,24 +10,71 @@ import { timestampToDate } from '../internal/timestampToDate'
 const adapter = 'CloudPubsubMessageBatch'
 
 /**
- * Pulls up to `maxMessages` from the given Pub/Sub subscription, filtering
- * out any malformed messages. Each returned {@link BatchMessage}'s `ack`
- * records its ack ID into a shared set rather than acking immediately — the
- * set is flushed as a single batch acknowledge call by {@link release} when
- * the batch's scope closes.
+ * Pulls from the subscription until `maxMessages` have been received or it
+ * has nothing more to deliver.
+ *
+ * One pull is not enough: Pub/Sub returns whatever is immediately available,
+ * which can be far fewer than requested even with thousands of messages
+ * waiting. Each further pull asks only for what is still missing, and uses a
+ * short deadline, because a pull on a drained subscription waits for its
+ * deadline rather than returning empty. A pull that ends that way means
+ * there are no more messages; it is not a failure.
  */
-function acquire(subscriptionId: string, maxMessages: number) {
+function pullUntilFull(
+  subscriptionId: string,
+  maxMessages: number,
+  followUpTimeoutMillis: number
+) {
+  return Effect.gen(function* () {
+    const receivedMessages: google.pubsub.v1.IReceivedMessage[] = []
+    let pulls = 0
+
+    while (receivedMessages.length < maxMessages) {
+      const pulled = yield* PubsubSubscriberClient.pull(
+        subscriptionId,
+        maxMessages - receivedMessages.length,
+        pulls === 0 ? undefined : { timeoutMillis: followUpTimeoutMillis }
+      ).pipe(
+        Effect.map(([response]) => response.receivedMessages ?? []),
+        Effect.catchIf(PubsubSubscriberClient.isDeadlineExceeded, () =>
+          Effect.succeed([])
+        )
+      )
+      pulls += 1
+      if (pulled.length === 0) {
+        break
+      }
+      receivedMessages.push(...pulled)
+    }
+
+    return { receivedMessages, pulls }
+  })
+}
+
+/**
+ * Pulls up to `maxMessages` from the given Pub/Sub subscription, over as
+ * many pulls as that takes, filtering out any malformed messages. Each
+ * returned {@link BatchMessage}'s `ack` records its ack ID into a shared set
+ * rather than acking immediately — the set is flushed as a single batch
+ * acknowledge call by {@link release} when the batch's scope closes.
+ */
+function acquire(
+  subscriptionId: string,
+  maxMessages: number,
+  followUpTimeoutMillis: number
+) {
   return Effect.gen(function* () {
     yield* Effect.annotateLogsScoped({ adapter, subscriptionId, maxMessages })
 
     const ackIds = yield* Ref.make<Set<string>>(new Set())
-    const [response] = yield* PubsubSubscriberClient.pull(
+    const { receivedMessages, pulls } = yield* pullUntilFull(
       subscriptionId,
-      maxMessages
+      maxMessages,
+      followUpTimeoutMillis
     )
-    const receivedMessages = response.receivedMessages ?? []
 
     yield* Effect.annotateLogsScoped({
+      pulls,
       'receivedMessages.length': receivedMessages.length,
     })
     yield* Effect.logTrace('Messages pulled')
@@ -144,16 +191,23 @@ function release(subscriptionId: string) {
 }
 
 /**
- * Builds a {@link MessageBatch} by pulling `MESSAGE_BATCH_SIZE` messages
- * from the `PUBSUB_SUBSCRIPTION_ID` subscription. The pulled messages are
- * batch-acknowledged in one RPC when the surrounding scope closes.
+ * Builds a {@link MessageBatch} by pulling up to `MESSAGE_BATCH_SIZE`
+ * messages from the `PUBSUB_SUBSCRIPTION_ID` subscription, over as many
+ * pulls as that takes. `MESSAGE_BATCH_PULL_TIMEOUT_MS` (default 10 seconds)
+ * bounds each pull after the first, which is how long the adapter waits to
+ * learn that the subscription has nothing more. The pulled messages are
+ * batch-acknowledged in one RPC when the surrounding scope closes
+ * successfully.
  */
 export const make = Effect.gen(function* () {
   const subscriptionId = yield* Config.string('PUBSUB_SUBSCRIPTION_ID')
   const maxMessages = yield* Config.number('MESSAGE_BATCH_SIZE')
+  const followUpTimeoutMillis = yield* Config.number(
+    'MESSAGE_BATCH_PULL_TIMEOUT_MS'
+  ).pipe(Config.withDefault(10_000))
 
   const { messages } = yield* Effect.acquireRelease(
-    acquire(subscriptionId, maxMessages),
+    acquire(subscriptionId, maxMessages, followUpTimeoutMillis),
     release(subscriptionId)
   )
 

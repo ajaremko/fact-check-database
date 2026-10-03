@@ -6,23 +6,24 @@ Configuration reference, output contract, and diagnosing failures for `ingestion
 
 All variables are `private` (internal configuration — nothing here is a secret or public-facing).
 
-| Variable                              | Type                  | Required                            | Default                   | Purpose                                                                                |
-| ------------------------------------- | --------------------- | ----------------------------------- | ------------------------- | -------------------------------------------------------------------------------------- |
-| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the storage adapter (from `core-io`)                                           |
-| `STORAGE_OUTPUT_DIR`                  | string                | Only if `STORAGE_MODE=filesystem`   | —                         | Local directory read from and written to                                               |
-| `STORAGE_BUCKET_NAME`                 | string                | Only if `STORAGE_MODE=gcp`          | —                         | GCS bucket read from and written to                                                    |
-| `MESSAGING_MODE`                      | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the message-batch adapter (from `core-io`)                                     |
-| `MESSAGE_QUEUE_INPUT_DIR`             | string                | Only if `MESSAGING_MODE=filesystem` | —                         | Local directory polled for queued notification files                                   |
-| `PUBSUB_SUBSCRIPTION_ID`              | string                | Only if `MESSAGING_MODE=gcp`        | —                         | Pub/Sub subscription batches are pulled from                                           |
-| `MESSAGE_BATCH_SIZE`                  | number                | Only if `MESSAGING_MODE=gcp`        | —                         | Maximum messages pulled per batch                                                      |
-| `LOGGING_MODE`                        | `gcp` \| `console`    | No                                  | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                      |
-| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                                  | `info`                    | Minimum log level                                                                      |
-| `OTEL_MODE`                           | `gcp` \| `local`      | No                                  | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                        |
-| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)                | —                         | Service name attached to traces/metrics                                                |
-| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                                  | `60000`                   | How often metrics are exported                                                         |
-| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp`    | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                 |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`           | —                         | Read directly by the OpenTelemetry OTLP exporter, not by this app's own `Config` calls |
-| `MAX_CONCURRENCY`                     | integer               | No                                  | `10`                      | Maximum observations processed in parallel                                             |
+| Variable                              | Type                  | Required                            | Default                   | Purpose                                                                                         |
+| ------------------------------------- | --------------------- | ----------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------- |
+| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the storage adapter (from `core-io`)                                                    |
+| `STORAGE_OUTPUT_DIR`                  | string                | Only if `STORAGE_MODE=filesystem`   | —                         | Local directory read from and written to                                                        |
+| `STORAGE_BUCKET_NAME`                 | string                | Only if `STORAGE_MODE=gcp`          | —                         | GCS bucket read from and written to                                                             |
+| `MESSAGING_MODE`                      | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the message-batch adapter (from `core-io`)                                              |
+| `MESSAGE_QUEUE_INPUT_DIR`             | string                | Only if `MESSAGING_MODE=filesystem` | —                         | Local directory polled for queued notification files                                            |
+| `PUBSUB_SUBSCRIPTION_ID`              | string                | Only if `MESSAGING_MODE=gcp`        | —                         | Pub/Sub subscription batches are pulled from                                                    |
+| `MESSAGE_BATCH_SIZE`                  | number                | Only if `MESSAGING_MODE=gcp`        | —                         | Maximum messages per run, gathered over as many pulls as needed                                 |
+| `MESSAGE_BATCH_PULL_TIMEOUT_MS`       | number (ms)           | No                                  | `10000`                   | Deadline for each pull after the first; how long a run waits to learn the subscription is empty |
+| `LOGGING_MODE`                        | `gcp` \| `console`    | No                                  | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                               |
+| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                                  | `info`                    | Minimum log level                                                                               |
+| `OTEL_MODE`                           | `gcp` \| `local`      | No                                  | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                                 |
+| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)                | —                         | Service name attached to traces/metrics                                                         |
+| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                                  | `60000`                   | How often metrics are exported                                                                  |
+| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp`    | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                          |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`           | —                         | Read directly by the OpenTelemetry OTLP exporter, not by this app's own `Config` calls          |
+| `MAX_CONCURRENCY`                     | integer               | No                                  | `10`                      | Maximum observations processed in parallel                                                      |
 
 `LOG_LEVEL` is **not** a real variable — nothing reads it. The real variable is `LOGGING_LEVEL`.
 `FACT_CHECKS_TABLE_SCHEMA_PATH` and `BIGQUERY_DATASET`, if you see them in an old `.env`, are also

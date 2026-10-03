@@ -20,7 +20,8 @@ These are not covered:
 
 - `StorageBucket`: `moveFile`, `downloadFile`, `getFiles`, `getFilesStream`
 - `PubsubTopic`: `publishMessage`
-- `PubsubSubscriberClient`: `pull`, `acknowledge`, and its release
+- `PubsubSubscriberClient`: `acknowledge` and its release (`pull` and `isDeadlineExceeded` are
+  covered by `cloud-pubsub/PubsubSubscriberClient.spec.ts`)
 - `PubsubSubscription`: opening and closing the subscription
 - `BigQueryClient`: `createJob`, `awaitJob`, `getJob`. These are exercised indirectly through the
   real SDK by `analysis-loader`'s `loadBatch.spec.ts`, but have no tests of their own.

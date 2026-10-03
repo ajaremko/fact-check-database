@@ -99,20 +99,31 @@ export type AckId = google.pubsub.v1.IReceivedMessage['ackId']
  * `PubsubSubscriberClient` in context.
  *
  * This is a single synchronous pull, not a streaming pull: it returns
- * whatever is immediately available, which may be fewer than `maxMessages`
- * or none. Any rejection is caught and wrapped as a
+ * whatever is immediately available, which may be far fewer than
+ * `maxMessages` even when more are waiting, so a caller that needs a full
+ * batch has to pull again. Any rejection is caught and wrapped as a
  * {@link PubsubSubscriberClientIOError}.
+ *
+ * On an empty subscription the call waits for messages until its deadline
+ * and then rejects; {@link isDeadlineExceeded} identifies that case.
+ * `options.timeoutMillis` shortens the deadline from the client's default.
  *
  * @example
  * const [{ receivedMessages }] = yield* pull('projects/p/subscriptions/s')
  */
-export function pull(subscriptionId: string, maxMessages = 10) {
+export function pull(
+  subscriptionId: string,
+  maxMessages = 10,
+  options?: { readonly timeoutMillis?: number }
+) {
   return Effect.gen(function* () {
     yield* Effect.annotateLogsScoped({
       module: moduleName,
       subscriptionId,
       maxMessages,
     })
+    const request = { subscription: subscriptionId, maxMessages }
+    const timeoutMillis = options?.timeoutMillis
     const { client } = yield* PubsubSubscriberClient
     const result = yield* Effect.tryPromise({
       try: (): Promise<
@@ -123,10 +134,9 @@ export function pull(subscriptionId: string, maxMessages = 10) {
           {} | undefined
         ]
       > =>
-        client.pull({
-          subscription: subscriptionId,
-          maxMessages,
-        }),
+        timeoutMillis === undefined
+          ? client.pull(request)
+          : client.pull(request, { timeout: timeoutMillis }),
       catch: (cause) =>
         new PubsubSubscriberClientIOError({
           cause,
@@ -141,6 +151,26 @@ export function pull(subscriptionId: string, maxMessages = 10) {
 
     return result
   }).pipe(Effect.scoped)
+}
+
+/** gRPC status code for a call that ran out of time. */
+const DEADLINE_EXCEEDED = 4
+
+/**
+ * Whether a {@link PubsubSubscriberClientIOError} was caused by the call's
+ * deadline passing (gRPC `DEADLINE_EXCEEDED`). For {@link pull}, that means
+ * no message arrived in time, i.e. the subscription had nothing to deliver.
+ */
+export function isDeadlineExceeded(
+  error: PubsubSubscriberClientIOError
+): boolean {
+  const { cause } = error
+  return (
+    typeof cause === 'object' &&
+    cause !== null &&
+    'code' in cause &&
+    cause.code === DEADLINE_EXCEEDED
+  )
 }
 
 /**

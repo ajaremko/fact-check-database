@@ -84,7 +84,7 @@ Three layers are scoped, because they hold open connections: `PubsubClient`, `Pu
 
 ## Pub/Sub
 
-`PubsubTopic` publishes; `PubsubSubscription` and `PubsubSubscriberClient` read, using two different SDK access patterns. `PubsubSubscription` wraps the SDK's own `Subscription`, which manages a persistent streaming pull internally and pushes messages as they arrive. `PubsubSubscriberClient` wraps the lower-level v1 `SubscriberClient` for manual, one-shot `pull`/`acknowledge` calls, which is what a batch-style job uses to fetch and process a bounded set of messages at a time.
+`PubsubTopic` publishes; `PubsubSubscription` and `PubsubSubscriberClient` read, using two different SDK access patterns. `PubsubSubscription` wraps the SDK's own `Subscription`, which manages a persistent streaming pull internally and pushes messages as they arrive. `PubsubSubscriberClient` wraps the lower-level v1 `SubscriberClient` for manual, one-shot `pull`/`acknowledge` calls, which is what a batch-style job uses to fetch and process a bounded set of messages at a time. One `pull` returns whatever is immediately available, which can be far fewer than `maxMessages` even with a backlog, so a caller that needs a full batch pulls again. On an empty subscription a pull waits for its deadline and then fails; `isDeadlineExceeded` identifies that case, and `pull`'s `timeoutMillis` option shortens the wait.
 
 ```ts
 import { Config, Effect } from 'effect'

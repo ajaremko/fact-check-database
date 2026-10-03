@@ -96,9 +96,10 @@ inspection.
 
 ### 3. Extract (extractor)
 
-- **Trigger:** Cloud Scheduler, `0 */12 * * *`. Each run pulls up to 1,000 sanitizer records, the
-  most one Pub/Sub pull returns. A run must take in more records than arrive between runs, or the
-  backlog grows until records reach the subscription's 7-day retention and are deleted unread.
+- **Trigger:** Cloud Scheduler, `0 */12 * * *`. Each run takes up to 1,000 sanitizer records,
+  pulling repeatedly until it has them or the subscription is empty. A run must take in more
+  records than arrive between runs, or the backlog grows until records reach the subscription's
+  7-day retention and are deleted unread.
 - **Does:** parses each `SAFE_PUBLIC` feed into fact checks, assigns each a `fact_check_id`, and
   writes one batch file per run.
 - **Writes:** `v1/type=fact_checks/date={day}/{extractor_run_id}.batch.ndjson` in the core staging
