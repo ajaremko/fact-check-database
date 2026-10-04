@@ -74,7 +74,9 @@ The three services chain together through storage notifications and Pub/Sub, not
    again by the next run.
 5. **Extractor** (`ingestion-extractor-job`, a Cloud Run Job) — triggered by Cloud Scheduler on
    `ingestion:extractorSchedule` if set. Writes extracted batches into **core-infra's** shared
-   staging bucket for `analysis-infra`/`website-infra` to load.
+   staging bucket for `analysis-infra`/`website-infra` to load. The job runs with 1 GiB of memory
+   and takes up to 1,000 messages per run. The two are sized together: the extractor holds a whole
+   batch in memory until it is written, so a larger `MESSAGE_BATCH_SIZE` needs more memory.
 
 Three shared factory helpers in `src/shared/` standardize repeated pieces of this wiring rather
 than each service reimplementing them: Cloud Scheduler → Cloud Run Job invocation

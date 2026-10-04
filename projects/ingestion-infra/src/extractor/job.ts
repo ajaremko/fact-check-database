@@ -32,6 +32,19 @@ export const extractorJob = new gcp.cloudrunv2.Job(
         containers: [
           {
             image: getImageUrl('ingestion-extractor', dockerTag),
+            // Sized for a full MESSAGE_BATCH_SIZE run. The extractor holds
+            // every row until the batch is written, and at that point also
+            // holds the serialized batch: about 17,000 rows and 56 MB of
+            // NDJSON for 1,000 messages, which measured ~370 MB of heap.
+            // Node caps its heap at about half the container's memory, so
+            // Cloud Run's default 512Mi (a ~256 MB heap) is not enough.
+            // Raise this together with MESSAGE_BATCH_SIZE.
+            resources: {
+              limits: {
+                cpu: '1',
+                memory: '1Gi',
+              },
+            },
             envs: [
               {
                 name: 'PUBSUB_SUBSCRIPTION_ID',

@@ -44,6 +44,22 @@ function describeExtractionError(error: { readonly _tag: string }): string {
   return `${issue._tag} at ${issue.path.join('.') || '(root)'}`
 }
 
+/**
+ * Copies a message's encoded rows so that none of their strings share memory
+ * with the feed they were extracted from.
+ *
+ * The XML parser returns CDATA-wrapped fields (titles, descriptions, …) as
+ * slices of the feed text, and a slice keeps its whole parent string alive.
+ * Rows are held until the batch is written, so without this copy every row
+ * pins its entire feed in memory: about 0.8 MB per message, which exhausted
+ * the heap after roughly 300 messages. Encoded rows are plain JSON, so a JSON
+ * round trip is a lossless copy made of independent strings.
+ */
+function detachFromFeed<Row>(rows: ReadonlyArray<Row>): Array<Row> {
+  const copy: unknown = JSON.parse(JSON.stringify(rows))
+  return copy as Array<Row>
+}
+
 export const extractFactChecks = Effect.fn('extractFactChecks')(
   function* (ctx: {
     extractorRunId: string
@@ -162,7 +178,7 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
         Effect.withSpan('extractor')
       )
 
-    const rows = yield* encodeFactCheckRows(factChecks)
+    const rows = detachFromFeed(yield* encodeFactCheckRows(factChecks))
     yield* Metric.incrementBy(extractedFactCheckRows, rows.length).pipe(
       Effect.tagMetrics({
         source_collection: observation.source.collection,

@@ -170,6 +170,30 @@ warnings (or the dashboard's Extraction Errors panel), not the job-completed cou
 2. No message was acknowledged, so the next run receives the same batch again, logged as
    `Message redelivered`. No rows are lost.
 
+### The run is killed without a fatal line (out of memory)
+
+**Symptom:** the execution fails with `Container terminated on signal 11`, preceded by a
+plain-text `FATAL ERROR: … JavaScript heap out of memory`. There is no `Extractor job stopped`
+line, because the process dies before it can log one.
+
+**Cause:** the extractor holds every row until the batch is written, and at that point also holds
+the serialized batch. Node caps its heap at about half the container's memory, so the limit that
+matters is half of the job's `memory` setting. A 1,000-message batch (about 17,000 rows, 56 MB of
+NDJSON) measured about 370 MB of heap, which fits the job's 1 GiB (a 512 MB heap) but not Cloud
+Run's default 512 MiB.
+
+**Steps:**
+
+1. Check the job's `memory` limit and `MESSAGE_BATCH_SIZE` in `ingestion-infra`. Raise them
+   together: memory use grows with the number of rows in a batch.
+2. Nothing was acknowledged, so the batch is redelivered. Each crashed run raises its messages'
+   delivery attempt, and the subscription dead-letters them at 5, so fix the cause before
+   re-running the job.
+
+Rows are copied when they leave the extraction step (`detachFromFeed` in
+`src/app/extractFactChecks.ts`) so they don't keep their source feed in memory. Without that copy
+each message retains its whole feed, about 0.8 MB, and a batch needs several times more memory.
+
 ## Checking output locally
 
 ```bash

@@ -16,7 +16,7 @@ directly in `Pulumi.<stack>.yml`) before the stack will deploy.
 | `core:githubOrg`              | GitHub organization allowed to assume the CI/CD identity                                                      | `ajaremko`                | `ajaremko`                 |
 | `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                        | `fact-check-database`     | `fact-check-database`      |
 | `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                              | `shared-identity-pool-01` | `shared-identity-pool-01`  |
-| `core:batchRetentionDays`     | Days before an object in the staging bucket is deleted by its lifecycle rule                                  | `1`                       | `1`                        |
+| `core:batchRetentionDays`     | Days before a batch file under `v1/type=fact_checks/` is deleted by the staging bucket's lifecycle rule       | `1`                       | `1`                        |
 | `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                              | `true`                    | `false`                    |
 | `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`. | `false`                   | `true`                     |
 
@@ -142,6 +142,22 @@ impersonating the service account.
 **Resolution:** update the attribute condition if the org or repo changed; re-grant
 `workloadIdentityUser` if the binding was removed; confirm the workflow YAML matches the current
 stack outputs (see the [README](../README.md#cicd-identity)).
+
+## Troubleshooting: loads fail with a missing schema file
+
+**Symptom:** `analysis-loader` logs `Load request failed` with `error._tag: StorageReadError` and
+`No such object: …/schemas/fact_checks_table_schema_v1.json`.
+
+**Cause:** the schema object is no longer in the staging bucket, while Pulumi's state still records
+it as present. Before the lifecycle rule was scoped to batch files, it deleted this object a day
+after each deploy.
+
+**Steps:**
+
+1. Confirm the object is missing: `gcloud storage ls gs://<staging-bucket>/schemas/`.
+2. Redeploy with a refresh, so Pulumi notices the missing object and uploads it again:
+   `pulumi up --refresh`.
+3. The loader retries a failed schema read on the next request, so no restart is needed.
 
 ## Rolling back a deploy
 

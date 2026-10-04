@@ -7,9 +7,9 @@
 **Where:** `app/loadBatch.spec.ts` covers `loadJobId` and all three `loadBatch` paths (new job,
 job already exists, retry after a failed job), including the log lines each writes.
 `app/index.spec.ts` covers the `POST /load-jobs` route: a successful load, a schema read failure,
-and a redelivered message. These are not covered:
+and a redelivered message. `app/readSchema.spec.ts` covers the schema cache: one fetch per schema,
+and a failed read retried on the next request. These are not covered:
 
-- `readSchema`'s cache: that a second request for the same schema doesn't fetch it again
 - the route's `BigQueryClientIOError` and `ParseError` failure responses
 - `main.ts` wiring: the pino logger, OpenTelemetry export and the `LOGGING_LEVEL` default
 

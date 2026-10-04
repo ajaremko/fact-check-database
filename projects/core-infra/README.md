@@ -103,6 +103,10 @@ projects. The prefix ends in a slash on purpose: GCS matches prefixes as literal
 without it any sibling path such as `v1/type=fact_checks_<x>/` would also notify the loaders,
 which can only load batch files.
 
+Batch files are deleted `core:batchRetentionDays` after they are written. The lifecycle rule is
+scoped to the same `v1/type=fact_checks/` prefix, so it never touches the schema file under
+`schemas/`, which the analysis loader reads on every load.
+
 Exported as stack outputs:
 
 | Output                             | Type     | Purpose                                                                                                                                                                         |
