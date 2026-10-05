@@ -10,7 +10,7 @@ import type { Observation } from './Observation'
 const collectionRuleDefaults: Partial<CollectionRule> = {
   defaultLabel: 'RESTRICTED',
   allowedContentTypeSubstrings: [],
-  onMissingContentType: 'RESTRICT',
+  onMissingContentType: 'QUARANTINE',
   rewriteBody: false,
 }
 
@@ -41,35 +41,28 @@ export function pickRule(
       base.allowedContentTypeSubstrings ??
       [],
     rewriteBody: ov.rewriteBody ?? base.rewriteBody ?? false,
-    onMissingContentType: base.onMissingContentType ?? 'RESTRICT',
+    onMissingContentType: base.onMissingContentType ?? 'QUARANTINE',
   }
 }
 
-function contentTypeAllowed(
+/** What the content-type gate decides for a record. */
+type ContentTypeOutcome = 'ALLOW' | 'RESTRICT' | 'QUARANTINE'
+
+function checkContentType(
   contentType: string | null,
   rule: CollectionRule
-): { allowed: boolean; quarantineReason?: SanitizationAction } {
-  const allowList = rule.allowedContentTypeSubstrings ?? []
-  if (!contentType) {
-    const behavior = rule.onMissingContentType ?? 'RESTRICT'
-    if (behavior === 'ALLOW') return { allowed: true }
-    if (behavior === 'RESTRICT') return { allowed: true }
-    return {
-      allowed: false,
-      quarantineReason: 'QUARANTINED_UNEXPECTED_CONTENT_TYPE',
-    }
-  }
+): ContentTypeOutcome {
+  // A response that doesn't say what it is: the rule chooses, and by default
+  // the record is quarantined rather than passed on.
+  if (!contentType) return rule.onMissingContentType ?? 'QUARANTINE'
 
-  if (allowList.length === 0) return { allowed: true }
+  const allowList = rule.allowedContentTypeSubstrings ?? []
+  if (allowList.length === 0) return 'ALLOW'
 
   const ct = contentType.toLowerCase()
-  const ok = allowList.some((s) => ct.includes(s.toLowerCase()))
-  return ok
-    ? { allowed: true }
-    : {
-        allowed: false,
-        quarantineReason: 'QUARANTINED_UNEXPECTED_CONTENT_TYPE',
-      }
+  return allowList.some((s) => ct.includes(s.toLowerCase()))
+    ? 'ALLOW'
+    : 'QUARANTINE'
 }
 
 export function evaluatePolicy(
@@ -118,11 +111,9 @@ export function evaluatePolicy(
 
   // Content-type gate
   const ct = observation.raw.http?.contentType
-  const ctCheck = contentTypeAllowed(ct, rule)
-  if (!ctCheck.allowed) {
-    actions.push(
-      ctCheck.quarantineReason ?? 'QUARANTINED_UNEXPECTED_CONTENT_TYPE'
-    )
+  const ctCheck = checkContentType(ct, rule)
+  if (ctCheck === 'QUARANTINE') {
+    actions.push('QUARANTINED_UNEXPECTED_CONTENT_TYPE')
     return {
       label: 'QUARANTINED',
       actions,
@@ -131,11 +122,17 @@ export function evaluatePolicy(
     }
   }
 
-  // Pass
+  // Pass. A missing content type the rule chose to restrict keeps the record
+  // out of the safe label, with the reason stated. It never loosens a label
+  // the rule already restricts.
+  const restricted = ctCheck === 'RESTRICT'
   return {
-    label: rule.defaultLabel,
+    label:
+      restricted && rule.defaultLabel === 'SAFE_PUBLIC'
+        ? 'RESTRICTED'
+        : rule.defaultLabel,
     actions,
-    error: null,
+    error: restricted ? 'Missing content-type' : null,
     rewriteBody: rule.rewriteBody ?? false,
   }
 }

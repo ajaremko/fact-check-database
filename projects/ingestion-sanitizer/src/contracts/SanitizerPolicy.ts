@@ -26,7 +26,9 @@ export const CollectionRuleSchema = Schema.Struct({
   // If present, content-type must contain any of these substrings (case-insensitive).
   allowedContentTypeSubstrings: Schema.optional(Schema.Array(Schema.String)),
 
-  // If content-type is missing, what do we do?
+  // What to do with a response that has no content-type. QUARANTINE (the
+  // default) quarantines it, RESTRICT labels it RESTRICTED, and ALLOW applies
+  // `defaultLabel` as if the content-type had matched.
   onMissingContentType: Schema.optional(
     Schema.Literal('ALLOW', 'RESTRICT', 'QUARANTINE')
   ),
@@ -67,6 +69,8 @@ export class SanitizerPolicy extends Schema.Class<SanitizerPolicy>(
   version: Schema.Number,
   // Query parameters removed from URLs: a parameter name, or a prefix when
   // the entry ends in `_` (`utm_` matches `utm_source`). Case-insensitive.
+  // Together with `rewriteBody`, this is part of how fact checks are
+  // identified: see "Changing the policy" in docs/runbook.md.
   stripQueryParams: Schema.Array(Schema.String),
   // Response headers removed from every record. Case-insensitive names.
   dropHeaders: Schema.Array(Schema.String),

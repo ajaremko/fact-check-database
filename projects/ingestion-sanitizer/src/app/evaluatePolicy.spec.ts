@@ -196,6 +196,160 @@ describe('evaluatePolicy', () => {
     })
   })
 
+  it('quarantines a response with no content-type when the rule does not say otherwise', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+            rewriteBody: true,
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 200,
+            contentType: null,
+            headers: {},
+          },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    expect(decision).toStrictEqual({
+      actions: ['QUARANTINED_UNEXPECTED_CONTENT_TYPE'],
+      error: 'Unexpected content-type: missing',
+      label: 'QUARANTINED',
+      rewriteBody: false,
+    })
+  })
+
+  it('labels a response with no content-type RESTRICTED when the rule says RESTRICT', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+            onMissingContentType: 'RESTRICT',
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 200,
+            contentType: null,
+            headers: {},
+          },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    // Not quarantined, so no quarantine action. The reason is in `error`.
+    expect(decision).toStrictEqual({
+      actions: [],
+      error: 'Missing content-type',
+      label: 'RESTRICTED',
+      rewriteBody: false,
+    })
+  })
+
+  it('gives a response with no content-type the rule defaultLabel when the rule says ALLOW', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+            onMissingContentType: 'ALLOW',
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 200,
+            contentType: null,
+            headers: {},
+          },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    expect(decision).toStrictEqual({
+      actions: [],
+      error: null,
+      label: 'SAFE_PUBLIC',
+      rewriteBody: false,
+    })
+  })
+
   it('assigns collection defaultLabel when all gates pass', () => {
     const decision = evaluatePolicy(
       new SanitizerPolicy({
@@ -364,7 +518,7 @@ describe('pickRule', () => {
       maxBytes: 1_000,
       defaultLabel: 'SAFE_PUBLIC',
       allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
-      onMissingContentType: 'RESTRICT',
+      onMissingContentType: 'QUARANTINE',
       rewriteBody: false,
     })
   })
@@ -392,7 +546,7 @@ describe('pickRule', () => {
       maxBytes: 500,
       defaultLabel: 'RESTRICTED',
       allowedContentTypeSubstrings: [],
-      onMissingContentType: 'RESTRICT',
+      onMissingContentType: 'QUARANTINE',
       rewriteBody: false,
     })
   })
@@ -426,7 +580,7 @@ describe('pickRule', () => {
       maxBytes: 50, // overridden
       defaultLabel: 'RESTRICTED', // overridden
       allowedContentTypeSubstrings: ['text/xml', 'application/rss'], // from base rule
-      onMissingContentType: 'RESTRICT',
+      onMissingContentType: 'QUARANTINE',
       rewriteBody: false,
     })
   })
@@ -453,7 +607,7 @@ describe('pickRule', () => {
       maxBytes: 1_000,
       defaultLabel: 'SAFE_PUBLIC',
       allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
-      onMissingContentType: 'RESTRICT',
+      onMissingContentType: 'QUARANTINE',
       rewriteBody: false,
     })
   })

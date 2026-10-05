@@ -45,7 +45,10 @@ The publisher exists only to satisfy `FileSystemStorageWriterWithNotification`'s
 
 ## Policy document format
 
-A YAML document, loaded once at startup and held for the process's lifetime.
+A YAML document, loaded once at startup and held for the process's lifetime. This section says
+what each field does. Why the deployed policy has the values it has is in
+[policy-rationale.md](./policy-rationale.md), and what to check before editing it is in
+[Changing the policy](#changing-the-policy).
 
 | Field              | Type     | Description                                                                                         |
 | ------------------ | -------- | --------------------------------------------------------------------------------------------------- |
@@ -57,14 +60,14 @@ A YAML document, loaded once at startup and held for the process's lifetime.
 
 ### Collection rules
 
-| Field                          | Type                                  | Required                  | Description                                                                                         |
-| ------------------------------ | ------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------- |
-| `collection`                   | string                                | Yes                       | Matches the target list's `collection` value (e.g. `rss`, `atom`)                                   |
-| `maxBytes`                     | number                                | Yes                       | Records over this size are quarantined                                                              |
-| `defaultLabel`                 | `PolicyLabel`                         | Yes                       | Label assigned when nothing else quarantines the record (`SAFE_PUBLIC` or `RESTRICTED`)             |
-| `allowedContentTypeSubstrings` | string[]                              | No                        | Records whose content-type doesn't match are quarantined                                            |
-| `onMissingContentType`         | `ALLOW` \| `RESTRICT` \| `QUARANTINE` | No (default `QUARANTINE`) | Behavior when content-type is absent                                                                |
-| `rewriteBody`                  | boolean                               | No (default `false`)      | Whether `stripQueryParams` is also applied to the URLs inside the body. See [Scrubbing](#scrubbing) |
+| Field                          | Type                                  | Required                  | Description                                                                                              |
+| ------------------------------ | ------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `collection`                   | string                                | Yes                       | Matches the target list's `collection` value (e.g. `rss`, `atom`)                                        |
+| `maxBytes`                     | number                                | Yes                       | Records over this size are quarantined                                                                   |
+| `defaultLabel`                 | `PolicyLabel`                         | Yes                       | Label assigned when nothing else quarantines the record (`SAFE_PUBLIC` or `RESTRICTED`)                  |
+| `allowedContentTypeSubstrings` | string[]                              | No                        | Records whose content-type doesn't match are quarantined                                                 |
+| `onMissingContentType`         | `ALLOW` \| `RESTRICT` \| `QUARANTINE` | No (default `QUARANTINE`) | What to do with a response that has no content-type. See step 4 of [Evaluation order](#evaluation-order) |
+| `rewriteBody`                  | boolean                               | No (default `false`)      | Whether `stripQueryParams` is also applied to the URLs inside the body. See [Scrubbing](#scrubbing)      |
 
 ### Source overrides
 
@@ -80,8 +83,15 @@ For every record, in order:
 1. No `raw` content (the ingestor recorded `outcome: no_response`) → `QUARANTINED`, reason `QUARANTINED_FETCH_FAILED`. This _does_ produce a `SanitizerRecord` — it isn't skipped.
 2. Empty response body → `QUARANTINED`, reason `QUARANTINED_EMPTY_BODY`.
 3. Body larger than the matched rule's `maxBytes` → `QUARANTINED`, reason `QUARANTINED_TOO_LARGE`.
-4. Content-type not allowed by the matched rule → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
-5. Otherwise → the matched rule's `defaultLabel`.
+4. No content-type → the matched rule's `onMissingContentType` decides:
+   - `QUARANTINE` (the default) → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
+   - `RESTRICT` → the record passes, but a `SAFE_PUBLIC` rule labels it `RESTRICTED`. The record's `error` says `Missing content-type`. A rule that is already `RESTRICTED` or `QUARANTINED` keeps its label.
+   - `ALLOW` → the record passes as if the content-type had matched.
+5. Content-type not allowed by the matched rule → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
+6. Otherwise → the matched rule's `defaultLabel`.
+
+Only a `SAFE_PUBLIC` record is extracted. A `QUARANTINED` record also keeps its body as fetched:
+the sanitizer does not rewrite it.
 
 ### Scrubbing
 
@@ -136,27 +146,31 @@ same parameters are removed from every `http://` or `https://` URL in the body.
 
 - It does not remove scripts, tracking pixels or other markup from the HTML inside feed items.
 - It does not change relative URLs, or URLs nested inside another URL's parameter value.
+- It reads a URL only up to an entity-encoded quote or bracket, such as `&quot;` or `&#039;`,
+  because in escaped HTML that is where an attribute ends. A URL with one inside its path keeps
+  the parameters that follow it. One of the 390 URLs carrying a listed parameter in a 52-feed
+  sample was affected.
 - It does not rewrite quarantined bodies. They are not extracted.
 
-Changing `stripQueryParams` changes the `fact_check_id` of any fact check whose link carried a
-newly listed parameter. See [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md).
+### Example (abridged from the local development policy)
 
-### Example (the real local development policy)
+The full parameter list is in `assets/policy.yml`, and each entry's basis is in
+[policy-rationale.md](./policy-rationale.md#the-list).
 
 ```yaml
 version: 1
-stripQueryParams: [utm_, fbclid, gclid, mc_cid, mc_eid]
+stripQueryParams: [utm_, gclid, fbclid, ref_src, mc_eid] # 46 entries in the real file
 dropHeaders: [set-cookie, cookie, authorization]
 collections:
   - collection: rss
     allowedContentTypeSubstrings: [xml, rss, atom]
-    onMissingContentType: ALLOW
+    onMissingContentType: QUARANTINE
     maxBytes: 8000000
     defaultLabel: SAFE_PUBLIC
     rewriteBody: true
   - collection: atom
     allowedContentTypeSubstrings: [xml, rss, atom]
-    onMissingContentType: ALLOW
+    onMissingContentType: QUARANTINE
     maxBytes: 8000000
     defaultLabel: SAFE_PUBLIC
     rewriteBody: true
@@ -175,6 +189,63 @@ collections:
     defaultLabel: RESTRICTED
     onMissingContentType: RESTRICT
 ```
+
+## Changing the policy
+
+Two policy settings are part of how fact checks are identified. Changing them changes the
+dataset's identity scheme, not only the sanitizer's behavior. The rules in this section are a
+contract for anyone who edits the policy.
+
+### Why the policy affects identity
+
+A fact check's id is a hash of its source and its article URL (see
+[docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md#identity)). The extractor
+reads that URL from the body the sanitizer hands on. A setting that changes the URLs in a body
+therefore changes the ids computed from it.
+
+Nothing downstream removes an id that is no longer produced. When a fact check's id changes, the
+curated table and the search index keep the row under the old id and add one under the new id.
+
+### What each setting does to ids
+
+| Setting changed                                                     | Effect on fact-check ids                                                                                                        |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `stripQueryParams`: an entry added                                  | A fact check whose article URL carries that parameter gets a new id at its next fetch. It is then held twice                    |
+| `stripQueryParams`: an entry removed                                | The reverse: the parameter returns to the URL, the id changes back, and the fact check is held twice                            |
+| `rewriteBody`, on a collection rule or a source override            | The same as adding or removing every entry at once, for the sources the rule covers                                             |
+| An entry that selects a page, such as `p`, `id` or `post_type`      | Different articles from one source collapse into one id, and each overwrites the last. Never list one                           |
+| `dropHeaders`                                                       | None. Only the `http.headers` stored in rows change                                                                             |
+| Labels and gates: `defaultLabel`, `maxBytes`, content-type settings | None. They decide whether a feed is extracted at all. A source that stops being `SAFE_PUBLIC` stops producing and updating rows |
+
+Two further effects are not duplicates:
+
+- **New versions.** An item whose text contains a newly stripped URL gets a new version hash
+  (`fact_check.sha256`), because the hash covers the item's fields. The curated MERGE applies
+  that as an update to the existing row.
+- **A transition period.** The change applies to records sanitized after it. Records sanitized
+  earlier and still waiting for the extractor keep their old URLs, so ids in the old form can
+  arrive until that backlog clears.
+
+### Before changing `stripQueryParams` or `rewriteBody`
+
+1. **Check that the parameter never selects a page.** It must pass the selection rule in
+   [policy-rationale.md](./policy-rationale.md#the-selection-rule).
+2. **Check whether any article URL carries it.** Look for it in the staging table's
+   `fact_check.canonical_url`, `fact_check.link` and `fact_check.guid`.
+3. **If none does, the change does not touch identity.** It only affects links inside article
+   text. Affected rows are updated in place.
+4. **If some do, treat it as an identity change.** Each affected fact check will be held twice.
+   Plan the removal of the superseded ids from the curated table and the search index as part
+   of the same change.
+5. **Record the entry.** Add it, with its basis, to the list in
+   [policy-rationale.md](./policy-rationale.md#the-list), and make the same edit in all three
+   policy files.
+
+### When a change takes effect
+
+The sanitizer reads the policy once, at startup. In dev and prod the policy is a Secret Manager
+version mounted into the service, so deploying `ingestion-infra` publishes the new version and
+starts a sanitizer revision that uses it. Locally, restart the service.
 
 ## Archive contract
 

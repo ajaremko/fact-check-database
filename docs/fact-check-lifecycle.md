@@ -258,6 +258,9 @@ tracked in [todo.md](./todo.md).
   written under the current scheme.
 - Editing a fact check's title, summary or body never creates a second curated row or search
   record.
+- A fact check keeps one id for as long as two things stay the same: the definition of
+  `fact_check_id`, and the sanitizer policy settings that change URLs (`stripQueryParams` and
+  `rewriteBody`). See [Changing the rules](#changing-the-rules).
 - No batch file is loaded into staging twice.
 - Within one extractor batch, no two rows share a staging dedup key.
 
@@ -273,9 +276,6 @@ tracked in [todo.md](./todo.md).
 - The same article from two sources, or under two different URLs, is two fact checks.
 - A fact check removed from its feed stays in the curated table and the search index. Nothing
   deletes it.
-- A fact check whose link carried a tracking parameter was given an id that included it until
-  the sanitizer began stripping those parameters (2026-10). Its earlier curated row and search
-  record stay under the old id, next to the new one.
 - Records archived, curated or indexed before this scheme was introduced (2026-09) keep their
   earlier identifiers and are not rewritten. See the known issues for
   [ingestion-contracts](../projects/ingestion-contracts/docs/known-issues.md),
@@ -292,10 +292,12 @@ tracked in [todo.md](./todo.md).
 - **`fact_check_id` definition.** Changing it gives every existing fact check a new id. The
   curated table and search index would then hold each fact check twice until they were migrated.
   The `factCheckId` spec pins an id computed by BigQuery, so an accidental change fails the tests.
-- **The sanitizer's `stripQueryParams` list.** Adding an entry changes the article URL, and so
-  the id, of every fact check whose link carries that parameter. Only those fact checks are
-  affected, and they are held twice in the same way. See the
-  [sanitizer runbook](../projects/ingestion-sanitizer/docs/runbook.md#scrubbing).
+- **The sanitizer's `stripQueryParams` and `rewriteBody` settings.** These are part of the id's
+  definition, because they decide what the article URL looks like when the extractor reads it.
+  Adding or removing a parameter changes the id of every fact check whose article URL carries
+  it, and only those. The sanitizer runbook sets out what each policy setting does to ids and
+  what to check before changing one: see
+  [Changing the policy](../projects/ingestion-sanitizer/docs/runbook.md#changing-the-policy).
 
 ## Related documentation
 
