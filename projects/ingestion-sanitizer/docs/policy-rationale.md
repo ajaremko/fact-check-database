@@ -211,9 +211,9 @@ No source uses these rules. They exist so that a future collection starts from a
 rule instead of none.
 
 - **`html` is `RESTRICTED`.** A full web page carries far more third-party content and incidental
-  personal data than a feed does, so it should not be labelled for unrestricted use by default.
+  personal data than a feed does, so it should not be labeled for unrestricted use by default.
 - **`default` is `RESTRICTED`.** It catches a collection the policy has no rule for, so that a
-  source with an unrecognised collection is never labelled safe by accident.
+  source with an unrecognized collection is never labeled safe by accident.
 - **Both restrict on a missing content type, and none rewrites bodies.** The rewrite has only
   been checked against feed XML.
 

@@ -131,7 +131,7 @@ case-insensitively. An entry ending in `_` is a prefix: `utm_` matches `utm_sour
 **Bodies.** For a record that was not quarantined and whose rule sets `rewriteBody: true`, the
 same parameters are removed from every `http://` or `https://` URL in the body.
 
-- The sanitizer reads the raw body and edits only those URLs. It recognises `&` written as
+- The sanitizer reads the raw body and edits only those URLs. It recognizes `&` written as
   `&amp;`, `&#038;` or `&#x26;`, and URLs inside CDATA sections and escaped HTML.
 - Every other byte is left as fetched, whatever the feed's character encoding.
 - If the body changed, the result is written as a sanitized copy (see

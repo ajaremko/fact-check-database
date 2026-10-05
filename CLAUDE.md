@@ -40,6 +40,8 @@ Documentation in this repository is written for a mixed audience, including:
 
 Assume readers are technically literate but not necessarily familiar with this specific codebase.
 
+The root `README.md` has one more reader: someone evaluating the author's work, such as a prospective employer. It is the project's landing page. It summarizes what was built and links each claim to the document that supports it, in the same plain register as the rest of the documentation. See "Root-level documentation" in `docs/documentation-guidelines.md`.
+
 Documentation should:
 
 - explain why systems exist, not just how

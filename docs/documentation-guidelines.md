@@ -161,19 +161,39 @@ boundaries, tables for facts and prose for rationale) without adopting the libra
 structure above — nothing here should be forced into a README/runbook/known-issues shape that
 doesn't fit a whole repository.
 
-The root `README.md` should cover:
+The root `README.md` is also the project's landing page. Many of its readers arrive from outside
+the repository, for example an employer or reviewer following a link, and decide on the first
+screen whether to read on. Two rules follow:
 
-- **Mission and scope** — what the platform is for and who it's meant to be legible to.
-- **A "Domains" section** — one subsection per domain, opening with an ASCII diagram of the whole
-  pipeline's data flow, then, per domain, a short paragraph (what it does, why it's a separate
-  domain) directly followed by that domain's project table. Keep prose and table together per
-  domain rather than splitting them into separate sections — a reader should be able to
-  understand the pipeline, and find any project's README, from this one section alone. Keep the
-  tables current as projects are added, removed, or documented; drop a documentation-status
-  column once every project in the table actually has docs.
-- **Key shared technologies** (Nx, Pulumi, Docker, etc.) — what role each plays in this repository
-  specifically, not a generic description of the tool.
-- **Pointers to `docs/documentation-guidelines.md`** and to anything else in root `docs/`.
+- **Say what the system is, who built it and what state it is in before anything else.**
+- **Make claims as links.** A statement such as "least-privilege access" should link to the
+  document that shows it. Keep the register plain and let the linked evidence carry the weight:
+  no superlatives, and nothing the repository can't back up.
+
+The root `README.md` should cover, in this order:
+
+- **What it is, who built it, the public site and the current status**, in the first few lines.
+- **At a glance**: a short table of scope, platform and tooling.
+- **How it works**: an ASCII diagram of the pipeline's data flow and a few numbered steps. The
+  ingestion pipeline is the subject. Supporting flows, such as the site's form submissions,
+  belong in their own project's docs.
+- **What the project demonstrates**: a table mapping each area of practice to what was done here
+  and where to verify it.
+- **Problems found by running it**: a few real incidents, each linked to where it is documented.
+- **Scope and non-goals.**
+- **A "Domains and projects" section**: one subsection per domain, each a short paragraph (what
+  it does, why it's a separate domain) directly followed by that domain's project table. Keep
+  prose and table together per domain, so a reader can find any project's README from this one
+  section. Keep the tables current as projects are added, removed, or documented.
+- **Technology**: a table of what role each tool plays in this repository specifically, not a
+  generic description of the tool.
+- **Working in the repository**: a handful of commands that have been run as written, and
+  pointers to `docs/documentation-guidelines.md` and `docs/testing-guidelines.md`.
+- **Known limits and roadmap**: the few gaps a reader should know about, and pointers to
+  `docs/todo.md` and the per-project known issues.
+
+Every figure in it (project counts, schedules, source counts) is a claim that goes stale. Check
+them when the README is edited.
 
 `docs/todo.md` is a related but separate artifact: a consolidated, manually-curated action list —
 open repository-wide roadmap items plus one line per open entry across every project's
