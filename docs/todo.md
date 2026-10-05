@@ -13,11 +13,11 @@ to be a won't-fix.
       — currently identical boilerplate, none document the stack's actual resources
 - [x] Rewrite `website-infra/docs/algolia.md` and `docs-to-write.md` into finished docs
 - [ ] Sort the website's fact-checks feed via Algolia queries instead of local sort
-- [ ] Verify fact checks are deduped correctly across ingestion and analysis
-- [ ] Decide the staging dedup strategy — one row per fact check per fetch attempt (current), per
+- [x] Verify fact checks are deduped correctly across ingestion and analysis
+- [x] Decide the staging dedup strategy — one row per fact check per fetch attempt (current), per
       distinct feed body, or per content version; see [fact-check-lifecycle.md](./fact-check-lifecycle.md). Only
       `stagingDedupKey` in `ingestion-extractor` changes
-- [ ] Fix the extractor's throughput backlog — each run pulls a single 100-message batch twice a
+- [x] Fix the extractor's throughput backlog — each run pulls a single 100-message batch twice a
       day against ~360 sanitized records/day, so the backlog grows ~160/day and messages older
       than the subscription's 7-day retention expire unextracted (silent data loss). Loop pulls
       until the subscription is drained and/or run more often
@@ -64,13 +64,6 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
       the hardcoded dev project id
 - [x] Remove the unused `ingestion-sources.csv`/`sanitizer-policy.yml` GCS objects and their
       outputs from `src/assets/storage.ts` (config is actually served from Secret Manager)
-
-### ingestion-contracts
-
-See [known-issues.md](../projects/ingestion-contracts/docs/known-issues.md).
-
-- [ ] Convert (or add a decode path for) archive records written before the 2026-09 identity
-      change, if old records ever need to be reprocessed
 
 ### ingestion-ingestor
 
