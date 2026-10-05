@@ -83,10 +83,15 @@ inspection.
 
 - **Trigger:** a Pub/Sub push for each new fetch record.
 - **Does:** applies the content policy and labels the record `SAFE_PUBLIC`, `RESTRICTED` or
-  `QUARANTINED`.
+  `QUARANTINED`. It also scrubs the record: it drops the response headers the policy lists, and
+  strips the tracking parameters the policy lists (`utm_*`, `fbclid` and similar) from URLs,
+  including the article links inside the feed body.
 - **Writes:**
-  `v1/records/sanitizer/source={source.id}/date={day}/ingestor_run_id={id}/fetch_attempt.yml`
-- **Mints:** nothing. It copies the fetch record's identifiers.
+  - `v1/records/sanitizer/source={source.id}/date={day}/ingestor_run_id={id}/fetch_attempt.yml`
+  - `v1/sanitized/source={source.id}/date={day}/ingestor_run_id={id}/{content_sha256}.bin`, only
+    when stripping changed the body. The raw body is left as fetched.
+- **Mints:** a `content_sha256` for a body it rewrote. Otherwise it copies the fetch record's
+  identifiers.
 - **Duplicates:** the push subscription's ack deadline is 60 seconds, well above the sanitizer's
   slowest requests during an ingestor burst, so a message isn't redelivered while it is still
   being processed. When one is redelivered anyway, the output path is fixed for each fetch
@@ -101,7 +106,8 @@ inspection.
   records than arrive between runs, or the backlog grows until records reach the subscription's
   7-day retention and are deleted unread.
 - **Does:** parses each `SAFE_PUBLIC` feed into fact checks, assigns each a `fact_check_id`, and
-  writes one batch file per run.
+  writes one batch file per run. It reads the body the sanitizer record points at: the sanitized
+  copy when there is one, the raw body otherwise.
 - **Writes:** `v1/type=fact_checks/date={day}/{extractor_run_id}.batch.ndjson` in the core staging
   bucket. Full article bodies are deliberately not stored or republished: a row keeps the feed's
   own `summary` and a 500-character plain-text preview of the article for research queries.
@@ -152,7 +158,7 @@ columns.
 | Source             | `source.id`                                                  | The `id` column of the ingestion source list. One source is one feed                                                                                                                            | Yes (config)                                                   |
 | Ingestor run       | `ingestor_run_id`                                            | A UUID generated when an ingestor job run starts                                                                                                                                                | No, new per run                                                |
 | Fetch attempt      | `(source.id, ingestor_run_id)`                               | A run fetches each source once, so the pair identifies one fetch. There is no separate id                                                                                                       | n/a                                                            |
-| Fetched content    | `content_sha256`                                             | SHA-256 of the response body bytes                                                                                                                                                              | Yes, identical bytes give an identical hash                    |
+| Fetched content    | `content_sha256`                                             | SHA-256 of the body a row was extracted from: the response body, or the sanitizer's rewritten copy of it when one was written                                                                   | Yes, identical bytes give an identical hash                    |
 | Extractor run      | `extractor_run_id`                                           | A UUID generated when an extractor job run starts. It names the batch file the run writes                                                                                                       | No, new per run                                                |
 | Fact check         | `fact_check_id`                                              | SHA-256 of `source.id` + `\|` + the article URL. The article URL is the first non-null of `canonical_url`, `link`, `guid`. An item with none of those falls back to the feed URL + `\|` + title | Yes, across fetches and across edits to title, summary or body |
 | Fact check version | `fact_check.sha256` (staging), `fact_check_sha256` (curated) | SHA-256 of the item's raw feed fields                                                                                                                                                           | No, changes whenever any field is edited                       |
@@ -165,6 +171,10 @@ columns.
 - **The title is not part of `fact_check_id`.** Publishers edit headlines. If the title were
   part of the id, every edit would create a new fact check. The article URL stays the same
   through edits.
+- **Tracking parameters are not part of the article URL.** `?utm_source=rss` records how a
+  reader arrived, not which article it is. The sanitizer strips the parameters its policy lists
+  before the extractor sees the feed, so a publisher changing its campaign tags does not create
+  a new fact check. Parameters that select the page, such as `?p=4720`, are kept.
 - **`fact_check_id` is computed once.** The extractor's `factCheckId` function
   ([factCheckId.ts](../projects/ingestion-extractor/src/integration/factCheckId.ts)) is the only
   place that computes it. Staging stores it, and the curated MERGE and the search index read the
@@ -179,7 +189,8 @@ columns.
 | --------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Ingestor        | `v1/raw/source={source.id}/date={day}/ingestor_run_id={id}/{content_sha256}.bin`            | `source.id`, `ingestor_run_id`, `content_sha256`                                                                      |
 | Ingestor        | `v1/records/ingestion/source={source.id}/date={day}/ingestor_run_id={id}/fetch_attempt.yml` | `ingestor_run_id` and `content.sha256` inside the record                                                              |
-| Sanitizer       | `v1/records/sanitizer/source={source.id}/date={day}/ingestor_run_id={id}/fetch_attempt.yml` | The fetch record's identifiers, unchanged                                                                             |
+| Sanitizer       | `v1/sanitized/source={source.id}/date={day}/ingestor_run_id={id}/{content_sha256}.bin`      | `source.id`, `ingestor_run_id`, and the `content_sha256` of the rewritten body. Written only when the body changed    |
+| Sanitizer       | `v1/records/sanitizer/source={source.id}/date={day}/ingestor_run_id={id}/fetch_attempt.yml` | The fetch record's identifiers. `content.sha256` is the sanitized copy's hash when one was written                    |
 | Extractor       | `v1/type=fact_checks/date={day}/{extractor_run_id}.batch.ndjson`                            | Every row: `fact_check_id`, `fact_check.sha256`, `content_sha256`, `source.id`, `ingestor_run_id`, `extractor_run_id` |
 | Analysis loader | `staging.fact_checks`                                                                       | The row's identifiers. The load job id is derived from the batch object's name and generation                         |
 | Curated MERGE   | `curated.fact_checks`                                                                       | `fact_check_id`, `fact_check_sha256`, `content_sha256`                                                                |
@@ -262,6 +273,9 @@ tracked in [todo.md](./todo.md).
 - The same article from two sources, or under two different URLs, is two fact checks.
 - A fact check removed from its feed stays in the curated table and the search index. Nothing
   deletes it.
+- A fact check whose link carried a tracking parameter was given an id that included it until
+  the sanitizer began stripping those parameters (2026-10). Its earlier curated row and search
+  record stay under the old id, next to the new one.
 - Records archived, curated or indexed before this scheme was introduced (2026-09) keep their
   earlier identifiers and are not rewritten. See the known issues for
   [ingestion-contracts](../projects/ingestion-contracts/docs/known-issues.md),
@@ -278,6 +292,10 @@ tracked in [todo.md](./todo.md).
 - **`fact_check_id` definition.** Changing it gives every existing fact check a new id. The
   curated table and search index would then hold each fact check twice until they were migrated.
   The `factCheckId` spec pins an id computed by BigQuery, so an accidental change fails the tests.
+- **The sanitizer's `stripQueryParams` list.** Adding an entry changes the article URL, and so
+  the id, of every fact check whose link carries that parameter. Only those fact checks are
+  affected, and they are held twice in the same way. See the
+  [sanitizer runbook](../projects/ingestion-sanitizer/docs/runbook.md#scrubbing).
 
 ## Related documentation
 

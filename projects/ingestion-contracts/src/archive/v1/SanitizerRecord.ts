@@ -55,9 +55,14 @@ export const InputRecordRefSchema = Schema.Struct({
  * Schema for a record produced by the sanitizer after processing an ingestor record.
  *
  * Discriminators: `kind: 'sanitized_record'`, `version: 1`.
- * The `policy` field documents the access classification and the full ordered
- * list of actions applied. If the body was rewritten, `sanitizedRaw` points to
- * the modified bytes; for quarantined records, `error` describes the reason.
+ * `label` is the access classification and `actions` the full ordered list
+ * of actions applied; for quarantined records, `error` describes the reason.
+ *
+ * `content` describes the body downstream stages read. `content.sanitized`
+ * points at it, and `content.sha256` and `content.bytes` are its hash and
+ * size. When the sanitizer rewrote the body, that is the sanitized copy and
+ * `bytes_rewritten` is true. Otherwise it is the raw body, unchanged. In both
+ * cases `input.raw` points at the raw body as it was fetched.
  */
 export const SanitizerRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
@@ -74,7 +79,8 @@ export const SanitizerRecordSchema = Schema.Struct({
   label: PolicyLabelSchema,
   actions: Schema.Array(SanitizationActionSchema),
   notes: Schema.optional(Schema.String),
-  // Set to true if the sanitizer rewrote the body bytes
+  // True when the sanitizer wrote a sanitized copy of the body, which
+  // `content.sanitized` then points at
   bytes_rewritten: Schema.optional(Schema.Boolean),
   http: Schema.optional(
     Schema.Struct({

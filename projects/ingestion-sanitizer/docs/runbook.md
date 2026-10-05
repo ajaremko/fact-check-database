@@ -47,24 +47,24 @@ The publisher exists only to satisfy `FileSystemStorageWriterWithNotification`'s
 
 A YAML document, loaded once at startup and held for the process's lifetime.
 
-| Field              | Type     | Description                                                                                |
-| ------------------ | -------- | ------------------------------------------------------------------------------------------ |
-| `version`          | number   | Policy schema version                                                                      |
-| `stripQueryParams` | string[] | **Declared and populated, but never read** — see [docs/known-issues.md](./known-issues.md) |
-| `dropHeaders`      | string[] | **Declared and populated, but never read** — see [docs/known-issues.md](./known-issues.md) |
-| `collections`      | array    | Per-collection classification rules                                                        |
-| `overrides`        | array    | Per-source overrides that extend a collection rule                                         |
+| Field              | Type     | Description                                                                                         |
+| ------------------ | -------- | --------------------------------------------------------------------------------------------------- |
+| `version`          | number   | Policy schema version                                                                               |
+| `stripQueryParams` | string[] | Query parameters removed from URLs. See [Scrubbing](#scrubbing)                                     |
+| `dropHeaders`      | string[] | Response headers removed from every record, matched case-insensitively. See [Scrubbing](#scrubbing) |
+| `collections`      | array    | Per-collection classification rules                                                                 |
+| `overrides`        | array    | Per-source overrides that extend a collection rule                                                  |
 
 ### Collection rules
 
-| Field                          | Type                                  | Required                  | Description                                                                                |
-| ------------------------------ | ------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
-| `collection`                   | string                                | Yes                       | Matches the target list's `collection` value (e.g. `rss`, `atom`)                          |
-| `maxBytes`                     | number                                | Yes                       | Records over this size are quarantined                                                     |
-| `defaultLabel`                 | `PolicyLabel`                         | Yes                       | Label assigned when nothing else quarantines the record (`SAFE_PUBLIC` or `RESTRICTED`)    |
-| `allowedContentTypeSubstrings` | string[]                              | No                        | Records whose content-type doesn't match are quarantined                                   |
-| `onMissingContentType`         | `ALLOW` \| `RESTRICT` \| `QUARANTINE` | No (default `QUARANTINE`) | Behavior when content-type is absent                                                       |
-| `rewriteBody`                  | boolean                               | No                        | **Declared and populated, but never read** — see [docs/known-issues.md](./known-issues.md) |
+| Field                          | Type                                  | Required                  | Description                                                                                         |
+| ------------------------------ | ------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------- |
+| `collection`                   | string                                | Yes                       | Matches the target list's `collection` value (e.g. `rss`, `atom`)                                   |
+| `maxBytes`                     | number                                | Yes                       | Records over this size are quarantined                                                              |
+| `defaultLabel`                 | `PolicyLabel`                         | Yes                       | Label assigned when nothing else quarantines the record (`SAFE_PUBLIC` or `RESTRICTED`)             |
+| `allowedContentTypeSubstrings` | string[]                              | No                        | Records whose content-type doesn't match are quarantined                                            |
+| `onMissingContentType`         | `ALLOW` \| `RESTRICT` \| `QUARANTINE` | No (default `QUARANTINE`) | Behavior when content-type is absent                                                                |
+| `rewriteBody`                  | boolean                               | No (default `false`)      | Whether `stripQueryParams` is also applied to the URLs inside the body. See [Scrubbing](#scrubbing) |
 
 ### Source overrides
 
@@ -83,6 +83,64 @@ For every record, in order:
 4. Content-type not allowed by the matched rule → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
 5. Otherwise → the matched rule's `defaultLabel`.
 
+### Scrubbing
+
+Classification decides who may use a record. Scrubbing removes what no downstream user should
+receive at all. It runs after classification, and every step it applies is listed in the
+record's `actions`.
+
+**Why it exists.** A fetch record copies the publisher's response headers, and the extractor
+copies them again into every row. Feed links often carry tracking parameters, and the extractor
+derives a fact check's identity from its link.
+
+- A `set-cookie` header is a session credential issued to the crawler. It has no research value
+  and should not reach the dataset.
+- `?utm_source=rss` says how a reader reached an article, not which article it is. Left in, the
+  same article gets a different `fact_check_id` whenever a publisher changes its campaign tags.
+
+**Headers.** `dropHeaders` applies to every record that has response metadata, quarantined ones
+included.
+
+- A listed header is removed from the record's `http.headers`. `Set-Cookie` matches a
+  `set-cookie` entry.
+- The fields the ingestor lifted out of the headers (`content_type`, `etag`, `last_modified`) are
+  not affected.
+- Action recorded: `DROPPED_HEADERS`.
+
+**Query parameters.** An entry in `stripQueryParams` is a parameter name, matched
+case-insensitively. An entry ending in `_` is a prefix: `utm_` matches `utm_source` and
+`utm_medium`, while `gclid` matches only `gclid`.
+
+- A listed parameter is removed with its value. Every other parameter, the order they are in and
+  the fragment are kept as written, so `?p=4720` and `?resize=75,75` still work.
+- When no parameter is left, the `?` is removed too.
+- It always applies to the record's `http.final_url`. `source.url` is never changed: it is the
+  feed's configured address.
+- Action recorded: `QUERY_STRIPPED`.
+
+**Bodies.** For a record that was not quarantined and whose rule sets `rewriteBody: true`, the
+same parameters are removed from every `http://` or `https://` URL in the body.
+
+- The sanitizer reads the raw body and edits only those URLs. It recognises `&` written as
+  `&amp;`, `&#038;` or `&#x26;`, and URLs inside CDATA sections and escaped HTML.
+- Every other byte is left as fetched, whatever the feed's character encoding.
+- If the body changed, the result is written as a sanitized copy (see
+  [Archive contract](#archive-contract)). The record's `content.sanitized` points at it,
+  `content.sha256` and `content.bytes` describe it, and `bytes_rewritten` is `true`.
+- If nothing changed, no copy is written and the record points at the raw body, as it does for a
+  rule without `rewriteBody`.
+- The raw body is never modified. `input.raw` points at it in every record.
+- Actions recorded: `QUERY_STRIPPED` and `BODY_REWRITTEN`.
+
+**What scrubbing does not do.**
+
+- It does not remove scripts, tracking pixels or other markup from the HTML inside feed items.
+- It does not change relative URLs, or URLs nested inside another URL's parameter value.
+- It does not rewrite quarantined bodies. They are not extracted.
+
+Changing `stripQueryParams` changes the `fact_check_id` of any fact check whose link carried a
+newly listed parameter. See [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md).
+
 ### Example (the real local development policy)
 
 ```yaml
@@ -95,11 +153,13 @@ collections:
     onMissingContentType: ALLOW
     maxBytes: 8000000
     defaultLabel: SAFE_PUBLIC
+    rewriteBody: true
   - collection: atom
     allowedContentTypeSubstrings: [xml, rss, atom]
     onMissingContentType: ALLOW
     maxBytes: 8000000
     defaultLabel: SAFE_PUBLIC
+    rewriteBody: true
   - collection: api
     allowedContentTypeSubstrings: [json]
     onMissingContentType: RESTRICT
@@ -126,7 +186,19 @@ Objects are written under (built by `ingestion-contracts`'s `ArchivePathSchema`,
 v1/records/sanitizer/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/fetch_attempt.yml
 ```
 
-The path mirrors the `IngestionRecord` it was derived from — `source` + `ingestor_run_id` identify the fetch attempt, and there's no separate "sanitization ID" (see [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md)). No sanitized-body object path exists yet (see the README's Roadmap).
+The path mirrors the `IngestionRecord` it was derived from — `source` + `ingestor_run_id` identify the fetch attempt, and there's no separate "sanitization ID" (see [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md)).
+
+A body the sanitizer rewrote is written beside it, named after the SHA-256 of the rewritten bytes:
+
+```
+v1/sanitized/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/{contentSha256}.bin
+```
+
+- It exists only for a record whose body changed. Most records have none.
+- It is written before the record that points at it, so a record never references a missing
+  object.
+- Writing it sends no notification. Only objects under `v1/records/` do.
+- A redelivered message writes the same bytes to the same path.
 
 ## Logging
 
@@ -170,6 +242,8 @@ The library levels are documented in the [core-io](../../core-io/README.md#loggi
 | `input.bucket`, `input.object`                                                  | Every line for a message, once its notification is decoded: the ingestion record being sanitized |
 | `source.id`, `source.name`, `source.url`, `source.collection`                   | `Record sanitized`                                                                               |
 | `decision.label`, `decision.actions`                                            | `Record sanitized`                                                                               |
+| `headers.dropped`, `body.urlsStripped`                                          | `Record sanitized`: how many headers were removed, and how many URLs in the body were changed    |
+| `sanitized.object`                                                              | `Record sanitized`, only when a sanitized copy of the body was written                           |
 | `record.object`                                                                 | `Record sanitized`: the sanitizer record written                                                 |
 | `policy.uri` or `policy.path`, `policy.version`, `policy.collections.length`    | `Sanitizer policy loaded`                                                                        |
 | `error._tag`, `message.outcome`                                                 | `Sanitization failed`                                                                            |
@@ -201,7 +275,7 @@ The library levels are documented in the [core-io](../../core-io/README.md#loggi
 **Symptom:** `Message redelivered` warnings with a rising `message.deliveryAttempt`, and `Sanitization failed` lines with `error._tag` `StorageReadError` or `StorageWriteError` and `message.outcome: nack` for the same `message.messageId`.
 **Steps:**
 
-1. For a read failure: verify the service account has `storage.objects.get` on the archive bucket, and that the object referenced by the notification's `bucketId`/`objectId` actually exists — if the ingestor's own write failed, it won't.
+1. For a read failure: verify the service account has `storage.objects.get` on the archive bucket, and that the object referenced by the notification's `bucketId`/`objectId` actually exists — if the ingestor's own write failed, it won't. For a rule with `rewriteBody: true`, the sanitizer also reads the raw body the record points at. If that read fails, no record is written: the message is retried, so a record never points at a body the policy says must be rewritten.
 2. For a write failure: verify `storage.objects.create` on the archive bucket, and check bucket quotas/availability.
 3. To see which storage call failed and with what status code, set `LOGGING_LEVEL=debug` and filter on the same `message.messageId`.
 4. Once the underlying issue is fixed, the next redelivery should succeed.
@@ -229,4 +303,6 @@ The same pattern with `error._tag: Defect` is an unexpected bug in this service.
 ls "$STORAGE_OUTPUT_DIR"
 ```
 
-See [docs/known-issues.md](./known-issues.md) for this project's current accepted gaps.
+Sanitizer records are under `v1/records/sanitizer/`, and rewritten bodies under `v1/sanitized/`.
+To see what a rewrite changed, compare a sanitized body with the raw body its record's
+`input.raw` points at.

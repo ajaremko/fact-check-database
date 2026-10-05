@@ -37,11 +37,11 @@ export const CollectionRuleSchema = Schema.Struct({
   // Default label if it passes gates (SAFE_PUBLIC for rss/api, RESTRICTED for html, etc.)
   defaultLabel: PolicyLabelSchema,
 
-  // Should we rewrite body bytes for this collection? (v1: usually false)
+  // Should the body be rewritten for this collection? When true, the policy's
+  // `stripQueryParams` are removed from every URL in a body that passes the
+  // gates above, and a body that changed is archived as a sanitized copy.
+  // When false or absent, records point at the raw body.
   rewriteBody: Schema.optional(Schema.Boolean),
-
-  // If rewriteBody is true: write sanitized bytes here; otherwise reference original raw
-  // (kept in env/config, not hardcoded)
 })
 
 export type CollectionRule = Schema.Schema.Type<typeof CollectionRuleSchema>
@@ -65,7 +65,10 @@ export class SanitizerPolicy extends Schema.Class<SanitizerPolicy>(
   'SanitizerPolicy'
 )({
   version: Schema.Number,
+  // Query parameters removed from URLs: a parameter name, or a prefix when
+  // the entry ends in `_` (`utm_` matches `utm_source`). Case-insensitive.
   stripQueryParams: Schema.Array(Schema.String),
+  // Response headers removed from every record. Case-insensitive names.
   dropHeaders: Schema.Array(Schema.String),
   collections: Schema.Array(CollectionRuleSchema),
   overrides: Schema.optional(Schema.Array(SourceOverrideSchema)),

@@ -53,8 +53,8 @@ The batch file holds one row per extracted fact-check. A row's `content` field i
 plain-text preview of the article body: 500 characters, cut at a word boundary. It is kept for
 research queries in BigQuery and is never sent to the website's search index. The full article
 is deliberately not stored by the pipeline, because serving it would republish third-party
-content. The raw feed body, article text included, remains only in the encrypted ingestion
-archive.
+content. The feed body, article text included, remains only in the encrypted ingestion archive:
+the raw body, and the sanitizer's rewritten copy when it wrote one.
 
 Input decoding (the sanitizer's `SanitizerRecord` and the platform's `SourceConfig`) uses
 `@fact-check-database/ingestion-contracts` instead — this project's _output_ contract and its _input_

@@ -97,7 +97,8 @@ export const FactChecksTableDBSchema = {
  *   `fact_check_id` identifies the fact check itself (source + article URL)
  *   and stays the same when its content is edited; `fact_check.sha256`
  *   identifies the version of its content; `content_sha256` identifies the
- *   fetched feed body the row was extracted from. `source.id` +
+ *   feed body the row was extracted from: the sanitizer's rewritten copy
+ *   when it wrote one, the fetched body otherwise. `source.id` +
  *   `ingestor_run_id` identify the fetch attempt, and `extractor_run_id` the
  *   extractor run that wrote the row.
  * - Provenance: `extractor_id` and `extractor_version` record which

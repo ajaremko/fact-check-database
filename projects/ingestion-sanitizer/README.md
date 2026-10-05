@@ -10,18 +10,22 @@ It is the second stage in the platform's data pipeline. Its inputs are produced 
 - Read the corresponding `IngestionRecord` from the archive
 - Evaluate the fetch attempt against the active sanitization policy
 - Assign a policy label (`SAFE_PUBLIC`, `RESTRICTED`, or `QUARANTINED`) to each record
+- Scrub what no downstream user should receive: drop the response headers the policy lists (session cookies, for example), and remove the tracking parameters it lists from URLs, including the URLs inside a feed body
+- Archive a sanitized copy of any body it changed, leaving the raw body untouched
 - Archive a structured `SanitizerRecord` for every record it processes, including failed fetch attempts
 
 ## What this service does not do
 
 - Fetch content from the network (the [ingestor](../ingestion-ingestor/README.md)'s job)
-- Rewrite or strip response body content — see Roadmap below
+- Modify or delete a raw body — a rewrite is always written as a separate copy
+- Remove scripts, tracking pixels or other markup from the HTML inside feed items — see Roadmap below
 - Publish a downstream event when it finishes — see Roadmap below
 - Deduplicate across sanitization runs — see Roadmap below
 
 ## Roadmap
 
-- [ ] Rewrite or strip response body content
+- [x] Drop listed response headers and strip listed query parameters from URLs, in records and in feed bodies
+- [ ] Strip scripts and tracking markup from the HTML inside feed items
 - [ ] Publish a downstream event when a record is sanitized
 - [ ] Apply deduplication across sanitization runs
 
@@ -38,7 +42,9 @@ Message Queue
       ▼
  Read IngestionRecord from archive
       │
-      ├── outcome: data_fetched ──► Evaluate policy ──► Write SanitizerRecord ──► ack
+      ├── outcome: data_fetched ──► Evaluate policy ──► Scrub ──► Write SanitizerRecord ──► ack
+      │                                                   │
+      │                                                   └── body changed ──► Write sanitized body
       │
       └── outcome: no_response  ──► Evaluate policy (quarantined) ──► Write SanitizerRecord ──► ack
 ```
@@ -53,8 +59,9 @@ This service never consumes a domain-specific event. What arrives on its message
 2. **Receive a message** identifying a newly archived `IngestionRecord` (bucket + object).
 3. **Read the record** from the archive using that pointer.
 4. **Evaluate the sanitization policy** — see [docs/runbook.md](./docs/runbook.md) for the exact rule format and evaluation order.
-5. **Archive a `SanitizerRecord`** — every record gets one, including `outcome: no_response` records (which are quarantined, not skipped).
-6. **Acknowledge or reject the message** — see "Message acknowledgement" below.
+5. **Scrub the record** — drop the listed response headers and strip the listed query parameters from its URL. For a rule with `rewriteBody: true`, also strip them from the URLs in the body, and archive the result as a sanitized copy if anything changed. See the runbook's [Scrubbing](./docs/runbook.md#scrubbing) section for why and exactly what is removed.
+6. **Archive a `SanitizerRecord`** — every record gets one, including `outcome: no_response` records (which are quarantined, not skipped). It lists every action taken and points at the body downstream stages should read.
+7. **Acknowledge or reject the message** — see "Message acknowledgement" below.
 
 ### Message acknowledgement
 
@@ -75,7 +82,7 @@ nx lint ingestion-sanitizer
 nx build ingestion-sanitizer
 ```
 
-Two spec files give solid coverage of policy evaluation and the sanitize-one-record path; nothing currently covers `main.ts`'s wiring or the message-processing loop itself.
+The specs cover policy evaluation, header dropping, query-parameter stripping, the sanitize-one-record path and per-message handling; nothing currently covers `main.ts`'s wiring.
 
 ### Local setup
 
@@ -100,6 +107,5 @@ See [docs/runbook.md](./docs/runbook.md) for the complete configuration referenc
 | Document                                                           | Purpose                                                         |
 | ------------------------------------------------------------------ | --------------------------------------------------------------- |
 | [docs/runbook.md](./docs/runbook.md)                               | Configuration reference, policy format, and diagnosing failures |
-| [docs/known-issues.md](./docs/known-issues.md)                     | Accepted, long-lived gaps and deferred fixes                    |
 | [ingestion-contracts](../ingestion-contracts/README.md)            | The canonical `SanitizerRecord` schema this service archives    |
-| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | The identifiers this service carries forward unchanged          |
+| [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | The identifiers this service carries forward                    |

@@ -94,7 +94,10 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
         actions: input.outcome.decision.actions as Mutable<
           typeof input.outcome.decision.actions
         >,
-        bytes_rewritten: input.outcome.decision.rewriteBody,
+        // True only when a sanitized copy of the body was written. A rule
+        // that asks for rewriting leaves it false when the body had nothing
+        // to remove.
+        bytes_rewritten: input.outcome.sanitized !== null,
       }
       if (input.outcome.decision.error) {
         output.error = input.outcome.decision.error
@@ -179,6 +182,44 @@ export const SanitizedObservationPathSchema = Schema.transformOrFail(
         date: input.fetchedAt,
         ingestorRunId: input.ingestorRunId,
         fileName: 'fetch_attempt',
+      }),
+  }
+)
+
+/**
+ * A response body the sanitizer rewrote, archived under the SHA-256 of the
+ * rewritten bytes. The raw body it was derived from stays where the ingestor
+ * archived it, under `v1/raw/`.
+ */
+export const SanitizedBodySchema = Schema.Struct({
+  contentSha256: Schema.String,
+  ingestorRunId: Schema.String,
+  sourceId: Schema.String,
+  fetchedAt: TimestampSchema,
+})
+
+export const SanitizedBodyPathSchema = Schema.transformOrFail(
+  ArchivePathSchema,
+  SanitizedBodySchema,
+  {
+    strict: true,
+    decode: (input, _, ast) =>
+      ParseResult.fail(
+        new ParseResult.Forbidden(
+          ast,
+          input,
+          'Decoding SanitizedBodyPath not implemented'
+        )
+      ),
+    encode: (input) =>
+      ParseResult.succeed({
+        version: 1 as const,
+        collectionName: 'sanitized',
+        ext: `bin`,
+        sourceId: input.sourceId,
+        date: input.fetchedAt,
+        ingestorRunId: input.ingestorRunId,
+        fileName: input.contentSha256,
       }),
   }
 )

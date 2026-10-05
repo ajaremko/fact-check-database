@@ -81,15 +81,19 @@ See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
 
 ### ingestion-sanitizer
 
-See [known-issues.md](../projects/ingestion-sanitizer/docs/known-issues.md).
-
-- [ ] Implement `stripQueryParams`/`dropHeaders`/`rewriteBody` policy handling in
+- [x] Implement `stripQueryParams`/`dropHeaders`/`rewriteBody` policy handling in
       `evaluatePolicy.ts`/`sanitizeObservation.ts` — the policy schema declares them but nothing
       reads them yet
+- [ ] Strip scripts and tracking markup from the HTML inside feed items (`rewriteBody` only
+      strips query parameters from URLs today)
 
 ### ingestion-extractor
 
 See [known-issues.md](../projects/ingestion-extractor/docs/known-issues.md).
+
+- [ ] Decode numeric XML entities in extracted URLs — a link written as
+      `?p=4720&#038;post_type=fact-check` in a feed is stored with the literal `&#038;` instead of
+      `&`
 
 - [x] Resolve the commented-out publish path in `main.ts`/`app/index.ts` — finish it or remove the
       dead code

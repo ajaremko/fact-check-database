@@ -18,7 +18,7 @@ collections:
     onMissingContentType: ALLOW
     maxBytes: 8000000
     defaultLabel: SAFE_PUBLIC
-    rewriteBody: false
+    rewriteBody: true
 
   - collection: atom
     allowedContentTypeSubstrings:
@@ -28,7 +28,7 @@ collections:
     onMissingContentType: ALLOW
     maxBytes: 8000000
     defaultLabel: SAFE_PUBLIC
-    rewriteBody: false
+    rewriteBody: true
 
   - collection: api
     allowedContentTypeSubstrings:

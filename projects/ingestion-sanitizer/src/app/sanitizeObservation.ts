@@ -1,5 +1,6 @@
 import { Effect, Metric, pipe, Schema } from 'effect'
 
+import { omitNullKeys } from '@fact-check-database/core-data'
 import * as Node from '@fact-check-database/core-data/Node'
 import * as Yaml from '@fact-check-database/core-data/Yaml'
 import {
@@ -7,6 +8,7 @@ import {
   FilePointerSchema,
 } from '@fact-check-database/ingestion-contracts/archive/v1'
 import {
+  Timestamp,
   TimestampEncoded,
   TimestampSchema,
 } from '@fact-check-database/ingestion-contracts/shared/v1'
@@ -23,9 +25,13 @@ import {
   SanitizedObservationMetaSchema,
   SanitizedObservationSchema,
   SanitizedObservationPathSchema,
+  SanitizedBodyPathSchema,
 } from './SanitizedObservation'
 import { ObservationSchema } from './Observation'
+import type { SanitizationAction } from './PolicyDecision'
 import { evaluatePolicy } from './evaluatePolicy'
+import { dropHeaders } from './dropHeaders'
+import { stripQueryParams, stripQueryParamsInText } from './stripQueryParams'
 
 const decodeObservation = pipe(
   ObservationSchema,
@@ -47,6 +53,17 @@ const encodeSanitizedObservationMeta = Schema.encode(
 const encodeSanitizedObservationPath = Schema.encode(
   SanitizedObservationPathSchema
 )
+const encodeSanitizedBodyPath = Schema.encode(SanitizedBodyPathSchema)
+
+// Latin-1 maps every byte to one character and back. Reading a body this way
+// lets it be edited as text without changing any byte the edit doesn't
+// touch, whatever encoding the feed is in. The URLs being edited are ASCII.
+const BodyTextSchema = pipe(
+  Schema.String,
+  Node.parseUint8Array({ encoding: 'latin1' })
+)
+const decodeBodyText = Schema.decode(BodyTextSchema)
+const encodeBodyText = Schema.encode(BodyTextSchema)
 
 const decodeArgs = Schema.decode(
   Schema.Struct({
@@ -57,6 +74,50 @@ const decodeArgs = Schema.decode(
 )
 
 const contentRecordsSanitized = Metric.counter('content_records_sanitized')
+
+/**
+ * Strips the policy's listed query parameters from every URL in a raw body.
+ * When that changes the body, the result is archived as a sanitized copy and
+ * described in the return value. Returns `null` when the body had nothing to
+ * remove: no copy is written, and the record keeps pointing at the raw body.
+ */
+const rewriteBody = Effect.fn('rewriteBody')(function* (args: {
+  raw: FilePointer
+  contentType: string | null
+  stripQueryParams: ReadonlyArray<string>
+  sourceId: string
+  ingestorRunId: string
+  fetchedAt: Timestamp
+}) {
+  const rawBody = yield* readFile(args.raw)
+  const rawText = yield* decodeBodyText(rawBody)
+
+  const stripped = stripQueryParamsInText(rawText, args.stripQueryParams)
+  if (stripped.urlsChanged === 0) return null
+
+  const body = yield* encodeBodyText(stripped.text)
+  const sha256 = yield* Node.sha256Hex(body)
+  const path = yield* encodeSanitizedBodyPath({
+    contentSha256: sha256,
+    sourceId: args.sourceId,
+    ingestorRunId: args.ingestorRunId,
+    fetchedAt: args.fetchedAt,
+  })
+  const pointer = yield* writeFile(
+    omitNullKeys({
+      path,
+      data: body,
+      contentType: args.contentType,
+    })
+  )
+
+  return {
+    pointer,
+    sha256,
+    bytes: body.byteLength,
+    urlsStripped: stripped.urlsChanged,
+  }
+})
 
 export const sanitizeObservation = Effect.fn('sanitizeObservation')(
   function* (args: {
@@ -79,35 +140,80 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       'source.collection': observation.source.collection,
     })
 
-    const decision = evaluatePolicy(ctx.policy, observation)
-    yield* Effect.annotateLogsScoped({
-      'decision.label': decision.label,
-      'decision.actions': decision.actions.join(','),
-    })
+    const evaluated = evaluatePolicy(ctx.policy, observation)
+    const raw = observation.raw
 
     yield* Metric.increment(contentRecordsSanitized).pipe(
       Effect.tagMetrics({
-        decision_label: decision.label,
+        decision_label: evaluated.label,
         source_collection: observation.source.collection,
         source_name: observation.source.name,
       })
     )
+
+    // The response metadata is scrubbed on every record that has it,
+    // quarantined ones included: the record is archived either way.
+    const headers = dropHeaders(raw?.http.headers ?? {}, ctx.policy.dropHeaders)
+    const rawFinalUrl = raw?.http.finalUrl ?? null
+    const finalUrl =
+      rawFinalUrl === null
+        ? null
+        : stripQueryParams(rawFinalUrl, ctx.policy.stripQueryParams)
+
+    // The body is rewritten only for a record that passed every gate:
+    // `evaluatePolicy` reports `rewriteBody` as false for the rest. With no
+    // parameters listed there is nothing to strip, so the body isn't read.
+    const sanitizedBody =
+      raw && evaluated.rewriteBody && ctx.policy.stripQueryParams.length > 0
+        ? yield* rewriteBody({
+            raw: raw.pointer,
+            contentType: raw.http.contentType,
+            stripQueryParams: ctx.policy.stripQueryParams,
+            sourceId: observation.source.id,
+            ingestorRunId: observation.ingestorRunId,
+            fetchedAt: observation.fetchedAt,
+          })
+        : null
+
+    const actions: SanitizationAction[] = [...evaluated.actions]
+    if (headers.dropped.length > 0) actions.push('DROPPED_HEADERS')
+    if (finalUrl !== rawFinalUrl || sanitizedBody)
+      actions.push('QUERY_STRIPPED')
+    if (sanitizedBody) actions.push('BODY_REWRITTEN')
+    const decision = { ...evaluated, actions }
+
+    yield* Effect.annotateLogsScoped({
+      'decision.label': decision.label,
+      'decision.actions': decision.actions.join(','),
+      'headers.dropped': headers.dropped.length,
+      'body.urlsStripped': sanitizedBody ? sanitizedBody.urlsStripped : 0,
+    })
+    if (sanitizedBody) {
+      yield* Effect.annotateLogsScoped({
+        'sanitized.object': sanitizedBody.pointer.object,
+      })
+    }
 
     const sanitizedObservation = new SanitizedObservation({
       ingestorRunId: observation.ingestorRunId,
       fetchedAt: observation.fetchedAt,
       sanitizedAt: ctx.timestamp,
       source: observation.source,
-      http:
-        observation.raw && observation.raw.http ? observation.raw.http : null,
-      content: observation.raw ? observation.raw.content : null,
+      http: raw ? { ...raw.http, finalUrl, headers: headers.headers } : null,
+      // `content` describes the body downstream stages read: the sanitized
+      // copy when one was written, the raw body otherwise.
+      content: sanitizedBody
+        ? { sha256: sanitizedBody.sha256, bytes: sanitizedBody.bytes }
+        : raw
+        ? raw.content
+        : null,
       outcome: {
         decision,
-        sanitized: null,
+        sanitized: sanitizedBody ? sanitizedBody.pointer : null,
       },
       input: {
         record: ctx.pointer,
-        raw: observation.raw ? observation.raw.pointer : null,
+        raw: raw ? raw.pointer : null,
       },
       error: decision.error,
     })
