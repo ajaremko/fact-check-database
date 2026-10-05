@@ -94,14 +94,11 @@ const authContainer: pulumi.Input<
     : []
 
 export const factCheckDatabaseBackendService = new gcp.cloudrun.Service(
-  `${tag}-fact-check-database-backend-service`,
+  `${tag}-backend-service`,
   {
     location: gcpRegion,
     metadata: {
       namespace: gcpProject,
-      annotations: {
-        // 'run.googleapis.com/container-dependencies': '{"proxy":["backend"]}',
-      },
     },
     template: {
       spec: {
