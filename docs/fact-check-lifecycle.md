@@ -91,7 +91,9 @@ inspection.
   - `v1/sanitized/source={source.id}/date={day}/ingestor_run_id={id}/{content_sha256}.bin`, only
     when stripping changed the body. The raw body is left as fetched.
 - **Mints:** a `content_sha256` for a body it rewrote. Otherwise it copies the fetch record's
-  identifiers.
+  identifiers. It also stamps each record with `policy_version`, the revision of the policy it
+  applied. That is provenance, not identity: it travels to the staging row and the curated row as
+  `sanitizer_policy_version`, and it is not part of any id or dedup key.
 - **Duplicates:** the push subscription's ack deadline is 60 seconds, well above the sanitizer's
   slowest requests during an ingestor burst, so a message isn't redelivered while it is still
   being processed. When one is redelivered anyway, the output path is fixed for each fetch
@@ -195,6 +197,10 @@ columns.
 | Analysis loader | `staging.fact_checks`                                                                       | The row's identifiers. The load job id is derived from the batch object's name and generation                         |
 | Curated MERGE   | `curated.fact_checks`                                                                       | `fact_check_id`, `fact_check_sha256`, `content_sha256`                                                                |
 | Website loader  | Algolia search index                                                                        | `objectID` = `fact_check_id`                                                                                          |
+
+Sanitizer records also carry `policy_version`, and staging and curated rows carry it as
+`sanitizer_policy_version`. It records which revision of the sanitizer policy produced them and is
+not an identifier.
 
 ## Deduplication
 

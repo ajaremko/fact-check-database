@@ -137,6 +137,45 @@ if (!deadletterSoftDeleteDays) {
 }
 
 /**
+ * The age, in days, at which an object in the archive bucket moves to Nearline
+ * storage. Unset means objects are never moved to Nearline.
+ *
+ * The archive is a permanent record that is rarely read once the pipeline has
+ * processed it, so production moves it to cheaper storage classes as it ages.
+ * Leave this and `archiveColdlineAfterDays` unset in non-production
+ * environments to keep everything in Standard storage.
+ */
+export const archiveNearlineAfterDays = ingestionConfig.getNumber(
+  'archiveNearlineAfterDays'
+)
+
+/**
+ * The age, in days, at which an object in the archive bucket moves to Coldline
+ * storage. Unset means objects are never moved to Coldline. With
+ * `archiveNearlineAfterDays` unset, objects move straight from Standard.
+ */
+export const archiveColdlineAfterDays = ingestionConfig.getNumber(
+  'archiveColdlineAfterDays'
+)
+
+// Nearline bills a minimum of 30 days of storage. An object moved on to
+// Coldline sooner still pays for the rest of them.
+const NEARLINE_MINIMUM_STORAGE_DAYS = 30
+
+if (
+  archiveNearlineAfterDays !== undefined &&
+  archiveColdlineAfterDays !== undefined &&
+  archiveColdlineAfterDays - archiveNearlineAfterDays <
+    NEARLINE_MINIMUM_STORAGE_DAYS
+) {
+  console.warn(
+    `⚠️\tArchive objects spend ${
+      archiveColdlineAfterDays - archiveNearlineAfterDays
+    } days in Nearline before moving to Coldline. Nearline bills a ${NEARLINE_MINIMUM_STORAGE_DAYS}-day minimum, so the unused days are still charged.`
+  )
+}
+
+/**
  * Whether to force destroy storage buckets when deleting the stack. This will permanently
  * delete all data in the bucket, so it should be used with caution. It is recommended to
  * set this to true in non-production environments for easier cleanup, and false in production

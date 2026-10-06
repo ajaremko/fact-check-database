@@ -9,21 +9,45 @@ Reference for the `ingestion` Pulumi config namespace, read by `src/config.ts`. 
 `pulumi config set ingestion:<key> <value> --stack=<dev|prod>` (or directly in
 `Pulumi.<stack>.yml`).
 
-| Key                                  | Description                                                                                                                     | Required            | dev                                     | prod                            |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------- | ------------------------------- |
-| `ingestion:coreStackName`            | The core-infra stack this project reads a `StackReference` from                                                                 | Yes                 | `alfredsyoung/fact-check-database-core` | same                            |
-| `ingestion:project`                  | GCP project ID this stack deploys into                                                                                          | Yes                 | `fact-check-database-dev`               | `fact-check-database-ingestion` |
-| `ingestion:region`                   | GCP region for regional resources                                                                                               | Yes                 | `us-central1`                           | `us-central1`                   |
-| `ingestion:tag`                      | Docker image tag for all three services                                                                                         | No                  | set per-deploy                          | set per-deploy                  |
-| `ingestion:ingestorSchedule`         | Cron schedule for the ingestor job. Unset means manual-trigger only                                                             | No                  | `0 */4 * * *`                           | `0 */4 * * *`                   |
-| `ingestion:extractorSchedule`        | Cron schedule for the extractor job. Unset means manual-trigger only                                                            | No                  | `0 */12 * * *`                          | `0 */12 * * *`                  |
-| `ingestion:logLevel`                 | Log level passed to all three services                                                                                          | Yes                 | `trace`                                 | `info`                          |
-| `ingestion:logRetentionDays`         | Retention on the project's `_Default` log bucket                                                                                | Yes                 | `1`                                     | `30`                            |
-| `ingestion:eventLogRetentionDays`    | Age-based deletion window for the event log bucket. Unset disables the rule; a code comment recommends leaving it unset in prod | No                  | set in dev                              | unset                           |
-| `ingestion:deadletterRetentionDays`  | Age-based deletion window for the deadletter bucket. Same unset-in-prod recommendation                                          | No                  | set in dev                              | unset                           |
-| `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be _set_ in production                              | No                  | unset                                   | `30`                            |
-| `ingestion:forceDestroyStorage`      | Whether `pulumi destroy` may delete non-empty buckets, including the raw archive bucket                                         | No, default `false` | `true`                                  | `false`                         |
-| `ingestion:retainStorageOnDelete`    | Whether buckets survive `pulumi destroy` instead of being deleted with the stack, including the raw archive bucket              | No, default `true`  | `false`                                 | `true`                          |
+| Key                                  | Description                                                                                                                                          | Required            | dev                                     | prod                            |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------- | ------------------------------- |
+| `ingestion:coreStackName`            | The core-infra stack this project reads a `StackReference` from                                                                                      | Yes                 | `alfredsyoung/fact-check-database-core` | same                            |
+| `ingestion:project`                  | GCP project ID this stack deploys into                                                                                                               | Yes                 | `fact-check-database-dev`               | `fact-check-database-ingestion` |
+| `ingestion:region`                   | GCP region for regional resources                                                                                                                    | Yes                 | `us-central1`                           | `us-central1`                   |
+| `ingestion:tag`                      | Docker image tag for all three services                                                                                                              | No                  | set per-deploy                          | set per-deploy                  |
+| `ingestion:ingestorSchedule`         | Cron schedule for the ingestor job. Unset means manual-trigger only                                                                                  | No                  | `0 */4 * * *`                           | `0 */4 * * *`                   |
+| `ingestion:extractorSchedule`        | Cron schedule for the extractor job. Unset means manual-trigger only                                                                                 | No                  | `0 */12 * * *`                          | `0 */12 * * *`                  |
+| `ingestion:logLevel`                 | Log level passed to all three services                                                                                                               | Yes                 | `trace`                                 | `info`                          |
+| `ingestion:logRetentionDays`         | Retention on the project's `_Default` log bucket                                                                                                     | Yes                 | `1`                                     | `30`                            |
+| `ingestion:eventLogRetentionDays`    | Age-based deletion window for the event log bucket. Unset disables the rule; a code comment recommends leaving it unset in prod                      | No                  | set in dev                              | unset                           |
+| `ingestion:deadletterRetentionDays`  | Age-based deletion window for the deadletter bucket. Same unset-in-prod recommendation                                                               | No                  | set in dev                              | unset                           |
+| `ingestion:deadletterSoftDeleteDays` | Soft-delete window on the deadletter bucket. A code comment recommends this be _set_ in production                                                   | No                  | unset                                   | `30`                            |
+| `ingestion:archiveNearlineAfterDays` | Age in days at which an archive object moves to Nearline storage. Unset means it never does                                                          | No                  | unset                                   | `30`                            |
+| `ingestion:archiveColdlineAfterDays` | Age in days at which an archive object moves to Coldline storage. Unset means it never does. Must be greater than the Nearline age when both are set | No                  | unset                                   | `90`                            |
+| `ingestion:forceDestroyStorage`      | Whether `pulumi destroy` may delete non-empty buckets, including the raw archive bucket                                                              | No, default `false` | `true`                                  | `false`                         |
+| `ingestion:retainStorageOnDelete`    | Whether buckets survive `pulumi destroy` instead of being deleted with the stack, including the raw archive bucket                                   | No, default `true`  | `false`                                 | `true`                          |
+
+### Archive storage classes
+
+The archive bucket is a permanent record that is rarely read once the pipeline has processed it.
+`archiveNearlineAfterDays` and `archiveColdlineAfterDays` move its objects to cheaper storage
+classes as they age. Nothing is deleted.
+
+- **Both unset** (dev): every object stays in Standard storage.
+- **Both set** (prod): an object moves to Nearline at the first age and to Coldline at the second.
+- **Only the Coldline age set:** objects move straight from Standard to Coldline.
+- The rules cover the whole bucket: raw bodies, sanitized copies, and ingestor and sanitizer
+  records.
+- After a change, Cloud Storage applies the rules to existing objects within about a day.
+
+Two costs to keep in mind when choosing ages:
+
+- **Minimum storage duration.** Nearline bills at least 30 days and Coldline at least 90. Leave at
+  least 30 days between the two ages, or the unused Nearline days are still charged. The deploy
+  warns when the gap is shorter.
+- **Retrieval.** Reading an object in Nearline or Coldline costs a per-gigabyte fee that Standard
+  does not have. Routine processing is unaffected, since the sanitizer and extractor read an
+  object within days of its fetch. A replay or an audit of old fetches pays it.
 
 ## Commands
 

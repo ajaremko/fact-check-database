@@ -24,18 +24,6 @@
 
 **If this ever needs to be fixed:** Add a job that lists archive records under a `source`/`date` prefix and publishes a notification for each to the sanitizer or extractor topic. It needs the decode direction of `ArchivePath` (see [ingestion-contracts' known issues](../../ingestion-contracts/docs/known-issues.md)).
 
-## The raw archive has no lifecycle rule
-
-**Error:** No error. A cost that grows without bound.
-
-**Where:** The raw archive bucket in `src/archive/raw/storage.ts`.
-
-**Root cause:** The archive is meant to be a permanent record, so nothing deletes from it. Every ingestor run also stores every feed body again, changed or not (see [the ingestor's known issues](../../ingestion-ingestor/docs/known-issues.md)). All of it stays in the bucket's default storage class.
-
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-
-**If this ever needs to be fixed:** Add a lifecycle rule that moves objects to a colder storage class after a set age, not one that deletes them. Sending conditional requests from the ingestor removes most of the growth at its source.
-
 ## The sanitizer service has no instance limits
 
 **Error:** No error at current volume.

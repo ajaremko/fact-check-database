@@ -4,5 +4,5 @@ config:
   analysis:coreStackName: alfredsyoung/fact-check-database-core
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false
-  analysis:tag: dev-428
+  analysis:tag: dev-435
   analysis:logLevel: debug

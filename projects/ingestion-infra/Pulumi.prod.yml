@@ -8,5 +8,7 @@ config:
   ingestion:logLevel: info
   ingestion:logRetentionDays: 30
   ingestion:deadletterSoftDeleteDays: 30
+  ingestion:archiveNearlineAfterDays: 30
+  ingestion:archiveColdlineAfterDays: 90
   ingestion:forceDestroyStorage: false
   ingestion:retainStorageOnDelete: true

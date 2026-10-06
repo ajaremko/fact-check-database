@@ -45,11 +45,11 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 
 ### Storage
 
-| Bucket                        | Purpose                                                                                    | Notes                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `ingestion-archive-bucket`    | Permanent store for raw fetch bodies, sanitized copies, and ingestor and sanitizer records | CMEK-encrypted with core-infra's key; no lifecycle rule                                          |
-| `ingestion-event-log-bucket`  | Auto-archived copy of every message published to the ingestor and sanitizer topics         | Age-based deletion in dev only, via `eventLogRetentionDays`; unset (permanent) in prod by design |
-| `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription   | Age-based deletion plus optional soft-delete                                                     |
+| Bucket                        | Purpose                                                                                    | Notes                                                                                                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ingestion-archive-bucket`    | Permanent store for raw fetch bodies, sanitized copies, and ingestor and sanitizer records | CMEK-encrypted with core-infra's key; never deleted. Objects move to Nearline and then Coldline as they age when `archiveNearlineAfterDays`/`archiveColdlineAfterDays` are set (prod), and stay in Standard when unset (dev) |
+| `ingestion-event-log-bucket`  | Auto-archived copy of every message published to the ingestor and sanitizer topics         | Age-based deletion in dev only, via `eventLogRetentionDays`; unset (permanent) in prod by design                                                                                                                             |
+| `ingestion-deadletter-bucket` | Messages that exhausted delivery attempts on the extractor's or sanitizer's subscription   | Age-based deletion plus optional soft-delete                                                                                                                                                                                 |
 
 ### Pipeline: ingestor → sanitizer → extractor
 

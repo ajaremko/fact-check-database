@@ -9,9 +9,13 @@ import {
   gcpProject,
   forceDestroyStorage,
   retainStorageOnDelete,
+  archiveNearlineAfterDays,
+  archiveColdlineAfterDays,
 } from '../../config'
 import { storageService } from '../../services'
 import { provider } from '../../project'
+
+import { archiveLifecycleRules } from './lifecycle'
 
 const storageServiceAccount = gcp.storage.getProjectServiceAccountOutput(
   {
@@ -44,6 +48,12 @@ export const archiveBucket = new gcp.storage.Bucket(
     publicAccessPrevention: 'enforced',
     labels: ingestionLabels,
     forceDestroy: forceDestroyStorage,
+    // Moves ageing objects to cheaper storage classes when the stack sets the
+    // ages. Nothing here deletes: the archive is a permanent record.
+    lifecycleRules: archiveLifecycleRules({
+      nearlineAfterDays: archiveNearlineAfterDays,
+      coldlineAfterDays: archiveColdlineAfterDays,
+    }),
     encryption: {
       defaultKmsKeyName: gcsArchiveKeyId,
     },

@@ -92,7 +92,7 @@ See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
 30. [x] Set `ingestion:forceDestroyStorage: false` and `ingestion:retainStorageOnDelete: true` in
         `Pulumi.prod.yml`
 31. [ ] Add alert policies for extractor backlog age, dead-letter arrivals and failed job executions
-32. [ ] Add a lifecycle rule that moves raw archive objects to a colder storage class
+32. [x] Add a lifecycle rule that moves raw archive objects to a colder storage class
 33. [ ] Set instance limits on the sanitizer service
 34. [x] Change `archive/raw/storage.ts` to read `forceDestroyStorage`/`retainStorageOnDelete` from
         config, like the other three buckets, instead of hardcoding `forceDestroy`/`retainOnDelete`
