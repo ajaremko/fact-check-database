@@ -541,4 +541,48 @@ describe('sanitizeObservation', () => {
         expect(record.bytes_rewritten).toBe(false)
       })
   )
+
+  it.effect("writes the policy's version to the record as policy_version", () =>
+    Effect.gen(function* () {
+      const storage: Record<string, string> = {
+        'record.yml': `
+            version: 1
+            kind: fetch_attempt
+            outcome: no_response
+            ingestor_run_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
+            fetched_at: 1777751768896
+            source:
+              id: snopes
+              name: snopes.com
+              url: https://www.snopes.com/feed/
+              collection: rss
+            error: Transport error (GET https://www.snopes.com/feed/)`,
+      }
+
+      yield* sanitizeObservation({
+        policy: {
+          version: 7,
+          stripQueryParams: [],
+          dropHeaders: [],
+          collections: [
+            { collection: 'rss', maxBytes: 1_000, defaultLabel: 'SAFE_PUBLIC' },
+          ],
+        },
+        pointer: { bucket: 'inmemory', object: 'record.yml' },
+        timestamp: 0,
+      }).pipe(
+        Effect.provide(InMemoryStorageReader.layer(storage)),
+        Effect.provide(InMemoryStorageWriter.layer(storage))
+      )
+
+      const record = decodeRecord(
+        storage[
+          'v1/records/sanitizer/source=snopes/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml'
+        ]
+      )
+      // The record format's own version stays 1; the policy's is separate
+      expect(record.version).toBe(1)
+      expect(record.policy_version).toBe(7)
+    })
+  )
 })

@@ -18,6 +18,7 @@ describe('extractFactChecks', () => {
         'b35daedf9f4b7e00d65782695540bbdf161b3127a19d6251346b4b197aa2d1bb.sanitize.yml': `
           version: 1
           kind: sanitized_record
+          policy_version: 7
           ingestor_run_id: d8af0771-64e4-4e86-99ba-000c6550d2de
           fetched_at: 0
           sanitized_at: 0
@@ -128,6 +129,7 @@ describe('extractFactChecks', () => {
           extractor_run_id: 'run-1',
           extractor_id: 'rss',
           extractor_version: '1',
+          sanitizer_policy_version: 7,
           fetched_at: '1970-01-01T00:00:00.000Z',
           ingestor_run_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           source: {
@@ -174,6 +176,7 @@ describe('extractFactChecks', () => {
           extractor_run_id: 'run-1',
           extractor_id: 'rss',
           extractor_version: '1',
+          sanitizer_policy_version: 7,
           fetched_at: '1970-01-01T00:00:00.000Z',
           ingestor_run_id: 'd8af0771-64e4-4e86-99ba-000c6550d2de',
           fact_check: {
@@ -219,6 +222,7 @@ describe('extractFactChecks', () => {
           extractor_run_id: 'run-1',
           extractor_id: 'rss',
           extractor_version: '1',
+          sanitizer_policy_version: 7,
           fetched_at: '1970-01-01T00:00:00.000Z',
           source: {
             collection: 'rss',
@@ -351,6 +355,9 @@ describe('extractFactChecks', () => {
         )
 
         expect(result).toHaveLength(1)
+        // This sanitizer record has no `policy_version`, as records written
+        // before the field existed don't, so the row carries none either
+        expect(result[0]).not.toHaveProperty('sanitizer_policy_version')
 
         expect(result[0].fact_check.content).toBe('A link and bold text.')
         // Only the two inputs are in storage: no full-article file is written

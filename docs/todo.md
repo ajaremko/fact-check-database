@@ -136,7 +136,7 @@ See [known-issues.md](../projects/ingestion-sanitizer/docs/known-issues.md).
         reads them yet
 49. [ ] Strip scripts and tracking markup from the HTML inside feed items (`rewriteBody` only
         strips query parameters from URLs today)
-50. [ ] Record the policy `version` on sanitizer records and staging rows — a policy change can
+50. [x] Record the policy `version` on sanitizer records and staging rows — a policy change can
         change `fact_check_id`, and nothing says which policy produced a record
 51. [ ] Remove or implement the four `SanitizationAction` values that are never emitted and the
         `api`/`html` policy rules, and declare the action literal once

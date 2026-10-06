@@ -6,6 +6,10 @@
 # stripQueryParams and rewriteBody are part of how fact checks are identified.
 # Before changing either, read "Changing the policy" in
 #   projects/ingestion-sanitizer/docs/runbook.md
+#
+# version is this policy's revision. It is written to every sanitizer record
+# and carried into staging and curated rows. Raise it by one with any change
+# to the values below, and keep it the same in all three policy files.
 version: 1
 
 # Query parameters removed from URLs. An entry is a parameter name, matched

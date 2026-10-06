@@ -1,17 +1,5 @@
 # Known Issues
 
-## Nothing records which policy version produced a record
-
-**Error:** No error. An audit gap.
-
-**Where:** `src/contracts/SanitizerPolicy.ts` (`version`, `stripQueryParams`, `rewriteBody`) and the sanitizer record, which has no policy-version field. The staging row has none either.
-
-**Root cause:** The policy file has a `version` number, but the sanitizer never writes it out. `stripQueryParams` and `rewriteBody` change the URLs the extractor sees, and those URLs feed `fact_check_id` (see "Changing the policy" in [runbook.md](./runbook.md)). After a policy change, nothing in a record or a row says which policy it was made under.
-
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-
-**If this ever needs to be fixed:** Add the policy `version` to `SanitizerRecord` and carry it into the staging row, so a change in identity can be traced to the policy change that caused it.
-
 ## Declared actions and rules that nothing uses
 
 **Error:** No error. Dead declarations.

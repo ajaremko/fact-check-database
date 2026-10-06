@@ -49,6 +49,7 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
 
             extractor_id,
             extractor_version,
+            sanitizer_policy_version,
 
             source.url,
             http.final_url,
@@ -89,7 +90,8 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           fetched_at = S.fetched_at,
           extracted_at = S.extracted_at,
           extractor_version = S.extractor_version,
-          extractor_id = S.extractor_id
+          extractor_id = S.extractor_id,
+          sanitizer_policy_version = S.sanitizer_policy_version
         WHEN NOT MATCHED THEN
         INSERT (
           fact_check_id,
@@ -109,7 +111,8 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           fetched_at,
           extracted_at,
           extractor_version,
-          extractor_id
+          extractor_id,
+          sanitizer_policy_version
         )
         VALUES (
           S.fact_check_id,
@@ -129,7 +132,8 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
           S.fetched_at,
           S.extracted_at,
           S.extractor_version,
-          S.extractor_id
+          S.extractor_id,
+          S.sanitizer_policy_version
         )`,
     },
   },

@@ -38,6 +38,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
       { name: 'extracted_at', type: 'TIMESTAMP', mode: 'REQUIRED' },
       { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
       { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
+      { name: 'sanitizer_policy_version', type: 'INTEGER', mode: 'NULLABLE' },
       { name: 'url', type: 'STRING', mode: 'REQUIRED' },
       { name: 'final_url', type: 'STRING', mode: 'NULLABLE' },
       { name: 'canonical_url', type: 'STRING', mode: 'NULLABLE' },

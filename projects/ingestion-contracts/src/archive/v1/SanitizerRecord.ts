@@ -67,6 +67,11 @@ export const InputRecordRefSchema = Schema.Struct({
 export const SanitizerRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
   kind: Schema.Literal('sanitized_record'),
+  // The `version` of the sanitizer policy that produced this record: which
+  // revision of the policy's rules was applied. Not to be confused with
+  // `version` above, which is this record format's version. Absent on
+  // records written before the field was introduced.
+  policy_version: Schema.optional(Schema.Number),
   ingestor_run_id: Schema.String,
   fetched_at: Schema.Number,
   sanitized_at: Schema.Number,

@@ -17,6 +17,7 @@ import { PolicyDecisionSchema } from './PolicyDecision'
 export class SanitizedObservation extends Schema.Class<SanitizedObservation>(
   'SanitizedObservation'
 )({
+  policyVersion: Schema.Number,
   ingestorRunId: Schema.String,
   fetchedAt: TimestampSchema,
   sanitizedAt: TimestampSchema,
@@ -78,6 +79,7 @@ export const SanitizedObservationSchema = Schema.transformOrFail(
       const output: DeepMutable<SanitizerRecord> = {
         version: 1 as const,
         kind: 'sanitized_record' as const,
+        policy_version: input.policyVersion,
         ingestor_run_id: input.ingestorRunId,
         fetched_at: input.fetchedAt,
         sanitized_at: input.sanitizedAt,

@@ -10,6 +10,7 @@ describe('FactCheckRowSchema', () => {
         factCheckId: 'fact-check-id',
         ingestorRunId: 'ingestor-run-id',
         extractorRunId: 'extractor-run-id',
+        sanitizerPolicyVersion: 3,
         extractedAt: 0,
         fetchedAt: 0,
         extractor: {
@@ -56,6 +57,7 @@ describe('FactCheckRowSchema', () => {
       extractor_run_id: 'extractor-run-id',
       extractor_id: 'extractor-id',
       extractor_version: '1',
+      sanitizer_policy_version: 3,
       fetched_at: '1970-01-01T00:00:00.000Z',
       fact_check: {
         sha256: 'abc123',
@@ -95,6 +97,7 @@ describe('FactCheckRowSchema', () => {
       factCheckId: 'fact-check-id',
       ingestorRunId: 'ingestor-run-id',
       extractorRunId: 'extractor-run-id',
+      sanitizerPolicyVersion: null,
       extractedAt: 0,
       fetchedAt: 0,
       extractor: { id: 'extractor-id', version: 1 },
@@ -136,5 +139,49 @@ describe('FactCheckRowSchema', () => {
     expect(result.fact_check.content).toBe(
       '## Heading\n\nA [link](https://example.com) and *bold* text'
     )
+  })
+
+  it('omits sanitizer_policy_version when the sanitizer record had none', () => {
+    const result = Schema.encodeUnknownSync(FactCheckRowSchema)({
+      factCheckId: 'fact-check-id',
+      ingestorRunId: 'ingestor-run-id',
+      extractorRunId: 'extractor-run-id',
+      sanitizerPolicyVersion: null,
+      extractedAt: 0,
+      fetchedAt: 0,
+      extractor: { id: 'extractor-id', version: 1 },
+      factCheck: {
+        sha256: 'abc123',
+        guid: null,
+        title: 'A fact check title',
+        author: null,
+        categories: null,
+        link: null,
+        summary: null,
+        content: null,
+        language: null,
+        enclosureUrl: null,
+        imageUrl: null,
+        publishedAtRaw: null,
+        publishedAtNormalized: null,
+        canonicalUrl: 'https://example.com/fact-check',
+      },
+      http: {
+        contentSha256: 'sha256abc',
+        status: 200,
+        finalUrl: null,
+        contentType: null,
+        etag: null,
+        lastModified: null,
+        headers: null,
+      },
+      source: {
+        id: 'source-id',
+        name: 'Example Source',
+        url: 'https://example.com/feed',
+        collection: 'rss',
+      },
+    })
+    expect(result).not.toHaveProperty('sanitizer_policy_version')
   })
 })

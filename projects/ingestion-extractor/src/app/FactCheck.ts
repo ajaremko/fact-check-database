@@ -37,6 +37,7 @@ export const FactCheckRowSchema = Schema.transformOrFail(
     factCheckId: Schema.String,
     ingestorRunId: Schema.String,
     extractorRunId: Schema.String,
+    sanitizerPolicyVersion: Schema.NullOr(Schema.Number),
     extractedAt: NumberFromDate,
     fetchedAt: NumberFromDate,
     factCheck: FactCheckSchema,
@@ -77,6 +78,9 @@ export const FactCheckRowSchema = Schema.transformOrFail(
         extractor_run_id: input.extractorRunId,
         extractor_id: input.extractor.id,
         extractor_version: input.extractor.version,
+        ...(input.sanitizerPolicyVersion === null
+          ? {}
+          : { sanitizer_policy_version: input.sanitizerPolicyVersion }),
         source: {
           id: input.source.id,
           name: input.source.name,

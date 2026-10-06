@@ -66,6 +66,10 @@ export type SourceOverride = Schema.Schema.Type<typeof SourceOverrideSchema>
 export class SanitizerPolicy extends Schema.Class<SanitizerPolicy>(
   'SanitizerPolicy'
 )({
+  // The policy's revision. It is written to every sanitizer record as
+  // `policy_version` and carried into staging and curated rows, so a record
+  // can be traced to the rules that produced it. Raise it with any change to
+  // the values below: see "Changing the policy" in docs/runbook.md.
   version: Schema.Number,
   // Query parameters removed from URLs: a parameter name, or a prefix when
   // the entry ends in `_` (`utm_` matches `utm_source`). Case-insensitive.

@@ -195,6 +195,7 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
     }
 
     const sanitizedObservation = new SanitizedObservation({
+      policyVersion: ctx.policy.version,
       ingestorRunId: observation.ingestorRunId,
       fetchedAt: observation.fetchedAt,
       sanitizedAt: ctx.timestamp,

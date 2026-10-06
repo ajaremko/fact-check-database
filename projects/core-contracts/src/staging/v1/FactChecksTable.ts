@@ -30,6 +30,7 @@ export const FactChecksTableDBSchema = {
     { name: 'extractor_run_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'extractor_id', type: 'STRING', mode: 'REQUIRED' },
     { name: 'extractor_version', type: 'STRING', mode: 'REQUIRED' },
+    { name: 'sanitizer_policy_version', type: 'INTEGER', mode: 'NULLABLE' },
     {
       name: 'source',
       type: 'RECORD',
@@ -102,7 +103,11 @@ export const FactChecksTableDBSchema = {
  *   `ingestor_run_id` identify the fetch attempt, and `extractor_run_id` the
  *   extractor run that wrote the row.
  * - Provenance: `extractor_id` and `extractor_version` record which
- *   extractor produced the row; `fetched_at` and `extracted_at` are the
+ *   extractor produced the row; `sanitizer_policy_version` records which
+ *   revision of the sanitizer policy the feed body passed through (absent
+ *   on rows from sanitizer records written before the field existed). A
+ *   policy change can change `fact_check_id`, and this is what ties a row
+ *   to the policy that shaped it. `fetched_at` and `extracted_at` are the
  *   pipeline timestamps (the table is partitioned on `extracted_at`).
  *   `extractor_version` is a `number` in code and a string in the encoded
  *   row, matching the `STRING` column in {@link FactChecksTableDBSchema}.
@@ -132,6 +137,7 @@ export const FactChecksTableRowSchema = Schema.Struct({
   }),
   extractor_id: Schema.String,
   extractor_version: Schema.NumberFromString,
+  sanitizer_policy_version: Schema.optional(Schema.Number),
   fact_check: Schema.Struct({
     sha256: Schema.String,
     guid: Schema.optional(Schema.String),

@@ -122,6 +122,7 @@ export const extractFactChecks = Effect.fn('extractFactChecks')(
               fetchedAt: observation.fetchedAt,
               extractedAt: ctx.extractedAt,
               ingestorRunId: observation.ingestorRunId,
+              sanitizerPolicyVersion: observation.policyVersion,
               // Only a short plain-text preview of the article body is
               // kept, for research queries. Full articles are not stored,
               // since serving them would republish third-party content.

@@ -50,13 +50,13 @@ what each field does. Why the deployed policy has the values it has is in
 [policy-rationale.md](./policy-rationale.md), and what to check before editing it is in
 [Changing the policy](#changing-the-policy).
 
-| Field              | Type     | Description                                                                                         |
-| ------------------ | -------- | --------------------------------------------------------------------------------------------------- |
-| `version`          | number   | Policy schema version                                                                               |
-| `stripQueryParams` | string[] | Query parameters removed from URLs. See [Scrubbing](#scrubbing)                                     |
-| `dropHeaders`      | string[] | Response headers removed from every record, matched case-insensitively. See [Scrubbing](#scrubbing) |
-| `collections`      | array    | Per-collection classification rules                                                                 |
-| `overrides`        | array    | Per-source overrides that extend a collection rule                                                  |
+| Field              | Type     | Description                                                                                                                   |
+| ------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `version`          | number   | The policy's revision. Written to every sanitizer record as `policy_version`. See [Changing the policy](#changing-the-policy) |
+| `stripQueryParams` | string[] | Query parameters removed from URLs. See [Scrubbing](#scrubbing)                                                               |
+| `dropHeaders`      | string[] | Response headers removed from every record, matched case-insensitively. See [Scrubbing](#scrubbing)                           |
+| `collections`      | array    | Per-collection classification rules                                                                                           |
+| `overrides`        | array    | Per-source overrides that extend a collection rule                                                                            |
 
 ### Collection rules
 
@@ -240,6 +240,22 @@ Two further effects are not duplicates:
 5. **Record the entry.** Add it, with its basis, to the list in
    [policy-rationale.md](./policy-rationale.md#the-list), and make the same edit in all three
    policy files.
+6. **Raise `version` by one**, in all three policy files. This applies to any change to the
+   policy's values, not only to these two settings.
+
+### How a record is traced to its policy
+
+The sanitizer writes the policy's `version` to every sanitizer record as `policy_version`. The
+extractor copies it onto each staging row as `sanitizer_policy_version`, and the curated MERGE
+copies it onto the curated row. A fact check that appears under a new id can then be matched to
+the policy revision that produced it:
+
+- A curated row holds the policy version behind its current content. A later fetch under a new
+  policy changes the value only if it also changes the row's content.
+- Records written before the field was introduced have no `policy_version`, and their rows hold
+  `NULL`.
+- The value is only as reliable as step 6. A policy edited without raising `version` is recorded
+  under the old number.
 
 ### When a change takes effect
 
@@ -256,6 +272,9 @@ Objects are written under (built by `ingestion-contracts`'s `ArchivePathSchema`,
 ```
 v1/records/sanitizer/source={sourceId}/date={YYYY-MM-DD}/ingestor_run_id={ingestorRunId}/fetch_attempt.yml
 ```
+
+Each record carries `policy_version`, the `version` of the policy that produced it. It is separate
+from the record's own `version`, which is the record format's.
 
 The path mirrors the `IngestionRecord` it was derived from — `source` + `ingestor_run_id` identify the fetch attempt, and there's no separate "sanitization ID" (see [docs/fact-check-lifecycle.md](../../../docs/fact-check-lifecycle.md)).
 

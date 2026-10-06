@@ -7,6 +7,9 @@ import {
 } from '@fact-check-database/ingestion-contracts/config/v1'
 
 export class Observation extends Schema.Class<Observation>('Observation')({
+  // The sanitizer policy revision that produced the record. Null for records
+  // written before the sanitizer recorded it.
+  policyVersion: Schema.NullOr(Schema.Number),
   ingestorRunId: Schema.String,
   fetchedAt: Schema.Number,
   sanitizedAt: Schema.Number,
@@ -61,6 +64,7 @@ export const ObservationSchema = Schema.transformOrFail(
         )
       }
       return ParseResult.succeed({
+        policyVersion: input.policy_version ?? null,
         ingestorRunId: input.ingestor_run_id,
         fetchedAt: input.fetched_at,
         sanitizedAt: input.sanitized_at,

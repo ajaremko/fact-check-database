@@ -83,6 +83,11 @@ listed it — and this `MERGE` collapses those observations into **one row per f
   is idempotent, so overlapping windows are harmless and a failed or skipped run is caught up by
   the next one.
 - **No delete path:** fact checks that disappear from a feed stay in the curated table.
+- **Policy provenance:** `sanitizer_policy_version` is the revision of the sanitizer policy behind
+  the row's current content version. It is set on insert and whenever the row is updated, and is
+  `NULL` for rows whose source record predates the field. It lets an id change be traced to the
+  policy change that caused it (see the sanitizer runbook's
+  [Changing the policy](../ingestion-sanitizer/docs/runbook.md#changing-the-policy)).
 
 Rows curated before this identity scheme was introduced (2026-09) keep their original ids — a hash
 of `source id + canonical URL (or feed URL) + title` — and were not backfilled, so those older
