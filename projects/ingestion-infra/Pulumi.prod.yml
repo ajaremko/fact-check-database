@@ -5,9 +5,8 @@ config:
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '0 */12 * * *'
   ingestion:tag: 430-10.05.26-42b7e1e
-  ingestion:logLevel: trace
-  ingestion:logRetentionDays: 1
-  ingestion:eventLogRetentionDays: 3
+  ingestion:logLevel: info
+  ingestion:logRetentionDays: 30
   ingestion:deadletterSoftDeleteDays: 30
-  ingestion:forceDestroyStorage: true
-  ingestion:retainStorageOnDelete: false
+  ingestion:forceDestroyStorage: false
+  ingestion:retainStorageOnDelete: true

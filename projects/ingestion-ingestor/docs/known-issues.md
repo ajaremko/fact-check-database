@@ -21,7 +21,7 @@ unchanged content.
 ## Two sources block the crawler
 
 **Error:** `Source returned an error status` with `result.status_code: 403` on every run, for
-`africacheck` (`https://africacheck.org/feed/`) and the AFP `factcheck` source
+`africacheck` (`https://africacheck.org/feed/`) and the AFP `afpfactcheck` source
 (`https://factcheck.afp.com/rss.xml`). The sanitizer quarantines each response, so neither
 source contributes fact checks.
 **Where:** the publishers' servers, not this codebase. Both return `403` to the crawler's

@@ -1,7 +1,7 @@
 id,name,collection,url
 politifact,politifact.com,rss,https://www.politifact.com/rss/factchecks/
 snopes,snopes.com,rss,https://www.snopes.com/feed/
-factcheck,factcheck.afp.com,rss,https://factcheck.afp.com/rss.xml
+afpfactcheck,factcheck.afp.com,rss,https://factcheck.afp.com/rss.xml
 africacheck,Africa Check,rss,https://africacheck.org/feed/
 dubawa,Dubawa,rss,https://dubawa.org/feed/
 roundcheck,Round Check,rss,https://roundcheck.com.ng/feed/
