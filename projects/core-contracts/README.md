@@ -226,3 +226,9 @@ const program = pipe(
 ## Logging
 
 This library does no logging of its own — no `Effect.log*` calls and no dependency on a `LogLevel`. A consumer is free to log around a call to it at whatever level fits its own strategy; there's no level range reserved here.
+
+## Related documentation
+
+| Document                                       | Purpose                                      |
+| ---------------------------------------------- | -------------------------------------------- |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |

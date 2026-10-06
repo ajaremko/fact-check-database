@@ -41,3 +41,19 @@ provider SDK (bridged from `k-yomo/terraform-provider-algolia`), linked into thi
   generation pins, and this exact failure will resurface. Re-apply both changes: pin `typescript`
   in `sdks/algolia/package.json` to match the workspace root's version, and don't add it back as a
   `references` entry in `tsconfig.app.json`.
+
+## Third-party images are pinned by tag
+
+**Error:** No error. A supply-chain and availability risk.
+**Where:** `src/backend/service.ts` (`bitnamilegacy/oauth2-proxy:7.12.0`, `envoyproxy/envoy:v1.30.0`) and `src/redirect/service.ts` (`morbz/docker-web-redirect:v1.0`).
+**Root cause:** The images are pulled from Docker Hub by tag at deploy time. A tag can be moved to different content, and the oauth2-proxy image comes from a `legacy` namespace that its publisher no longer maintains.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Pin each image by digest. Replace the `bitnamilegacy` image with the upstream oauth2-proxy image, and mirror all three into the project's Artifact Registry so a deploy does not depend on Docker Hub.
+
+## oauth2-proxy runs with a dummy OAuth provider
+
+**Error:** No error. A workaround.
+**Where:** `src/backend/oauth2-proxy.cfg`.
+**Root cause:** The site's sign-in is an htpasswd form. oauth2-proxy will not start without an OAuth provider, so the config names Google with a placeholder client id that is never used.
+**Decision:** Won't fix. This is acceptable for a demonstration deployment.
+**If this ever needs to be fixed:** Configure a real OAuth provider, or replace oauth2-proxy with a proxy that supports basic authentication on its own.

@@ -108,5 +108,6 @@ See [docs/runbook.md](./docs/runbook.md) for the complete configuration referenc
 | ------------------------------------------------------------------ | --------------------------------------------------------------- |
 | [docs/runbook.md](./docs/runbook.md)                               | Configuration reference, policy format, and diagnosing failures |
 | [docs/policy-rationale.md](./docs/policy-rationale.md)             | Why the policy has the values it has, entry by entry            |
+| [docs/known-issues.md](./docs/known-issues.md)                     | Accepted, long-lived gaps and deferred fixes                    |
 | [ingestion-contracts](../ingestion-contracts/README.md)            | The canonical `SanitizerRecord` schema this service archives    |
 | [docs/fact-check-lifecycle.md](../../docs/fact-check-lifecycle.md) | The identifiers this service carries forward                    |

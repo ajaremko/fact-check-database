@@ -67,3 +67,9 @@ Schema.encodeSync(SearchResultSchema)({
   source_name: 'politifact.com',
 })
 ```
+
+## Related documentation
+
+| Document                                       | Purpose                                      |
+| ---------------------------------------------- | -------------------------------------------- |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes |

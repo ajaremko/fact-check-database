@@ -18,3 +18,11 @@ purposes.
 **If this ever needs to be fixed:** Write a one-off converter that rewrites old records into the
 current shape and path (the `ingestion_batch_id` value becomes `ingestor_run_id`, and the raw
 body's new name is the record's `content.sha256`), or add a decode branch that accepts both shapes.
+
+## Archive paths and records can only be encoded
+
+**Error:** `ParseResult.Forbidden` ("not implemented") when decoding.
+**Where:** `src/archive/v1/ArchivePath.ts`, and the record transforms built on it in the ingestor, sanitizer and extractor.
+**Root cause:** Each service only ever writes paths, so only the encode direction was written. Nothing in the repository can turn an archive path back into its source, date and `ingestor_run_id`.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Implement `decode` for `ArchivePathSchema` (the path layout is regular, so this is a parse of five segments). A replay tool or an audit of every fetch of one source needs it.

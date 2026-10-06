@@ -37,3 +37,11 @@ aren't overwritten — their `objectID`s never recur.
 appear in any feed, because the loader only ever sees new staging batches.
 **If this ever needs to be fixed:** Rebuild the index from the curated BigQuery table (one record
 per `fact_check_id`), then delete every record whose `objectID` isn't in that set.
+
+## Nothing removes records from the search index
+
+**Error:** No error. The index only grows.
+**Where:** `src/Program.ts`, which only ever calls `saveObjects`.
+**Root cause:** The loader sees new staging batches and upserts what they contain. It has no signal that a fact check has left its feed or been withdrawn, so a record stays in the index for good. The index's size is bounded only by the search provider's plan.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Decide what should expire a record (for example, not seen in any fetch for a set period), then run a scheduled job that deletes those `objectID`s. The same job is the hook a takedown request needs.

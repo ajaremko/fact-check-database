@@ -35,3 +35,15 @@ storage adapter and one BigQuery adapter, unconditionally.
 services) with a filesystem-backed alternative for both the schema fetch and the BigQuery load
 step (the latter would need a local BigQuery emulator or a mocked client), plus a
 `.env.template`.
+
+## Load jobs pass both an explicit schema and `autodetect`
+
+**Error:** No error. An unclear setting.
+
+**Where:** `src/app/loadBatch.ts`, which sets `schema` and `autodetect: true` on the same load job.
+
+**Root cause:** The reason for setting both is not recorded. The explicit schema, read from the staging bucket, is the one that should apply. With autodetection also on, it is not clear which wins for a field the schema does not list, so a batch that does not match the schema may load where it should fail.
+
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+
+**If this ever needs to be fixed:** Load a batch with an extra field and one with a wrong type, with `autodetect` on and off, and keep whichever setting rejects both. Record the reason next to the setting.

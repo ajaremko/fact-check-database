@@ -101,8 +101,9 @@ core-infra treats its own: a stable interface, breaking to rename or repoint.
 
 ## Related documentation
 
-| Document                                 | Purpose                                                                |
-| ---------------------------------------- | ---------------------------------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
-| [docs/runbook.md](./docs/runbook.md)     | Stack configuration, deployment, and troubleshooting                   |
-| [docs/iam-model.md](./docs/iam-model.md) | Service accounts, roles, and the one cross-project grant               |
+| Document                                       | Purpose                                                                |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)       | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md)           | Stack configuration, deployment, and troubleshooting                   |
+| [docs/iam-model.md](./docs/iam-model.md)       | Service accounts, roles, and the one cross-project grant               |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes                           |

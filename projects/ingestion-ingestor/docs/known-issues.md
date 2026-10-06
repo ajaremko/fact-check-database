@@ -34,3 +34,19 @@ cost one archived response and one quarantined record per run each. A non-2xx re
 a successful fetch, so they don't affect the run's success rate.
 **If this ever needs to be fixed:** Contact the publishers to allow the crawler's User-Agent, or
 remove the two sources from `ingestion-infra`'s `sources.*.csv`.
+
+## Fetches have no per-request timeout
+
+**Error:** No error. A slow publisher can stall a run.
+**Where:** `src/adapters/HttpClientFetcher.ts`. No `Effect.timeout` wraps the request.
+**Root cause:** The fetcher relies on the HTTP client's own defaults. Sources are fetched ten at a time (`MAX_CONCURRENCY`), so one publisher that accepts a connection and then sends nothing holds a slot until the client gives up.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Wrap the request in `Effect.timeout` with a duration read from config, and record a timeout as a `FetchFailure` like any other failed fetch.
+
+## Metrics are labelled by source name
+
+**Error:** No error. A cost that grows with the source list.
+**Where:** `Effect.tagMetrics` in `src/app/ingestFromSource.ts`, which sets `source_name` and `source_collection` on `content_request_results` alongside the status and content-type labels.
+**Root cause:** Per-source labels make the dashboard's per-source panels simple. Each distinct combination of source, status code and content type is its own time series in Cloud Monitoring, so the series count multiplies as sources are added.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Drop `source_name` from the metric and read per-source figures from the structured logs, which already carry `source.id`. Keep `source_collection`, which has two values.

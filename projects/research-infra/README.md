@@ -46,7 +46,8 @@ an authorized-view configuration, which this project doesn't set up.
 
 ## Related documentation
 
-| Document                                 | Purpose                                                                |
-| ---------------------------------------- | ---------------------------------------------------------------------- |
-| [docs/bootstrap.md](./docs/bootstrap.md) | Project-specific setup delta beyond core-infra's central bootstrap doc |
-| [docs/runbook.md](./docs/runbook.md)     | Stack configuration, deployment, and troubleshooting                   |
+| Document                                       | Purpose                                                                |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| [docs/bootstrap.md](./docs/bootstrap.md)       | Project-specific setup delta beyond core-infra's central bootstrap doc |
+| [docs/runbook.md](./docs/runbook.md)           | Stack configuration, deployment, and troubleshooting                   |
+| [docs/known-issues.md](./docs/known-issues.md) | Accepted, long-lived gaps and deferred fixes                           |
