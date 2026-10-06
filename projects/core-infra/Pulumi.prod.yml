@@ -5,6 +5,6 @@ config:
   core:githubOrg: ajaremko
   core:githubRepo: fact-check-database
   core:workloadIdentityPoolId: shared-identity-pool-01
-  core:batchRetentionDays: 1
+  core:batchRetentionDays: 7
   core:forceDestroyStorage: false
   core:retainStorageOnDelete: true

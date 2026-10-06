@@ -51,7 +51,7 @@ See [known-issues.md](../projects/core-infra/docs/known-issues.md).
         through it
 20. [ ] Narrow the workload identity provider's condition to the deploy workflows and the `main`
         branch — it admits any workflow in the repository
-21. [ ] Raise `core:batchRetentionDays` above 1 in `Pulumi.prod.yml`, so a loader outage doesn't
+21. [x] Raise `core:batchRetentionDays` above 1 in `Pulumi.prod.yml`, so a loader outage doesn't
         outlive the batch file it needs
 22. [ ] Stop every staging load depending on one mutable schema object in the staging bucket (build
         the schema into the loader, or version the object and alert on a failed read)
