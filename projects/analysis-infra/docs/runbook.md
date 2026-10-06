@@ -38,6 +38,8 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
 ## Deployment ordering
 
 `core-infra` must be deployed first — this project's `StackReference` fails to resolve otherwise.
+It also owns the key the tables are encrypted with (`bigQueryKeyId`), which has to exist before a
+table can be created.
 `research-infra` depends on this stack's `curatedTableRef` output, so deploy this project before
 `research-infra`, and redeploy `research-infra` if `curatedTableRef` ever changes.
 
@@ -116,6 +118,33 @@ on a cancelled one.
 3. Check the dead-letter topic (`loaderDeadletterTopicName`) — after 5 failed delivery attempts,
    messages land there instead of retrying indefinitely. Its own archive subscription writes
    failed messages into the dead-letter bucket under `loader-deadletter/` for inspection.
+
+### Loads, the MERGE and queries all fail with a KMS error
+
+**Symptom:** load jobs, the scheduled query and ad hoc queries on the staging or curated table
+fail together, with an error naming Cloud KMS or the encryption key.
+
+**Cause:** BigQuery can no longer use the tables' customer-managed key. Either its service
+agent's grant on the key is gone, or the key (or the key version the data was written under) has
+been disabled or destroyed in `core-infra`.
+
+**Steps:**
+
+1. Check the key's IAM policy for this project's BigQuery service agent
+   (`bq show --encryption_service_account --project_id=<project>` prints its address). The grant
+   is `bigQueryServiceAgentKmsBinding`; redeploying this stack restores it.
+2. Check the key and its versions are enabled. See `core-infra`'s
+   [runbook](../../core-infra/docs/runbook.md#troubleshooting-cmek-permission-errors).
+3. If the key was disabled on purpose, this is the intended effect. Access returns when it is
+   re-enabled.
+
+### Changing a table's encryption key
+
+A table's key is fixed when the table is created. Changing `encryptionConfiguration` in this stack
+makes Pulumi delete the table and create an empty one. That is acceptable where the data can be
+rebuilt and deletion protection is off, as in dev. It is not acceptable for the prod curated
+table, whose history cannot be rebuilt from staging: re-encrypt that table in place first, by
+copying it onto itself with the new key, and refresh the stack so Pulumi sees the change.
 
 ### Rows aren't appearing in the curated table
 

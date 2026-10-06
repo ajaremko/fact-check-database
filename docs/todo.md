@@ -97,7 +97,7 @@ See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
 24. [ ] Define the curated columns once and build the table schema and the MERGE's column lists
         from that definition
 25. [ ] Cluster the curated table on `fact_check_id`, so a MERGE run stops scanning the whole table
-26. [ ] Encrypt the staging and curated datasets with `bigQueryKey`, or remove the unused key
+26. [x] Encrypt the staging and curated datasets with `bigQueryKey`, or remove the unused key
 27. [x] Add alert policies for failed transfer runs and loader dead-letters
 
 ## Research

@@ -73,10 +73,10 @@ Exported as stack outputs:
 
 Exported as stack outputs:
 
-| Output                                  | Type     | Purpose                                                          |
-| --------------------------------------- | -------- | ---------------------------------------------------------------- |
-| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key used to encrypt raw archive data              |
-| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key used to encrypt structured data; not yet used |
+| Output                                  | Type     | Purpose                                                                                 |
+| --------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| `gcsArchiveKeyId` / `gcsArchiveKeyName` | `string` | Identifies the key used to encrypt raw archive data                                     |
+| `bigQueryKeyId` / `bigQueryKeyName`     | `string` | Identifies the key that encrypts the analysis BigQuery tables. Read by `analysis-infra` |
 
 ### Artifact Registry
 

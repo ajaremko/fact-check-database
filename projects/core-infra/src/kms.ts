@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-import { coreLabels, kmsLocation, tag } from './config'
+import { bigQueryKmsLocation, coreLabels, kmsLocation, tag } from './config'
 import { kmsService } from './services'
 import { provider } from './project'
 
@@ -32,12 +32,28 @@ export const gcsArchiveKey = new gcp.kms.CryptoKey(
 )
 
 /**
+ * Key ring for the BigQuery key. It is separate from `keyRing` because a key
+ * ring's location is fixed, and BigQuery needs its key in the same location
+ * as the datasets it encrypts.
+ */
+export const bigQueryKeyRing = new gcp.kms.KeyRing(
+  `${tag}-bigquery-key-ring`,
+  {
+    location: bigQueryKmsLocation,
+  },
+  {
+    dependsOn: [kmsService],
+    provider,
+  }
+)
+
+/**
  * CryptoKey for bigquery encryption
  */
 export const bigQueryKey = new gcp.kms.CryptoKey(
   `${tag}-bigquery-encryption-key`,
   {
-    keyRing: keyRing.id,
+    keyRing: bigQueryKeyRing.id,
     rotationPeriod: '7776000s',
     purpose: 'ENCRYPT_DECRYPT',
     labels: coreLabels,

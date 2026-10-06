@@ -46,10 +46,10 @@ Snapshot the table first.
 **Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
 **If this ever needs to be fixed:** Cluster the curated table on `fact_check_id` so the join reads only matching blocks. Measure bytes billed per run before and after.
 
-## BigQuery datasets do not use the customer-managed key
+## Prod's tables are not yet encrypted with the customer-managed key
 
-**Error:** No error. A gap between the archive's protection and the datasets'.
-**Where:** The staging and curated datasets in `src/`, and `bigQueryKey` in `core-infra/src/kms.ts`.
-**Root cause:** `core-infra` provisions and exports a BigQuery encryption key, and no dataset references it. The archive is encrypted with a key the platform can revoke. The BigQuery data derived from it is encrypted with Google-managed keys, so revoking the archive key does not revoke access to staging or curated rows.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Set `defaultEncryptionConfiguration` on both datasets to the exported key and grant BigQuery's service agent `cryptoKeyEncrypterDecrypter` on it. Existing tables keep their old encryption until recreated or copied. Otherwise remove the unused key.
+**Error:** `pulumi up` on the prod stack fails to replace the two `fact_checks` tables, which have deletion protection.
+**Where:** `encryptionConfiguration` on the staging and curated tables in `src/staging-dataset/bigquery.ts` and `src/curated-dataset/bigquery.ts`.
+**Root cause:** A table's encryption key is fixed when the table is created, so adding one makes Pulumi replace the table. Dev's tables were recreated empty, which is fine there. Prod's curated table holds history that staging cannot rebuild, so it must not be recreated.
+**Decision:** Not yet addressed. Do not deploy this stack to prod until the tables have been re-encrypted in place.
+**If this ever needs to be fixed:** For each prod table, copy it onto itself with the new key (`bq cp -f --destination_kms_key=<key> <table> <table>`), then run `pulumi refresh` and confirm the preview shows no table replacement. Try the procedure on a scratch table first. Also confirm whether the research project's own BigQuery service agent needs a grant on the key to query the curated table through its view; dev is a single project and cannot show this.

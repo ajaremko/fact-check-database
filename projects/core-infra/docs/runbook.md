@@ -8,17 +8,18 @@ Reference for the `core` Pulumi config namespace, read by `src/config.ts`. Every
 unless noted, and must be set with `pulumi config set core:<key> <value> --stack=<dev|prod>` (or
 directly in `Pulumi.<stack>.yml`) before the stack will deploy.
 
-| Key                           | Description                                                                                                   | dev                       | prod                       |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------- |
-| `core:project`                | GCP project ID this stack deploys into                                                                        | `fact-check-database-dev` | `fact-check-database-core` |
-| `core:region`                 | GCP region for regional resources (the Artifact Registry, the staging bucket)                                 | `us-central1`             | `us-central1`              |
-| `core:kmsLocation`            | Location of the CMEK key ring                                                                                 | `us-central1`             | `us-central1`              |
-| `core:githubOrg`              | GitHub organization allowed to assume the CI/CD identity                                                      | `ajaremko`                | `ajaremko`                 |
-| `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                        | `fact-check-database`     | `fact-check-database`      |
-| `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                              | `shared-identity-pool-01` | `shared-identity-pool-01`  |
-| `core:batchRetentionDays`     | Days before a batch file under `v1/type=fact_checks/` is deleted by the staging bucket's lifecycle rule       | `1`                       | `1`                        |
-| `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                              | `true`                    | `false`                    |
-| `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`. | `false`                   | `true`                     |
+| Key                           | Description                                                                                                       | dev                       | prod                       |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------- |
+| `core:project`                | GCP project ID this stack deploys into                                                                            | `fact-check-database-dev` | `fact-check-database-core` |
+| `core:region`                 | GCP region for regional resources (the Artifact Registry, the staging bucket)                                     | `us-central1`             | `us-central1`              |
+| `core:kmsLocation`            | Location of the CMEK key ring                                                                                     | `us-central1`             | `us-central1`              |
+| `core:bigQueryKmsLocation`    | Location of the BigQuery key's key ring. Must match the location of the BigQuery datasets. Optional, default `us` | unset                     | unset                      |
+| `core:githubOrg`              | GitHub organization allowed to assume the CI/CD identity                                                          | `ajaremko`                | `ajaremko`                 |
+| `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                            | `fact-check-database`     | `fact-check-database`      |
+| `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                                  | `shared-identity-pool-01` | `shared-identity-pool-01`  |
+| `core:batchRetentionDays`     | Days before a batch file under `v1/type=fact_checks/` is deleted by the staging bucket's lifecycle rule           | `1`                       | `1`                        |
+| `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                                  | `true`                    | `false`                    |
+| `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`.     | `false`                   | `true`                     |
 
 Every domain project points back at this stack through its own `<domain>:coreStackName` config
 key (for example `ingestion:coreStackName`) and a Pulumi `StackReference` — see the
@@ -90,6 +91,10 @@ gcloud kms keys set-primary-version --key=<key-name> --location=us-central1 --ke
   --project=$PROJECT_ID --version=<new-version-number>
 ```
 
+The BigQuery key is in a different key ring and location: use `--location=us
+--keyring=core-bigquery-key-ring` for it. Keep old versions of either key enabled. Data written
+under an old version is unreadable once that version is disabled or destroyed.
+
 — which also needs no redeploy, since every Pulumi resource and downstream IAM grant references
 the key by name, not by version.
 
@@ -112,14 +117,18 @@ deploying identity.
 ## Troubleshooting: CMEK permission errors
 
 **Symptoms:** "Permission denied on Cloud KMS key", `cryptoKeyVersions.useToEncrypt` errors,
-objects failing to write to an encrypted bucket.
+objects failing to write to an encrypted bucket, or BigQuery loads and queries failing on the
+analysis tables.
+
+The commands below name the archive key's key ring. For the BigQuery key, substitute
+`--location=us --keyring=core-bigquery-key-ring`.
 
 1. Confirm the key exists:
    `gcloud kms keys list --location=us-central1 --keyring=core-key-ring --project=$PROJECT_ID`
 2. Check its IAM policy:
    `gcloud kms keys get-iam-policy <key-name> --location=us-central1 --keyring=core-key-ring --project=$PROJECT_ID`
-3. Confirm the _consuming_ project's service account (for example `ingestion-infra`'s GCS
-   service agent) has `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key — that binding
+3. Confirm the _consuming_ project's service account (`ingestion-infra`'s GCS service agent for
+   the archive key, `analysis-infra`'s BigQuery service agent for the BigQuery key) has `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key — that binding
    lives in the consuming project, not here.
 
 **Resolution:** grant the missing binding in the consuming project; verify the key isn't

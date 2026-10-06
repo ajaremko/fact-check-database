@@ -43,6 +43,20 @@ The staging loader's push subscription setup also creates:
 - A `pubsub.subscriber` grant on core-infra's staging topic (applied via `coreProvider`, since
   that topic lives in core-infra's project) and on this project's own subscription.
 
+## Encryption key grant
+
+The staging and curated tables are encrypted with a customer-managed key owned by `core-infra`.
+One grant makes that work: this project's BigQuery service agent
+(`bq-<project number>@bigquery-encryption.iam.gserviceaccount.com`) holds
+`roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key (`bigQueryServiceAgentKmsBinding` in
+`src/encryption.ts`). In prod the key is in core-infra's project, so this is a second
+cross-project grant.
+
+- No service account in this project, and no research reader, holds any role on the key. They
+  reach the data through their BigQuery roles, and BigQuery does the decrypting.
+- Removing the grant, or disabling the key in `core-infra`, stops every read and write on both
+  tables at once. Restoring it restores access; the data is untouched.
+
 ## Trust model summary
 
 The staging loader's service account is a simple Cloud-Run-attached identity with no downloaded

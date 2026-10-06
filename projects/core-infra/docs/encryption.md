@@ -19,13 +19,18 @@ Google-managed defaults, even though the platform primarily handles public data.
 
 ## The keys
 
-Both live in one key ring (`core-key-ring`), with 90-day automatic rotation and
-`ENCRYPT_DECRYPT` purpose.
+Both have 90-day automatic rotation and `ENCRYPT_DECRYPT` purpose. Each lives in its own key
+ring, because a key ring's location is fixed and each key has to sit where its data is:
 
-| Key                          | Currently protects                                                                                                                                                                                                                                                                                                                                 |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `gcs-archive-encryption-key` | `ingestion-infra`'s raw archive bucket. The encrypter/decrypter grant to that bucket's GCS service account is created in `ingestion-infra` (`storageServiceAccountKmsBinding`), not here — this project only owns the key.                                                                                                                         |
-| `bigquery-encryption-key`    | Nothing currently. It is provisioned and exported (`bigQueryKeyId` / `bigQueryKeyName`), but no BigQuery dataset in `analysis-infra` or `research-infra` sets any encryption config referencing it. If a future dataset needs CMEK, this is the key to use — until then, treat it as unused rather than assume BigQuery data is encrypted with it. |
+- `core-key-ring`, in `core:kmsLocation` (`us-central1`), beside the regional archive bucket.
+- `core-bigquery-key-ring`, in `core:bigQueryKmsLocation` (the `us` multi-region). BigQuery only
+  accepts a key in the same location as the dataset it encrypts, and the analysis datasets are in
+  the `US` multi-region.
+
+| Key                          | Currently protects                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gcs-archive-encryption-key` | `ingestion-infra`'s raw archive bucket. The encrypter/decrypter grant to that bucket's GCS service account is created in `ingestion-infra` (`storageServiceAccountKmsBinding`), not here — this project only owns the key.                                                                                                                                                                               |
+| `bigquery-encryption-key`    | `analysis-infra`'s staging and curated BigQuery tables, and by default any table later created in those datasets. The encrypter/decrypter grant to the analysis project's BigQuery service agent is created in `analysis-infra` (`bigQueryServiceAgentKmsBinding`), not here. No identity that reads or writes the data needs access to the key: BigQuery encrypts and decrypts as its own service agent |
 
 ## Access model
 

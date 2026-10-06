@@ -8,6 +8,10 @@ import {
   analysisLabels,
   retainTablesOnDelete,
 } from '../config'
+import {
+  bigQueryEncryption,
+  bigQueryServiceAgentKmsBinding,
+} from '../encryption'
 import { provider } from '../project'
 
 export const stagingDataset = new gcp.bigquery.Dataset(
@@ -17,8 +21,15 @@ export const stagingDataset = new gcp.bigquery.Dataset(
     friendlyName: 'Analysis Staging Dataset',
     description: 'Dataset for staging extracted data',
     location: 'US', // Regional location for data storage
+    // New tables in this dataset are encrypted with the customer-managed key
+    // unless they name another one
+    defaultEncryptionConfiguration: bigQueryEncryption,
   },
-  { provider, retainOnDelete: retainTablesOnDelete }
+  {
+    provider,
+    retainOnDelete: retainTablesOnDelete,
+    dependsOn: [bigQueryServiceAgentKmsBinding],
+  }
 )
 
 /**
@@ -33,6 +44,7 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
     datasetId: stagingDataset.datasetId,
     tableId: 'fact_checks',
     deletionProtection: tableDeletionProtection,
+    encryptionConfiguration: bigQueryEncryption,
     schema: JSON.stringify(FactChecksTableDBSchema.fields),
     timePartitioning: {
       type: 'DAY',
@@ -41,5 +53,14 @@ export const stagingFactChecksTable = new gcp.bigquery.Table(
     },
     labels: analysisLabels,
   },
-  { provider, retainOnDelete: retainTablesOnDelete }
+  {
+    provider,
+    retainOnDelete: retainTablesOnDelete,
+    // BigQuery must be able to use the key before it can create the table
+    dependsOn: [bigQueryServiceAgentKmsBinding],
+    // A table's key is fixed when it is created, so changing it replaces
+    // the table. The table id is fixed too, so the old table has to go
+    // before its replacement can take the name.
+    deleteBeforeReplace: true,
+  }
 )

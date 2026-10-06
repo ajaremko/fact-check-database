@@ -9,6 +9,15 @@ const coreConfig = new pulumi.Config('core')
 export const gcpProject = coreConfig.require('project')
 export const gcpRegion = coreConfig.require('region')
 export const kmsLocation = coreConfig.require('kmsLocation')
+
+/**
+ * The Cloud KMS location of the key that encrypts BigQuery data. BigQuery
+ * only accepts a key in the same location as the dataset it encrypts, and the
+ * analysis datasets are in the `US` multi-region, so this defaults to the
+ * matching KMS multi-region, `us`. It is separate from `kmsLocation`, which
+ * places the archive bucket's key beside its regional bucket.
+ */
+export const bigQueryKmsLocation = coreConfig.get('bigQueryKmsLocation') ?? 'us'
 export const githubOrg = coreConfig.require('githubOrg')
 export const githubRepo = coreConfig.require('githubRepo')
 export const workloadIdentityPoolId = coreConfig.require(

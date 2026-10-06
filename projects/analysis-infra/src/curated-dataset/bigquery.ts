@@ -8,6 +8,10 @@ import {
   retainTablesOnDelete,
   gcpProject,
 } from '../config'
+import {
+  bigQueryEncryption,
+  bigQueryServiceAgentKmsBinding,
+} from '../encryption'
 import { provider } from '../project'
 
 export const curatedDataset = new gcp.bigquery.Dataset(
@@ -17,8 +21,15 @@ export const curatedDataset = new gcp.bigquery.Dataset(
     friendlyName: 'Analysis Curated Dataset',
     description: 'Dataset for curated, deduplicated data from staging',
     location: 'US',
+    // New tables in this dataset are encrypted with the customer-managed key
+    // unless they name another one
+    defaultEncryptionConfiguration: bigQueryEncryption,
   },
-  { provider, retainOnDelete: retainTablesOnDelete }
+  {
+    provider,
+    retainOnDelete: retainTablesOnDelete,
+    dependsOn: [bigQueryServiceAgentKmsBinding],
+  }
 )
 
 export const curatedFactChecksTable = new gcp.bigquery.Table(
@@ -27,6 +38,7 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
     datasetId: curatedDataset.datasetId,
     tableId: 'fact_checks',
     deletionProtection: tableDeletionProtection,
+    encryptionConfiguration: bigQueryEncryption,
     schema: JSON.stringify([
       { name: 'fact_check_id', type: 'STRING', mode: 'REQUIRED' },
       { name: 'fact_check_sha256', type: 'STRING', mode: 'REQUIRED' },
@@ -54,7 +66,16 @@ export const curatedFactChecksTable = new gcp.bigquery.Table(
     },
     labels: analysisLabels,
   },
-  { provider, retainOnDelete: retainTablesOnDelete }
+  {
+    provider,
+    retainOnDelete: retainTablesOnDelete,
+    // BigQuery must be able to use the key before it can create the table
+    dependsOn: [bigQueryServiceAgentKmsBinding],
+    // A table's key is fixed when it is created, so changing it replaces
+    // the table. The table id is fixed too, so the old table has to go
+    // before its replacement can take the name.
+    deleteBeforeReplace: true,
+  }
 )
 
 export const curatedTableRef = pulumi.interpolate`${gcpProject}.${curatedDataset.datasetId}.${curatedFactChecksTable.tableId}`

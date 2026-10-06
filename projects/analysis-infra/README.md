@@ -46,6 +46,13 @@ BigQuery dataset `analysis_staging`, table `fact_checks` — schema imported fro
 `core-infra` uploads for `ingestion-extractor` to write against. Partitioned by `extracted_at`
 (daily, 7-day partition expiration).
 
+Both this table and the curated one are encrypted with core-infra's BigQuery key
+(`bigQueryKeyId`), a customer-managed key, and each dataset names that key as its default for any
+table created later. BigQuery encrypts and decrypts as its own service agent, which this stack
+grants use of the key. The loader, the scheduled query and research readers need no access to it.
+Removing the grant or disabling the key makes the tables unreadable, which is the revocation
+switch for this data. See [docs/iam-model.md](./docs/iam-model.md#encryption-key-grant).
+
 Fed by a Cloud Run **service** (`analysis-loader`), which receives work via a push subscription
 on core-infra's staging topic (OIDC-authenticated), writes rows into this table, and — on
 delivery failure after 5 attempts — routes to a dead-letter topic archived into a dedicated

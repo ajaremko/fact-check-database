@@ -16,6 +16,12 @@ const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
 export const coreProject = coreStackRef.getOutput('gcpProject')
 export const coreRegion = coreStackRef.getOutput('gcpRegion')
 
+/**
+ * The customer-managed key that encrypts this stack's BigQuery tables. It is
+ * owned by core-infra and lives in the same location as the datasets.
+ */
+export const bigQueryKeyId = coreStackRef.getOutput('bigQueryKeyId')
+
 export const stagingStorageTopicName = coreStackRef.getOutput(
   'stagingStorageTopicName'
 )
