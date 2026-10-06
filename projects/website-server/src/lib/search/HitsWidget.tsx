@@ -187,20 +187,21 @@ function decodeHits(hits: readonly unknown[]): SearchResult[] {
   return results
 }
 
+// Shows the parsed publication date when there is one, and otherwise the
+// publisher's own date string as written
 function formatDate(
-  publishedAtNormalized: string | undefined,
-  publishedAtRaw: Date | undefined
+  publishedAtNormalized: Date | undefined,
+  publishedAtRaw: string | undefined
 ): string {
-  if (publishedAtNormalized) return publishedAtNormalized
-  if (publishedAtRaw) {
-    return publishedAtRaw.toLocaleDateString('en-US', {
+  if (publishedAtNormalized && !Number.isNaN(publishedAtNormalized.getTime())) {
+    return publishedAtNormalized.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       timeZone: 'UTC',
     })
   }
-  return ''
+  return publishedAtRaw ?? ''
 }
 
 function formatExtractedAt(extractedAt: Date | undefined): string {

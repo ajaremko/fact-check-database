@@ -74,6 +74,9 @@ routes. Failed deliveries dead-letter into the shared bucket below (only
 `website-loader` (Cloud Run v2, `search/loader/`) reads staged fact-check batches from
 core-infra's staging bucket via a **cross-project** push subscription and writes them into an
 Algolia index (`factChecksIndex`, plus a `factChecksOldestIndex` replica sorted the other way).
+Both rank on `published_at_timestamp`, the publication date as Unix seconds: newest first in the
+primary index, oldest first in the replica. A record with no timestamp sorts after those that
+have one.
 Separately, `algoliaServiceAccount` and a custom IAM role
 (`websiteAlgoliaBigQueryIntegrator`) exist for Algolia's own BigQuery connector — a one-time
 manual integration, not something this project's Pulumi code wires up itself; see

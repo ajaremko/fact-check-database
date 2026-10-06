@@ -28,6 +28,11 @@ const decodeBatch = Schema.transformOrFail(
         link: input.fact_check.link,
         published_at_normalized: encoded.fact_check.published_at_normalized,
         published_at_raw: input.fact_check.published_at_raw,
+        published_at_timestamp: input.fact_check.published_at_normalized
+          ? Math.floor(
+              input.fact_check.published_at_normalized.getTime() / 1000
+            )
+          : undefined,
         summary: input.fact_check.summary,
         title: input.fact_check.title,
         author: input.fact_check.author,

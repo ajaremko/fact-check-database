@@ -45,3 +45,11 @@ per `fact_check_id`), then delete every record whose `objectID` isn't in that se
 **Root cause:** The loader sees new staging batches and upserts what they contain. It has no signal that a fact check has left its feed or been withdrawn, so a record stays in the index for good. The index's size is bounded only by the search provider's plan.
 **Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
 **If this ever needs to be fixed:** Decide what should expire a record (for example, not seen in any fetch for a set period), then run a scheduled job that deletes those `objectID`s. The same job is the hook a takedown request needs.
+
+## Records indexed before 2026-10 have no `published_at_timestamp`
+
+**Error:** No error — some older fact checks sort last in both the newest-first and oldest-first views.
+**Where:** The Algolia indices, which rank on `published_at_timestamp` (`website-infra/src/search/indices.ts`).
+**Root cause:** The timestamp was added to search records in 2026-10, when the types of `published_at_raw` and `published_at_normalized` were corrected. A record is rewritten the next time its fact check appears in a staging batch, which covers every fact check still listed in a feed. A fact check that has left its feed keeps its old record: it has no timestamp, and its `published_at_raw` holds a re-serialized date instead of the publisher's string.
+**Decision:** Leave them for now. Nothing in this project can rebuild the index, because the loader only ever sees new staging batches.
+**If this ever needs to be fixed:** Rebuild the index from the curated BigQuery table, one record per `fact_check_id`. The same rebuild resolves the older content-hash records described above.

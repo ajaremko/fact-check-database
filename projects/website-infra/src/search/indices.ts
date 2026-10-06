@@ -37,7 +37,8 @@ export const factChecksIndex = new algolia.Index(`${tag}-fact-checks-index`, {
   },
   rankingConfig: {
     rankings: ['words', 'proximity'],
-    customRankings: ['desc(published_at_raw)'],
+    // Newest first. Ranked on the numeric timestamp, not a date string
+    customRankings: ['desc(published_at_timestamp)'],
   },
   facetingConfig: {
     maxValuesPerFacet: 50,
@@ -55,7 +56,7 @@ export const factChecksOldestIndex = new algolia.Index(
     primaryIndexName: factChecksIndex.name,
     deletionProtection: false,
     rankingConfig: {
-      customRankings: ['asc(published_at_raw)'],
+      customRankings: ['asc(published_at_timestamp)'],
     },
   }
 )

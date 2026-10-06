@@ -60,6 +60,14 @@ Search records are keyed by `fact_check_id`, so Algolia's upsert keeps one recor
 a later batch carrying an edited title or summary overwrites the existing record instead of adding
 a second one. Within a batch, a later row for the same fact check overwrites an earlier one.
 
+Each record carries the publication date in three forms:
+
+- `published_at_raw`: the publisher's own date string, stored exactly as written.
+- `published_at_normalized`: the parsed date, as an ISO 8601 string.
+- `published_at_timestamp`: the parsed date as Unix seconds, which the search indices rank on.
+
+The last two are absent when the publisher's string could not be parsed.
+
 ## Development
 
 ```bash

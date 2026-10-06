@@ -115,7 +115,7 @@ See [known-issues.md](../projects/research-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/website-contracts/docs/known-issues.md).
 
-29. [ ] Fix the swapped types of `published_at_raw` and `published_at_normalized` in
+29. [x] Fix the swapped types of `published_at_raw` and `published_at_normalized` in
         `SearchResultSchema`, rank the search index on the normalized date, and reindex
 30. [ ] Add spec coverage for the search and form-submission schemas
 

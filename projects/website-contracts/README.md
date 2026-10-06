@@ -10,7 +10,9 @@ The package is `@fact-check-database/website-contracts`. Each domain is a separa
   plain projection record with no `version`/`kind` discriminators, the same shape as
   `core-contracts`' `FactChecksTableRowSchema` (which `website-loader` transforms into this shape
   — see `website-loader/src/transcodeBatch.ts` for that mapping; it's that project's logic, not
-  this package's).
+  this package's). The publication date appears three times: `published_at_raw` is the publisher's
+  string as written, `published_at_normalized` is the parsed date, and `published_at_timestamp` is
+  that date as Unix seconds, which the search indices rank on.
 - **`form-submissions/v1`** — `ContactSubmission`, `AccessRequest`, and `TipSubmission`, each with
   `version: 1` and a `kind` literal discriminator, unioned as `FormSubmission`. Unlike
   `SearchResult`, these are genuinely event-shaped records — a form submission is something that
@@ -59,8 +61,11 @@ import { Schema } from 'effect'
 import { SearchResultSchema } from '@fact-check-database/website-contracts/search/v1'
 
 Schema.encodeSync(SearchResultSchema)({
-  objectID: 'content-lineage-id',
+  objectID: 'a-fact-check-id',
   extracted_at: new Date(),
+  published_at_raw: 'Wed, 14 Jan 2026 09:22:00 +0000',
+  published_at_normalized: new Date('2026-01-14T09:22:00Z'),
+  published_at_timestamp: 1768382520,
   source_collection: 'rss',
   source_id: 'politifact',
   source_url: 'https://www.politifact.com/rss/all/',

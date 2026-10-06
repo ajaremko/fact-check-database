@@ -37,8 +37,8 @@ describe('transcodeBatch', () => {
               summary: 'The claim is false.',
               link: 'https://example.com/fact-check-1',
               image_url: 'https://example.com/image.png',
-              published_at_raw: '2026-01-01T00:00:00.000Z',
-              published_at_normalized: '2026-01-01T00:00:00.000Z',
+              published_at_raw: 'Wed, 14 Jan 2026 09:22:00 +0000',
+              published_at_normalized: '2026-01-14T09:22:00.000Z',
               canonical_url: 'https://example.com/canonical',
               language: 'en',
             },
@@ -71,8 +71,11 @@ describe('transcodeBatch', () => {
         canonical_url: 'https://example.com/canonical',
         language: 'en',
         link: 'https://example.com/fact-check-1',
-        published_at_normalized: '2026-01-01T00:00:00.000Z',
-        published_at_raw: '2026-01-01T00:00:00.000Z',
+        published_at_normalized: '2026-01-14T09:22:00.000Z',
+        // The publisher's own string, stored as written
+        published_at_raw: 'Wed, 14 Jan 2026 09:22:00 +0000',
+        // 2026-01-14T09:22:00Z in Unix seconds
+        published_at_timestamp: 1768382520,
         summary: 'The claim is false.',
         title: 'A false claim about something',
         author: 'Jane Doe',
@@ -258,6 +261,48 @@ describe('transcodeBatch', () => {
           source_id: 'politifact',
           source_url: 'https://www.politifact.com/rss/all/',
           source_name: 'politifact.com',
+        })
+      })
+  )
+
+  it.effect(
+    'keeps a raw publication date that cannot be parsed, with no normalized date or timestamp',
+    () =>
+      Effect.gen(function* () {
+        const [result] = yield* transcodeBatch(
+          encodeBatch([
+            {
+              fact_check_id: 'fact-check-odd-date',
+              content_sha256: 'sha-content-1',
+              extracted_at: '2026-01-01T00:00:00.000Z',
+              fetched_at: '2026-01-01T00:00:00.000Z',
+              ingestor_run_id: 'ingestor-run-1',
+              extractor_run_id: 'extractor-run-1',
+              source: {
+                id: 'politifact',
+                name: 'politifact.com',
+                url: 'https://www.politifact.com/rss/all/',
+                collection: 'rss',
+              },
+              extractor_id: 'extractor-1',
+              extractor_version: '1',
+              fact_check: {
+                sha256: 'sha-factcheck-1',
+                published_at_raw: 'le 14 janvier 2026',
+              },
+              http: {},
+            },
+          ])
+        )
+
+        expect(result).toStrictEqual({
+          objectID: 'fact-check-odd-date',
+          extracted_at: '2026-01-01T00:00:00.000Z',
+          source_collection: 'rss',
+          source_id: 'politifact',
+          source_url: 'https://www.politifact.com/rss/all/',
+          source_name: 'politifact.com',
+          published_at_raw: 'le 14 janvier 2026',
         })
       })
   )
