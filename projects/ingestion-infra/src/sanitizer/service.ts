@@ -38,6 +38,10 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
           },
         },
       ],
+      scaling: {
+        minInstanceCount: 0,
+        maxInstanceCount: 3,
+      },
       containers: [
         {
           image: getImageUrl('ingestion-sanitizer', dockerTag),

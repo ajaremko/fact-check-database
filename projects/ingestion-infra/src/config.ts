@@ -137,6 +137,51 @@ if (!deadletterSoftDeleteDays) {
 }
 
 /**
+ * The email address that receives alert notifications for this stack. Unset
+ * means no notification channel is created: the alert policies still exist
+ * and their incidents show in Cloud Monitoring, but nobody is notified. Set
+ * it in production; leave it unset in non-production environments, where
+ * failures are routine during development.
+ */
+export const alertEmail = ingestionConfig.get('alertEmail')
+
+/**
+ * The age, in hours, of the oldest unacknowledged message on the extractor
+ * subscription at which the backlog alert fires. The extractor runs on
+ * `extractorSchedule`, so the age normally climbs until the next run and
+ * then drops. The default of 24 hours is above that pattern for a 12-hour
+ * schedule and fires after one fully missed or stuck run, well before
+ * messages reach the subscription's 7-day retention and expire.
+ */
+export const extractorBacklogAlertHours =
+  ingestionConfig.getNumber('extractorBacklogAlertHours') ?? 24
+
+if (extractorBacklogAlertHours <= 0) {
+  throw new Error(
+    `ingestion:extractorBacklogAlertHours must be greater than 0. Got ${extractorBacklogAlertHours}.`
+  )
+}
+
+/**
+ * How long, in seconds, an alert incident stays open after its signal stops
+ * reporting data. The dead-letter and job-failure alerts rely on this to
+ * close, because their metrics only report when a failure happens. Unset
+ * means 3600 (one hour). Cloud Monitoring accepts 30 minutes to 7 days.
+ */
+export const alertAutoCloseSeconds =
+  ingestionConfig.getNumber('alertAutoCloseSeconds') ?? 3600
+
+if (
+  !Number.isInteger(alertAutoCloseSeconds) ||
+  alertAutoCloseSeconds < 1800 ||
+  alertAutoCloseSeconds > 604800
+) {
+  throw new Error(
+    `ingestion:alertAutoCloseSeconds must be a whole number from 1800 (30 minutes) to 604800 (7 days). Got ${alertAutoCloseSeconds}.`
+  )
+}
+
+/**
  * The age, in days, at which an object in the archive bucket moves to Nearline
  * storage. Unset means objects are never moved to Nearline.
  *

@@ -3,6 +3,7 @@ export * from './assets'
 export * from './extractor'
 export * from './ingestor'
 export * from './sanitizer'
+export * from './alerts'
 import { loggingBucketConfig } from './logging'
 
 export const loggingBucketConfigName = loggingBucketConfig.name

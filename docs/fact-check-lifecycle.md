@@ -255,7 +255,9 @@ The search index updates as soon as a batch is written, so it skips the MERGE st
 The extractor keeps up as long as each run takes in more records than arrive between runs. It
 takes up to 1,000 per run, and about 160 arrive in 12 hours: one per source for each of three
 ingestor runs. If it fell behind, records older than the subscription's 7-day retention would
-expire unextracted. The Messaging section of the ingestion dashboard shows the backlog. What
+expire unextracted. The Messaging section of the ingestion dashboard shows the backlog, and an
+alert fires when the oldest waiting record passes 24 hours (see the
+[ingestion runbook](../projects/ingestion-infra/docs/runbook.md#alerts)). What
 stops the per-run limit from being raised much further is recorded in the
 [extractor's known issues](../projects/ingestion-extractor/docs/known-issues.md).
 

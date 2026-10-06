@@ -56,8 +56,8 @@ See [known-issues.md](../projects/ingestion-contracts/docs/known-issues.md).
 
 See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
 
-14. [ ] Add alert policies for extractor backlog age, dead-letter arrivals and failed job executions
-15. [ ] Set instance limits on the sanitizer service
+14. [x] Add alert policies for extractor backlog age, dead-letter arrivals and failed job executions
+15. [x] Set instance limits on the sanitizer service
 
 ### ingestion-ingestor
 

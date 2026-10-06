@@ -40,7 +40,7 @@ Actions CI/CD identity — those are core-infra's, documented in its own
 | Cloud Scheduler                                      | `cloudscheduler.googleapis.com`                                         | Triggering the ingestor and extractor jobs on a cron  |
 | Cloud Storage                                        | `storage.googleapis.com`                                                | Archive, event-log, and deadletter buckets            |
 | Pub/Sub                                              | `pubsub.googleapis.com`                                                 | Ingestor → sanitizer → extractor hand-off             |
-| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and the pipeline dashboard          |
+| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, the pipeline dashboard and alerts   |
 | Secret Manager                                       | `secretmanager.googleapis.com`                                          | The source list and sanitizer policy documents        |
 
 ### Storage
@@ -63,9 +63,14 @@ The three services chain together through storage notifications and Pub/Sub, not
    push-delivers to the sanitizer. The push subscription's ack deadline is 60s: a request still
    running at the deadline is redelivered, and each ingestor run publishes one notification per
    source at once, so the deadline must cover the sanitizer's slowest requests during that burst.
-3. **Sanitizer** (`ingestion-sanitizer-service`, a Cloud Run Service — always running, not
-   scheduled) — receives work via an OIDC-authenticated push subscription, reads its policy from a
-   Secret Manager secret, and writes sanitized records back to the same archive bucket.
+3. **Sanitizer** (`ingestion-sanitizer-service`, a Cloud Run Service, not a scheduled job) —
+   receives work via an OIDC-authenticated push subscription, reads its policy from a Secret
+   Manager secret, and writes sanitized records back to the same archive bucket. It scales between
+   0 and 3 instances: to zero between ingestor runs, and capped at 3 so a burst of notifications
+   can't start an unbounded number of instances. Each instance handles one message at a time, so
+   the cap also bounds how fast a burst clears. In dev, a run's 52 notifications are served by 2
+   instances with the slowest request at about 25 seconds, inside the 60s ack deadline. Revisit
+   the cap if the source list grows several times over.
 4. That write triggers a GCS notification into the **sanitizer topic**
    (`ingestion-sanitizer-topic`), which the extractor pulls from (with a dead-letter topic after 5
    failed delivery attempts). The subscription's ack deadline is 600s (the Pub/Sub maximum): the
@@ -91,6 +96,25 @@ One Cloud Monitoring dashboard (`ingestion-dashboard`) with six sections: Overvi
 result breakdowns), Content Ingestion and Data Extraction (log-analytics tables per pipeline
 stage), System Logs (raw log output from all pipeline components), Messaging (Pub/Sub
 backlog/throughput), and Storage (bucket sizes).
+
+### Alerting
+
+Three Cloud Monitoring alert policies, built on metrics Pub/Sub and Cloud Run publish themselves:
+
+- **Extractor backlog is ageing:** the oldest record waiting for the extractor is older than
+  `ingestion:extractorBacklogAlertHours` (default 24).
+- **Messages dead-lettered:** the sanitizer or extractor subscription gave up on a message.
+- **Job execution failed:** an ingestor or extractor run finished as failed.
+
+When `ingestion:alertEmail` is set, incidents are emailed to that address through one
+notification channel. When it is unset, the policies still exist and their incidents show in the
+console only. See [docs/runbook.md](./docs/runbook.md#alerts) for what each alert means and what
+to check.
+
+| Output                                                                                        | Purpose                                                                     |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `extractorBacklogAlertPolicyName` / `deadLetterAlertPolicyName` / `jobFailureAlertPolicyName` | The three alert policies                                                    |
+| `alertEmailChannelName`                                                                       | The email notification channel. Absent when `ingestion:alertEmail` is unset |
 
 ## Consuming these outputs
 
