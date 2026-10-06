@@ -44,7 +44,7 @@ Pub/Sub push subscription (provisioned by analysis-infra)
       └── Failure ──► error response (nacks; redelivered, dead-lettered after 5 attempts)
 ```
 
-The load job is given both an explicit `schema` (fetched from GCS) and `autodetect: true`.
+The load job is given an explicit `schema` (fetched from GCS) and does not use schema autodetection, so a batch that doesn't match the staging table's schema fails to load instead of being inferred.
 
 ### Idempotent loads
 

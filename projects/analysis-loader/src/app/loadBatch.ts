@@ -52,7 +52,6 @@ export const loadBatch = Effect.fn('loadBatch')(
             sourceUris: [gsUri],
             sourceFormat: input.sourceFormat,
             schema: input.schema,
-            autodetect: true,
           },
         },
       }).pipe(Effect.map(([job]) => job))

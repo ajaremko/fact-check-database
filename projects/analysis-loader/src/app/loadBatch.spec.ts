@@ -46,98 +46,109 @@ describe('loadBatch', () => {
     vi.restoreAllMocks()
   })
 
-  it.effect('creates a load job with the deterministic id', () =>
-    Effect.gen(function* () {
-      const logs: Array<{
-        level: string
-        message: unknown
-        annotations: object
-      }> = []
-      const client = new BigQuery({ projectId: 'project' })
-      vi.spyOn(client, 'createJob').mockImplementation(((options: {
-        jobId: string
-      }) => Promise.resolve([client.job(options.jobId)])) as never)
-      vi.spyOn(Job.prototype, 'getMetadata').mockImplementation(function (
-        this: Job,
-        callback?: unknown
-      ) {
-        this.metadata = { status: { state: 'DONE' } }
-        if (typeof callback === 'function') {
-          return callback(null, this.metadata)
-        }
-        return Promise.resolve([this.metadata])
-      } as never)
+  it.effect(
+    'creates a load job with the deterministic id and the explicit schema',
+    () =>
+      Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
+        const client = new BigQuery({ projectId: 'project' })
+        vi.spyOn(client, 'createJob').mockImplementation(((options: {
+          jobId: string
+        }) => Promise.resolve([client.job(options.jobId)])) as never)
+        vi.spyOn(Job.prototype, 'getMetadata').mockImplementation(function (
+          this: Job,
+          callback?: unknown
+        ) {
+          this.metadata = { status: { state: 'DONE' } }
+          if (typeof callback === 'function') {
+            return callback(null, this.metadata)
+          }
+          return Promise.resolve([this.metadata])
+        } as never)
 
-      yield* loadBatch({
-        projectId: 'project',
-        pointer: { bucket: 'staging', object: 'v1/type=fact_checks/a.ndjson' },
-        generation: '123',
-        table: { dataset: 'staging', table: 'fact_checks' },
-        sourceFormat: 'NEWLINE_DELIMITED_JSON',
-        schema: {},
-      }).pipe(
-        Effect.provide(Layer.succeed(BigQueryClient, { client })),
-        Effect.provide(
-          Logger.replace(
-            Logger.defaultLogger,
-            Logger.make(({ logLevel, message, annotations }) => {
-              logs.push({
-                level: logLevel.label,
-                message,
-                annotations: Object.fromEntries(HashMap.toEntries(annotations)),
+        yield* loadBatch({
+          projectId: 'project',
+          pointer: {
+            bucket: 'staging',
+            object: 'v1/type=fact_checks/a.ndjson',
+          },
+          generation: '123',
+          table: { dataset: 'staging', table: 'fact_checks' },
+          sourceFormat: 'NEWLINE_DELIMITED_JSON',
+          schema: {},
+        }).pipe(
+          Effect.provide(Layer.succeed(BigQueryClient, { client })),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
               })
-            })
+            )
           )
         )
-      )
 
-      expect(logs).toStrictEqual([
-        {
-          level: 'INFO',
-          message: ['Load job created'],
-          annotations: {
-            'batch.bucket': 'staging',
-            'batch.object': 'v1/type=fact_checks/a.ndjson',
-            'batch.generation': '123',
-            'batch.datasetId': 'staging',
-            'batch.tableId': 'fact_checks',
-            'job.id':
-              'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+        expect(logs).toStrictEqual([
+          {
+            level: 'INFO',
+            message: ['Load job created'],
+            annotations: {
+              'batch.bucket': 'staging',
+              'batch.object': 'v1/type=fact_checks/a.ndjson',
+              'batch.generation': '123',
+              'batch.datasetId': 'staging',
+              'batch.tableId': 'fact_checks',
+              'job.id':
+                'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+            },
           },
-        },
-        {
-          level: 'INFO',
-          message: ['Load job completed'],
-          annotations: {
-            'batch.bucket': 'staging',
-            'batch.object': 'v1/type=fact_checks/a.ndjson',
-            'batch.generation': '123',
-            'batch.datasetId': 'staging',
-            'batch.tableId': 'fact_checks',
-            'job.id':
-              'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+          {
+            level: 'INFO',
+            message: ['Load job completed'],
+            annotations: {
+              'batch.bucket': 'staging',
+              'batch.object': 'v1/type=fact_checks/a.ndjson',
+              'batch.generation': '123',
+              'batch.datasetId': 'staging',
+              'batch.tableId': 'fact_checks',
+              'job.id':
+                'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+            },
           },
-        },
-      ])
-      expect(client.createJob).toHaveBeenCalledTimes(1)
-      expect(client.createJob).toHaveBeenCalledWith(
-        expect.objectContaining({
-          jobId:
-            'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
-          location: 'US',
-          configuration: expect.objectContaining({
-            load: expect.objectContaining({
-              destinationTable: {
-                projectId: 'project',
-                datasetId: 'staging',
-                tableId: 'fact_checks',
+        ])
+        expect(client.createJob).toHaveBeenCalledTimes(1)
+        expect(client.createJob).toHaveBeenCalledWith(
+          expect.objectContaining({
+            jobId:
+              'load_5176467b42b1a2b0b49ac1b6d9ccc443e017e40c5a3b74f6cfb72eacde881911',
+            location: 'US',
+            // The whole load configuration: the explicit schema is the only
+            // schema source, with no `autodetect`.
+            configuration: {
+              load: {
+                destinationTable: {
+                  projectId: 'project',
+                  datasetId: 'staging',
+                  tableId: 'fact_checks',
+                },
+                sourceUris: ['gs://staging/v1/type=fact_checks/a.ndjson'],
+                sourceFormat: 'NEWLINE_DELIMITED_JSON',
+                schema: {},
               },
-              sourceUris: ['gs://staging/v1/type=fact_checks/a.ndjson'],
-            }),
-          }),
-        })
-      )
-    })
+            },
+          })
+        )
+      })
   )
 
   it.effect(

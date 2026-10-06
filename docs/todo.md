@@ -84,12 +84,12 @@ See [known-issues.md](../projects/ingestion-contracts/docs/known-issues.md).
 
 See [known-issues.md](../projects/ingestion-infra/docs/known-issues.md).
 
-27. [ ] Give AFP its own source id in `sources.prod.csv` — it shares `factcheck` with factcheck.org,
+27. [x] Give AFP its own source id in `sources.prod.csv` — it shares `factcheck` with factcheck.org,
         so the two feeds write the same fetch record and salt `fact_check_id` with the same id
-28. [ ] Promote the prod source list to the full list and remove the `baddata` test row
-29. [ ] Raise `ingestion:logLevel`, `logRetentionDays` and `eventLogRetentionDays` in
+28. [x] Promote the prod source list to the full list and remove the `baddata` test row
+29. [x] Raise `ingestion:logLevel`, `logRetentionDays` and `eventLogRetentionDays` in
         `Pulumi.prod.yml` — prod runs at `trace` with 1-day log retention
-30. [ ] Set `ingestion:forceDestroyStorage: false` and `ingestion:retainStorageOnDelete: true` in
+30. [x] Set `ingestion:forceDestroyStorage: false` and `ingestion:retainStorageOnDelete: true` in
         `Pulumi.prod.yml`
 31. [ ] Add alert policies for extractor backlog age, dead-letter arrivals and failed job executions
 32. [ ] Add a lifecycle rule that moves raw archive objects to a colder storage class
@@ -184,7 +184,7 @@ See [known-issues.md](../projects/analysis-infra/docs/known-issues.md).
 
 See [known-issues.md](../projects/analysis-loader/docs/known-issues.md).
 
-65. [ ] Remove `autodetect: true` from load jobs, or record why it sits beside an explicit schema
+65. [x] Remove `autodetect: true` from load jobs, or record why it sits beside an explicit schema
 66. [x] Add `Effect.catchTags` for `StorageReadError`/`ParseError` in the route handler, alongside
         the existing `BigQueryClientIOError` handling
 67. [x] Remove `STAGING_BUCKET_NAME` from `analysis-infra`'s loader service env list — it's never
