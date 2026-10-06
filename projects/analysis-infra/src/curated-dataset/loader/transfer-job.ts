@@ -3,7 +3,11 @@ import * as pulumi from '@pulumi/pulumi'
 
 import { provider } from '../../project'
 import { stagingTableRef } from '../../staging-dataset'
-import { tag } from '../../config'
+import {
+  curatedTransferSchedule,
+  curatedTransferStartTime,
+  tag,
+} from '../../config'
 
 import { curatedTableRef } from '../bigquery'
 
@@ -19,7 +23,14 @@ export const stagingToCuratedTransferJob = new gcp.bigquery.DataTransferConfig(
     serviceAccountName: curatedLoaderServiceAccount.email,
     dataSourceId: 'scheduled_query',
     location: 'US',
-    schedule: 'every 6 hours',
+    // Both come from stack config. The start time anchors the schedule to
+    // shortly after `ingestion-infra`'s extractor runs, so each extraction's
+    // rows are merged soon after they load. The runs in between find nothing
+    // new and serve as catch-up.
+    schedule: curatedTransferSchedule,
+    scheduleOptions: curatedTransferStartTime
+      ? { startTime: curatedTransferStartTime }
+      : undefined,
     params: {
       // Staging is an append-only observation log: the same fact check
       // appears once per fetch that listed it. This MERGE collapses those

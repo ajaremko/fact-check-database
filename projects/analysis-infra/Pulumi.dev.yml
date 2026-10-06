@@ -4,5 +4,7 @@ config:
   analysis:coreStackName: alfredsyoung/fact-check-database-core
   analysis:tableDeletionProtection: false
   analysis:retainTablesOnDelete: false
-  analysis:tag: dev-435
+  analysis:tag: dev-441
   analysis:logLevel: debug
+  analysis:curatedTransferSchedule: every 4 hours
+  analysis:curatedTransferStartTime: '2026-10-08T01:00:00Z'

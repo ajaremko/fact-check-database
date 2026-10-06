@@ -6,3 +6,5 @@ config:
   analysis:retainTablesOnDelete: true
   analysis:tag: 430-10.05.26-42b7e1e
   analysis:logLevel: debug
+  analysis:curatedTransferSchedule: every 4 hours
+  analysis:curatedTransferStartTime: '2026-10-08T01:00:00Z'

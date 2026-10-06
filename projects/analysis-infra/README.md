@@ -77,8 +77,10 @@ staging schema, nothing else in the repo consumes this shape in code (its only o
 decode/encode boundary), so there's no shared `core-contracts` schema to import from. Partitioned
 by `extracted_at` (monthly, no expiration).
 
-Fed by a **BigQuery Data Transfer Service scheduled query** (not a Cloud Run job) running every 6
-hours. Staging is an observation log — the same fact check appears once for every fetch that
+Fed by a **BigQuery Data Transfer Service scheduled query** (not a Cloud Run job). Its cadence and
+start time are stack config (`analysis:curatedTransferSchedule`, `analysis:curatedTransferStartTime`):
+every 4 hours from 01:00 UTC, so that a run follows each of `ingestion-infra`'s two daily
+extractions by about half an hour. Staging is an observation log — the same fact check appears once for every fetch that
 listed it — and this `MERGE` collapses those observations into **one row per fact check**:
 
 - **Identity:** `fact_check_id` is computed by the extractor and read from staging as-is — a hash

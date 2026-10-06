@@ -1,9 +1,9 @@
 config:
   website:project: fact-check-database-dev
   website:region: us-central1
-  website:tag: dev-418
+  website:tag: dev-441
   website:coreStackName: alfredsyoung/fact-check-database-core
-  website:logLevel: debug
+  website:logLevel: trace
   website:verifiedDomains:
     - dev.factcheckdatabase.com
   website:algoliaAppId: 3R16A1FPTN

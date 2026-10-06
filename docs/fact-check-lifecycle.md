@@ -35,7 +35,7 @@ research marts view, plus every identifier and deduplication rule along the way.
                                                  └──────────┬───────────┘
                                                             │ object notification → Pub/Sub pull
                                                             ▼
-                               every 12h, up to  ┌──────────────────────┐
+                            twice a day, up to   ┌──────────────────────┐
                                1,000 records/run │      Extractor       │  parses feed items,
                                                  │   (Cloud Run job)    │  assigns fact_check_id
                                                  └──────────┬───────────┘
@@ -49,7 +49,7 @@ research marts view, plus every identifier and deduplication rule along the way.
                                        ▼                                      ▼
                               BigQuery staging.fact_checks            Algolia search index
                               (append-only, 7-day retention)          (one record per fact check)
-                                       │ scheduled MERGE, every 6h
+                                       │ scheduled MERGE, every 4h
                                        ▼
                               BigQuery curated.fact_checks
                               (one row per fact check)
@@ -103,7 +103,8 @@ inspection.
 
 ### 3. Extract (extractor)
 
-- **Trigger:** Cloud Scheduler, `0 */12 * * *`. Each run takes up to 1,000 sanitizer records,
+- **Trigger:** Cloud Scheduler, `30 0,12 * * *`: twice a day, half an hour after an ingestor run,
+  so that run's records are waiting. Each run takes up to 1,000 sanitizer records,
   pulling repeatedly until it has them or the subscription is empty. A run must take in more
   records than arrive between runs, or the backlog grows until records reach the subscription's
   7-day retention and are deleted unread.
@@ -137,7 +138,9 @@ Both loaders react to the same batch-file notification, independently of each ot
 
 ### 5. Curate (scheduled MERGE)
 
-- **Trigger:** a BigQuery Data Transfer Service scheduled query, every 6 hours.
+- **Trigger:** a BigQuery Data Transfer Service scheduled query, every 4 hours from 01:00 UTC.
+  The 01:00 and 13:00 runs follow the two extractions. The other four find nothing new and serve
+  as catch-up.
 - **Does:** merges the last 7 days of staging into `curated.fact_checks`. The result is one row
   per `fact_check_id`, holding its most recently fetched version.
 - **Duplicates:** see [Dedup rules by layer](#dedup-rules-by-layer). The MERGE is idempotent. Its
@@ -241,25 +244,46 @@ extracted, not when the fact check was first seen.
 
 ## Timing
 
+All schedules are in UTC. The ingestor runs every 4 hours on the hour, the extractor at 00:30 and
+12:30, and the curated MERGE every 4 hours from 01:00.
+
 A fact check published just after an ingestor run can take up to:
 
-| Step                         | Worst case                                     |
-| ---------------------------- | ---------------------------------------------- |
-| Until the next fetch         | 4 hours                                        |
-| Until the next extractor run | 12 hours, longer if the extractor is behind    |
-| Until the next curated MERGE | 6 hours                                        |
-| **Fetch to curated row**     | **about 22 hours**, plus any extractor backlog |
+| Step                           | Worst case                                                            |
+| ------------------------------ | --------------------------------------------------------------------- |
+| Until the next fetch           | 4 hours                                                               |
+| Until the next extractor run   | 8.5 hours (a 04:00 or 16:00 fetch), longer if the extractor is behind |
+| Until the next curated MERGE   | half an hour                                                          |
+| **Publication to curated row** | **about 13 hours**, plus any extractor backlog                        |
 
 The search index updates as soon as a batch is written, so it skips the MERGE step.
 
 The extractor keeps up as long as each run takes in more records than arrive between runs. It
-takes up to 1,000 per run, and about 160 arrive in 12 hours: one per source for each of three
+takes up to 1,000 per run, and about 160 arrive between runs: one per source for each of three
 ingestor runs. If it fell behind, records older than the subscription's 7-day retention would
 expire unextracted. The Messaging section of the ingestion dashboard shows the backlog, and an
 alert fires when the oldest waiting record passes 24 hours (see the
 [ingestion runbook](../projects/ingestion-infra/docs/runbook.md#alerts)). What
 stops the per-run limit from being raised much further is recorded in the
 [extractor's known issues](../projects/ingestion-extractor/docs/known-issues.md).
+
+### Why this cadence
+
+The schedule was checked against five days of archived feeds from 54 sources in October 2026.
+
+- **Six fetches a day.** A third of fetches found a changed feed and 13% brought a new item, about
+  144 new items a day in all. A new item was fetched a median 2.1 hours after publication, and 90%
+  within 4.3 hours. Frequent fetching also protects small, busy feeds: one source's feed holds 10
+  items and gains about 13 a day, so fetching it every 8 or 12 hours would lose items.
+- **Two extractions a day.** Extraction decides how soon a fetched item reaches staging and the
+  search index. Twice a day was chosen to keep the number of runs low. Running it after every
+  fetch would cut the wait to about half an hour for roughly 12 more vCPU-minutes a day.
+- **Extraction follows a fetch; it never coincides with one.** An extractor run that starts at the
+  same minute as an ingestor run pulls before that run's records exist. When both ran on the hour,
+  the midday fetch, the busiest of the day, waited 12 hours for extraction.
+- **Cost is not what the cadence controls.** All ingestor and extractor runs together use about
+  30 vCPU-minutes a day. Two thirds of fetches return an unchanged feed, so conditional requests
+  (see [todo.md](./todo.md)) would save more than fetching less often.
 
 ## Guarantees and limits
 

@@ -67,6 +67,12 @@ if (!ingestorSchedule) {
 /**
  * The schedule for the extractor job in cron format. This determines how
  * often the extractor runs to process sanitized records.
+ *
+ * Schedule it after an ingestor run has finished, never at the same minute.
+ * An extractor run that starts alongside an ingestor run pulls before that
+ * run's records exist, so they wait for the next extraction. An ingestor run
+ * and the sanitizer's burst after it finish within about five minutes; 30
+ * minutes past an `ingestorSchedule` hour is a wide margin.
  */
 export const extractorSchedule = ingestionConfig.get('extractorSchedule')
 

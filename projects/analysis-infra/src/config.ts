@@ -60,6 +60,27 @@ export const retainTablesOnDelete =
   analysisConfig.getBoolean('retainTablesOnDelete') ?? true
 
 /**
+ * How often the scheduled query that merges staging into the curated table
+ * runs, in the BigQuery Data Transfer Service's schedule syntax (for example
+ * `every 4 hours`). Required, so that the cadence is visible in the stack's
+ * config beside the ingestion schedules it follows.
+ */
+export const curatedTransferSchedule = analysisConfig.require(
+  'curatedTransferSchedule'
+)
+
+/**
+ * The time, as an RFC 3339 timestamp, that the schedule above is counted
+ * from. It fixes the minute the query runs at. Choose a time shortly after
+ * an extractor run in `ingestion-infra` has finished and its batch has
+ * loaded, so that a run picks up each extraction's rows. Unset leaves the
+ * service to choose, which ties the minute to when the transfer was created.
+ */
+export const curatedTransferStartTime = analysisConfig.get(
+  'curatedTransferStartTime'
+)
+
+/**
  * The log verbosity level for the analysis components.
  */
 export const logLevel = analysisConfig.require('logLevel')
