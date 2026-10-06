@@ -39,7 +39,7 @@ recreates the query definition — there's no data of its own to lose.
 
 ### Access
 
-This project defines no service accounts or IAM bindings of its own. BigQuery view access to the
+This project defines no service accounts, and grants no access to the view. Its one IAM binding gives `core-infra`'s read-only preview identity `roles/viewer` on this project in prod, so the daily `pulumi preview` workflow can read the stack (`src/preview-access.ts`). BigQuery view access to the
 underlying curated table isn't managed here: a principal querying this view also needs its own
 read access to `analysis-infra`'s curated dataset — ordinary BigQuery behavior in the absence of
 an authorized-view configuration, which this project doesn't set up.

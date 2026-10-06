@@ -16,3 +16,9 @@ export {
   gcpProject as ingestionGcpProject,
   gcpRegion as ingestionGcpRegion,
 } from './config'
+
+import { previewServiceAccountViewer } from './preview-access'
+
+export const previewServiceAccountViewerId = previewServiceAccountViewer.apply(
+  (binding) => binding?.id
+)

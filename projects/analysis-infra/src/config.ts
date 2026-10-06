@@ -17,6 +17,14 @@ export const coreProject = coreStackRef.getOutput('gcpProject')
 export const coreRegion = coreStackRef.getOutput('gcpRegion')
 
 /**
+ * The read-only identity the scheduled `pulumi preview` workflow runs as,
+ * owned by core-infra. Undefined until core-infra has been deployed with it.
+ */
+export const previewServiceAccountEmail = coreStackRef.getOutput(
+  'githubPreviewServiceAccountEmail'
+)
+
+/**
  * The customer-managed key that encrypts this stack's BigQuery tables. It is
  * owned by core-infra and lives in the same location as the datasets.
  */

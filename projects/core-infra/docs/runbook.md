@@ -8,18 +8,20 @@ Reference for the `core` Pulumi config namespace, read by `src/config.ts`. Every
 unless noted, and must be set with `pulumi config set core:<key> <value> --stack=<dev|prod>` (or
 directly in `Pulumi.<stack>.yml`) before the stack will deploy.
 
-| Key                           | Description                                                                                                       | dev                       | prod                       |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------- |
-| `core:project`                | GCP project ID this stack deploys into                                                                            | `fact-check-database-dev` | `fact-check-database-core` |
-| `core:region`                 | GCP region for regional resources (the Artifact Registry, the staging bucket)                                     | `us-central1`             | `us-central1`              |
-| `core:kmsLocation`            | Location of the CMEK key ring                                                                                     | `us-central1`             | `us-central1`              |
-| `core:bigQueryKmsLocation`    | Location of the BigQuery key's key ring. Must match the location of the BigQuery datasets. Optional, default `us` | unset                     | unset                      |
-| `core:githubOrg`              | GitHub organization allowed to assume the CI/CD identity                                                          | `ajaremko`                | `ajaremko`                 |
-| `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                            | `fact-check-database`     | `fact-check-database`      |
-| `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                                  | `shared-identity-pool-01` | `shared-identity-pool-01`  |
-| `core:batchRetentionDays`     | Days before a batch file under `v1/type=fact_checks/` is deleted by the staging bucket's lifecycle rule           | `1`                       | `1`                        |
-| `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                                  | `true`                    | `false`                    |
-| `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`.     | `false`                   | `true`                     |
+| Key                           | Description                                                                                                       | dev                           | prod                          |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------- | ----------------------------- |
+| `core:project`                | GCP project ID this stack deploys into                                                                            | `fact-check-database-dev`     | `fact-check-database-core`    |
+| `core:region`                 | GCP region for regional resources (the Artifact Registry, the staging bucket)                                     | `us-central1`                 | `us-central1`                 |
+| `core:kmsLocation`            | Location of the CMEK key ring                                                                                     | `us-central1`                 | `us-central1`                 |
+| `core:bigQueryKmsLocation`    | Location of the BigQuery key's key ring. Must match the location of the BigQuery datasets. Optional, default `us` | unset                         | unset                         |
+| `core:githubOrg`              | GitHub organization allowed to assume the CI/CD identity                                                          | `ajaremko`                    | `ajaremko`                    |
+| `core:githubRepo`             | GitHub repository allowed to assume the CI/CD identity                                                            | `fact-check-database`         | `fact-check-database`         |
+| `core:releaseWorkflow`        | The one workflow file and branch that may act as the release identity, as `<file>@<ref>`                          | `ci.yml@refs/heads/main`      | `release.yml@refs/heads/prod` |
+| `core:previewWorkflow`        | The one workflow file and branch that may act as the preview identity                                             | `preview.yml@refs/heads/main` | `preview.yml@refs/heads/main` |
+| `core:workloadIdentityPoolId` | ID of the workload identity pool                                                                                  | `shared-identity-pool-01`     | `shared-identity-pool-01`     |
+| `core:batchRetentionDays`     | Days before a batch file under `v1/type=fact_checks/` is deleted by the staging bucket's lifecycle rule           | `1`                           | `1`                           |
+| `core:forceDestroyStorage`    | Whether `pulumi destroy` may delete a non-empty staging bucket. Default `false`.                                  | `true`                        | `false`                       |
+| `core:retainStorageOnDelete`  | Whether the staging bucket survives `pulumi destroy` instead of being deleted with the stack. Default `true`.     | `false`                       | `true`                        |
 
 Every domain project points back at this stack through its own `<domain>:coreStackName` config
 key (for example `ingestion:coreStackName`) and a Pulumi `StackReference` — see the
@@ -40,30 +42,22 @@ Each domain project's own `docs/bootstrap.md` covers creating its GCP project an
 
 ## Redeploying
 
-Outside of the [initial bootstrap](./bootstrap.md), most deployments run through GitHub Actions.
-
-**Manual deployment:**
+Every stack in this repository is deployed by hand. No GitHub Actions workflow deploys
+infrastructure, and no GitHub Actions identity has the rights to.
 
 ```bash
 nx preview core-infra --stack=<dev|prod>   # review changes
 nx deploy core-infra --stack=<dev|prod>    # apply them
 ```
 
-Deploy manually when:
-
-- Running the initial bootstrap deployment.
-- Automatic deployment fails because the GitHub Actions service account lacks a needed permission.
-
-**Automatic deployment:** a push to `main` triggers
-[`ci.yml`](../../../.github/workflows/ci.yml), which deploys the `dev` stack.
-[`deploy.yml`](../../../.github/workflows/deploy.yml) deploys a chosen environment on manual
-dispatch.
+Deploy from a clean checkout of a commit that is on `main`. Pulumi Cloud records each update, who
+ran it and from which commit, which is the audit trail for deployments.
 
 ## Validating changes before merging
 
-There is no automated `pulumi preview` check on pull requests — `ci.yml` only runs
-`nx affected -t lint,test,build` before a merge to `main` triggers a real deploy to `dev`. Before
-merging a change to this project, run a preview locally against `dev` and read the diff:
+Pull requests run lint, test, typecheck and build ([`pr.yml`](../../../.github/workflows/pr.yml)).
+They do not preview infrastructure. Before merging a change to this project, run a preview
+locally against `dev` and read the diff:
 
 ```bash
 nx preview core-infra --stack=dev
@@ -72,6 +66,43 @@ nx preview core-infra --stack=dev
 Treat any resource replacement (not just an in-place update) as a reason to pause and confirm the
 change is intentional — a replacement of the staging bucket, key ring, or artifact registry
 destroys and recreates a resource every downstream project depends on.
+
+## The daily drift preview
+
+[`preview.yml`](../../../.github/workflows/preview.yml) runs `pulumi preview` every day at 06:00
+UTC against the core, ingestion, analysis and research stacks, in dev and prod. It can also be
+run by hand from the Actions tab. `website-infra` is not covered, because previewing it needs an
+Algolia admin key.
+
+- **A job fails when its stack has pending changes.** That means code on `main` differs from what
+  was last deployed. The job summary shows the diff. The usual resolution is to deploy the stack.
+- **It compares code with Pulumi's recorded state**, not with the live cloud. It does not notice a
+  resource changed by hand in the console.
+- **It cannot change cloud resources.** It runs as `github-preview-sa`, which can only view them.
+- **Its Pulumi token is not read-only.** It uses the `PULUMI_ACCESS_TOKEN` secret, a full-access
+  token, because the Pulumi plan in use offers no read-only one. With it, a workflow could alter
+  or delete a stack's recorded state, though not the cloud resources themselves. `preview.yml` is
+  the only workflow that receives it. Replace it with a read-only token if the plan ever allows.
+
+## GitHub Actions configuration
+
+The workflows take the names they need from repository variables, not from Pulumi, so the release
+workflows hold no Pulumi token.
+
+| Variable (`DEV_` and `PROD_` of each) | Value                             | Source                                        |
+| ------------------------------------- | --------------------------------- | --------------------------------------------- |
+| `GCP_PROJECT_ID`                      | The core project's id             | `gcpProject` output                           |
+| `WIF_PROVIDER`                        | The identity provider's full name | `githubActionIdentityPoolProviderName` output |
+| `RELEASE_SERVICE_ACCOUNT`             | The release identity's email      | `githubActionServiceAccountEmail` output      |
+| `PREVIEW_SERVICE_ACCOUNT`             | The preview identity's email      | `githubPreviewServiceAccountEmail` output     |
+| `ARTIFACT_REGISTRY_URI`               | The registry's URI                | `artifactRegistryUri` output                  |
+| `ARTIFACT_REGISTRY_BASE_URI`          | The registry's host               | `artifactRegistryBaseUri` output              |
+
+None is secret. Update a variable if its output ever changes, for example after recreating the
+identity pool: `gh variable set DEV_WIF_PROVIDER --body "$(pulumi stack output githubActionIdentityPoolProviderName --stack=dev)"`.
+
+The one secret is `PULUMI_ACCESS_TOKEN`, used only by the preview workflow. The release workflows
+do not receive it.
 
 ## KMS key rotation
 
@@ -143,14 +174,18 @@ impersonating the service account.
    `gcloud iam workload-identity-pools describe shared-identity-pool-01 --location=global --project=$PROJECT_ID`
 2. Confirm the OIDC provider exists with the right attribute condition:
    `gcloud iam workload-identity-pools providers describe github-actions-oidc-provider --workload-identity-pool=shared-identity-pool-01 --location=global --project=$PROJECT_ID`
-3. Confirm `github-actions-sa` has `roles/iam.workloadIdentityUser` for the identity pool
-   principal: `gcloud iam service-accounts get-iam-policy github-actions-sa@$PROJECT_ID.iam.gserviceaccount.com`
-4. Confirm the workflow has `id-token: write` permission and its `workload_identity_provider` /
-   `service_account` inputs match this stack's outputs.
+3. Confirm the service account (`github-actions-sa` or `github-preview-sa`) has
+   `roles/iam.workloadIdentityUser` for the right workflow principal:
+   `gcloud iam service-accounts get-iam-policy github-actions-sa@$PROJECT_ID.iam.gserviceaccount.com`.
+   The principal names one workflow file and branch. A workflow that was renamed, or a run from
+   another branch, is refused by design: update `core:releaseWorkflow` or `core:previewWorkflow`
+   and redeploy.
+4. Confirm the job has `id-token: write` permission and that the repository variables match this
+   stack's outputs (see [GitHub Actions configuration](#github-actions-configuration)).
 
 **Resolution:** update the attribute condition if the org or repo changed; re-grant
-`workloadIdentityUser` if the binding was removed; confirm the workflow YAML matches the current
-stack outputs (see the [README](../README.md#cicd-identity)).
+`workloadIdentityUser` if the binding was removed; confirm the repository variables match the
+current stack outputs (see the [README](../README.md#cicd-identities)).
 
 ## Troubleshooting: loads fail with a missing schema file
 

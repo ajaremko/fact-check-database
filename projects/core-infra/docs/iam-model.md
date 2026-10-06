@@ -1,44 +1,39 @@
 # IAM Model
 
-The IAM principals, roles, and bindings this project creates for CI/CD deployment.
+The IAM principals, roles, and bindings this project creates for GitHub Actions. Infrastructure is
+deployed by hand, so no GitHub Actions identity can create, change or delete infrastructure.
 
-## GitHub Actions service account
+## The two identities
 
-| Property       | Value                                                                           |
-| -------------- | ------------------------------------------------------------------------------- |
-| Account ID     | `github-actions-sa`                                                             |
-| Purpose        | Impersonated by every GitHub Actions workflow in this repository to deploy      |
-| Authentication | Workload identity federation (OIDC) — no long-lived key exists for this account |
+|                   | Release identity                                                                                                | Preview identity                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Account ID        | `github-actions-sa`                                                                                             | `github-preview-sa`                                                                             |
+| Purpose           | Pushes container images                                                                                         | Reads resources for the daily `pulumi preview`                                                  |
+| May be assumed by | One workflow on one branch: `ci.yml` on `main` in dev, `release.yml` on `prod` in prod (`core:releaseWorkflow`) | `preview.yml` on `main` (`core:previewWorkflow`)                                                |
+| Holds             | `roles/artifactregistry.writer` on the shared registry, and nothing else                                        | `roles/viewer` on this project. Each stack with a project of its own grants the same role there |
+| Authentication    | Workload identity federation (OIDC). No key exists                                                              | The same                                                                                        |
 
-## Project-level roles
+What each can and cannot do:
 
-Granted to `github-actions-sa` on the `core` project:
-
-| Role                                   | Purpose                                                                               |
-| -------------------------------------- | ------------------------------------------------------------------------------------- |
-| `roles/editor`                         | General resource creation and modification across every project this identity deploys |
-| `roles/serviceusage.serviceUsageAdmin` | Enable and disable GCP APIs                                                           |
-| `roles/iam.serviceAccountAdmin`        | Create and manage service accounts                                                    |
-| `roles/compute.admin`                  | Manage compute resources                                                              |
-| `roles/cloudkms.admin`                 | Manage KMS keys and key rings                                                         |
-
-These roles are broad by design. The same identity deploys `core-infra` and every domain project,
-so scoping them down would mean auditing every deploy step. See
-[docs/known-issues.md](./known-issues.md) for why that hasn't been done and what a narrower set
-would look like.
+- **The release identity** can push and pull images in one registry. It holds no project-level
+  role, so it cannot read data, change infrastructure, or touch keys.
+- **The preview identity** can view resource configuration. It cannot change anything, and viewer
+  does not include reading bucket objects, BigQuery table data or secret values.
 
 ## Service account impersonation
 
-| Principal                                                     | Role on `github-actions-sa`            | Purpose                                        |
-| ------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------- |
-| GitHub OIDC principal, scoped to `${githubOrg}/${githubRepo}` | `roles/iam.workloadIdentityUser`       | Allow impersonation from a GitHub Actions run  |
-| GitHub OIDC principal, scoped to `${githubOrg}/${githubRepo}` | `roles/iam.serviceAccountTokenCreator` | Generate short-lived access tokens for the run |
+Each identity trusts runs of exactly one workflow file on one branch. A run of any other
+workflow, or of the same workflow on another branch, is refused.
 
-The attribute condition restricting both bindings:
+| Principal                                         | Role                                                                     | On                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------ | ------------------- |
+| Runs whose `workflow_ref` is the release workflow | `roles/iam.workloadIdentityUser`, `roles/iam.serviceAccountTokenCreator` | `github-actions-sa` |
+| Runs whose `workflow_ref` is the preview workflow | `roles/iam.workloadIdentityUser`, `roles/iam.serviceAccountTokenCreator` | `github-preview-sa` |
 
-```
-assertion.repository == '${githubOrg}/${githubRepo}'
-```
+The principal is written against the identity pool as
+`attribute.workflow_ref/<org>/<repo>/.github/workflows/<file>@refs/heads/<branch>`.
+
+To revoke either identity's access, remove its `workloadIdentityUser` binding, or its role grant.
 
 ## Workload identity federation
 
@@ -48,13 +43,28 @@ assertion.repository == '${githubOrg}/${githubRepo}'
 | OIDC provider | `github-actions-oidc-provider`                             |
 | Issuer        | `https://token.actions.githubusercontent.com`              |
 
+The provider accepts tokens from this repository only:
+
+```
+assertion.repository == '${githubOrg}/${githubRepo}'
+```
+
 Attribute mapping:
 
-| Google attribute       | GitHub token claim     |
-| ---------------------- | ---------------------- |
-| `google.subject`       | `assertion.sub`        |
-| `attribute.actor`      | `assertion.actor`      |
-| `attribute.repository` | `assertion.repository` |
+| Google attribute         | GitHub token claim       |
+| ------------------------ | ------------------------ |
+| `google.subject`         | `assertion.sub`          |
+| `attribute.actor`        | `assertion.actor`        |
+| `attribute.repository`   | `assertion.repository`   |
+| `attribute.workflow_ref` | `assertion.workflow_ref` |
+
+## What is not covered
+
+- Whoever deploys by hand uses their own Google Cloud credentials, with whatever roles those
+  carry. This project does not define or limit them.
+- The Pulumi Cloud token used by the preview workflow is managed in Pulumi Cloud and GitHub, not
+  here. It is a full-access token: it can change a stack's recorded state, though the identity the
+  workflow runs as cannot change cloud resources.
 
 ## Note
 

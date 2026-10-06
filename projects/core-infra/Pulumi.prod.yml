@@ -8,3 +8,5 @@ config:
   core:batchRetentionDays: 7
   core:forceDestroyStorage: false
   core:retainStorageOnDelete: true
+  core:releaseWorkflow: release.yml@refs/heads/prod
+  core:previewWorkflow: preview.yml@refs/heads/main

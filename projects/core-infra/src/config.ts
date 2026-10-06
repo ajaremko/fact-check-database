@@ -20,6 +20,31 @@ export const kmsLocation = coreConfig.require('kmsLocation')
 export const bigQueryKmsLocation = coreConfig.get('bigQueryKmsLocation') ?? 'us'
 export const githubOrg = coreConfig.require('githubOrg')
 export const githubRepo = coreConfig.require('githubRepo')
+
+/**
+ * Builds the value GitHub puts in a run's `workflow_ref` claim for a workflow
+ * file on a branch of this repository, for example
+ * `org/repo/.github/workflows/ci.yml@refs/heads/main`.
+ */
+const workflowRef = (workflow: string) =>
+  `${githubOrg}/${githubRepo}/.github/workflows/${workflow}`
+
+/**
+ * The one workflow, on one branch, that may act as the release identity and
+ * push images to the registry: `<file>@<ref>`, for example
+ * `ci.yml@refs/heads/main`. No other workflow or branch can assume it.
+ */
+export const releaseWorkflowRef = workflowRef(
+  coreConfig.require('releaseWorkflow')
+)
+
+/**
+ * The one workflow, on one branch, that may act as the read-only preview
+ * identity, in the same `<file>@<ref>` form.
+ */
+export const previewWorkflowRef = workflowRef(
+  coreConfig.require('previewWorkflow')
+)
 export const workloadIdentityPoolId = coreConfig.require(
   'workloadIdentityPoolId'
 )

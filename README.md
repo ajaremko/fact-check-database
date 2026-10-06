@@ -15,14 +15,14 @@ environment, against 52 public feeds. The site has not been publicly announced.
 
 ## At a glance
 
-|                |                                                                                                                                 |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Scope          | 18 projects in one repository: 5 infrastructure stacks, 7 services and 6 shared libraries                                       |
-| Platform       | Google Cloud: Cloud Run jobs and services, Pub/Sub, Cloud Storage, BigQuery, KMS, Secret Manager, Cloud Scheduler               |
-| Infrastructure | Pulumi, one stack per domain, each with a dev and a prod configuration                                                          |
-| Delivery       | GitHub Actions. Workflows authenticate to Google Cloud with Workload Identity Federation, so no service-account keys are stored |
-| Code           | TypeScript throughout. The pipeline services are written with Effect, and data is schema-validated at every service boundary    |
-| Operations     | A runbook for every service and stack, an IAM model for each stack that grants access, and a decision log of known issues       |
+|                |                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scope          | 18 projects in one repository: 5 infrastructure stacks, 7 services and 6 shared libraries                                                                                                                                                                                                                                                                             |
+| Platform       | Google Cloud: Cloud Run jobs and services, Pub/Sub, Cloud Storage, BigQuery, KMS, Secret Manager, Cloud Scheduler                                                                                                                                                                                                                                                     |
+| Infrastructure | Pulumi, one stack per domain, each with a dev and a prod configuration                                                                                                                                                                                                                                                                                                |
+| Delivery       | GitHub Actions for checks and image releases: pull requests are checked with no credentials, and a release can only push images. Workflows authenticate with Workload Identity Federation, so no service-account keys are stored. Infrastructure is deployed by hand, and a daily preview that cannot change cloud resources reports anything merged and not deployed |
+| Code           | TypeScript throughout. The pipeline services are written with Effect, and data is schema-validated at every service boundary                                                                                                                                                                                                                                          |
+| Operations     | A runbook for every service and stack, an IAM model for each stack that grants access, and a decision log of known issues                                                                                                                                                                                                                                             |
 
 ## How it works
 
@@ -168,7 +168,7 @@ domain of an internal database maintenance team, not a public-facing one.
 Provisions controlled, read-only access to curated views of the analysis data. It is a separate
 domain so that research access can be governed independently of the pipeline that produces the
 data, without exposing the whole BigQuery dataset. Today the stack provisions the view and nothing
-else: it declares no IAM bindings, and access is granted by hand (see its
+else: it grants no one access to the view, and access is granted by hand (see its
 [known issues](./projects/research-infra/docs/known-issues.md)).
 
 | Project        | Kind  | Purpose                              | Documentation                                    |
@@ -221,7 +221,8 @@ tests follow [docs/testing-guidelines.md](./docs/testing-guidelines.md).
 - Alerting covers the ingestion and analysis stacks: a stalled extraction backlog, dead-lettered
   messages, failed job runs and failed merges. The website stack has no alert policies yet. An
   alert notifies someone only where a stack sets an alert email.
-- The CI/CD identity holds broader roles than it needs. Narrowing it is on the backlog.
+- Infrastructure is deployed by hand, by whoever holds the rights to. A daily preview reports
+  undeployed changes for four of the five stacks; the website stack is not covered.
 - The crawler does not yet honor `robots.txt` (see [Scope and non-goals](#scope-and-non-goals)).
 
 The full backlog is in [docs/todo.md](./docs/todo.md). Each project's accepted limitations are

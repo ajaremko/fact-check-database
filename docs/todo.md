@@ -13,7 +13,7 @@ to be a won't-fix.
 2. [ ] Implement the bot-transparency policy in
        [docs/roadmap-bot-transparency.md](./roadmap-bot-transparency.md) (`robots.txt` honoring,
        per-host crawl delay, a real publisher opt-out channel)
-3. [ ] Run lint, test and typecheck on pull requests — CI runs only on pushes to `main`
+3. [x] Run lint, test and typecheck on pull requests — CI runs only on pushes to `main`
 4. [ ] Install a Vitest coverage provider and report coverage
 5. [ ] Add an end-to-end test that runs the three ingestion stages together, based on
        `scripts/run-pipeline.sh`
@@ -30,10 +30,10 @@ to be a won't-fix.
 
 See [known-issues.md](../projects/core-infra/docs/known-issues.md).
 
-8. [ ] Scope down the CI/CD identity's IAM roles (replace `roles/editor`; scope
+8. [x] Scope down the CI/CD identity's IAM roles (replace `roles/editor`; scope
        `roles/cloudkms.admin` to the `core-key-ring` key ring) once more than one team deploys
        through it
-9. [ ] Narrow the workload identity provider's condition to the deploy workflows and the `main`
+9. [x] Narrow the workload identity provider's condition to the deploy workflows and the `main`
        branch — it admits any workflow in the repository
 10. [ ] Stop every staging load depending on one mutable schema object in the staging bucket (build
         the schema into the loader, or version the object and alert on a failed read)

@@ -57,6 +57,16 @@ cross-project grant.
 - Removing the grant, or disabling the key in `core-infra`, stops every read and write on both
   tables at once. Restoring it restores access; the data is untouched.
 
+## Preview access
+
+The daily `pulumi preview` workflow runs as `github-preview-sa`, a read-only identity owned by
+`core-infra`. Where this stack has a project of its own (prod), it grants that identity
+`roles/viewer` on the project (`src/preview-access.ts`). Where it shares `core-infra`'s project
+(dev), `core-infra`'s own grant covers it and this stack adds nothing.
+
+Viewer lets the identity read resource configuration. It does not include reading bucket objects,
+table data or secret values, and it cannot change anything.
+
 ## Trust model summary
 
 The staging loader's service account is a simple Cloud-Run-attached identity with no downloaded

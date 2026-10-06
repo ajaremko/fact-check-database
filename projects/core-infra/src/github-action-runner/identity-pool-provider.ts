@@ -19,6 +19,10 @@ export const githubActionIdentityPoolProvider =
         'google.subject': 'assertion.sub',
         'attribute.actor': 'assertion.actor',
         'attribute.repository': 'assertion.repository',
+        // The workflow file and git ref a run comes from. Service account
+        // bindings name one value of it, so each identity can be assumed by
+        // exactly one workflow on one branch.
+        'attribute.workflow_ref': 'assertion.workflow_ref',
       },
       attributeCondition: `assertion.repository == '${githubOrg}/${githubRepo}'`,
     },

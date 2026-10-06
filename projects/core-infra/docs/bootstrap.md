@@ -19,9 +19,10 @@ backend is configured here), so a Pulumi Cloud account and access token are requ
    - **Locally**, set it in `.devcontainer/.env` (see
      [docs/devcontainer.md](../../../docs/devcontainer.md)) — the Pulumi CLI reads it
      automatically on every command run inside the devcontainer.
-   - **In CI**, it's stored as the `PULUMI_ACCESS_TOKEN` GitHub Actions secret, read by every
-     workflow that runs `pulumi stack output` or the `deploy`/`preview` Nx targets (see
-     [docs/runbook.md](./runbook.md)).
+   - **In CI**, only the daily preview workflow uses a Pulumi token, stored as the
+     `PULUMI_ACCESS_TOKEN` GitHub Actions secret. It is a full-access token, because the Pulumi
+     plan in use offers no read-only one. The release workflows use
+     no Pulumi token (see [docs/runbook.md](./runbook.md#github-actions-configuration)).
 
 Run `pulumi login` once inside the devcontainer to confirm the token is valid; the CLI caches it
 in `~/.pulumi/credentials.json` for subsequent commands.

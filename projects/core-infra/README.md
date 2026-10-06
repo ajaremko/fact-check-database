@@ -122,21 +122,26 @@ Exported as stack outputs:
 | ---------------------- | -------------------------------------------------------------------------------- |
 | `shared-identity-pool` | Lets GitHub Actions authenticate to GCP without a long-lived service account key |
 
-### CI/CD identity
+### CI/CD identities
 
-| Resource                                | Purpose                                                                                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `github-actions-sa`                     | The service account every GitHub Actions workflow in this repository impersonates to deploy |
-| `github-actions-identity-pool-provider` | The OIDC provider GitHub Actions authenticates through, scoped to this repository           |
+| Resource                                | Purpose                                                                                                             |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `github-actions-sa`                     | The release identity. The image release workflow impersonates it to push to the registry. It holds no other role    |
+| `github-preview-sa`                     | The preview identity. The daily `pulumi preview` workflow impersonates it. It can view resources and change nothing |
+| `github-actions-identity-pool-provider` | The OIDC provider GitHub Actions authenticates through, scoped to this repository                                   |
+
+Each identity can be assumed by one workflow file on one branch only. Neither can deploy:
+infrastructure is deployed by hand. See [docs/iam-model.md](./docs/iam-model.md).
 
 See [docs/iam-model.md](./docs/iam-model.md) for the full role and binding list.
 
 Exported as stack outputs:
 
-| Output                                 | Type     | Purpose                                                                              |
-| -------------------------------------- | -------- | ------------------------------------------------------------------------------------ |
-| `githubActionServiceAccountEmail`      | `string` | The email GitHub Actions workflows read to know which service account to impersonate |
-| `githubActionIdentityPoolProviderName` | `string` | The provider name GitHub Actions workflows read to authenticate via OIDC             |
+| Output                                 | Type     | Purpose                                                                                                                                         |
+| -------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `githubActionServiceAccountEmail`      | `string` | The release identity's email. Copied into the `*_RELEASE_SERVICE_ACCOUNT` repository variables                                                  |
+| `githubPreviewServiceAccountEmail`     | `string` | The preview identity's email. Read by the other stacks to grant it viewer, and copied into the `*_PREVIEW_SERVICE_ACCOUNT` repository variables |
+| `githubActionIdentityPoolProviderName` | `string` | The provider GitHub Actions authenticates through. Copied into the `*_WIF_PROVIDER` repository variables                                        |
 
 ## Consuming these outputs
 
@@ -155,8 +160,10 @@ export const stagingStorageBucketName = coreStackRef.getOutput(
 )
 ```
 
-GitHub Actions workflows read outputs directly through the Pulumi CLI instead of a
-`StackReference`:
+GitHub Actions workflows do not read outputs at run time. The few they need are copied into
+repository variables, so the release workflows hold no Pulumi token. See
+[GitHub Actions configuration](./docs/runbook.md#github-actions-configuration) for the list and
+how to refresh one:
 
 ```bash
 cd projects/core-infra
@@ -178,8 +185,8 @@ This project once held all of the platform's infrastructure as a single Pulumi p
 platform grew, ingestion, analysis, website, and research infrastructure were each split into
 their own dedicated project. What remains here is what stayed genuinely shared: a Docker image
 registry, a CMEK key ring, the staging bucket and topic that hand data from ingestion to
-analysis and website, a workload identity pool, and the CI/CD service account GitHub Actions
-uses to deploy every project in this repository, including this one.
+analysis and website, a workload identity pool, and the two service accounts GitHub Actions
+uses: one to push images and one to preview infrastructure read-only.
 
 ## Related documentation
 

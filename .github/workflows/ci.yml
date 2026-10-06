@@ -5,105 +5,98 @@ on:
     branches:
       - main
 
+# No job gets more than read access unless it asks for it below.
 permissions:
-  contents: write
-  id-token: write
-  actions: read
+  contents: read
+
+# One run at a time, so two pushes can't race on build numbers and tags.
+concurrency:
+  group: ci-main
+  cancel-in-progress: false
 
 jobs:
   ci:
-    name: Lint and Build
+    name: Lint, Test, Typecheck and Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read # nx-set-shas reads the last successful run
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           filter: tree:0
           fetch-depth: 0
 
       - name: Derive nx SHAs
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1 # v4
 
       - name: Setup Node, cache dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: 'npm'
 
-      - name: Set Up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
       - run: npm ci
 
-      - run: npx nx affected -t lint,test,build
+      - run: npx nx affected -t lint test typecheck build
 
   release:
     name: Release Dev Images
     needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # pushes the build-number and release tags
+      id-token: write # assumes the release identity
     steps:
       - name: Generate build number
         id: buildnumber
-        uses: onyxmueller/build-tag-number@v1
+        uses: onyxmueller/build-tag-number@eab99bb956086490d1aa6b747dc265b5776e8eae # v1
         with:
-          token: ${{secrets.github_token}}
+          token: ${{ secrets.github_token }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           filter: tree:0
           fetch-depth: 0
 
       - name: Setup Node, cache dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: 'npm'
 
       - name: Set Up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
-      - name: Read stack outputs
-        id: bootstrap
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-        run: |
-          cd projects/core-infra
-
-          # Pull outputs as JSON, then extract the values we need
-          OUT="$(pulumi stack output --json --stack=dev)"
-
-          echo "gcp_project_id=$(echo "$OUT" | jq -r '.gcpProject')" >> "$GITHUB_OUTPUT"
-          echo "wif_provider=$(echo "$OUT" | jq -r '.githubActionIdentityPoolProviderName')" >> "$GITHUB_OUTPUT"
-          echo "service_account_email=$(echo "$OUT" | jq -r '.githubActionServiceAccountEmail')" >> "$GITHUB_OUTPUT"
-          echo "artifact_registry_uri=$(echo "$OUT" | jq -r '.artifactRegistryUri')" >> "$GITHUB_OUTPUT"
-          echo "artifact_registry_base_uri=$(echo "$OUT" | jq -r '.artifactRegistryBaseUri')" >> "$GITHUB_OUTPUT"
-
+      # The project, identity and registry names are repository variables,
+      # copied from core-infra's stack outputs. None of them is a secret.
       - id: auth
         name: Setup GCP Credentials
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
         with:
-          project_id: ${{ steps.bootstrap.outputs.gcp_project_id }}
-          workload_identity_provider: ${{ steps.bootstrap.outputs.wif_provider }}
-          service_account: ${{ steps.bootstrap.outputs.service_account_email }}
+          project_id: ${{ vars.DEV_GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ vars.DEV_RELEASE_SERVICE_ACCOUNT }}
           create_credentials_file: true
           export_environment_variables: true
 
       - name: Set up Gcloud
-        uses: google-github-actions/setup-gcloud@v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
         with:
           version: '>= 416.0.0'
-          project_id: ${{ steps.bootstrap.outputs.gcp_project_id }}
+          project_id: ${{ vars.DEV_GCP_PROJECT_ID }}
           credentials_file_path: ${{ steps.auth.outputs.credentials_file_path }}
 
       - name: Build and release Docker images
         env:
           NEXT_PUBLIC_BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
           BUILD_NUMBER: ${{ steps.buildnumber.outputs.build_number }}
-          DOCKER_REGISTRY: ${{ steps.bootstrap.outputs.artifact_registry_uri }}
+          DOCKER_REGISTRY: ${{ vars.DEV_ARTIFACT_REGISTRY_URI }}
         run: |
           # Configure docker auth for Artifact Registry
-          gcloud auth configure-docker ${{ steps.bootstrap.outputs.artifact_registry_base_uri }}
+          gcloud auth configure-docker ${{ vars.DEV_ARTIFACT_REGISTRY_BASE_URI }}
 
           # Configure git identity for nx release
           git config --global user.name "GitHub Actions"

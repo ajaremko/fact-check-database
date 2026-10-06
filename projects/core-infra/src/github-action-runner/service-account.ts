@@ -1,26 +1,36 @@
 import * as gcp from '@pulumi/gcp'
 import * as pulumi from '@pulumi/pulumi'
 
-import { gcpProject, githubOrg, githubRepo, tag } from '../config'
+import { artifactRegistry } from '../artifact-registry'
+import { releaseWorkflowRef, tag } from '../config'
 import { identityPool } from '../identity-pool'
 import { provider } from '../project'
-import { IAMService, resourceManagerService } from '../services'
+import { IAMService } from '../services'
 
 /**
- * The service account to be impersonated by GitHub Actions runner to access GCP resources
+ * The release identity: the service account a GitHub Actions run impersonates
+ * to push container images. It can do nothing else in the project.
  */
 export const githubActionServiceAccount = new gcp.serviceaccount.Account(
   `${tag}-github-actions-service-account`,
   {
     accountId: 'github-actions-sa',
-    displayName: 'GitHub Actions Service Account',
-    description: 'Service account for GitHub Actions to access GCP resources',
+    displayName: 'GitHub Actions Release Service Account',
+    description:
+      'Impersonated by the image release workflow to push to Artifact Registry',
   },
   { dependsOn: [IAMService], provider }
 )
 
 /**
- * The binding that allows the GitHub Actions runner to impersonate the service account
+ * The runs that may act as the release identity: those of one workflow file
+ * on one branch of this repository. A run of any other workflow, or of the
+ * same workflow on another branch, is refused.
+ */
+const releaseWorkflowPrincipal = pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.workflow_ref/${releaseWorkflowRef}`
+
+/**
+ * The binding that allows the release workflow to impersonate the service account
  */
 export const githubActionServiceAccountBinding =
   new gcp.serviceaccount.IAMMember(
@@ -28,13 +38,13 @@ export const githubActionServiceAccountBinding =
     {
       serviceAccountId: githubActionServiceAccount.name,
       role: 'roles/iam.workloadIdentityUser',
-      member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
+      member: releaseWorkflowPrincipal,
     },
     { provider }
   )
 
 /**
- * The binding that allows the GitHub Actions runner to create tokens for the service account
+ * The binding that allows the release workflow to create tokens for the service account
  */
 export const githubActionTokenCreatorServiceAccountBinding =
   new gcp.serviceaccount.IAMMember(
@@ -42,73 +52,24 @@ export const githubActionTokenCreatorServiceAccountBinding =
     {
       serviceAccountId: githubActionServiceAccount.name,
       role: 'roles/iam.serviceAccountTokenCreator',
-      member: pulumi.interpolate`principalSet://iam.googleapis.com/${identityPool.name}/attribute.repository/${githubOrg}/${githubRepo}`,
+      member: releaseWorkflowPrincipal,
     },
     { provider }
   )
 
 /**
- * Broadly allow GitHub Actions service account to act as editor on the project.
- * This could be constrained further based on the specific needs of the project.
+ * The release identity's only grant: push and pull images in the shared
+ * registry. Infrastructure is deployed by hand, not by this identity, so it
+ * holds no project-level role.
  */
-export const githubActionServiceAccountEditorIamMember =
-  new gcp.projects.IAMMember(
-    `${tag}-github-actions-service-account-editor-iam-member`,
+export const githubActionServiceAccountRegistryWriter =
+  new gcp.artifactregistry.RepositoryIamMember(
+    `${tag}-github-actions-service-account-registry-writer`,
     {
-      project: gcpProject,
-      role: 'roles/editor',
+      repository: artifactRegistry.name,
+      location: artifactRegistry.location,
+      role: 'roles/artifactregistry.writer',
       member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
     },
-    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
-  )
-
-/**
- * Allow GitHub Actions service account to enable cloud services.
- */
-export const githubActionServiceAccountServiceAdminIamMember =
-  new gcp.projects.IAMMember(
-    `${tag}-github-actions-service-account-serviceusage-admin-iam-member`,
-    {
-      project: gcpProject,
-      role: 'roles/serviceusage.serviceUsageAdmin',
-      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
-    },
-    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
-  )
-
-export const githubActionServiceAccountIamAdminIamMember =
-  new gcp.projects.IAMMember(
-    `${tag}-github-actions-service-account-iam-admin-iam-member`,
-    {
-      project: gcpProject,
-      role: 'roles/iam.serviceAccountAdmin',
-      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
-    },
-    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
-  )
-
-export const githubActionServiceAccountComputeIamMember =
-  new gcp.projects.IAMMember(
-    `${tag}-github-actions-service-account-compute-admin-iam-member`,
-    {
-      project: gcpProject,
-      role: 'roles/compute.admin',
-      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
-    },
-    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
-  )
-
-/**
- * Broadly allow GitHub Actions service account to act as admin of Cloud KMS.
- * This could be constrained further based on the specific needs of the project.
- */
-export const githubActionServiceAccountKmsAdminIamMember =
-  new gcp.projects.IAMMember(
-    `${tag}-github-actions-service-account-kms-admin-iam-member`,
-    {
-      project: gcpProject,
-      role: 'roles/cloudkms.admin',
-      member: pulumi.interpolate`serviceAccount:${githubActionServiceAccount.email}`,
-    },
-    { dependsOn: [githubActionServiceAccount, resourceManagerService], provider }
+    { provider }
   )

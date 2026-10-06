@@ -4,3 +4,4 @@ config:
   research:analysisStackName: alfredsyoung/fact-check-database-analysis
   research:tableDeletionProtection: false
   research:retainTablesOnDelete: false
+  research:coreStackName: alfredsyoung/fact-check-database-core

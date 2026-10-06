@@ -3,11 +3,14 @@ export * from './staging-storage'
 import {
   githubActionIdentityPoolProvider,
   githubActionServiceAccount,
+  githubPreviewServiceAccount,
 } from './github-action-runner'
 
 export const githubActionIdentityPoolProviderName =
   githubActionIdentityPoolProvider.name
 export const githubActionServiceAccountEmail = githubActionServiceAccount.email
+export const githubPreviewServiceAccountEmail =
+  githubPreviewServiceAccount.email
 
 import { bigQueryKey, gcsArchiveKey } from './kms'
 

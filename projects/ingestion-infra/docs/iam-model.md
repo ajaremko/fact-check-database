@@ -49,6 +49,16 @@ by each shared factory helper rather than per call site:
   extractor's and sanitizer's dead-letter-topic archive subscriptions — plus publish rights on
   each dead-letter topic itself.
 
+## Preview access
+
+The daily `pulumi preview` workflow runs as `github-preview-sa`, a read-only identity owned by
+`core-infra`. Where this stack has a project of its own (prod), it grants that identity
+`roles/viewer` on the project (`src/preview-access.ts`). Where it shares `core-infra`'s project
+(dev), `core-infra`'s own grant covers it and this stack adds nothing.
+
+Viewer lets the identity read resource configuration. It does not include reading bucket objects,
+table data or secret values, and it cannot change anything.
+
 ## Trust model summary
 
 Every service account here is attached directly to a Cloud Run job/service or used only to mint

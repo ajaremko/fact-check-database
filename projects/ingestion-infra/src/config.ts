@@ -14,6 +14,14 @@ const coreStackRef = new pulumi.StackReference(`${coreStackName}/${stackName}`)
 export const coreProject = coreStackRef.getOutput('gcpProject')
 export const coreRegion = coreStackRef.getOutput('gcpRegion')
 
+/**
+ * The read-only identity the scheduled `pulumi preview` workflow runs as,
+ * owned by core-infra. Undefined until core-infra has been deployed with it.
+ */
+export const previewServiceAccountEmail = coreStackRef.getOutput(
+  'githubPreviewServiceAccountEmail'
+)
+
 export const stagingStorageTopicName = coreStackRef.getOutput(
   'stagingStorageTopicName'
 )

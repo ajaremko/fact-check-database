@@ -1,0 +1,67 @@
+name: Infrastructure Drift Preview
+
+# Runs `pulumi preview` against each stack every day and fails for any stack
+# whose code differs from what was last deployed. Infrastructure is deployed
+# by hand, so this is what reports a change that was merged and not deployed.
+# It cannot change cloud resources: the Google Cloud identity it runs as can
+# only view them. The Pulumi token is the maintainer's full-access token,
+# because the Pulumi plan in use offers no read-only one. It is used here for
+# a preview only, and this is the one workflow that receives it.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # assumes the preview identity
+
+jobs:
+  preview:
+    name: ${{ matrix.stack }} (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One stack's pending changes must not hide another's
+      fail-fast: false
+      matrix:
+        # website-infra is left out: previewing it needs an Algolia admin key
+        stack: [core-infra, ingestion-infra, analysis-infra, research-infra]
+        environment: [dev, prod]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node, cache dependencies
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci
+
+      # The Pulumi programs import the built contract packages
+      - run: npx nx run-many -t build -p core-contracts ingestion-contracts
+
+      - name: Setup GCP Credentials
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
+        with:
+          project_id: ${{ matrix.environment == 'prod' && vars.PROD_GCP_PROJECT_ID || vars.DEV_GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ matrix.environment == 'prod' && vars.PROD_WIF_PROVIDER || vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ matrix.environment == 'prod' && vars.PROD_PREVIEW_SERVICE_ACCOUNT || vars.DEV_PREVIEW_SERVICE_ACCOUNT }}
+
+      - name: Preview
+        working-directory: projects/${{ matrix.stack }}
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          set -o pipefail
+          {
+            echo '### ${{ matrix.stack }} (${{ matrix.environment }})'
+            echo
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          status=0
+          pulumi preview --stack=${{ matrix.environment }} --diff --expect-no-changes --non-interactive --color=never 2>&1 \
+            | tee -a "$GITHUB_STEP_SUMMARY" || status=$?
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit $status

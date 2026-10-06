@@ -6,3 +6,9 @@ export {
 export * from './curated-dataset'
 export * from './staging-dataset'
 export * from './alerts'
+
+import { previewServiceAccountViewer } from './preview-access'
+
+export const previewServiceAccountViewerId = previewServiceAccountViewer.apply(
+  (binding) => binding?.id
+)
