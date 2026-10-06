@@ -226,7 +226,7 @@ See [known-issues.md](../projects/website-emailer/docs/known-issues.md).
 See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
 75. [ ] Pin third-party images by digest and replace the `bitnamilegacy/oauth2-proxy` image
-76. [ ] Delete the commented-out resources at the end of `src/emailer/subscription.ts`
+76. [x] Delete the commented-out resources at the end of `src/emailer/subscription.ts`
 77. [x] Wire `forceDestroyStorage`/`retainStorageOnDelete`/`deadletterRetentionDays`/
         `deadletterSoftDeleteDays` into `backendBucket`/`deadletterBucket` — both currently
         hardcode `forceDestroy: true` with no `retainOnDelete`, regardless of stack
