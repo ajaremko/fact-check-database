@@ -65,8 +65,8 @@ See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
 
 16. [ ] Send conditional requests (`If-None-Match`/`If-Modified-Since` from the last observation's
         `etag`/`lastModified`) so unchanged feeds aren't re-fetched and re-archived every run
-17. [ ] Reject a source list that contains duplicate ids
-18. [ ] Add a per-request fetch timeout, read from config
+17. [x] Reject a source list that contains duplicate ids
+18. [x] Add a per-request fetch timeout, read from config
 19. [ ] Remove `source_name` from metric labels — the time-series count multiplies with the source
         list
 

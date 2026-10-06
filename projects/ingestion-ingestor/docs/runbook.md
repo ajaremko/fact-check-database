@@ -6,25 +6,25 @@ Configuration reference, operational reference, and diagnosing failures for `ing
 
 All variables are `private` (internal configuration — nothing here is a secret or public-facing).
 
-| Variable                              | Type                  | Required                            | Default                   | Purpose                                                                                            |
-| ------------------------------------- | --------------------- | ----------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `TARGET_LIST_PATH`                    | string                | Yes                                 | —                         | Path to the target list CSV. In dev and prod this is a Secret Manager version mounted into the job |
-| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the archive-storage adapter (from `core-io`)                                               |
-| `STORAGE_OUTPUT_DIR`                  | string                | Only if `STORAGE_MODE=filesystem`   | —                         | Local directory archived bodies and records are written to                                         |
-| `STORAGE_BUCKET_NAME`                 | string                | Only if `STORAGE_MODE=gcp`          | —                         | GCS bucket archived bodies and records are written to                                              |
-| `MESSAGING_MODE`                      | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the notification adapter (from `core-io`)                                                  |
-| `PUBLISHER_OUTPUT_DIR`                | string                | Only if `MESSAGING_MODE=filesystem` | —                         | Local directory the simulated notification is written to                                           |
-| `PUBSUB_TOPIC_NAME`                   | string                | Only if `MESSAGING_MODE=gcp`        | —                         | Pub/Sub topic backing the (effectively unused in prod — see below) `Publisher` layer               |
-| `LOGGING_MODE`                        | `gcp` \| `console`    | No                                  | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                                  |
-| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                                  | `info`                    | Minimum log level                                                                                  |
-| `OTEL_MODE`                           | `gcp` \| `local`      | No                                  | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                                    |
-| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)                | —                         | Service name attached to traces/metrics                                                            |
-| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                                  | `60000`                   | How often metrics are exported                                                                     |
-| `OTEL_SHUTDOWN_TIMEOUT`               | integer (ms)          | No                                  | `15000`                   | Grace period for exporters to flush on shutdown                                                    |
-| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp`    | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                             |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`           | —                         | Read directly by the OpenTelemetry OTLP exporter (not by this app's own `Config` calls)            |
-| `MAX_CONCURRENCY`                     | integer               | No                                  | `10`                      | Maximum targets fetched in parallel                                                                |
-| `SUCCESS_THRESHOLD`                   | number 0–1            | No                                  | `0.8`                     | Minimum fraction of targets that must succeed                                                      |
+| Variable                              | Type                  | Required                            | Default                   | Purpose                                                                                                  |
+| ------------------------------------- | --------------------- | ----------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `TARGET_LIST_PATH`                    | string                | Yes                                 | —                         | Path to the target list YAML file. In dev and prod this is a Secret Manager version mounted into the job |
+| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the archive-storage adapter (from `core-io`)                                                     |
+| `STORAGE_OUTPUT_DIR`                  | string                | Only if `STORAGE_MODE=filesystem`   | —                         | Local directory archived bodies and records are written to                                               |
+| `STORAGE_BUCKET_NAME`                 | string                | Only if `STORAGE_MODE=gcp`          | —                         | GCS bucket archived bodies and records are written to                                                    |
+| `MESSAGING_MODE`                      | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the notification adapter (from `core-io`)                                                        |
+| `PUBLISHER_OUTPUT_DIR`                | string                | Only if `MESSAGING_MODE=filesystem` | —                         | Local directory the simulated notification is written to                                                 |
+| `PUBSUB_TOPIC_NAME`                   | string                | Only if `MESSAGING_MODE=gcp`        | —                         | Pub/Sub topic backing the (effectively unused in prod — see below) `Publisher` layer                     |
+| `LOGGING_MODE`                        | `gcp` \| `console`    | No                                  | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                                        |
+| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                                  | `info`                    | Minimum log level                                                                                        |
+| `OTEL_MODE`                           | `gcp` \| `local`      | No                                  | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                                          |
+| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)                | —                         | Service name attached to traces/metrics                                                                  |
+| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                                  | `60000`                   | How often metrics are exported                                                                           |
+| `OTEL_SHUTDOWN_TIMEOUT`               | integer (ms)          | No                                  | `15000`                   | Grace period for exporters to flush on shutdown                                                          |
+| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp`    | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                                   |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`           | —                         | Read directly by the OpenTelemetry OTLP exporter (not by this app's own `Config` calls)                  |
+| `MAX_CONCURRENCY`                     | integer               | No                                  | `10`                      | Maximum targets fetched in parallel                                                                      |
+| `SUCCESS_THRESHOLD`                   | number 0–1            | No                                  | `0.8`                     | Minimum fraction of targets that must succeed                                                            |
 
 `LOG_LEVEL` is **not** a real variable — nothing in this project reads it. If you see it in an old `.env`, it's dead; the real variable is `LOGGING_LEVEL`.
 
@@ -39,16 +39,52 @@ The target list has no mode: it is always read from the file at `TARGET_LIST_PAT
 
 ## Target list format
 
-A CSV file with a required header row and four columns:
+A YAML file with two top-level keys: `defaults` and `sources`.
 
-| Column       | Description                                                                                                                       |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `id`         | Stable identifier for the source. Used in the archive path — changing it breaks path continuity for that source's history.        |
-| `name`       | Human-readable name, used in log annotations and metric tags.                                                                     |
-| `collection` | Must be exactly `atom` or `rss` — the feed format `ingestion-extractor` uses to parse this source's output later in the pipeline. |
-| `url`        | The URL to fetch.                                                                                                                 |
+```yaml
+defaults:
+  timeoutSeconds: 30
 
-Adding a source means appending a row and redeploying (or waiting for the next scheduled run) — no code change needed. Removing a source means deleting its row; historical records remain in the archive. Rows with unreachable URLs aren't removed automatically — fetch failures are archived as `outcome: 'no_response'` records (see below).
+sources:
+  - id: politifact
+    name: politifact.com
+    collection: rss
+    url: https://www.politifact.com/rss/factchecks/
+
+  - id: example
+    name: Example
+    collection: atom
+    url: https://example.org/feed
+    timeoutSeconds: 90
+    enabled: false
+    notes: Paused while the publisher moves its feed.
+```
+
+| Field                      | Required           | Description                                                                                                                                           |
+| -------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `defaults.timeoutSeconds`  | Yes                | Seconds a fetch may take before it is abandoned. Applies to every source that doesn't set its own                                                     |
+| `sources[].id`             | Yes                | Stable identifier for the source. It names the source's archive path and is part of every `fact_check_id`, so it must be unique and must never change |
+| `sources[].name`           | Yes                | Human-readable name, used in log annotations and metric tags                                                                                          |
+| `sources[].collection`     | Yes                | Must be exactly `atom` or `rss`: the feed format `ingestion-extractor` uses to parse this source's output later in the pipeline                       |
+| `sources[].url`            | Yes                | The URL to fetch                                                                                                                                      |
+| `sources[].timeoutSeconds` | No                 | Overrides `defaults.timeoutSeconds` for this source, for a publisher that is slow to respond                                                          |
+| `sources[].enabled`        | No, default `true` | `false` keeps the source in the list without fetching it. A disabled source doesn't count towards the run's success rate                              |
+| `sources[].notes`          | No                 | Free text for whoever maintains the list. The ingestor ignores it                                                                                     |
+
+The whole file is validated at startup, and an invalid file stops the run before any fetch:
+
+- **Ids must be unique**, disabled sources included. Two sources sharing an id would overwrite
+  each other's fetch records and merge their fact checks. The error names each duplicated id.
+- A timeout must be a positive number.
+- A `collection` other than `atom` or `rss` is rejected.
+
+A fetch that outlasts its timeout is interrupted and archived as an `outcome: 'no_response'`
+record with the error `Timed out after <n>s (GET <url>)`, like any other fetch that got no
+response. It counts as a failed source for the run's success threshold.
+
+Adding a source means adding an entry and redeploying `ingestion-infra`: no code change is
+needed. To stop fetching a source, set `enabled: false` or delete its entry; historical records
+remain in the archive either way. Sources with unreachable URLs aren't removed automatically.
 
 ## Archive contract
 
@@ -103,7 +139,7 @@ The library levels are documented in the [core-io](../../core-io/README.md#loggi
 | `source.index`, `source.id`, `source.name`, `source.url`, `source.collection` | Every line logged while that source is processed  |
 | `result.status_code`, `result.final_url`, `content.bytes`, `content.sha256`   | A source's lines once its response has arrived    |
 | `body.object`, `record.object`                                                | A source's lines once each has been archived      |
-| `sourceList.uri` or `sourceList.path`, `sources.length`                       | `Source list loaded`                              |
+| `sourceList.path`, `sources.length`, `sources.disabled`                       | `Source list loaded`                              |
 | `error._tag`                                                                  | `Source ingestion failed`, `Ingestor job stopped` |
 
 ### Dashboard events
@@ -157,8 +193,8 @@ each event once.
 
 **Steps:**
 
-1. In development, verify `TARGET_LIST_PATH` points to a valid, readable CSV file with the header row `id,name,collection,url`.
-2. In dev and prod, the file is the source-list secret mounted at `/config/sources.csv` by `ingestion-infra`. Verify the job's revision mounts the secret's latest version, and that the job's service account can access the secret.
+1. In development, verify `TARGET_LIST_PATH` points to a readable YAML file in the [target list format](#target-list-format). The fatal line's error says which field failed validation, and names any duplicated id.
+2. In dev and prod, the file is the source-list secret mounted at `/config/sources.yml` by `ingestion-infra`. Verify the job's revision mounts the secret's latest version, and that the job's service account can access the secret.
 
 ## Checking run output locally
 

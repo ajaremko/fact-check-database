@@ -1,13 +1,12 @@
 import { Array, Cause, Clock, Context, Data, Effect, Option } from 'effect'
 
-import { SourceConfig } from '@fact-check-database/ingestion-contracts/config/v1'
 import {
   IngestionJobCompletedKey,
   IngestionJobCompletedSchema,
 } from '@fact-check-database/ingestion-contracts/logging/v1'
 
 import { ingestFromSource } from './ingestFromSource'
-import { SourceList } from './SourceList'
+import { ResolvedSource, SourceList } from './SourceList'
 
 export interface JobContext {
   runId: string
@@ -26,7 +25,7 @@ export class SuccessThresholdNotMet extends Data.TaggedError(
   readonly successThreshold: number
 }> {}
 
-function processTarget(source: SourceConfig, index: number) {
+function processTarget(source: ResolvedSource, index: number) {
   return Effect.gen(function* () {
     yield* Effect.annotateLogsScoped({
       'source.index': index,
@@ -42,6 +41,7 @@ function processTarget(source: SourceConfig, index: number) {
       ingestorRunId: job.runId,
       timestamp,
       source,
+      timeoutSeconds: source.timeoutSeconds,
     }).pipe(
       Effect.tapErrorCause((cause) =>
         Effect.logError('Source ingestion failed', cause).pipe(

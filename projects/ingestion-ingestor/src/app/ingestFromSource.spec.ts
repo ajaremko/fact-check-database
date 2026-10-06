@@ -1,11 +1,15 @@
 import { describe, it, expect } from '@effect/vitest'
-import { Effect, HashMap, Logger } from 'effect'
+import { Effect, Fiber, HashMap, Layer, Logger, TestClock } from 'effect'
 
 import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
 
 import * as InMemoryFetcher from '../adapters/InMemoryFetcher'
 
-import { FetchFailureSchema, FetchSuccessSchema } from '../ports/Fetcher'
+import {
+  Fetcher,
+  FetchFailureSchema,
+  FetchSuccessSchema,
+} from '../ports/Fetcher'
 import { ingestFromSource } from './ingestFromSource'
 
 describe('ingestFromSourceTarget', () => {
@@ -28,6 +32,7 @@ describe('ingestFromSourceTarget', () => {
             url: 'https://baddata.com/rss.xml',
             collection: 'rss',
           },
+          timeoutSeconds: 30,
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
@@ -100,6 +105,7 @@ describe('ingestFromSourceTarget', () => {
             url: 'https://www.politifact.com/rss/all/',
             collection: 'rss',
           },
+          timeoutSeconds: 30,
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
@@ -198,6 +204,7 @@ describe('ingestFromSourceTarget', () => {
             url: 'https://www.politifact.com/rss/all/',
             collection: 'rss',
           },
+          timeoutSeconds: 30,
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
@@ -264,6 +271,7 @@ describe('ingestFromSourceTarget', () => {
             url: 'https://www.politifact.com/rss/all/',
             collection: 'rss',
           },
+          timeoutSeconds: 30,
         }).pipe(
           Effect.provide(
             InMemoryFetcher.layer(
@@ -312,6 +320,50 @@ describe('ingestFromSourceTarget', () => {
             },
           },
         ])
+      })
+  )
+
+  it.effect(
+    'when a fetch outlasts its timeout, records it as a fetch with no response',
+    () =>
+      Effect.gen(function* () {
+        const storage: Record<string, string> = {}
+
+        // The fetcher never answers; the test clock is moved past the timeout
+        const fiber = yield* ingestFromSource({
+          ingestorRunId: 'run-1',
+          timestamp: 0,
+          source: {
+            id: 'slowfeed',
+            name: 'slowfeed.example',
+            url: 'https://slowfeed.example/rss.xml',
+            collection: 'rss',
+          },
+          timeoutSeconds: 30,
+        }).pipe(
+          Effect.provide(Layer.succeed(Fetcher, { fetch: () => Effect.never })),
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.fork
+        )
+        yield* TestClock.adjust('30 seconds')
+        const result = yield* Fiber.join(fiber)
+
+        expect(result).toStrictEqual({
+          bucket: 'inmemory',
+          object:
+            'v1/records/ingestion/source=slowfeed/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
+        })
+        expect(Object.keys(storage)).toStrictEqual([
+          'v1/records/ingestion/source=slowfeed/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
+        ])
+        const record =
+          storage[
+            'v1/records/ingestion/source=slowfeed/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml'
+          ]
+        expect(record).toContain('outcome: no_response')
+        expect(record).toContain(
+          'error: Timed out after 30s (GET https://slowfeed.example/rss.xml)'
+        )
       })
   )
 })

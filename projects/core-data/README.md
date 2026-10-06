@@ -2,7 +2,7 @@
 
 Effect `Schema` combinators for the serialization formats the platform reads and writes, plus a few small Node.js and object helpers.
 
-Every application in the platform validates data at its boundaries with Effect `Schema`. Those boundaries are rarely plain JSON: source lists arrive as CSV, sanitizer policies as YAML, feeds as XML, archive batches as NDJSON, Pub/Sub payloads as base64, and article bodies as HTML. This library provides one combinator per format so that an application can describe the shape of a record once and get a typed, bidirectional `decode` / `encode` for the raw form for free, instead of hand-rolling a parser in each service.
+Every application in the platform validates data at its boundaries with Effect `Schema`. Those boundaries are rarely plain JSON: source lists and sanitizer policies arrive as YAML, feeds as XML, archive batches as NDJSON, Pub/Sub payloads as base64, and article bodies as HTML. This library provides one combinator per format so that an application can describe the shape of a record once and get a typed, bidirectional `decode` / `encode` for the raw form for free, instead of hand-rolling a parser in each service.
 
 The package is `@fact-check-database/core-data`. Each format is a separate subpath export of `@fact-check-database/core-data` (for example `@fact-check-database/core-data/Yaml`) so a consumer only pulls in the parser dependency it actually uses. The package root exports only the object helpers `omitNullKeys` and `omitNullableKeys`.
 
@@ -138,7 +138,7 @@ const encode = pipe(
 encode([{ name: 'example', count: 42 }]) // → "name,count\nexample,42\n"
 ```
 
-Used by the ingestor to load its source list (`projects/ingestion-ingestor/src/app/SourceList.ts`).
+No application uses this combinator at present: the ingestor's source list, its one consumer, moved to YAML.
 
 ### Xml
 

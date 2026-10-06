@@ -75,7 +75,7 @@ There are no encryption keys or long-lived credentials owned by this project to 
 closest equivalent operational procedure is updating the two Secret Manager-backed config
 documents the ingestor and sanitizer actually read at runtime:
 
-1. Edit the per-stack file: `src/assets/sources.<dev|prod>.csv` (target list) or
+1. Edit the per-stack file: `src/assets/sources.<dev|prod>.yml` (target list, in the format the [ingestor runbook](../../ingestion-ingestor/docs/runbook.md#target-list-format) describes) or
    `src/assets/sanitizer-policy.<dev|prod>.yml` (sanitizer policy).
 2. Redeploy (`nx deploy ingestion-infra --stack=<dev|prod>`) — this creates a new Secret Manager
    version and updates the Cloud Run job/service to mount it.
@@ -220,7 +220,7 @@ config.
    relevant secret (`ingestion-source-list` for the ingestor, `ingestion-sanitizer-policy` for the
    sanitizer) — see [docs/iam-model.md](./iam-model.md).
 2. Confirm a secret version actually exists for the current stack (each stack's version is created
-   from `src/assets/sources.<stack>.csv` / `sanitizer-policy.<stack>.yml` at deploy time).
+   from `src/assets/sources.<stack>.yml` / `sanitizer-policy.<stack>.yml` at deploy time).
 
 ## Checking output locally
 

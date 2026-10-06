@@ -38,6 +38,7 @@ describe('App', () => {
                   name: 'politifact.com',
                   url: 'https://www.politifact.com/rss/all/',
                   collection: 'rss',
+                  timeoutSeconds: 30,
                 },
               ],
             })
@@ -123,6 +124,7 @@ describe('App', () => {
                     name: 'baddata.com',
                     url: 'https://baddata.com/rss.xml',
                     collection: 'rss',
+                    timeoutSeconds: 30,
                   },
                 ],
               })

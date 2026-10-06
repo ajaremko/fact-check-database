@@ -30,7 +30,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
               items: [
                 {
                   version: sourceListSecretVersionNumber,
-                  path: 'sources.csv',
+                  path: 'sources.yml',
                 },
               ],
             },
@@ -49,7 +49,7 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
             envs: [
               {
                 name: 'TARGET_LIST_PATH',
-                value: '/config/sources.csv',
+                value: '/config/sources.yml',
               },
               {
                 name: 'PUBSUB_TOPIC_NAME',

@@ -24,7 +24,7 @@ It is a scheduled batch job that fetches content from a configured list of publi
 Each run fetches a fixed set of targets, archives the results, and exits. It does not maintain state between runs or perform incremental fetching.
 
 ```
-Target List (CSV)
+Target List (YAML)
       │
       ▼
  Read Targets
@@ -47,7 +47,7 @@ Target List (CSV)
 ### Processing steps
 
 1. **Read configuration.** At startup the service generates a `runId` (UUID) and reads `MAX_CONCURRENCY` and `SUCCESS_THRESHOLD`. See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference.
-2. **Read the target list.** A CSV file with `collection`, `name`, `url`, and `id` columns, loaded entirely into memory before fetching begins.
+2. **Read the target list.** A YAML file of sources, each with an `id`, `name`, `collection` and `url`, plus optional fetch settings. It is validated and loaded entirely into memory before fetching begins: duplicate ids stop the run, and sources marked `enabled: false` are skipped. Each fetch is abandoned after its timeout and recorded as a failed fetch.
 3. **Fetch targets.** All targets are fetched concurrently up to `MAX_CONCURRENCY`, in `either` mode: every target is attempted regardless of whether others fail, and a failed fetch doesn't cancel in-flight requests.
 4. **Archive results.** On success, the raw response body and a structured record are both written to storage. On failure, only the record is written (there's no body). Both writes go through `@fact-check-database/core-io`'s `StorageWriter` port — this project owns no storage code of its own.
 5. **Evaluate the success rate.** Once every target has been attempted, `successRate = successCount / totalTargets`. If it's below `SUCCESS_THRESHOLD`, the run fails — see [docs/runbook.md](./docs/runbook.md) for exactly what that failure looks like.
@@ -89,13 +89,13 @@ Copy the environment template and run against the local filesystem — no GCP cr
 cp projects/ingestion-ingestor/.env.template projects/ingestion-ingestor/.env
 ```
 
-| Variable                    | Purpose                                                                                                     |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `TARGET_LIST_PATH`          | Path to the target list CSV, always read from a file (defaults to `assets/target-list.csv` in the template) |
-| `STORAGE_MODE=filesystem`   | Archive to a local directory instead of GCS                                                                 |
-| `STORAGE_OUTPUT_DIR`        | Directory archived bodies and records are written to                                                        |
-| `MESSAGING_MODE=filesystem` | Simulate the storage notification locally instead of using Pub/Sub                                          |
-| `PUBLISHER_OUTPUT_DIR`      | Directory the simulated notification is written to                                                          |
+| Variable                    | Purpose                                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `TARGET_LIST_PATH`          | Path to the target list YAML file, always read from a file (defaults to `assets/target-list.yml` in the template) |
+| `STORAGE_MODE=filesystem`   | Archive to a local directory instead of GCS                                                                       |
+| `STORAGE_OUTPUT_DIR`        | Directory archived bodies and records are written to                                                              |
+| `MESSAGING_MODE=filesystem` | Simulate the storage notification locally instead of using Pub/Sub                                                |
+| `PUBLISHER_OUTPUT_DIR`      | Directory the simulated notification is written to                                                                |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 

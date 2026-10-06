@@ -33,15 +33,8 @@ dev on 2026-10-02.
 cost one archived response and one quarantined record per run each. A non-2xx response counts as
 a successful fetch, so they don't affect the run's success rate.
 **If this ever needs to be fixed:** Contact the publishers to allow the crawler's User-Agent, or
-remove the two sources from `ingestion-infra`'s `sources.*.csv`.
-
-## Fetches have no per-request timeout
-
-**Error:** No error. A slow publisher can stall a run.
-**Where:** `src/adapters/HttpClientFetcher.ts`. No `Effect.timeout` wraps the request.
-**Root cause:** The fetcher relies on the HTTP client's own defaults. Sources are fetched ten at a time (`MAX_CONCURRENCY`), so one publisher that accepts a connection and then sends nothing holds a slot until the client gives up.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Wrap the request in `Effect.timeout` with a duration read from config, and record a timeout as a `FetchFailure` like any other failed fetch.
+set `enabled: false` on the two sources in `ingestion-infra`'s `sources.*.yml` to stop fetching
+them while keeping them listed.
 
 ## Metrics are labelled by source name
 

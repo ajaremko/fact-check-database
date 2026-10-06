@@ -19,7 +19,7 @@ export const sourceListSecret = new gcp.secretmanager.Secret(
 )
 
 const sourceListFile = local.getFileOutput({
-  filename: `assets/sources.${stackName}.csv`,
+  filename: `assets/sources.${stackName}.yml`,
 })
 
 export const sourceListSecretVersion = new gcp.secretmanager.SecretVersion(

@@ -1,4 +1,4 @@
-import { Effect, Schema, Metric, pipe } from 'effect'
+import { Duration, Effect, Schema, Metric, pipe } from 'effect'
 import { getReasonPhrase } from 'http-status-codes'
 
 import * as Node from '@fact-check-database/core-data/Node'
@@ -20,7 +20,7 @@ import {
 import { omitNullKeys } from '@fact-check-database/core-data'
 import { writeFile } from '@fact-check-database/core-io'
 
-import { fetch } from '../ports/Fetcher'
+import { fetch, FetchFailureSchema } from '../ports/Fetcher'
 
 import {
   Observation,
@@ -56,9 +56,22 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
     ingestorRunId: string
     timestamp: TimestampEncoded
     source: SourceConfigEncoded
+    timeoutSeconds: number
   }) {
     const ctx = yield* decodeContext(args)
-    const result = yield* fetch(ctx.source, ctx.timestamp)
+    // A fetch that outlasts its timeout is interrupted and recorded like any
+    // other fetch that got no response, so one unresponsive publisher can't
+    // hold a fetch slot for the rest of the run
+    const result = yield* fetch(ctx.source, ctx.timestamp).pipe(
+      Effect.timeoutTo({
+        duration: Duration.seconds(args.timeoutSeconds),
+        onSuccess: (fetched) => fetched,
+        onTimeout: () =>
+          FetchFailureSchema.make({
+            error: `Timed out after ${args.timeoutSeconds}s (GET ${ctx.source.url})`,
+          }),
+      })
+    )
 
     if (result._tag === 'FetchFailure') {
       yield* Metric.increment(contentRequestResults).pipe(
