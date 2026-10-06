@@ -67,7 +67,7 @@ See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
         `etag`/`lastModified`) so unchanged feeds aren't re-fetched and re-archived every run
 17. [x] Reject a source list that contains duplicate ids
 18. [x] Add a per-request fetch timeout, read from config
-19. [ ] Remove `source_name` from metric labels — the time-series count multiplies with the source
+19. [x] Remove `source_name` from metric labels — the time-series count multiplies with the source
         list
 
 ### ingestion-sanitizer

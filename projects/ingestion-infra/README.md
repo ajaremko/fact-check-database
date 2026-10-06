@@ -99,6 +99,13 @@ result breakdowns), Content Ingestion and Data Extraction (log-analytics tables 
 stage), System Logs (raw log output from all pipeline components), Messaging (Pub/Sub
 backlog/throughput), and Storage (bucket sizes).
 
+Per-source figures come from two places. Fact checks extracted per source is a metric, shown in
+the Overview's "Fact Checks Extracted by Source" panel. Per-source fetch results and sanitizer
+decisions come from the log-based tables in the Content Ingestion section: the ingestor's and
+sanitizer's metrics are not labelled by source, because a per-source label multiplies a metric's
+time series by the length of the source list. Those tables cover the log retention period
+(`ingestion:logRetentionDays`).
+
 ### Alerting
 
 Three Cloud Monitoring alert policies, built on metrics Pub/Sub and Cloud Run publish themselves:

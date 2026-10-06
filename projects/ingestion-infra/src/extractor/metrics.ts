@@ -14,6 +14,9 @@ export const extractorFactCheckRowCounterMetric =
       valueType: 'DOUBLE',
       labels: [
         {
+          // The Overview dashboard's "Fact Checks Extracted by Source" panel
+          // groups by this label. It is the only pipeline metric still
+          // labelled by source.
           key: 'source_name',
           valueType: 'STRING',
           description: 'The name of the source the rows were extracted from',

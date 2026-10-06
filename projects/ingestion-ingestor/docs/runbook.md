@@ -64,7 +64,7 @@ sources:
 | -------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `defaults.timeoutSeconds`  | Yes                | Seconds a fetch may take before it is abandoned. Applies to every source that doesn't set its own                                                     |
 | `sources[].id`             | Yes                | Stable identifier for the source. It names the source's archive path and is part of every `fact_check_id`, so it must be unique and must never change |
-| `sources[].name`           | Yes                | Human-readable name, used in log annotations and metric tags                                                                                          |
+| `sources[].name`           | Yes                | Human-readable name, used in log annotations                                                                                                          |
 | `sources[].collection`     | Yes                | Must be exactly `atom` or `rss`: the feed format `ingestion-extractor` uses to parse this source's output later in the pipeline                       |
 | `sources[].url`            | Yes                | The URL to fetch                                                                                                                                      |
 | `sources[].timeoutSeconds` | No                 | Overrides `defaults.timeoutSeconds` for this source, for a publisher that is slow to respond                                                          |
@@ -162,7 +162,9 @@ each event once.
   inside it.
 - The `content_request_results` metric counter is tagged with
   `result_status`/`result_status_code`/`result_content_type` per attempt, and
-  `source_name`/`source_collection`.
+  `source_collection`. It is not tagged by source: a per-source label multiplies the metric's
+  time series by the length of the source list. For per-source results, use the logs, which carry
+  `source.id` and `source.name` on every line.
 
 ## Diagnosing failures
 

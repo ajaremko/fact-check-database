@@ -147,7 +147,6 @@ export const sanitizeObservation = Effect.fn('sanitizeObservation')(
       Effect.tagMetrics({
         decision_label: evaluated.label,
         source_collection: observation.source.collection,
-        source_name: observation.source.name,
       })
     )
 

@@ -210,8 +210,10 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
   Effect.scoped,
   (effect, args) =>
     effect.pipe(
+      // Not tagged by source: a per-source label multiplies the metric's
+      // time series by the length of the source list. The logs carry the
+      // source on every line.
       Effect.tagMetrics({
-        source_name: args.source.name,
         source_collection: args.source.collection,
       })
     )

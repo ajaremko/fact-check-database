@@ -35,11 +35,3 @@ a successful fetch, so they don't affect the run's success rate.
 **If this ever needs to be fixed:** Contact the publishers to allow the crawler's User-Agent, or
 set `enabled: false` on the two sources in `ingestion-infra`'s `sources.*.yml` to stop fetching
 them while keeping them listed.
-
-## Metrics are labelled by source name
-
-**Error:** No error. A cost that grows with the source list.
-**Where:** `Effect.tagMetrics` in `src/app/ingestFromSource.ts`, which sets `source_name` and `source_collection` on `content_request_results` alongside the status and content-type labels.
-**Root cause:** Per-source labels make the dashboard's per-source panels simple. Each distinct combination of source, status code and content type is its own time series in Cloud Monitoring, so the series count multiplies as sources are added.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Drop `source_name` from the metric and read per-source figures from the structured logs, which already carry `source.id`. Keep `source_collection`, which has two values.
