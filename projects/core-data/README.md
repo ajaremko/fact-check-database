@@ -244,6 +244,8 @@ decode('’') // → "'"
 
 Prefer `Html.decodeHtmlEntities` when the goal is to preserve original-language text in non-Latin scripts. Use `parseUnicode` only where an ASCII-only representation is required.
 
+No application uses this combinator at present.
+
 ### Markdown
 
 `stripMarkdown` reduces Markdown to its plain text content. It is a plain function rather than a schema combinator because there is no inverse: plain text cannot be turned back into the original Markdown, so a `Schema.transform` would be misleading.
@@ -254,6 +256,8 @@ import { stripMarkdown } from '@fact-check-database/core-data/Markdown'
 stripMarkdown('A [link](https://example.com) and *bold* text') // → "A link and bold text"
 stripMarkdown('## Key results\n\n**1.** Text') // → "Key results\n\n1. Text"
 ```
+
+Used by the extractor to build the plain-text preview of an article body (`projects/ingestion-extractor/src/app/NormalizedText.ts`).
 
 ### omitNullKeys and omitNullableKeys
 

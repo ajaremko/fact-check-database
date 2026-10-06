@@ -10,9 +10,8 @@ of the system, not something added afterwards.
 
 **Site:** [factcheckdatabase.com](https://factcheckdatabase.com)
 
-**Status:** Pre-launch. The whole pipeline runs continuously in a development environment
-against 52 public feeds. The production stacks are defined and deployable, and have not been
-launched.
+**Status:** Pre-launch. The pipeline runs continuously in both a development and a production
+environment, against 52 public feeds. The site has not been publicly announced.
 
 ## At a glance
 
@@ -23,7 +22,7 @@ launched.
 | Infrastructure | Pulumi, one stack per domain, each with a dev and a prod configuration                                                          |
 | Delivery       | GitHub Actions. Workflows authenticate to Google Cloud with Workload Identity Federation, so no service-account keys are stored |
 | Code           | TypeScript throughout. The pipeline services are written with Effect, and data is schema-validated at every service boundary    |
-| Operations     | A runbook for every service and stack, written IAM models, and a decision log of known issues                                   |
+| Operations     | A runbook for every service and stack, an IAM model for each stack that grants access, and a decision log of known issues       |
 
 ## How it works
 
@@ -34,7 +33,7 @@ launched.
    Ingestor ─────► Sanitizer ─────► Extractor        Cloud Run jobs and a service,
         │              │                │            handing off through Pub/Sub
         ▼              ▼                │
-   Archive bucket (encrypted)           │  one batch file, every 12 hours
+   Archive bucket (encrypted)           │  one batch file, twice a day
    raw bodies, sanitized copies,        ▼
    and a record of every step     Staging bucket
                                         │
@@ -44,7 +43,7 @@ launched.
                          │                             │
                          ▼                             ▼
              BigQuery: staging → curated          Search index
-               (merge every 6 hours)                   │
+               (merge every 4 hours)                   │
                          │                             ▼
                          ▼                        Public site
              Research view (read-only)
@@ -68,16 +67,16 @@ deduplicated on the way through is set out in
 
 ## What this project demonstrates
 
-| Area                   | In this project                                                                                                                                                                                              | Where to look                                                                                                                                                                                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Infrastructure as code | Five Pulumi stacks that find each other through stack outputs, never hardcoded names. Dev stacks share one GCP project; each domain's prod stack has its own. First-time setup and rollback are written down | [core-infra](./projects/core-infra/README.md), its [bootstrap](./projects/core-infra/docs/bootstrap.md) and [runbook](./projects/core-infra/docs/runbook.md)                                                                                                                                            |
-| CI/CD                  | A push to `main` lints, tests and builds only what changed, then publishes images. A push to `prod` cuts production image versions. Infrastructure deploys are a manual workflow, one environment at a time  | [.github/workflows](./.github/workflows)                                                                                                                                                                                                                                                                |
-| Security and access    | Customer-managed encryption keys with 90-day rotation. One service account per pipeline stage, holding only the roles that stage needs. Written procedures for revoking an operator or a service             | [encryption.md](./projects/core-infra/docs/encryption.md), IAM models for [core](./projects/core-infra/docs/iam-model.md), [ingestion](./projects/ingestion-infra/docs/iam-model.md), [analysis](./projects/analysis-infra/docs/iam-model.md) and [website](./projects/website-infra/docs/iam-model.md) |
-| Data governance        | A sanitization policy with a written reason for every value, measured against real feeds. Provenance on every record. Research access is a separate domain, so it is governed apart from the pipeline        | [policy-rationale.md](./projects/ingestion-sanitizer/docs/policy-rationale.md), [research-infra](./projects/research-infra/README.md)                                                                                                                                                                   |
-| Reliability            | Duplicate delivery is handled by design: fixed output paths, deterministic load-job ids, and one identity for each fact check. Messages that keep failing go to dead-letter topics and are archived          | [fact-check-lifecycle.md](./docs/fact-check-lifecycle.md)                                                                                                                                                                                                                                               |
-| Observability          | Structured logs with queryable fields and a fixed meaning for each level. OpenTelemetry traces and metrics. A Cloud Monitoring dashboard defined in code                                                     | [core-io logging](./projects/core-io/README.md#logging), [ingestion-infra dashboard](./projects/ingestion-infra/README.md#dashboard), [a service runbook](./projects/ingestion-extractor/docs/runbook.md#logging)                                                                                       |
-| Operations             | Runbooks organized by failure mode: symptom, cause, steps. Known issues recorded as decisions, including what was ruled out                                                                                  | [extractor runbook](./projects/ingestion-extractor/docs/runbook.md#diagnosing-failures), [analysis-infra known issues](./projects/analysis-infra/docs/known-issues.md)                                                                                                                                  |
-| Engineering practice   | Typed contracts shared between services. Tests written to read like documentation. The ingestion services also run locally against the filesystem in place of cloud services                                 | [ingestion-contracts](./projects/ingestion-contracts/README.md), [testing-guidelines.md](./docs/testing-guidelines.md), [devcontainer.md](./docs/devcontainer.md)                                                                                                                                       |
+| Area                   | In this project                                                                                                                                                                                                                                                                             | Where to look                                                                                                                                                                                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Infrastructure as code | Five Pulumi stacks that find each other through stack outputs, never hardcoded names. Dev stacks share one GCP project; each domain's prod stack has its own. First-time setup and rollback are written down                                                                                | [core-infra](./projects/core-infra/README.md), its [bootstrap](./projects/core-infra/docs/bootstrap.md) and [runbook](./projects/core-infra/docs/runbook.md)                                                                                                                                            |
+| CI/CD                  | A push to `main` lints, tests and builds only what changed, then publishes images. A push to `prod` cuts production image versions. Infrastructure deploys are a manual workflow, one environment at a time                                                                                 | [.github/workflows](./.github/workflows)                                                                                                                                                                                                                                                                |
+| Security and access    | Customer-managed encryption keys with 90-day rotation. One service account per pipeline stage, holding only the roles that stage needs. Written procedures for revoking an operator or a service                                                                                            | [encryption.md](./projects/core-infra/docs/encryption.md), IAM models for [core](./projects/core-infra/docs/iam-model.md), [ingestion](./projects/ingestion-infra/docs/iam-model.md), [analysis](./projects/analysis-infra/docs/iam-model.md) and [website](./projects/website-infra/docs/iam-model.md) |
+| Data governance        | A sanitization policy with a written reason for every value, measured against real feeds. Provenance on every record. Research access is a separate domain, so it is governed apart from the pipeline. The domain provisions a read-only view; granting access to it is a manual step today | [policy-rationale.md](./projects/ingestion-sanitizer/docs/policy-rationale.md), [research-infra](./projects/research-infra/README.md)                                                                                                                                                                   |
+| Reliability            | Duplicate delivery is handled by design: fixed output paths, deterministic load-job ids, and one identity for each fact check. Messages that keep failing go to dead-letter topics and are archived                                                                                         | [fact-check-lifecycle.md](./docs/fact-check-lifecycle.md)                                                                                                                                                                                                                                               |
+| Observability          | Structured logs with queryable fields and a fixed meaning for each level. OpenTelemetry traces and metrics. A Cloud Monitoring dashboard defined in code                                                                                                                                    | [core-io logging](./projects/core-io/README.md#logging), [ingestion-infra dashboard](./projects/ingestion-infra/README.md#dashboard), [a service runbook](./projects/ingestion-extractor/docs/runbook.md#logging)                                                                                       |
+| Operations             | Runbooks organized by failure mode: symptom, cause, steps. Known issues recorded as decisions, including what was ruled out                                                                                                                                                                 | [extractor runbook](./projects/ingestion-extractor/docs/runbook.md#diagnosing-failures), [analysis-infra known issues](./projects/analysis-infra/docs/known-issues.md)                                                                                                                                  |
+| Engineering practice   | Typed contracts shared between services. Tests written to read like documentation. The ingestion services also run locally against the filesystem in place of cloud services                                                                                                                | [ingestion-contracts](./projects/ingestion-contracts/README.md), [testing-guidelines.md](./docs/testing-guidelines.md), [devcontainer.md](./docs/devcontainer.md)                                                                                                                                       |
 
 ## Problems found by running it
 
@@ -168,7 +167,9 @@ domain of an internal database maintenance team, not a public-facing one.
 
 Provisions controlled, read-only access to curated views of the analysis data. It is a separate
 domain so that research access can be governed independently of the pipeline that produces the
-data, without exposing the whole BigQuery dataset.
+data, without exposing the whole BigQuery dataset. Today the stack provisions the view and nothing
+else: it declares no IAM bindings, and access is granted by hand (see its
+[known issues](./projects/research-infra/docs/known-issues.md)).
 
 | Project        | Kind  | Purpose                              | Documentation                                    |
 | -------------- | ----- | ------------------------------------ | ------------------------------------------------ |
@@ -217,7 +218,9 @@ tests follow [docs/testing-guidelines.md](./docs/testing-guidelines.md).
 
 ## Known limits and roadmap
 
-- There are dashboards but no alerting policies yet.
+- Alerting covers the ingestion and analysis stacks: a stalled extraction backlog, dead-lettered
+  messages, failed job runs and failed merges. The website stack has no alert policies yet. An
+  alert notifies someone only where a stack sets an alert email.
 - The CI/CD identity holds broader roles than it needs. Narrowing it is on the backlog.
 - The crawler does not yet honor `robots.txt` (see [Scope and non-goals](#scope-and-non-goals)).
 

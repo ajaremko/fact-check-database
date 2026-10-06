@@ -139,6 +139,8 @@ Both loaders react to the same batch-file notification, independently of each ot
 ### 5. Curate (scheduled MERGE)
 
 - **Trigger:** a BigQuery Data Transfer Service scheduled query, every 4 hours from 01:00 UTC.
+  Both come from `analysis-infra`'s stack config (`analysis:curatedTransferSchedule` and
+  `analysis:curatedTransferStartTime`).
   The 01:00 and 13:00 runs follow the two extractions. The other four find nothing new and serve
   as catch-up.
 - **Does:** merges the last 7 days of staging into `curated.fact_checks`. The result is one row
@@ -269,7 +271,9 @@ stops the per-run limit from being raised much further is recorded in the
 
 ### Why this cadence
 
-The schedule was checked against five days of archived feeds from 54 sources in October 2026.
+The schedule was checked against five days of archived feeds in October 2026. The archive for
+those days held 54 source ids: the 52 in the source list, one source since removed
+(`climatefeedback`), and `factcheck`, the id AFP's feed had before it was renamed.
 
 - **Six fetches a day.** A third of fetches found a changed feed and 13% brought a new item, about
   144 new items a day in all. A new item was fetched a median 2.1 hours after publication, and 90%

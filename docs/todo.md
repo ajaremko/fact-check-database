@@ -20,6 +20,9 @@ to be a won't-fix.
 6. [ ] Add a deletion and takedown path: remove a fact check from the curated table and the search
        index, and purge a source from the archive
 7. [ ] Match the same claim across sources — two organizations' checks of one claim are two rows
+8. [ ] Centralize the ingestor and sanitizer config within `workspace/config`. Each config file can have a `.local.yml`, `.dev.yml` or `.prod.yml` extension to differentiate. Paths to the old config files need to be updated
+9. [ ] `assets/targets.csv` and the `@nxlv/python` Nx plugin remain after the code that used them left. Remove these as well
+10. [ ] Mixed Node versions exist across devcontainer, workflows and dockerfiles. Set everything to Node 22.
 
 ## Core
 
@@ -67,8 +70,10 @@ See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
         `etag`/`lastModified`) so unchanged feeds aren't re-fetched and re-archived every run
 17. [x] Reject a source list that contains duplicate ids
 18. [x] Add a per-request fetch timeout, read from config
-19. [x] Remove `source_name` from metric labels — the time-series count multiplies with the source
-        list
+19. [x] Remove `source_name` from the ingestor's and the sanitizer's metric labels — the time-series
+        count multiplies with the source list. Kept on the extractor's metric, which the dashboard's
+        "Fact Checks Extracted by Source" panel groups by
+20. [ ] The ingestor builds a Pub/Sub publisher layer that nothing uses. Remove it
 
 ### ingestion-sanitizer
 
@@ -109,6 +114,12 @@ See [known-issues.md](../projects/research-infra/docs/known-issues.md).
         approver and expiry in stack config)
 
 ## Website
+
+### website-infra
+
+See [known-issues.md](../projects/website-infra/docs/known-issues.md).
+
+29. [] Remove rate-limiting from the production website. It does little to protect the site and can cause a bad UX.
 
 ### website-contracts
 

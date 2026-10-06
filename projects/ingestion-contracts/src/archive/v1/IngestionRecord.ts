@@ -4,13 +4,16 @@ import { FilePointerSchema } from './FilePointer'
 import { SourceSchema } from './Source'
 
 /**
- * Schema for a record produced when an HTTP fetch returns a response body, or
- * entirely (network error, timeout, DNS failure, etc.)..
+ * Schema for the record the ingestor archives for every fetch attempt,
+ * whether or not the publisher answered.
  *
- * Discriminators: `version: 1`, `kind: 'fetch_attempt'`, `outcome: 'data_fetched'`.
+ * Discriminators: `version: 1`, `kind: 'fetch_attempt'`, and `outcome`:
  *
- * Includes full response headers in `http.headers` alongside the archived body pointer.
- * If no `pointer` or content fields are present — there is no body to archive.
+ * - `data_fetched`: a response arrived, with any status code. `status`,
+ *   `headers` and the other response fields are set, and `content` describes
+ *   the archived body, with `content.raw` pointing at it.
+ * - `no_response`: no response arrived (network error, DNS failure, timeout).
+ *   Only `error` is set, and there is no body to archive.
  */
 export const IngestionRecordSchema = Schema.Struct({
   version: Schema.Literal(1),
