@@ -137,7 +137,9 @@ that stage, and nothing replays it automatically (see [known-issues.md](./known-
 
 1. Read the affected stage's error logs around the time of the incident.
 2. Find the message in the deadletter bucket, under `sanitizer-deadletter/` or
-   `extractor-deadletter/`. Its attributes name the archive object it points to.
+   `extractor-deadletter/`. Its attributes name the archive object it points to. If nothing is
+   there, check that the dead-letter topic's archive subscription still exists: see
+   [known-issues.md](./known-issues.md).
 3. See [Pub/Sub delivery failures](#pubsub-delivery-failures) for the delivery-side checks.
 
 ### Job execution failed
@@ -164,7 +166,9 @@ that stage, and nothing replays it automatically (see [known-issues.md](./known-
   ages. The extractor is covered, because its backlog ages when it does not run.
 - The sanitizer service failing outright, except through the dead-letter alert once its messages
   exhaust their retries.
-- The analysis and website stacks, which have no alert policies yet.
+- The analysis stack, which has its own alerts (see its
+  [runbook](../../analysis-infra/docs/runbook.md#alerts)), and the website stack, which has none
+  yet.
 
 ## Diagnosing failures
 

@@ -37,7 +37,7 @@ Actions CI/CD identity — those are core-infra's.
 | Cloud Run                                            | `run.googleapis.com`                                                    | The staging loader service                                    |
 | Cloud Storage                                        | `storage.googleapis.com`                                                | The dead-letter bucket                                        |
 | Pub/Sub                                              | `pubsub.googleapis.com`                                                 | The staging loader's push subscription and dead-letter topic  |
-| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, and metrics                                 |
+| Cloud Observability / Trace / Telemetry / Monitoring | `observability`, `cloudtrace`, `telemetry`, `monitoring.googleapis.com` | Logging, tracing, metrics and alerts                          |
 
 ### Staging dataset
 
@@ -97,6 +97,25 @@ fact checks can appear more than once (see [known-issues.md](./docs/known-issues
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `curatedDatasetId` / `curatedFactChecksTableId` / `curatedTableRef` | Identify the dataset/table — `curatedTableRef` is read by `research-infra`, the only cross-project consumer of any output this project has |
 | `transferJobName`                                                   | The scheduled query job                                                                                                                    |
+
+### Alerting
+
+Two Cloud Monitoring alert policies, built on metrics Pub/Sub and the BigQuery Data Transfer
+Service publish themselves:
+
+- **Batches dead-lettered:** the staging loader's subscription gave up on a batch notification,
+  so that batch was not loaded.
+- **Curated transfer run failed:** a run of the scheduled query that merges staging into the
+  curated table finished without succeeding.
+
+When `analysis:alertEmail` is set, incidents are emailed to that address through one notification
+channel. When it is unset, the policies still exist and their incidents show in the console only.
+See [docs/runbook.md](./docs/runbook.md#alerts) for what each alert means and what to check.
+
+| Output                                                               | Purpose                                                                    |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `loaderDeadLetterAlertPolicyName` / `transferFailureAlertPolicyName` | The two alert policies                                                     |
+| `alertEmailChannelName`                                              | The email notification channel. Absent when `analysis:alertEmail` is unset |
 
 ## Consuming these outputs
 

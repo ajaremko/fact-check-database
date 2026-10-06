@@ -9,19 +9,21 @@ Reference for the `analysis` Pulumi config namespace, read by `src/config.ts`. S
 `pulumi config set analysis:<key> <value> --stack=<dev|prod>` (or directly in
 `Pulumi.<stack>.yml`).
 
-| Key                                 | Description                                                                   | Required | Default                                                  |
-| ----------------------------------- | ----------------------------------------------------------------------------- | -------- | -------------------------------------------------------- |
-| `analysis:coreStackName`            | The core-infra stack this project reads a `StackReference` from               | Yes      | —                                                        |
-| `analysis:project`                  | GCP project ID this stack deploys into                                        | Yes      | —                                                        |
-| `analysis:region`                   | GCP region for regional resources                                             | Yes      | —                                                        |
-| `analysis:logLevel`                 | Log level passed to the staging loader                                        | Yes      | —                                                        |
-| `analysis:tag`                      | Docker image tag for the staging loader                                       | No       | none — falls back to a public placeholder image if unset |
-| `analysis:tableDeletionProtection`  | Whether the BigQuery tables have Pulumi/GCP deletion protection               | No       | `true` — dev overrides to `false` for easy iteration     |
-| `analysis:retainTablesOnDelete`     | Whether the tables survive `pulumi destroy`                                   | No       | `true` — dev overrides to `false` for easy iteration     |
-| `analysis:forceDestroyStorage`      | Whether `pulumi destroy` may delete a non-empty dead-letter bucket            | No       | `false`                                                  |
-| `analysis:retainStorageOnDelete`    | Whether the dead-letter bucket survives `pulumi destroy`                      | No       | `true`                                                   |
-| `analysis:deadletterRetentionDays`  | Age-based deletion window for the dead-letter bucket. Unset disables the rule | No       | unset                                                    |
-| `analysis:deadletterSoftDeleteDays` | Soft-delete window on the dead-letter bucket                                  | No       | unset                                                    |
+| Key                                 | Description                                                                                                                    | Required | Default                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------- |
+| `analysis:coreStackName`            | The core-infra stack this project reads a `StackReference` from                                                                | Yes      | —                                                        |
+| `analysis:project`                  | GCP project ID this stack deploys into                                                                                         | Yes      | —                                                        |
+| `analysis:region`                   | GCP region for regional resources                                                                                              | Yes      | —                                                        |
+| `analysis:logLevel`                 | Log level passed to the staging loader                                                                                         | Yes      | —                                                        |
+| `analysis:tag`                      | Docker image tag for the staging loader                                                                                        | No       | none — falls back to a public placeholder image if unset |
+| `analysis:tableDeletionProtection`  | Whether the BigQuery tables have Pulumi/GCP deletion protection                                                                | No       | `true` — dev overrides to `false` for easy iteration     |
+| `analysis:retainTablesOnDelete`     | Whether the tables survive `pulumi destroy`                                                                                    | No       | `true` — dev overrides to `false` for easy iteration     |
+| `analysis:forceDestroyStorage`      | Whether `pulumi destroy` may delete a non-empty dead-letter bucket                                                             | No       | `false`                                                  |
+| `analysis:retainStorageOnDelete`    | Whether the dead-letter bucket survives `pulumi destroy`                                                                       | No       | `true`                                                   |
+| `analysis:deadletterRetentionDays`  | Age-based deletion window for the dead-letter bucket. Unset disables the rule                                                  | No       | unset                                                    |
+| `analysis:deadletterSoftDeleteDays` | Soft-delete window on the dead-letter bucket                                                                                   | No       | unset                                                    |
+| `analysis:alertEmail`               | Email address that receives alert notifications. Unset means the alert policies exist but notify nobody. See [Alerts](#alerts) | No       | unset                                                    |
+| `analysis:alertAutoCloseSeconds`    | How long an alert incident stays open after its signal stops reporting data. Accepts 1800 to 604800                            | No       | `3600`                                                   |
 
 ## Commands
 
@@ -38,6 +40,69 @@ nx output analysis-infra --stack=<dev|prod>    # print stack outputs
 `core-infra` must be deployed first — this project's `StackReference` fails to resolve otherwise.
 `research-infra` depends on this stack's `curatedTableRef` output, so deploy this project before
 `research-infra`, and redeploy `research-infra` if `curatedTableRef` ever changes.
+
+## Alerts
+
+The stack creates two Cloud Monitoring alert policies. Each opens an incident when its condition
+is met. When `analysis:alertEmail` is set, the incident is also emailed to that address. When it
+is unset, as in dev, incidents appear only under Alerting in the Cloud console.
+
+| Alert                                 | Signal                                                                       | Fires when                          |
+| ------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------- |
+| Analysis: batches dead-lettered       | Messages the staging loader's subscription forwards to its dead-letter topic | Any message is forwarded            |
+| Analysis: curated transfer run failed | Completed runs of the curated scheduled query, by outcome                    | Any run finishes without succeeding |
+
+Both read metrics that Pub/Sub and the BigQuery Data Transfer Service publish themselves. Both
+signals only report when something happens, so an incident closes once
+`analysis:alertAutoCloseSeconds` have passed since the last one (an hour by default).
+
+### Batches dead-lettered
+
+**Meaning:** a batch notification failed 5 delivery attempts to the staging loader. The batch it
+points to was not loaded into the staging table, so its fact checks are missing from staging and
+will not reach the curated table. Nothing replays the message automatically.
+
+**Steps:**
+
+1. Read the staging loader's error logs around the time of the incident, and check the BigQuery
+   job history for a failed load job. A schema mismatch between the batch and the staging table
+   is the usual cause of a batch that fails every attempt.
+2. Look for the message in the dead-letter bucket under `loader-deadletter/`. Its attributes name
+   the batch file. If nothing is there, check that the dead-letter topic's archive subscription
+   (`loaderDeadletterTopicArchiveSubscriptionName`) still exists: see
+   [known-issues.md](./known-issues.md).
+3. The batch file itself is in core-infra's staging bucket until its retention period passes.
+   Once the cause is fixed, loading it again means re-sending its notification or re-uploading
+   the file.
+4. See [The staging loader isn't receiving new batches](#the-staging-loader-isnt-receiving-new-batches)
+   for the delivery-side checks.
+
+### Curated transfer run failed
+
+**Meaning:** a run of the "Curated Fact Checks Transfer Job" scheduled query finished without
+succeeding, so the curated table was not updated by that run. The alert fires on a failed run and
+on a cancelled one.
+
+**Steps:**
+
+1. Open the transfer's run history (Cloud Console → BigQuery → Data Transfers) and read the
+   failed run's error message.
+2. The query reads the last 7 days of staging and is safe to run again, so the next successful
+   run catches up. Trigger a run by hand once the cause is fixed if the next scheduled one is
+   hours away.
+3. Staging rows expire after 7 days. Runs that keep failing for longer than that lose data, so
+   treat a second consecutive failure as urgent.
+4. See [Rows aren't appearing in the curated table](#rows-arent-appearing-in-the-curated-table)
+   for the access checks.
+
+### What the alerts do not cover
+
+- A transfer that stops running altogether, for example a disabled config. No run means no failed
+  run.
+- The staging loader failing outright, except through the dead-letter alert once its messages
+  exhaust their retries.
+- A staging table that receives no new batches because the ingestion pipeline upstream has
+  stopped. The ingestion stack's own alerts cover that.
 
 ## Diagnosing failures
 

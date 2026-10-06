@@ -54,10 +54,10 @@ Snapshot the table first.
 **Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
 **If this ever needs to be fixed:** Set `defaultEncryptionConfiguration` on both datasets to the exported key and grant BigQuery's service agent `cryptoKeyEncrypterDecrypter` on it. Existing tables keep their old encryption until recreated or copied. Otherwise remove the unused key.
 
-## No alerting on load or MERGE failures
+## Dead-letter archive subscriptions expire after 31 idle days
 
-**Error:** No error. Failures are silent.
-**Where:** The whole stack. It provisions no `gcp.monitoring.AlertPolicy`.
-**Root cause:** A failed scheduled-query run shows only in the Data Transfer run history. A batch that fails to load five times goes to the dead-letter bucket, which nothing reads.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Add alert policies for a failed transfer run and for any message published to the loader's dead-letter topic. The transfer config also accepts an email notification setting.
+**Error:** No error. Dead-lettered messages are dropped once the subscription is gone.
+**Where:** `loaderDeadletterTopicArchiveSubscription` in `src/staging-dataset/loader/subscription.ts`.
+**Root cause:** A dead-letter topic keeps nothing itself. Its archive subscription copies each message into the dead-letter bucket. That subscription sets no `expirationPolicy`, so it gets Pub/Sub's default: a subscription with no activity for 31 days is deleted. A healthy pipeline dead-letters nothing, so the subscription expires exactly when things are going well, and the next dead-lettered message is forwarded to a topic with no subscriber. Seen in dev on 2026-10-06: four of five dead-letter topics had no archive subscription, and 867 messages dead-lettered by the analysis loader on 2026-10-01 were not archived. Prod's subscriptions exist and carry the same 31-day setting. Pulumi's state still lists a deleted subscription until the next `pulumi refresh`.
+**Decision:** Not yet addressed. The alert on dead-lettered messages still fires, but it may be the only record of the message.
+**If this ever needs to be fixed:** Set `expirationPolicy: { ttl: '' }` on the archive subscription so it never expires. Then run `pulumi refresh` and deploy, so any subscription that has already expired is recreated.

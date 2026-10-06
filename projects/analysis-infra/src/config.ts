@@ -59,6 +59,34 @@ export const retainTablesOnDelete =
 export const logLevel = analysisConfig.require('logLevel')
 
 /**
+ * The email address that receives alert notifications for this stack. Unset
+ * means no notification channel is created: the alert policies still exist
+ * and their incidents show in Cloud Monitoring, but nobody is notified. Set
+ * it in production; leave it unset in non-production environments, where
+ * failures are routine during development.
+ */
+export const alertEmail = analysisConfig.get('alertEmail')
+
+/**
+ * How long, in seconds, an alert incident stays open after its signal stops
+ * reporting data. Both alerts rely on this to close, because their metrics
+ * only report when something happens. Unset means 3600 (one hour). Cloud
+ * Monitoring accepts 30 minutes to 7 days.
+ */
+export const alertAutoCloseSeconds =
+  analysisConfig.getNumber('alertAutoCloseSeconds') ?? 3600
+
+if (
+  !Number.isInteger(alertAutoCloseSeconds) ||
+  alertAutoCloseSeconds < 1800 ||
+  alertAutoCloseSeconds > 604800
+) {
+  throw new Error(
+    `analysis:alertAutoCloseSeconds must be a whole number from 1800 (30 minutes) to 604800 (7 days). Got ${alertAutoCloseSeconds}.`
+  )
+}
+
+/**
  * The Docker image tag to use for all analysis components.
  * This should correspond to a tag in the container registry where the
  * analysis pipeline images are stored.
