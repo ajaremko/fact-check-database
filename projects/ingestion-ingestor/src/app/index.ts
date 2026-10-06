@@ -6,9 +6,8 @@ import {
   IngestionJobCompletedSchema,
 } from '@fact-check-database/ingestion-contracts/logging/v1'
 
-import { SourceList } from '../ports/SourceList'
-
 import { ingestFromSource } from './ingestFromSource'
+import { SourceList } from './SourceList'
 
 export interface JobContext {
   runId: string

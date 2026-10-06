@@ -35,45 +35,18 @@ import * as FileSystemStorageWriterWithNotification from '@fact-check-database/c
 import { cloudRunInstanceId } from '@fact-check-database/core-vendor/cloud-run'
 import { pinoLogger } from '@fact-check-database/core-vendor/pino'
 
-import * as CloudStorageSourceList from './adapters/CloudStorageSourceList'
-import * as FileSystemSourceList from './adapters/FileSystemSourceList'
 import * as HttpClientFetcher from './adapters/HttpClientFetcher'
 import { App, JobContext } from './app'
+import * as SourceList from './app/SourceList'
 
 const fetcher = Layer.empty.pipe(
   Layer.merge(HttpClientFetcher.layer),
   Layer.provide(NodeHttpClient.layer)
 )
 
-const SourceListModeConfig = Config.literal(
-  'gcp',
-  'filesystem'
-)('SOURCE_LIST_MODE')
-
-const sourceList = Layer.unwrapEffect(
-  Effect.gen(function* () {
-    const sourceListMode = yield* Config.withDefault(
-      SourceListModeConfig,
-      'gcp'
-    )
-    if (sourceListMode === 'filesystem') {
-      yield* Effect.logInfo('Source list mode selected').pipe(
-        Effect.annotateLogs({ 'mode.sourceList': sourceListMode })
-      )
-      return Layer.empty.pipe(
-        Layer.merge(FileSystemSourceList.layer),
-        Layer.provide(NodeFileSystem.layer)
-      )
-    }
-    yield* Effect.logInfo('Source list mode selected').pipe(
-      Effect.annotateLogs({ 'mode.sourceList': sourceListMode })
-    )
-    return Layer.empty.pipe(
-      Layer.merge(CloudStorageSourceList.layer),
-      Layer.provide(StorageClient.layer())
-    )
-  }).pipe(Effect.map(Layer.mergeAll)) // necessary to merge layer error types correctly
-)
+// The source list is always read from a file: in deployed environments, a
+// Secret Manager version mounted into the job.
+const sourceList = SourceList.layer.pipe(Layer.provide(NodeFileSystem.layer))
 
 const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')
 

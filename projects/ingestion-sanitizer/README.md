@@ -90,15 +90,14 @@ The specs cover policy evaluation, header dropping, query-parameter stripping, t
 cp projects/ingestion-sanitizer/.env.template projects/ingestion-sanitizer/.env
 ```
 
-| Variable                           | Purpose                                                                                |
-| ---------------------------------- | -------------------------------------------------------------------------------------- |
-| `SANITIZER_POLICY_MODE=filesystem` | Read the policy document from disk instead of GCS                                      |
-| `SANITIZER_POLICY_PATH`            | Path to the policy YAML (defaults to `assets/policy.yml` in the template)              |
-| `STORAGE_MODE=filesystem`          | Read/write the archive on a local directory instead of GCS                             |
-| `STORAGE_OUTPUT_DIR`               | Directory sanitizer records are written to (also where ingestor records are read from) |
-| `MESSAGING_MODE=filesystem`        | Read queued messages from a local directory and simulate the notification locally      |
-| `MESSAGE_QUEUE_INPUT_DIR`          | Directory to populate with notification JSON files (e.g. from a local ingestor run)    |
-| `PUBLISHER_OUTPUT_DIR`             | Directory the simulated notification is written to                                     |
+| Variable                    | Purpose                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `SANITIZER_POLICY_PATH`     | Path to the policy YAML, always read from a file (defaults to `assets/policy.yml` in the template) |
+| `STORAGE_MODE=filesystem`   | Read/write the archive on a local directory instead of GCS                                         |
+| `STORAGE_OUTPUT_DIR`        | Directory sanitizer records are written to (also where ingestor records are read from)             |
+| `MESSAGING_MODE=filesystem` | Read queued messages from a local directory and simulate the notification locally                  |
+| `MESSAGE_QUEUE_INPUT_DIR`   | Directory to populate with notification JSON files (e.g. from a local ingestor run)                |
+| `PUBLISHER_OUTPUT_DIR`      | Directory the simulated notification is written to                                                 |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 

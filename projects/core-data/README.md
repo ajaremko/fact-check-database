@@ -27,7 +27,7 @@ Format.parseX(options) // → (schema: Schema<A, I, R>) => Schema<A, string | Ui
 
 Because the result is itself a schema, combinators stack with `pipe()`. Read a pipeline from the inside out: the first argument is the target type, and each subsequent combinator wraps one more layer of encoding on the way toward raw bytes. The final `Schema.decode` (or `Schema.encode`) turns the composed schema into a function.
 
-This is the sanitizer's policy loader, unchanged from `projects/ingestion-sanitizer/src/adapters/FileSystemSanitizerPolicyDocument.ts`:
+This is the sanitizer's policy loader, unchanged from `projects/ingestion-sanitizer/src/app/SanitizerPolicyConfig.ts`:
 
 ```ts
 import { pipe, Schema } from 'effect'
@@ -138,7 +138,7 @@ const encode = pipe(
 encode([{ name: 'example', count: 42 }]) // → "name,count\nexample,42\n"
 ```
 
-Used by the ingestor to load its source list (`projects/ingestion-ingestor/src/adapters/FileSystemSourceList.ts`).
+Used by the ingestor to load its source list (`projects/ingestion-ingestor/src/app/SourceList.ts`).
 
 ### Xml
 

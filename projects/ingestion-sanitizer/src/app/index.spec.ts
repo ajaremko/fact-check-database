@@ -6,7 +6,7 @@ import * as InMemoryStorageReader from '@fact-check-database/core-io/adapters/In
 import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/InMemoryStorageWriter'
 
 import { SanitizerPolicy } from '../contracts/SanitizerPolicy'
-import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
+import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 
 import { processMessage } from './index'
 

@@ -49,10 +49,6 @@ export const sanitizerService = new gcp.cloudrunv2.Service(
           ],
           envs: [
             {
-              name: 'SANITIZER_POLICY_MODE',
-              value: 'filesystem',
-            },
-            {
               name: 'SANITIZER_POLICY_PATH',
               value: '/config/sanitizer-policy.yml',
             },

@@ -33,43 +33,13 @@ import * as FileSystemStorageReader from '@fact-check-database/core-io/adapters/
 import { cloudRunInstanceId } from '@fact-check-database/core-vendor/cloud-run'
 import { pinoLogger } from '@fact-check-database/core-vendor/pino'
 
-import * as CloudStorageSanitizerPolicyDocument from './adapters/CloudStorageSanitizerPolicyDocument'
-import * as FileSystemSanitizerPolicyDocument from './adapters/FileSystemSanitizerPolicyDocument'
 import { App } from './app'
+import * as SanitizerPolicyConfig from './app/SanitizerPolicyConfig'
 
-const SanitizerPolicyModeConfig = Config.literal(
-  'gcp',
-  'filesystem'
-)('SANITIZER_POLICY_MODE')
-
-const sanitizerPolicy = Layer.unwrapEffect(
-  Effect.gen(function* () {
-    const sanitizerPolicyMode = yield* Config.withDefault(
-      SanitizerPolicyModeConfig,
-      'gcp'
-    )
-
-    if (sanitizerPolicyMode === 'filesystem') {
-      yield* Effect.logInfo('Sanitizer policy mode selected').pipe(
-        Effect.annotateLogs({ 'mode.sanitizerPolicy': sanitizerPolicyMode })
-      )
-      return Layer.empty.pipe(
-        Layer.merge(FileSystemSanitizerPolicyDocument.layer),
-        Layer.provide(NodeFileSystem.layer)
-      )
-    }
-
-    yield* Effect.logInfo('Sanitizer policy mode selected').pipe(
-      Effect.annotateLogs({ 'mode.sanitizerPolicy': sanitizerPolicyMode })
-    )
-    return Layer.empty.pipe(
-      Layer.merge(CloudStorageSanitizerPolicyDocument.layer),
-      Layer.provide(StorageClient.layer())
-    )
-  }).pipe(
-    // necessary to merge layer error types correctly
-    Effect.map(Layer.mergeAll)
-  )
+// The policy is always read from a file: in deployed environments, a Secret
+// Manager version mounted into the service.
+const sanitizerPolicy = SanitizerPolicyConfig.layer.pipe(
+  Layer.provide(NodeFileSystem.layer)
 )
 
 const StorageModeConfig = Config.literal('gcp', 'filesystem')('STORAGE_MODE')

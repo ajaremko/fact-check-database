@@ -6,40 +6,36 @@ Configuration reference, operational reference, and diagnosing failures for `ing
 
 All variables are `private` (internal configuration — nothing here is a secret or public-facing).
 
-| Variable                              | Type                  | Required                              | Default                   | Purpose                                                                                 |
-| ------------------------------------- | --------------------- | ------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------- |
-| `SOURCE_LIST_MODE`                    | `gcp` \| `filesystem` | No                                    | `gcp`                     | Selects the target-list adapter                                                         |
-| `TARGET_LIST_PATH`                    | string                | Only if `SOURCE_LIST_MODE=filesystem` | —                         | Path to the target list CSV                                                             |
-| `TARGET_LIST_BUCKET_NAME`             | string                | Only if `SOURCE_LIST_MODE=gcp`        | —                         | GCS bucket containing the target list CSV                                               |
-| `TARGET_LIST_URI`                     | string                | Only if `SOURCE_LIST_MODE=gcp`        | —                         | Object path within `TARGET_LIST_BUCKET_NAME`                                            |
-| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                                    | `gcp`                     | Selects the archive-storage adapter (from `core-io`)                                    |
-| `STORAGE_OUTPUT_DIR`                  | string                | Only if `STORAGE_MODE=filesystem`     | —                         | Local directory archived bodies and records are written to                              |
-| `STORAGE_BUCKET_NAME`                 | string                | Only if `STORAGE_MODE=gcp`            | —                         | GCS bucket archived bodies and records are written to                                   |
-| `MESSAGING_MODE`                      | `gcp` \| `filesystem` | No                                    | `gcp`                     | Selects the notification adapter (from `core-io`)                                       |
-| `PUBLISHER_OUTPUT_DIR`                | string                | Only if `MESSAGING_MODE=filesystem`   | —                         | Local directory the simulated notification is written to                                |
-| `PUBSUB_TOPIC_NAME`                   | string                | Only if `MESSAGING_MODE=gcp`          | —                         | Pub/Sub topic backing the (effectively unused in prod — see below) `Publisher` layer    |
-| `LOGGING_MODE`                        | `gcp` \| `console`    | No                                    | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                       |
-| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                                    | `info`                    | Minimum log level                                                                       |
-| `OTEL_MODE`                           | `gcp` \| `local`      | No                                    | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                         |
-| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)                  | —                         | Service name attached to traces/metrics                                                 |
-| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                                    | `60000`                   | How often metrics are exported                                                          |
-| `OTEL_SHUTDOWN_TIMEOUT`               | integer (ms)          | No                                    | `15000`                   | Grace period for exporters to flush on shutdown                                         |
-| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp`      | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                  |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`             | —                         | Read directly by the OpenTelemetry OTLP exporter (not by this app's own `Config` calls) |
-| `MAX_CONCURRENCY`                     | integer               | No                                    | `10`                      | Maximum targets fetched in parallel                                                     |
-| `SUCCESS_THRESHOLD`                   | number 0–1            | No                                    | `0.8`                     | Minimum fraction of targets that must succeed                                           |
+| Variable                              | Type                  | Required                            | Default                   | Purpose                                                                                            |
+| ------------------------------------- | --------------------- | ----------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `TARGET_LIST_PATH`                    | string                | Yes                                 | —                         | Path to the target list CSV. In dev and prod this is a Secret Manager version mounted into the job |
+| `STORAGE_MODE`                        | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the archive-storage adapter (from `core-io`)                                               |
+| `STORAGE_OUTPUT_DIR`                  | string                | Only if `STORAGE_MODE=filesystem`   | —                         | Local directory archived bodies and records are written to                                         |
+| `STORAGE_BUCKET_NAME`                 | string                | Only if `STORAGE_MODE=gcp`          | —                         | GCS bucket archived bodies and records are written to                                              |
+| `MESSAGING_MODE`                      | `gcp` \| `filesystem` | No                                  | `gcp`                     | Selects the notification adapter (from `core-io`)                                                  |
+| `PUBLISHER_OUTPUT_DIR`                | string                | Only if `MESSAGING_MODE=filesystem` | —                         | Local directory the simulated notification is written to                                           |
+| `PUBSUB_TOPIC_NAME`                   | string                | Only if `MESSAGING_MODE=gcp`        | —                         | Pub/Sub topic backing the (effectively unused in prod — see below) `Publisher` layer               |
+| `LOGGING_MODE`                        | `gcp` \| `console`    | No                                  | `gcp`                     | Pretty console logger vs. Pino/Cloud Logging JSON                                                  |
+| `LOGGING_LEVEL`                       | Effect `LogLevel`     | No                                  | `info`                    | Minimum log level                                                                                  |
+| `OTEL_MODE`                           | `gcp` \| `local`      | No                                  | `gcp`                     | Cloud Trace/Monitoring exporters vs. local OTLP                                                    |
+| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string                | Yes (one of the two)                | —                         | Service name attached to traces/metrics                                                            |
+| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)          | No                                  | `60000`                   | How often metrics are exported                                                                     |
+| `OTEL_SHUTDOWN_TIMEOUT`               | integer (ms)          | No                                  | `15000`                   | Grace period for exporters to flush on shutdown                                                    |
+| `OTEL_CLOUD_MONITORING_PREFIX`        | string                | No, only used if `OTEL_MODE=gcp`    | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring                                                             |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`         | string                | Only if `OTEL_MODE=local`           | —                         | Read directly by the OpenTelemetry OTLP exporter (not by this app's own `Config` calls)            |
+| `MAX_CONCURRENCY`                     | integer               | No                                  | `10`                      | Maximum targets fetched in parallel                                                                |
+| `SUCCESS_THRESHOLD`                   | number 0–1            | No                                  | `0.8`                     | Minimum fraction of targets that must succeed                                                      |
 
 `LOG_LEVEL` is **not** a real variable — nothing in this project reads it. If you see it in an old `.env`, it's dead; the real variable is `LOGGING_LEVEL`.
 
 ## Mode matrix
 
-| Variable           | `filesystem`                                          | `gcp` (default)                             |
-| ------------------ | ----------------------------------------------------- | ------------------------------------------- |
-| `SOURCE_LIST_MODE` | this project's own `FileSystemSourceList`             | this project's own `CloudStorageSourceList` |
-| `STORAGE_MODE`     | `core-io`'s `FileSystemStorageWriterWithNotification` | `core-io`'s `CloudStorageStorageWriter`     |
-| `MESSAGING_MODE`   | `core-io`'s `FileSystemPublisher`                     | `core-io`'s `CloudPubsubPublisher`          |
+| Variable         | `filesystem`                                          | `gcp` (default)                         |
+| ---------------- | ----------------------------------------------------- | --------------------------------------- |
+| `STORAGE_MODE`   | `core-io`'s `FileSystemStorageWriterWithNotification` | `core-io`'s `CloudStorageStorageWriter` |
+| `MESSAGING_MODE` | `core-io`'s `FileSystemPublisher`                     | `core-io`'s `CloudPubsubPublisher`      |
 
-The target-list adapters are local to this project; storage and messaging come from `@fact-check-database/core-io` — see that package's own README for what each adapter does. `CloudStorageStorageWriter` never calls a `Publisher` itself (see "How the hand-off to the sanitizer works" in the README) — the `MESSAGING_MODE=gcp` layer exists so `FileSystemStorageWriterWithNotification` has a `Publisher` to use in dev; in production it's provided but not exercised by this app's own code.
+The target list has no mode: it is always read from the file at `TARGET_LIST_PATH`. Storage and messaging come from `@fact-check-database/core-io` — see that package's own README for what each adapter does. `CloudStorageStorageWriter` never calls a `Publisher` itself (see "How the hand-off to the sanitizer works" in the README) — the `MESSAGING_MODE=gcp` layer exists so `FileSystemStorageWriterWithNotification` has a `Publisher` to use in dev; in production it's provided but not exercised by this app's own code.
 
 ## Target list format
 
@@ -77,12 +73,12 @@ libraries it runs on, so `LOGGING_LEVEL` works as a dial for how deep to look.
 
 ### Levels this service uses
 
-| Level   | Used for                                                                                                                                                                                                                                                                                      |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `info`  | Startup: one `… mode selected` line per component (`mode.sourceList`, `mode.storage`, `mode.messaging`, `mode.otel`), `Ingestor job started` and `Source list loaded`. Per source: `Source fetched` once a 2xx response is archived. At the end: `Ingestor job completed` when the run passes |
-| `warn`  | `Source returned an error status`: a non-2xx response, archived as usual. `Source unreachable`: no response at all, so only the attempt record is archived                                                                                                                                    |
-| `error` | `Source ingestion failed`: one line per source whose pipeline failed (a storage write, or encoding its record), with the failure attached as the log's cause. `Ingestor job completed` when the run falls below `SUCCESS_THRESHOLD`                                                           |
-| `fatal` | `Ingestor job stopped`: the run is exiting non-zero, either because the success rate was too low (`error._tag: SuccessThresholdNotMet`) or because startup failed (e.g. an unreadable target list). `Ingestor failed to start` only if the logger itself couldn't be configured               |
+| Level   | Used for                                                                                                                                                                                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `info`  | Startup: one `… mode selected` line per component (`mode.storage`, `mode.messaging`, `mode.otel`), `Ingestor job started` and `Source list loaded`. Per source: `Source fetched` once a 2xx response is archived. At the end: `Ingestor job completed` when the run passes      |
+| `warn`  | `Source returned an error status`: a non-2xx response, archived as usual. `Source unreachable`: no response at all, so only the attempt record is archived                                                                                                                      |
+| `error` | `Source ingestion failed`: one line per source whose pipeline failed (a storage write, or encoding its record), with the failure attached as the log's cause. `Ingestor job completed` when the run falls below `SUCCESS_THRESHOLD`                                             |
+| `fatal` | `Ingestor job stopped`: the run is exiting non-zero, either because the success rate was too low (`error._tag: SuccessThresholdNotMet`) or because startup failed (e.g. an unreadable target list). `Ingestor failed to start` only if the logger itself couldn't be configured |
 
 Each source produces exactly one outcome line: `Source fetched`, `Source returned an error status`,
 `Source unreachable` or `Source ingestion failed`. An outcome line is logged only after the
@@ -162,7 +158,7 @@ each event once.
 **Steps:**
 
 1. In development, verify `TARGET_LIST_PATH` points to a valid, readable CSV file with the header row `id,name,collection,url`.
-2. In production, verify `TARGET_LIST_BUCKET_NAME`/`TARGET_LIST_URI` are correct and the object exists, and that the service account has `storage.objects.get` on that bucket.
+2. In dev and prod, the file is the source-list secret mounted at `/config/sources.csv` by `ingestion-infra`. Verify the job's revision mounts the secret's latest version, and that the job's service account can access the secret.
 
 ## Checking run output locally
 

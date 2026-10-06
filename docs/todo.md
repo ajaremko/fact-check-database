@@ -118,7 +118,7 @@ See [known-issues.md](../projects/ingestion-ingestor/docs/known-issues.md).
 43. [ ] Add a per-request fetch timeout, read from config
 44. [ ] Remove `source_name` from metric labels — the time-series count multiplies with the source
         list
-45. [ ] Remove the unused `CloudStorageSourceList` adapter, or use it — every stack sets
+45. [x] Remove the unused `CloudStorageSourceList` adapter, or use it — every stack sets
         `SOURCE_LIST_MODE=filesystem`
 
 46. [x] Change `decodeContext` in `ingestFromSource.ts` to decode via `Schema.decodeUnknown` inside
@@ -140,7 +140,7 @@ See [known-issues.md](../projects/ingestion-sanitizer/docs/known-issues.md).
         change `fact_check_id`, and nothing says which policy produced a record
 51. [ ] Remove or implement the four `SanitizationAction` values that are never emitted and the
         `api`/`html` policy rules, and declare the action literal once
-52. [ ] Remove the unused `CloudStorageSanitizerPolicyDocument` adapter — every stack sets
+52. [x] Remove the unused `CloudStorageSanitizerPolicyDocument` adapter — every stack sets
         `SANITIZER_POLICY_MODE=filesystem`
 
 ### ingestion-extractor

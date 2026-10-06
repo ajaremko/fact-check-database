@@ -6,7 +6,7 @@ import { StorageWriteError, StorageWriter } from '@fact-check-database/core-io'
 
 import * as InMemoryFetcher from '../adapters/InMemoryFetcher'
 import { FetchFailureSchema, FetchSuccessSchema } from '../ports/Fetcher'
-import { SourceList } from '../ports/SourceList'
+import { SourceList } from './SourceList'
 
 import { App, JobContext, SuccessThresholdNotMet } from './index'
 

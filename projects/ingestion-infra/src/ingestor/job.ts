@@ -48,10 +48,6 @@ export const ingestorJob = new gcp.cloudrunv2.Job(
             ],
             envs: [
               {
-                name: 'SOURCE_LIST_MODE',
-                value: 'filesystem',
-              },
-              {
                 name: 'TARGET_LIST_PATH',
                 value: '/config/sources.csv',
               },

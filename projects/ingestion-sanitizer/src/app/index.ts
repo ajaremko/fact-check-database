@@ -7,9 +7,8 @@ import {
 } from '@fact-check-database/core-io'
 import { StorageObjectAttributesSchema } from '@fact-check-database/core-contracts/gcp/v1'
 
-import { SanitizerPolicyConfig } from '../ports/SanitizerPolicyConfig'
-
 import { sanitizeObservation } from './sanitizeObservation'
+import { SanitizerPolicyConfig } from './SanitizerPolicyConfig'
 
 const decodeAttributes = StorageObjectAttributesSchema.pipe(
   Schema.pick('bucketId', 'objectId'),
