@@ -53,11 +53,3 @@ Snapshot the table first.
 **Root cause:** `core-infra` provisions and exports a BigQuery encryption key, and no dataset references it. The archive is encrypted with a key the platform can revoke. The BigQuery data derived from it is encrypted with Google-managed keys, so revoking the archive key does not revoke access to staging or curated rows.
 **Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
 **If this ever needs to be fixed:** Set `defaultEncryptionConfiguration` on both datasets to the exported key and grant BigQuery's service agent `cryptoKeyEncrypterDecrypter` on it. Existing tables keep their old encryption until recreated or copied. Otherwise remove the unused key.
-
-## Dead-letter archive subscriptions expire after 31 idle days
-
-**Error:** No error. Dead-lettered messages are dropped once the subscription is gone.
-**Where:** `loaderDeadletterTopicArchiveSubscription` in `src/staging-dataset/loader/subscription.ts`.
-**Root cause:** A dead-letter topic keeps nothing itself. Its archive subscription copies each message into the dead-letter bucket. That subscription sets no `expirationPolicy`, so it gets Pub/Sub's default: a subscription with no activity for 31 days is deleted. A healthy pipeline dead-letters nothing, so the subscription expires exactly when things are going well, and the next dead-lettered message is forwarded to a topic with no subscriber. Seen in dev on 2026-10-06: four of five dead-letter topics had no archive subscription, and 867 messages dead-lettered by the analysis loader on 2026-10-01 were not archived. Prod's subscriptions exist and carry the same 31-day setting. Pulumi's state still lists a deleted subscription until the next `pulumi refresh`.
-**Decision:** Not yet addressed. The alert on dead-lettered messages still fires, but it may be the only record of the message.
-**If this ever needs to be fixed:** Set `expirationPolicy: { ttl: '' }` on the archive subscription so it never expires. Then run `pulumi refresh` and deploy, so any subscription that has already expired is recreated.

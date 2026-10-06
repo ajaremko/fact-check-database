@@ -68,9 +68,8 @@ will not reach the curated table. Nothing replays the message automatically.
    job history for a failed load job. A schema mismatch between the batch and the staging table
    is the usual cause of a batch that fails every attempt.
 2. Look for the message in the dead-letter bucket under `loader-deadletter/`. Its attributes name
-   the batch file. If nothing is there, check that the dead-letter topic's archive subscription
-   (`loaderDeadletterTopicArchiveSubscriptionName`) still exists: see
-   [known-issues.md](./known-issues.md).
+   the batch file. A message dead-lettered before October 2026 may be missing: the archive
+   subscription could expire then, and dev's had.
 3. The batch file itself is in core-infra's staging bucket until its retention period passes.
    Once the cause is fixed, loading it again means re-sending its notification or re-uploading
    the file.

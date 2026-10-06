@@ -85,6 +85,11 @@ One shared bucket (`deadletterBucket`) receives messages that exhaust delivery a
 **both** the emailer's `confirmationEmailSubscription` and the search loader's staging-storage
 subscription, each via its own archive-topic-and-subscription pair.
 
+Every subscription in this stack is set never to expire (`expirationPolicy.ttl: ''`). Pub/Sub
+deletes a subscription that has had no activity for 31 days unless told otherwise. The email
+subscriptions only see traffic when someone submits a form, and a dead-letter archive
+subscription sees none while everything works, so either can sit idle for longer than that.
+
 ### Redirect
 
 `redirectService` — a plain Cloud Run (v1) service running the public `morbz/docker-web-redirect`

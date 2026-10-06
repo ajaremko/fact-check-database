@@ -74,6 +74,9 @@ export function createDeadletteredSubscription(opts: {
     `${tag}-${opts.name}-topic-subscription`,
     {
       topic: opts.topic,
+      expirationPolicy: {
+        ttl: '', // Never expire
+      },
       deadLetterPolicy: {
         deadLetterTopic: deadletterTopic.id,
         maxDeliveryAttempts: 5,
@@ -105,6 +108,9 @@ export function createDeadletteredSubscription(opts: {
     `${tag}-${opts.name}-deadletter-topic-archive-subscription`,
     {
       topic: deadletterTopic.name,
+      expirationPolicy: {
+        ttl: '', // Never expire
+      },
       messageRetentionDuration: opts.archive.messageRetentionDuration,
       cloudStorageConfig: {
         bucket: archiveDeadletterBucketName,

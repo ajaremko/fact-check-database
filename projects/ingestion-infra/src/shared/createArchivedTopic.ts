@@ -67,6 +67,9 @@ export function createArchivedTopic(opts: {
     `${tag}-${opts.name}-topic-archive-subscription`,
     {
       topic: topic.name,
+      expirationPolicy: {
+        ttl: '', // Never expire
+      },
       messageRetentionDuration: opts.archive.messageRetentionDuration,
       cloudStorageConfig: {
         bucket: eventLogBucketName,

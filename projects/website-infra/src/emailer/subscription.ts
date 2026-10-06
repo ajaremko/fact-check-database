@@ -68,6 +68,9 @@ export const confirmationEmailSubscription = new gcp.pubsub.Subscription(
   `${tag}-confirmation-email-subscription`,
   {
     topic: formSubmissionTopic.name,
+    expirationPolicy: {
+      ttl: '', // Never expire
+    },
     deadLetterPolicy: {
       deadLetterTopic: emailerDeadletterTopic.id,
       maxDeliveryAttempts: 5,
@@ -102,6 +105,9 @@ export const notificationEmailSubscription = new gcp.pubsub.Subscription(
   `${tag}-notification-email-subscription`,
   {
     topic: formSubmissionTopic.name,
+    expirationPolicy: {
+      ttl: '', // Never expire
+    },
     retryPolicy: {
       minimumBackoff: '10s',
       maximumBackoff: '600s',
@@ -160,6 +166,9 @@ export const emailerDeadletterTopicArchiveSubscription =
     `${tag}-emailer-deadletter-archive-subscription`,
     {
       topic: emailerDeadletterTopic.name,
+      expirationPolicy: {
+        ttl: '', // Never expire
+      },
       messageRetentionDuration: '604800s', // 7 days
       cloudStorageConfig: {
         bucket: deadletterBucketName,

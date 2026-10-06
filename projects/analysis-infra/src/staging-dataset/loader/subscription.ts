@@ -170,6 +170,9 @@ export const loaderDeadletterTopicArchiveSubscription =
     `${tag}-loader-deadletter-archive-subscription`,
     {
       topic: loaderDeadletterTopic.name,
+      expirationPolicy: {
+        ttl: '', // Never expire
+      },
       messageRetentionDuration: '604800s', // 7 days
       cloudStorageConfig: {
         bucket: deadletterBucket.name,

@@ -51,6 +51,9 @@ on core-infra's staging topic (OIDC-authenticated), writes rows into this table,
 delivery failure after 5 attempts — routes to a dead-letter topic archived into a dedicated
 dead-letter bucket.
 
+Both subscriptions, the loader's and the dead-letter archive's, are set never to expire
+(`expirationPolicy.ttl: ''`). Pub/Sub deletes a subscription that has had no activity for 31 days unless told otherwise, and a healthy pipeline can leave a dead-letter archive subscription idle for longer than that.
+
 | Output                                                                                                | Purpose                                         |
 | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `stagingDatasetId` / `stagingFactChecksTableId` / `stagingTableRef`                                   | Identify the dataset/table                      |

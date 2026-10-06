@@ -137,9 +137,9 @@ that stage, and nothing replays it automatically (see [known-issues.md](./known-
 
 1. Read the affected stage's error logs around the time of the incident.
 2. Find the message in the deadletter bucket, under `sanitizer-deadletter/` or
-   `extractor-deadletter/`. Its attributes name the archive object it points to. If nothing is
-   there, check that the dead-letter topic's archive subscription still exists: see
-   [known-issues.md](./known-issues.md).
+   `extractor-deadletter/`. Its attributes name the archive object it points to. A message
+   dead-lettered before October 2026 may be missing: the archive subscription could expire then,
+   and dev's had.
 3. See [Pub/Sub delivery failures](#pubsub-delivery-failures) for the delivery-side checks.
 
 ### Job execution failed

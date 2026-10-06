@@ -92,6 +92,9 @@ export const stagingStorageSubscription = new gcp.pubsub.Subscription(
   `${tag}-staging-storage-subscription`,
   {
     topic: pulumi.interpolate`projects/${coreProject}/topics/${stagingStorageTopicName}`,
+    expirationPolicy: {
+      ttl: '', // Never expire
+    },
     deadLetterPolicy: {
       deadLetterTopic: loaderDeadletterTopic.id,
       maxDeliveryAttempts: 5,
@@ -143,6 +146,9 @@ export const loaderDeadletterTopicArchiveSubscription =
     `${tag}-loader-deadletter-archive-subscription`,
     {
       topic: loaderDeadletterTopic.name,
+      expirationPolicy: {
+        ttl: '', // Never expire
+      },
       messageRetentionDuration: '604800s', // 7 days
       cloudStorageConfig: {
         bucket: deadletterBucketName,

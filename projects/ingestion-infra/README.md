@@ -88,6 +88,8 @@ than each service reimplementing them: Cloud Scheduler → Cloud Run Job invocat
 (`createJobScheduler`), a topic with an auto-archive-to-GCS subscription (`createArchivedTopic`),
 and a subscription with a dead-letter topic (`createDeadletteredSubscription`).
 
+Every subscription these helpers create is set never to expire (`expirationPolicy.ttl: ''`). Pub/Sub deletes a subscription that has had no activity for 31 days unless told otherwise, and a healthy pipeline can leave a dead-letter archive subscription idle for longer than that.
+
 See [docs/iam-model.md](./docs/iam-model.md) for each service's service account and role grants.
 
 ### Dashboard
