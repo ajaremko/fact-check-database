@@ -18,11 +18,11 @@
 
 ## Every MERGE run scans the whole curated table
 
-**Error:** No error. A cost that grows with history.
+**Error:** No error. A cost that is negligible today.
 **Where:** The join `ON T.fact_check_id = S.fact_check_id` in `src/curated-dataset/loader/transfer-job.ts`.
-**Root cause:** The curated table is partitioned by month on `extracted_at`, but a fact check's row can be in any partition, so the join cannot prune. Four runs a day each read the full table while the new data per run stays flat.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Cluster the curated table on `fact_check_id` so the join reads only matching blocks. Measure bytes billed per run before and after.
+**Root cause:** The curated table is partitioned by month on `extracted_at`, but a fact check's row can be in any partition, so the join cannot prune. Each run therefore reads the full curated table. Measured on 2026-10-06, a run scanned about 77 MB in dev and under 1 MB in prod. Almost all of that is the 7-day staging window: the curated table was a few megabytes. Four runs a day at 77 MB is about 9 GB a month, which is a few cents on demand and inside BigQuery's free monthly allowance.
+**Decision:** Won't fix. Clustering the curated table on `fact_check_id` was considered and would not reduce the scan. The MERGE joins on the id instead of filtering on it. The id is a hash, so each batch's ids are spread evenly across the table and touch nearly every storage block. And a table this small is a single block, with nothing to skip.
+**If this ever needs to be fixed:** Revisit when the curated table reaches gigabytes, or when the MERGE's bytes billed start to matter, and measure a run first. The staging window is the larger lever: a shorter one scans less, at the cost of the catch-up safety the 7-day window gives a failed or skipped run. Clustering on `fact_check_id` helps a lookup of one fact check by id on a large table, not the MERGE.
 
 ## Prod's tables are not yet encrypted with the customer-managed key
 
