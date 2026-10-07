@@ -16,7 +16,6 @@
     "@nx/next": "^22.7.1",
     "@nx/node": "22.7.1",
     "@nx/vitest": "22.7.1",
-    "@nxlv/python": "^22.2.1",
     "@pulumi/local": "^0.1.6",
     "@pulumi/random": "^4.21.0",
     "@swc-node/register": "~1.11.1",

@@ -14,9 +14,6 @@
   "plugins": [
     "nx/plugins/package-json",
     {
-      "plugin": "@nxlv/python"
-    },
-    {
       "plugin": "@nx/js/typescript",
       "options": {
         "typecheck": {
