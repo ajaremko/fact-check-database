@@ -75,8 +75,8 @@ There are no encryption keys or long-lived credentials owned by this project to 
 closest equivalent operational procedure is updating the two Secret Manager-backed config
 documents the ingestor and sanitizer actually read at runtime:
 
-1. Edit the per-stack file: `src/assets/sources.<dev|prod>.yml` (target list, in the format the [ingestor runbook](../../ingestion-ingestor/docs/runbook.md#target-list-format) describes) or
-   `src/assets/sanitizer-policy.<dev|prod>.yml` (sanitizer policy).
+1. Edit the per-stack file in [`config/`](../../../config/README.md): `sources.<dev|prod>.yml` (target list, in the format the [ingestor runbook](../../ingestion-ingestor/docs/runbook.md#target-list-format) describes) or
+   `sanitizer-policy.<dev|prod>.yml` (sanitizer policy).
 2. Redeploy (`nx deploy ingestion-infra --stack=<dev|prod>`) — this creates a new Secret Manager
    version and updates the Cloud Run job/service to mount it.
 
@@ -220,7 +220,24 @@ config.
    relevant secret (`ingestion-source-list` for the ingestor, `ingestion-sanitizer-policy` for the
    sanitizer) — see [docs/iam-model.md](./iam-model.md).
 2. Confirm a secret version actually exists for the current stack (each stack's version is created
-   from `src/assets/sources.<stack>.yml` / `sanitizer-policy.<stack>.yml` at deploy time).
+   from `config/sources.<stack>.yml` / `sanitizer-policy.<stack>.yml` at deploy time).
+
+### The daily preview reports the dashboard as changed
+
+**Symptom:** the `ingestion-infra` job of the
+[daily drift preview](../../core-infra/docs/runbook.md#the-daily-drift-preview) fails with one
+pending update, the dashboard, when every change to it has been deployed.
+**Cause:** Cloud Monitoring does not store a dashboard exactly as it is sent. It leaves out every
+property at its default value (`0`, `false`, an empty string, an empty list, an enum's
+`_UNSPECIFIED` member) and the top-level `description`. Pulumi compares the definition in code
+with the stored one, so any such property in code shows as a difference on every preview.
+`src/dashboard/normalize.ts` removes these properties before the definition is sent, and
+`src/dashboard/index.ts` sets no `description`. The failure means a tile now uses a property that
+Cloud Monitoring changes in a way those two files do not cover.
+**Resolution:** read the diff in the job summary. A line marked `+` is a property the code sends
+and Cloud Monitoring does not store: leave it out of the tile, or extend `normalize.ts` if it is a
+kind of default value. Confirm with `nx preview ingestion-infra --stack=<dev|prod>`, which reports
+no changes once the two match. No deployment is needed.
 
 ## Checking output locally
 

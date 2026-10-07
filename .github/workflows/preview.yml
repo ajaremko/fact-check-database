@@ -3,6 +3,8 @@ name: Infrastructure Drift Preview
 # Runs `pulumi preview` against each stack every day and fails for any stack
 # whose code differs from what was last deployed. Infrastructure is deployed
 # by hand, so this is what reports a change that was merged and not deployed.
+# Each environment is compared with the branch it is deployed from: dev with
+# main, prod with prod. See docs/git-strategy.md.
 # It cannot change cloud resources: the Google Cloud identity it runs as can
 # only view them. The Pulumi token is the maintainer's full-access token,
 # because the Pulumi plan in use offers no read-only one. It is used here for
@@ -28,8 +30,11 @@ jobs:
         stack: [core-infra, ingestion-infra, analysis-infra, research-infra]
         environment: [dev, prod]
     steps:
+      # An empty ref checks out the branch the workflow runs on, which is main
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ matrix.environment == 'prod' && 'prod' || '' }}
 
       - name: Setup Node, cache dependencies
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4

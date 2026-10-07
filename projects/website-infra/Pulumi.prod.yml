@@ -1,9 +1,9 @@
 config:
   website:project: fact-check-database-website
   website:region: us-central1
-  website:tag: 430-10.05.26-42b7e1e
+  website:tag: 444-10.06.26-12d27ea
   website:coreStackName: alfredsyoung/fact-check-database-core
-  website:logLevel: debug
+  website:logLevel: trace
   website:verifiedDomains:
     - factcheckdatabase.com
     - thefactcheckdatabase.com

@@ -4,7 +4,7 @@
 #
 # Run the container with `nx docker:run analysis-loader -p 3000:3000`.
 #
-FROM docker.io/node:lts-alpine
+FROM docker.io/node:22-alpine
 
 ARG SERVICE_NAME
 ARG SERVICE_VERSION

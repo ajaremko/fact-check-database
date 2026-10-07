@@ -10,6 +10,7 @@ import { dataExtractionTiles } from './data-extraction'
 import { systemLogsTiles } from './system-logs'
 import { messagingTiles } from './messaging'
 import { storageTiles } from './storage'
+import { omitDefaultValues } from './normalize'
 
 // Section heights: header (4) + content
 const OVERVIEW_HEIGHT = 16 // 4 + charts (12)
@@ -34,17 +35,18 @@ const pipelineDashboardJson = pulumi
     messagingTiles(0, MESSAGING_Y),
     storageTiles(0, STORAGE_Y),
   ])
+  // The definition has to equal what Cloud Monitoring stores, or every preview
+  // reports the dashboard as changed. Cloud Monitoring discards a top-level
+  // `description` and an empty `labels`, so neither is set here, and
+  // `omitDefaultValues` removes the default-valued properties it drops.
   .apply((sections) => ({
     displayName: 'Ingestion Dashboard (Pulumi)',
-    dashboardFilters: [],
-    description: 'Ingestion pipeline and operations monitoring',
-    labels: {},
     mosaicLayout: {
       columns: 48,
       tiles: sections.flat(),
     },
   }))
-  .apply((d) => JSON.stringify(d))
+  .apply((d) => JSON.stringify(omitDefaultValues(d)))
 
 export const pipelineDashboard = new gcp.monitoring.Dashboard(
   `${tag}-dashboard`,

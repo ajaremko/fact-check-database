@@ -1,9 +1,21 @@
+import * as path from 'node:path'
+
 import * as gcp from '@pulumi/gcp'
 import * as local from '@pulumi/local'
+import * as pulumi from '@pulumi/pulumi'
 
 import { stackName, tag, ingestionLabels } from '../config'
 import { provider } from '../project'
 import { secretManagerService } from '../services'
+
+// The source list and the sanitizer policy are kept for every environment in
+// one directory at the repository root. This project sits two levels below it.
+const configFile = (name: string) =>
+  path.resolve(
+    pulumi.getRootDirectory(),
+    '../../config',
+    `${name}.${stackName}.yml`
+  )
 
 export const sourceListSecret = new gcp.secretmanager.Secret(
   `${tag}-source-list-secret`,
@@ -19,7 +31,7 @@ export const sourceListSecret = new gcp.secretmanager.Secret(
 )
 
 const sourceListFile = local.getFileOutput({
-  filename: `assets/sources.${stackName}.yml`,
+  filename: configFile('sources'),
 })
 
 export const sourceListSecretVersion = new gcp.secretmanager.SecretVersion(
@@ -45,7 +57,7 @@ export const sanitizerPolicySecret = new gcp.secretmanager.Secret(
 )
 
 const sanitizerPolicyFile = local.getFileOutput({
-  filename: `assets/sanitizer-policy.${stackName}.yml`,
+  filename: configFile('sanitizer-policy'),
 })
 
 export const sanitizerPolicySecretVersion = new gcp.secretmanager.SecretVersion(

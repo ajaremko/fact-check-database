@@ -55,8 +55,19 @@ const searchIndexLoaderTelemetryTracesWriter = new gcp.projects.IAMMember(
   { provider }
 )
 
+const searchIndexLoaderMonitoringMetricWriter = new gcp.projects.IAMMember(
+  `${tag}-search-loader-monitoring-metric-writer`,
+  {
+    project: gcpProject,
+    role: 'roles/monitoring.metricWriter',
+    member: pulumi.interpolate`serviceAccount:${searchIndexLoaderServiceAccount.email}`,
+  },
+  { provider }
+)
+
 export const searchIndexLoaderServiceAccountIamRoles = [
   searchIndexLoaderStagingBucketViewer,
   searchIndexLoaderCloudtraceAgent,
   searchIndexLoaderTelemetryTracesWriter,
+  searchIndexLoaderMonitoringMetricWriter,
 ]

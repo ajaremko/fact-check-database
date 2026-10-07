@@ -1,5 +1,26 @@
 # Known Issues
 
+## One oversized record fails the whole batch
+
+**Error:** `AlgoliaSearchClientIOError: Failed to save objects: Record at the position 534
+objectID=… is too big size=31099/10000 bytes`. The `/load-jobs` route returns 500. Pub/Sub
+redelivers the message, and after five attempts it goes to the dead-letter topic.
+**Where:** `src/Program.ts`, which saves a batch with one `saveObjects` call, and
+`src/transcodeBatch.ts`, which copies `fact_check.summary` into the search record whole.
+**Root cause:** The search provider limits the size of a single record (10,000 bytes on the plan
+in use) and rejects the whole save when one record is over it. Nothing bounds a record's size: a
+publisher that puts a full article in its feed's description produces a summary of any length.
+The record that first showed this, in dev on 2026-10-07, has a summary of 29,393 characters. A
+fact check stays in its feed for days, so every later batch contains the same record and fails
+the same way. While it does, no record from any batch reaches the index. At the time, 14 of the
+1,223 fact checks in the staging table were over 9,000 bytes as table rows.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Bound the record in `transcodeBatch`: truncate `summary` to a
+length that keeps the record under the limit. The alternative is to leave out a record that is
+too big and log it, so the rest of the batch is saved. Batches that were dead-lettered need no
+replay for fact checks still in a feed, because the next batch sends them again. A fact check
+that left its feed while batches were failing has to be reloaded from its staging batch.
+
 ## The `/load-jobs` route has no test coverage
 
 **Error:** No error — an accepted test-coverage gap.

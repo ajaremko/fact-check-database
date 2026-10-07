@@ -1,9 +1,13 @@
 name: CI
 
+# Runs on every merge to main. It always runs the checks. It publishes dev
+# images only when the merge changed a containerized app, or when the workflow
+# is started by hand. See docs/git-strategy.md.
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # No job gets more than read access unless it asks for it below.
 permissions:
@@ -21,6 +25,8 @@ jobs:
     permissions:
       contents: read
       actions: read # nx-set-shas reads the last successful run
+    outputs:
+      publish: ${{ steps.apps.outputs.publish }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -41,9 +47,23 @@ jobs:
 
       - run: npx nx affected -t lint test typecheck build
 
+      # A change to documentation, infrastructure or a workflow affects no
+      # app, and publishing for it would produce images identical to the last.
+      - name: Find the containerized apps this push affects
+        id: apps
+        run: |
+          apps=$(npx nx show projects --affected --with-target=docker:build --json)
+          echo "Affected apps: $apps"
+          if [ "$(echo "$apps" | jq length)" -gt 0 ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
   release:
     name: Release Dev Images
     needs: ci
+    if: needs.ci.outputs.publish == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write # pushes the build-number and release tags

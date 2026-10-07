@@ -4,11 +4,12 @@ config:
   ingestion:coreStackName: alfredsyoung/fact-check-database-core
   ingestion:ingestorSchedule: '0 */4 * * *'
   ingestion:extractorSchedule: '30 0,12 * * *'
-  ingestion:tag: 430-10.05.26-42b7e1e
-  ingestion:logLevel: info
+  ingestion:tag: 444-10.06.26-12d27ea
+  ingestion:logLevel: trace
   ingestion:logRetentionDays: 30
   ingestion:deadletterSoftDeleteDays: 30
   ingestion:archiveNearlineAfterDays: 30
   ingestion:archiveColdlineAfterDays: 90
   ingestion:forceDestroyStorage: false
   ingestion:retainStorageOnDelete: true
+  ingestion:alertEmail: alfredsyoung@gmail.com

@@ -50,8 +50,10 @@ nx preview core-infra --stack=<dev|prod>   # review changes
 nx deploy core-infra --stack=<dev|prod>    # apply them
 ```
 
-Deploy from a clean checkout of a commit that is on `main`. Pulumi Cloud records each update, who
-ran it and from which commit, which is the audit trail for deployments.
+Deploy the dev stack from a clean checkout of `main`, and the prod stack from a clean checkout of
+`prod`. [docs/git-strategy.md](../../../docs/git-strategy.md) describes what each branch stands
+for and how a change is promoted. Pulumi Cloud records each update, who ran it and from which
+commit, which is the audit trail for deployments.
 
 ## Validating changes before merging
 
@@ -74,8 +76,12 @@ UTC against the core, ingestion, analysis and research stacks, in dev and prod. 
 run by hand from the Actions tab. `website-infra` is not covered, because previewing it needs an
 Algolia admin key.
 
-- **A job fails when its stack has pending changes.** That means code on `main` differs from what
-  was last deployed. The job summary shows the diff. The usual resolution is to deploy the stack.
+- **A job fails when its stack has pending changes.** That means the code differs from what was
+  last deployed. The job summary shows the diff. The usual resolution is to deploy the stack.
+- **Each environment is compared with the branch it is deployed from.** Dev jobs read `main` and
+  prod jobs read `prod`. A change that is on `main` and not yet promoted does not fail a prod job.
+  The exception is a diff that shows only the `ingestion-infra` dashboard, which has a
+  [different cause](../../ingestion-infra/docs/runbook.md#the-daily-preview-reports-the-dashboard-as-changed).
 - **It compares code with Pulumi's recorded state**, not with the live cloud. It does not notice a
   resource changed by hand in the console.
 - **It cannot change cloud resources.** It runs as `github-preview-sa`, which can only view them.

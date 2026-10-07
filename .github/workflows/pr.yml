@@ -35,3 +35,28 @@ jobs:
       - run: npm ci
 
       - run: npx nx affected -t lint test typecheck build
+
+  # prod moves only by promotion from main, or by a hotfix branch cut from
+  # prod. See docs/git-strategy.md.
+  promotion-source:
+    name: Pull Request Into prod Comes From main or hotfix
+    if: github.base_ref == 'prod'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Check the source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ "$HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::A pull request into prod must come from a branch of this repository."
+            exit 1
+          fi
+          case "$HEAD_REF" in
+            main | hotfix/*) echo "Source branch '$HEAD_REF' may be merged into prod." ;;
+            *)
+              echo "::error::A pull request into prod must come from main or a hotfix/* branch, not '$HEAD_REF'."
+              exit 1
+              ;;
+          esac
