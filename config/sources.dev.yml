@@ -1,0 +1,278 @@
+# Ingestion source list: the feeds the ingestor fetches on every run.
+#
+# Each source needs id, name, collection (rss or atom) and url. A source may
+# also set:
+#   timeoutSeconds  overrides defaults.timeoutSeconds for this source
+#   enabled         false keeps the source listed without fetching it
+#   notes           free text for maintainers
+#
+# Ids must be unique, and an id must never change: it names the source's
+# archive path and is part of every fact_check_id. The format is described in
+#   projects/ingestion-ingestor/docs/runbook.md
+
+defaults:
+  # Seconds a fetch may take before it is abandoned and recorded as failed
+  timeoutSeconds: 30
+
+sources:
+  - id: politifact
+    name: politifact.com
+    collection: rss
+    url: https://www.politifact.com/rss/factchecks/
+
+  - id: snopes
+    name: snopes.com
+    collection: rss
+    url: https://www.snopes.com/feed/
+
+  - id: afpfactcheck
+    name: factcheck.afp.com
+    collection: rss
+    url: https://factcheck.afp.com/rss.xml
+    notes: Returns 403 to the crawler's User-Agent. Kept so it starts working if access is granted.
+
+  - id: africacheck
+    name: Africa Check
+    collection: rss
+    url: https://africacheck.org/feed/
+    notes: Returns 403 to the crawler's User-Agent. Kept so it starts working if access is granted.
+
+  - id: dubawa
+    name: Dubawa
+    collection: rss
+    url: https://dubawa.org/feed/
+
+  - id: roundcheck
+    name: Round Check
+    collection: rss
+    url: https://roundcheck.com.ng/feed/
+
+  - id: newsverifyafrica
+    name: News Verifier Africa
+    collection: rss
+    url: https://newsverifierafrica.com/feed/
+
+  - id: factcheckhub
+    name: FactCheckHub
+    collection: rss
+    url: https://factcheckhub.com/feed/
+
+  - id: factcheckghana
+    name: Fact-Check Ghana
+    collection: rss
+    url: https://www.fact-checkghana.com/feed/
+
+  - id: factspace
+    name: FactSpace West Africa
+    collection: rss
+    url: https://factspace.org/feed/
+
+  - id: factwatch
+    name: FactWatch (Bangladesh)
+    collection: rss
+    url: https://www.fact-watch.org/feed/
+
+  - id: rumorscanner
+    name: Rumor Scanner Bangladesh
+    collection: rss
+    url: https://rumorscanner.com/feed/
+
+  - id: dismislab
+    name: Dismislab
+    collection: rss
+    url: https://en.dismislab.com/feed/
+
+  - id: annielab
+    name: Annie Lab
+    collection: rss
+    url: https://annielab.org/feed/
+
+  - id: factchecklab
+    name: Factcheck Lab (Hong Kong)
+    collection: rss
+    url: https://www.factchecklab.org/feed/
+
+  - id: telugupost
+    name: Telugupost.com
+    collection: rss
+    url: https://www.telugupost.com/feed/
+
+  - id: boomlive
+    name: Boomlive.in
+    collection: rss
+    url: https://www.boomlive.in/feed/
+
+  - id: factly
+    name: Factly.in
+    collection: rss
+    url: https://factly.in/feed/
+
+  - id: medicaldialogues
+    name: medicaldialogues.in
+    collection: rss
+    url: https://medicaldialogues.in/feed/
+
+  - id: pressoneph
+    name: PressOne.PH
+    collection: rss
+    url: https://pressone.ph/feed/
+
+  - id: rappler
+    name: Rappler
+    collection: rss
+    url: https://www.rappler.com/feed/
+
+  - id: tsekph
+    name: Tsek.ph
+    collection: rss
+    url: https://www.tsek.ph/feed/
+
+  - id: taiwanfactcheck
+    name: Taiwan FactCheck Center
+    collection: rss
+    url: https://tfc-taiwan.org.tw/feed/
+
+  - id: factcheckbg
+    name: Factcheck.bg
+    collection: rss
+    url: https://factcheck.bg/feed/
+
+  - id: faktograf
+    name: Faktograf.hr
+    collection: rss
+    url: https://faktograf.hr/feed/
+
+  - id: lesdecodeurs
+    name: 'Les Décodeurs (Le Monde)'
+    collection: rss
+    url: https://www.lemonde.fr/les-decodeurs/rss_full.xml
+
+  - id: sciencefeedback
+    name: Science Feedback
+    collection: rss
+    url: https://science.feedback.org/feed/
+
+  - id: correctiv
+    name: Correctiv
+    collection: rss
+    url: https://correctiv.org/feed/
+
+  - id: volksverpetzer
+    name: Volksverpetzer
+    collection: rss
+    url: https://www.volksverpetzer.de/feed/
+
+  - id: factreview
+    name: FactReview
+    collection: rss
+    url: https://factreview.gr/feed/
+
+  - id: ellinikahoaxes
+    name: Ellinikahoaxes.gr
+    collection: rss
+    url: https://www.ellinikahoaxes.gr/feed/
+
+  - id: check4facts
+    name: Check4facts.gr
+    collection: rss
+    url: https://check4facts.gr/feed/
+
+  - id: recheck
+    name: 'Re:Check (Re:Baltica)'
+    collection: rss
+    url: https://rebaltica.lv/feed/
+
+  - id: bellingcat
+    name: Bellingcat
+    collection: rss
+    url: https://www.bellingcat.com/feed/
+
+  - id: fakenewspl
+    name: FakeNews.pl
+    collection: rss
+    url: https://fakenews.pl/feed/
+
+  - id: factualro
+    name: Factual.ro
+    collection: rss
+    url: https://factual.ro/feed/
+
+  - id: provereno
+    name: Provereno.Media
+    collection: rss
+    url: https://provereno.media/feed/
+
+  - id: maldita
+    name: Maldita.es
+    collection: rss
+    url: https://maldita.es/feed/
+
+  - id: newtral
+    name: Newtral
+    collection: rss
+    url: https://www.newtral.es/feed/
+
+  - id: verificat
+    name: Verificat.cat
+    collection: rss
+    url: https://www.verificat.cat/feed/
+
+  - id: fullfact
+    name: Full Fact
+    collection: rss
+    url: https://fullfact.org/feed/
+
+  - id: factcheckni
+    name: FactCheckNI
+    collection: rss
+    url: https://factcheckni.org/feed/
+
+  - id: observatoriodedatos
+    name: 'Observatorio de Datos (Universidad Adolfo Ibáñez)'
+    collection: rss
+    url: https://observatoriodedatos.uai.cl/feed/
+
+  - id: efectococuyo
+    name: Efecto Cocuyo
+    collection: rss
+    url: https://efectococuyo.com/feed/
+
+  - id: fakereporter
+    name: FakeReporter
+    collection: rss
+    url: https://fakereporter.net/feed/
+
+  - id: arij
+    name: Arab Reporters for Investigative Journalism (ARIJ)
+    collection: rss
+    url: https://arij.net/feed/
+
+  - id: factcheckorg
+    name: FactCheck.org
+    collection: rss
+    url: https://www.factcheck.org/feed/
+
+  - id: leadstories
+    name: Lead Stories
+    collection: atom
+    url: https://leadstories.com/atom.xml
+
+  - id: mediabiasfactcheck
+    name: Media Bias/Fact Check
+    collection: rss
+    url: https://mediabiasfactcheck.com/feed/
+
+  - id: nprfactcheck
+    name: NPR Fact Check
+    collection: rss
+    url: https://feeds.npr.org/1001/rss.xml
+
+  - id: vietfactcheck
+    name: VietFactCheck
+    collection: rss
+    url: https://vietfactcheck.org/feed/
+
+  - id: demagogcz
+    name: Demagog.cz
+    collection: atom
+    url: https://demagog.cz/rss/index.atom

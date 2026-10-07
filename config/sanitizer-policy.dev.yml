@@ -1,0 +1,121 @@
+# Sanitizer policy.
+#
+# Why each value is what it is:
+#   projects/ingestion-sanitizer/docs/policy-rationale.md
+#
+# stripQueryParams and rewriteBody are part of how fact checks are identified.
+# Before changing either, read "Changing the policy" in
+#   projects/ingestion-sanitizer/docs/runbook.md
+#
+# version is this policy's revision. It is written to every sanitizer record
+# and carried into staging and curated rows. Raise it by one with any change
+# to the values below, and keep it the same in all three policy files.
+version: 1
+
+# Query parameters removed from URLs. An entry is a parameter name, matched
+# case-insensitively. An entry ending in "_" is a prefix.
+stripQueryParams:
+  # Campaign tags
+  - utm_
+  - mtm_
+  # Google
+  - gclid
+  - gclsrc
+  - gbraid
+  - wbraid
+  - dclid
+  - gad_
+  - srsltid
+  - _ga
+  - _gl
+  - g_ep
+  # Meta
+  - fbclid
+  - mibextid
+  - rdid
+  - __tn__
+  - __cft__
+  - igsh
+  - igshid
+  # Microsoft
+  - msclkid
+  - msockid
+  # X / Twitter
+  - twclid
+  - ref_src
+  - ref_url
+  # TikTok, LinkedIn
+  - ttclid
+  - li_fat_id
+  # Yandex
+  - yclid
+  - ysclid
+  - _openstat
+  # Email and marketing platforms
+  - mc_cid
+  - mc_eid
+  - _hsenc
+  - _hsmi
+  - __hssc
+  - __hstc
+  - __hsfp
+  - hsctatracking
+  - mkt_tok
+  - oly_anon_id
+  - oly_enc_id
+  - vero_id
+  - __s
+  - wickedid
+  - pnespid
+  # Yahoo consent redirect
+  - guccounter
+  - guce_
+
+# Response headers removed from every record.
+dropHeaders:
+  - set-cookie
+  - cookie
+  - authorization
+
+collections:
+  - collection: rss
+    allowedContentTypeSubstrings:
+      - xml
+      - rss
+      - atom
+    onMissingContentType: QUARANTINE
+    maxBytes: 8000000
+    defaultLabel: SAFE_PUBLIC
+    rewriteBody: true
+
+  - collection: atom
+    allowedContentTypeSubstrings:
+      - xml
+      - rss
+      - atom
+    onMissingContentType: QUARANTINE
+    maxBytes: 8000000
+    defaultLabel: SAFE_PUBLIC
+    rewriteBody: true
+
+  - collection: api
+    allowedContentTypeSubstrings:
+      - json
+    onMissingContentType: RESTRICT
+    maxBytes: 16000000
+    defaultLabel: SAFE_PUBLIC
+    rewriteBody: false
+
+  - collection: html
+    allowedContentTypeSubstrings:
+      - html
+    onMissingContentType: RESTRICT
+    maxBytes: 20000000
+    defaultLabel: RESTRICTED
+    rewriteBody: false
+
+  - collection: default
+    maxBytes: 1000000
+    defaultLabel: RESTRICTED
+    onMissingContentType: RESTRICT
+    rewriteBody: false
