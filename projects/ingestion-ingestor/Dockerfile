@@ -4,7 +4,7 @@
 #
 # Run the container with `nx docker:run ingestion-ingestor -p 3000:3000`.
 #
-FROM docker.io/node:20-slim
+FROM docker.io/node:22-alpine
 
 ARG SERVICE_NAME
 ARG SERVICE_VERSION

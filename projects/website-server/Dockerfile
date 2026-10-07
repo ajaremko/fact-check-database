@@ -4,7 +4,7 @@
 #
 # Run the container with `nx docker:run website-server -p 3000:3000`.
 #
-FROM docker.io/node:lts-alpine
+FROM docker.io/node:22-alpine
 
 # Set production environment variables
 ENV NODE_ENV=production
