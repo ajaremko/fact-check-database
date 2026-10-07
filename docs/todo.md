@@ -146,9 +146,11 @@ See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 
 38. [ ] Remove search records for fact checks that are withdrawn or no longer seen — nothing prunes
         the index
+39. [ ] Keep one oversized record from failing a whole search batch: bound the size of a record
+        in `transcodeBatch`, or skip and log a record the search provider would reject
 
 ### website-server
 
 See [known-issues.md](../projects/website-server/docs/known-issues.md).
 
-39. [ ] Add tests, starting with the three form actions
+40. [ ] Add tests, starting with the three form actions
