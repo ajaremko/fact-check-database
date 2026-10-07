@@ -25,7 +25,7 @@ to be a won't-fix.
 10. [ ] Mixed Node versions exist across devcontainer, workflows and dockerfiles. Set everything to Node 22.
 11. [x] Protect `main` and `prod`: require a pull request and the `pr.yml` checks, and block
         direct pushes. Until then [docs/git-strategy.md](./git-strategy.md) is a convention
-12. [ ] Make `Pull Request Into prod Comes From main or hotfix` a required status check in the
+12. [x] Make `Pull Request Into prod Comes From main or hotfix` a required status check in the
         `prod` ruleset. GitHub offers a check only after it has run, so this follows the first
         promotion pull request
 
