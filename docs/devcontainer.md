@@ -4,11 +4,11 @@ This repository provides a containerized development environment defined in `.de
 
 ## What It Provides
 
-The dev container is built on `mcr.microsoft.com/devcontainers/typescript-node:20` and includes:
+The dev container is built on `mcr.microsoft.com/devcontainers/typescript-node:22` and includes:
 
 | Tool                        | Purpose                                                                                         |
 | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| Node.js 20                  | Runtime for all TypeScript applications and build tooling                                       |
+| Node.js 22                  | Runtime for all TypeScript applications and build tooling                                       |
 | Nx CLI                      | Task orchestration, code generation, and monorepo management                                    |
 | Pulumi CLI                  | Infrastructure provisioning via `projects/core-infra` and the other `projects/*-infra` projects |
 | Google Cloud SDK (`gcloud`) | Authenticating with GCP and managing cloud resources                                            |

@@ -20,9 +20,9 @@ to be a won't-fix.
 6. [ ] Add a deletion and takedown path: remove a fact check from the curated table and the search
        index, and purge a source from the archive
 7. [ ] Match the same claim across sources — two organizations' checks of one claim are two rows
-8. [ ] Centralize the ingestor and sanitizer config within `workspace/config`. Each config file can have a `.local.yml`, `.dev.yml` or `.prod.yml` extension to differentiate. Paths to the old config files need to be updated
-9. [ ] `assets/targets.csv` and the `@nxlv/python` Nx plugin remain after the code that used them left. Remove these as well
-10. [ ] Mixed Node versions exist across devcontainer, workflows and dockerfiles. Set everything to Node 22.
+8. [x] Centralize the ingestor and sanitizer config within `config`. Each config file can have a `.local.yml`, `.dev.yml` or `.prod.yml` extension to differentiate. Paths to the old config files need to be updated
+9. [x] `assets/targets.csv` and the `@nxlv/python` Nx plugin remain after the code that used them left. Remove these as well
+10. [x] Mixed Node versions exist across devcontainer, workflows and dockerfiles. Set everything to Node 22.
 11. [x] Protect `main` and `prod`: require a pull request and the `pr.yml` checks, and block
         direct pushes. Until then [docs/git-strategy.md](./git-strategy.md) is a convention
 12. [ ] Make `Pull Request Into prod Comes From main or hotfix` a required status check in the

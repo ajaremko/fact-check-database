@@ -14,13 +14,14 @@ The policy decides three things for every fetched response:
 
 It does not decide which sources are fetched. That is the source list's job.
 
-The policy exists as three files, kept identical:
+The policy exists as three files, kept identical. They sit together in
+[`config/`](../../../config/README.md):
 
-| File                                                            | Used by                                        |
-| --------------------------------------------------------------- | ---------------------------------------------- |
-| `projects/ingestion-sanitizer/assets/policy.yml`                | Local development                              |
-| `projects/ingestion-infra/src/assets/sanitizer-policy.dev.yml`  | The dev sanitizer, served from Secret Manager  |
-| `projects/ingestion-infra/src/assets/sanitizer-policy.prod.yml` | The prod sanitizer, served from Secret Manager |
+| File                                | Used by                                        |
+| ----------------------------------- | ---------------------------------------------- |
+| `config/sanitizer-policy.local.yml` | Local development                              |
+| `config/sanitizer-policy.dev.yml`   | The dev sanitizer, served from Secret Manager  |
+| `config/sanitizer-policy.prod.yml`  | The prod sanitizer, served from Secret Manager |
 
 Dev and prod are identical on purpose. Dev exists to show what prod will do. A policy that
 differed between them would label the same response differently, and would give the same fact
