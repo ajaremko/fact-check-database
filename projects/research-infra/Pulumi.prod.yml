@@ -2,6 +2,6 @@ config:
   research:project: fact-check-database-research
   research:region: us-central1
   research:analysisStackName: alfredsyoung/fact-check-database-analysis
-  research:tableDeletionProtection: false
-  research:retainTablesOnDelete: false
+  research:tableDeletionProtection: true
+  research:retainTablesOnDelete: true
   research:coreStackName: alfredsyoung/fact-check-database-core
