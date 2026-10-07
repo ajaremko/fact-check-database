@@ -24,7 +24,7 @@
     "@swc/helpers": "~0.5.18",
     "@swc/plugin-styled-components": "^1.5.67",
     "@types/he": "^1.2.3",
-    "@types/node": "20.19.9",
+    "@types/node": "22.20.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/react-is": "^19.0.0",
