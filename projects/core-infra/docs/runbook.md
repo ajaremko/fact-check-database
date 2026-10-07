@@ -76,6 +76,8 @@ Algolia admin key.
 
 - **A job fails when its stack has pending changes.** That means code on `main` differs from what
   was last deployed. The job summary shows the diff. The usual resolution is to deploy the stack.
+  The exception is a diff that shows only the `ingestion-infra` dashboard, which has a
+  [different cause](../../ingestion-infra/docs/runbook.md#the-daily-preview-reports-the-dashboard-as-changed).
 - **It compares code with Pulumi's recorded state**, not with the live cloud. It does not notice a
   resource changed by hand in the console.
 - **It cannot change cloud resources.** It runs as `github-preview-sa`, which can only view them.

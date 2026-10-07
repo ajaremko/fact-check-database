@@ -222,6 +222,23 @@ config.
 2. Confirm a secret version actually exists for the current stack (each stack's version is created
    from `src/assets/sources.<stack>.yml` / `sanitizer-policy.<stack>.yml` at deploy time).
 
+### The daily preview reports the dashboard as changed
+
+**Symptom:** the `ingestion-infra` job of the
+[daily drift preview](../../core-infra/docs/runbook.md#the-daily-drift-preview) fails with one
+pending update, the dashboard, when every change to it has been deployed.
+**Cause:** Cloud Monitoring does not store a dashboard exactly as it is sent. It leaves out every
+property at its default value (`0`, `false`, an empty string, an empty list, an enum's
+`_UNSPECIFIED` member) and the top-level `description`. Pulumi compares the definition in code
+with the stored one, so any such property in code shows as a difference on every preview.
+`src/dashboard/normalize.ts` removes these properties before the definition is sent, and
+`src/dashboard/index.ts` sets no `description`. The failure means a tile now uses a property that
+Cloud Monitoring changes in a way those two files do not cover.
+**Resolution:** read the diff in the job summary. A line marked `+` is a property the code sends
+and Cloud Monitoring does not store: leave it out of the tile, or extend `normalize.ts` if it is a
+kind of default value. Confirm with `nx preview ingestion-infra --stack=<dev|prod>`, which reports
+no changes once the two match. No deployment is needed.
+
 ## Checking output locally
 
 ```bash

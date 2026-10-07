@@ -106,6 +106,10 @@ sanitizer's metrics are not labelled by source, because a per-source label multi
 time series by the length of the source list. Those tables cover the log retention period
 (`ingestion:logRetentionDays`).
 
+The definition is sent in the form Cloud Monitoring stores it, without default-valued properties
+and without a description, so that a preview reports the dashboard as changed only when it is. See
+[docs/runbook.md](./docs/runbook.md#the-daily-preview-reports-the-dashboard-as-changed).
+
 ### Alerting
 
 Three Cloud Monitoring alert policies, built on metrics Pub/Sub and Cloud Run publish themselves:
