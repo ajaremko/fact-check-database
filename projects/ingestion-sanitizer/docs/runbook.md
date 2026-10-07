@@ -152,7 +152,7 @@ same parameters are removed from every `http://` or `https://` URL in the body.
 
 ### Example (abridged from the local development policy)
 
-The full parameter list is in `assets/policy.yml`, and each entry's basis is in
+The full parameter list is in `config/sanitizer-policy.local.yml`, and each entry's basis is in
 [policy-rationale.md](./policy-rationale.md#the-list).
 
 ```yaml

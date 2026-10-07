@@ -89,13 +89,13 @@ Copy the environment template and run against the local filesystem — no GCP cr
 cp projects/ingestion-ingestor/.env.template projects/ingestion-ingestor/.env
 ```
 
-| Variable                    | Purpose                                                                                                           |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `TARGET_LIST_PATH`          | Path to the target list YAML file, always read from a file (defaults to `assets/target-list.yml` in the template) |
-| `STORAGE_MODE=filesystem`   | Archive to a local directory instead of GCS                                                                       |
-| `STORAGE_OUTPUT_DIR`        | Directory archived bodies and records are written to                                                              |
-| `MESSAGING_MODE=filesystem` | Simulate the storage notification locally instead of using Pub/Sub                                                |
-| `PUBLISHER_OUTPUT_DIR`      | Directory the simulated notification is written to                                                                |
+| Variable                    | Purpose                                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `TARGET_LIST_PATH`          | Path to the target list YAML file, always read from a file (`config/sources.local.yml` in the template) |
+| `STORAGE_MODE=filesystem`   | Archive to a local directory instead of GCS                                                             |
+| `STORAGE_OUTPUT_DIR`        | Directory archived bodies and records are written to                                                    |
+| `MESSAGING_MODE=filesystem` | Simulate the storage notification locally instead of using Pub/Sub                                      |
+| `PUBLISHER_OUTPUT_DIR`      | Directory the simulated notification is written to                                                      |
 
 See [docs/runbook.md](./docs/runbook.md) for the complete configuration reference, including production values.
 
