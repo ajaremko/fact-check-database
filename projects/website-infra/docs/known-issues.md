@@ -57,3 +57,20 @@ provider SDK (bridged from `k-yomo/terraform-provider-algolia`), linked into thi
 **Root cause:** The site's sign-in is an htpasswd form. oauth2-proxy will not start without an OAuth provider, so the config names Google with a placeholder client id that is never used.
 **Decision:** Won't fix. This is acceptable for a demonstration deployment.
 **If this ever needs to be fixed:** Configure a real OAuth provider, or replace oauth2-proxy with a proxy that supports basic authentication on its own.
+
+## The search loader's metrics never reach Cloud Monitoring
+
+**Error:** `Permission monitoring.metricDescriptors.create denied (or the resource may not
+exist)`, in the project's audit log for `website-search-loader-sa`. The service logs nothing about
+it and keeps handling requests.
+**Where:** `src/search/loader/service-account.ts`.
+**Root cause:** The loader's service account has the two trace roles (`roles/cloudtrace.agent`,
+`roles/telemetry.tracesWriter`) and not `roles/monitoring.metricWriter`. `website-loader` exports
+metrics on an interval, and each export is denied. Traces are unaffected. The backend and emailer
+accounts in this stack hold the role, so this is an omission and not a decision. First seen in dev
+on 2026-10-07, with 68 denials in one hour.
+**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
+**If this ever needs to be fixed:** Add a project-level `roles/monitoring.metricWriter` grant for
+the account, following `src/emailer/service-account.ts`, and include it in
+`searchIndexLoaderServiceAccountIamRoles` so the Cloud Run service waits for it. Then add the role
+to the account's row in [iam-model.md](./iam-model.md).
