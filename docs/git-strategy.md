@@ -20,7 +20,8 @@ hand, so it needs a second branch to record what production runs.
 - `main` is the source for the dev environment. Dev images are built from it and the dev stacks
   are deployed from it.
 - It is always fit to deploy. A change that is not ready stays on its working branch.
-- It is the only branch working branches are cut from and merged into.
+- It is the only branch working branches are cut from and merged into. It cannot be pushed to
+  directly.
 - It runs ahead of `prod` by whatever has been merged and not yet promoted.
 
 ### `prod`
@@ -28,7 +29,7 @@ hand, so it needs a second branch to record what production runs.
 - `prod` is the source for the production environment. Production images are built from it and
   the prod stacks are deployed from it.
 - It holds only commits that were on `main` first. The one exception is a hotfix, described below.
-- Nobody commits to it directly. It moves when `main` is promoted.
+- It cannot be pushed to directly. It moves when `main` is promoted.
 - To see what production runs, read `prod`. To see what is waiting to be released, compare the
   two: `git log prod..main`.
 
@@ -82,7 +83,8 @@ git merge origin/main
 
 ### Merge
 
-Merge with a **squash merge**, then delete the branch:
+Merge with a **squash merge**, then delete the branch. Squash is the only merge method GitHub
+allows into `main`, and the merge is blocked until the checks pass:
 
 ```bash
 gh pr merge --squash --delete-branch
@@ -113,13 +115,15 @@ gh pr create --base prod --head main --title "Promote main to prod"
 gh pr merge --merge
 ```
 
-- **Merge with a merge commit, never a squash.** A squash would put a new commit on `prod` that
-  `main` does not have, and the two branches would no longer share history. Every later promotion
-  would then conflict. A merge commit keeps each commit from `main` on `prod` as it was.
+- **Merge with a merge commit.** It is the only merge method GitHub allows into `prod`. A squash
+  would put a new commit on `prod` that `main` does not have, and the two branches would no
+  longer share history. Every later promotion would then conflict. A merge commit keeps each
+  commit from `main` on `prod` as it was.
 - **Promote all of `main`.** There is no picking of single commits. If something on `main` is not
   ready for production, fix or revert it on `main` first.
-- **Only `main` or a `hotfix/` branch may be merged into `prod`.** `pr.yml` fails a pull request
-  into `prod` from any other branch.
+- **Only `main` or a `hotfix/` branch should be merged into `prod`.** `pr.yml` fails its
+  source-branch check on a pull request into `prod` from any other branch. That check does not
+  block the merge yet: see [what is not enforced](#not-enforced).
 
 After the merge, [`release.yml`](../.github/workflows/release.yml) runs the checks on every
 project, not only the affected ones. If the promotion changed a service, it publishes production
@@ -141,9 +145,12 @@ A hotfix is for a production fault that cannot wait for what is already on `main
 case where a change reaches `prod` before `main`.
 
 1. Cut `hotfix/<subject>` from `prod`.
-2. Open a pull request into `prod`, and merge it with a merge commit.
-3. Merge `prod` back into `main` by pull request, also with a merge commit, so `main` has the fix
-   and the next promotion is clean.
+2. Open a pull request into `prod`, and merge it with a merge commit. Keep the branch.
+3. Open a second pull request from the same branch into `main`, and squash it. Delete the branch
+   once both pull requests are merged.
+
+The fix then sits on both branches as two commits with the same content. The next promotion
+merges cleanly, because Git sees the same change on each side.
 
 If the fault can wait for a normal promotion, fix it on `main` and promote. That is the usual
 path.
@@ -165,25 +172,55 @@ been deployed. A change that is on `main` and not yet promoted does not fail it.
 
 ## What enforces this, and what does not
 
-Enforced by the platform:
+### Enforced
 
+GitHub rejects anything that breaks these rules. Nobody is on either ruleset's bypass list, so
+they bind the maintainer too.
+
+- **Every change to `main` or `prod` arrives by pull request.** A direct push is rejected.
+- **The checks must pass before a pull request can merge.**
+- **The merge method is fixed for each branch:** squash into `main`, merge commit into `prod`.
+- **Neither branch can be force-pushed or deleted.**
 - **Images can only be published from the right branch.** The identity that pushes dev images
   accepts `ci.yml` running on `main` and nothing else. The one that pushes production images
   accepts `release.yml` running on `prod`. A workflow on any other branch is refused by Google
   Cloud, whatever the workflow file says. See
   [the IAM model](../projects/core-infra/docs/iam-model.md).
-- **A pull request into `prod` from the wrong branch fails its check.**
 
-Convention only:
+### Branch rulesets
 
-- **Branch protection is not configured.** Nothing stops a direct push to `main` or `prod`, or a
-  merge with failing checks. Requiring pull requests and the `pr.yml` checks on both branches is
-  tracked in [todo.md](./todo.md).
-- **The merge method is not enforced.** Squash into `main` and merge-commit into `prod` are rules
-  for the person merging.
-- **Deploying from the right branch is not enforced.** Pulumi Cloud records the commit each
-  deployment ran from, which makes a deployment from the wrong branch visible afterwards. It does
-  not prevent one.
+The first four rules come from two branch rulesets, one for each branch. They are configured in
+the repository's GitHub settings (Settings → Rules → Rulesets) and are not defined in code. This
+table is the record to rebuild them from.
+
+| Rule                      | `main`                            | `prod`                            |
+| ------------------------- | --------------------------------- | --------------------------------- |
+| Enforcement               | Active                            | Active                            |
+| Bypass list               | Empty                             | Empty                             |
+| Deletion                  | Blocked                           | Blocked                           |
+| Force push                | Blocked                           | Blocked                           |
+| Linear history            | Required                          | Not required                      |
+| Pull request              | Required                          | Required                          |
+| Required approvals        | 0                                 | 0                                 |
+| Allowed merge methods     | Squash                            | Merge commit                      |
+| Required status checks    | `Lint, Test, Typecheck and Build` | `Lint, Test, Typecheck and Build` |
+| Branch must be up to date | No                                | No                                |
+
+`prod` does not require linear history because each promotion adds a merge commit.
+
+### Not enforced
+
+- **The source of a pull request into `prod`.** `pr.yml` checks that it comes from `main` or a
+  `hotfix/` branch and reports the result on the pull request. The check is not yet a required
+  one, so a failing result does not block the merge. Making it required is tracked in
+  [todo.md](./todo.md).
+- **Review by a second person.** No approval is required, because the project has one maintainer.
+  The rules guarantee that the checks passed and that each change has a pull request on record.
+  They do not guarantee that anyone else read it.
+- **The rulesets themselves.** A repository admin can edit or disable a ruleset. GitHub records
+  such a change in the ruleset's history.
+- **Deploying from the right branch.** Pulumi Cloud records the commit each deployment ran from,
+  which makes a deployment from the wrong branch visible afterwards. It does not prevent one.
 
 ## What this strategy does not cover
 
