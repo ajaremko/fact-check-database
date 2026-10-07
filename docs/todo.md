@@ -125,7 +125,7 @@ See [known-issues.md](../projects/research-infra/docs/known-issues.md).
 See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
 34. [ ] Remove rate-limiting from the production website. It does little to protect the site and can cause a bad UX.
-35. [ ] Grant the search loader's service account `roles/monitoring.metricWriter` — its metric
+35. [x] Grant the search loader's service account `roles/monitoring.metricWriter` — its metric
         exports are denied, so none of its metrics are recorded
 
 ### website-contracts
