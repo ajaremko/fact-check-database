@@ -1,7 +1,7 @@
 config:
   website:project: fact-check-database-dev
   website:region: us-central1
-  website:tag: dev-441
+  website:tag: dev-448
   website:coreStackName: alfredsyoung/fact-check-database-core
   website:logLevel: trace
   website:verifiedDomains:
