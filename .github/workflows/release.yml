@@ -1,9 +1,13 @@
 name: Production Release
 
+# Runs on every merge to prod. It always runs the checks. It publishes
+# production images only when the merge changed a containerized app, or when
+# the workflow is started by hand. See docs/git-strategy.md.
 on:
   push:
     branches:
       - prod
+  workflow_dispatch:
 
 # No job gets more than read access unless it asks for it below.
 permissions:
@@ -18,6 +22,8 @@ jobs:
   checks:
     name: Lint, Test, Typecheck and Build
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.apps.outputs.publish }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -37,9 +43,27 @@ jobs:
       # checked in full.
       - run: npx nx run-many -t lint test typecheck build
 
+      # Compares with what prod held before this push. A promotion that only
+      # carries documentation, infrastructure or an image tag affects no app,
+      # and publishing for it would produce images identical to the last.
+      - name: Find the containerized apps this push affects
+        id: apps
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          apps=$(npx nx show projects --affected --with-target=docker:build --base="$BEFORE" --head="$GITHUB_SHA" --json)
+          echo "Affected apps: $apps"
+          if [ "$(echo "$apps" | jq length)" -gt 0 ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
   release:
     name: Release Production Images
     needs: checks
+    if: needs.checks.outputs.publish == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write # pushes the build-number and release tags
