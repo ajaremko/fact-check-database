@@ -125,30 +125,34 @@ See [known-issues.md](../projects/research-infra/docs/known-issues.md).
 See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 
 34. [ ] Remove rate-limiting from the production website. It does little to protect the site and can cause a bad UX.
+35. [ ] Grant the search loader's service account `roles/monitoring.metricWriter` — its metric
+        exports are denied, so none of its metrics are recorded
 
 ### website-contracts
 
 See [known-issues.md](../projects/website-contracts/docs/known-issues.md).
 
-35. [x] Fix the swapped types of `published_at_raw` and `published_at_normalized` in
+36. [x] Fix the swapped types of `published_at_raw` and `published_at_normalized` in
         `SearchResultSchema`, rank the search index on the normalized date, and reindex
-36. [ ] Add spec coverage for the search and form-submission schemas
+37. [ ] Add spec coverage for the search and form-submission schemas
 
 ### website-emailer
 
 See [known-issues.md](../projects/website-emailer/docs/known-issues.md).
 
-37. [ ] Add spec coverage for `accessFormSubmission` and each `Emailer` adapter
+38. [ ] Add spec coverage for `accessFormSubmission` and each `Emailer` adapter
 
 ### website-loader
 
 See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 
-38. [ ] Remove search records for fact checks that are withdrawn or no longer seen — nothing prunes
+39. [ ] Remove search records for fact checks that are withdrawn or no longer seen — nothing prunes
         the index
+40. [ ] Keep one oversized record from failing a whole search batch: bound the size of a record
+        in `transcodeBatch`, or skip and log a record the search provider would reject
 
 ### website-server
 
 See [known-issues.md](../projects/website-server/docs/known-issues.md).
 
-39. [ ] Add tests, starting with the three form actions
+41. [ ] Add tests, starting with the three form actions
