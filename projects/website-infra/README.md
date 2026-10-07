@@ -60,6 +60,11 @@ granted to `allUsers` in every stack — the Envoy/oauth2-proxy layer is what ac
 access, not IAM. Backed by `backendBucket`, where `website-server`'s form submissions land before
 triggering the emailer.
 
+The Envoy sidecar does not rate-limit requests. A limit set there is counted for each Cloud Run
+instance and across all visitors, so it cannot single out one client and it turns away ordinary
+visitors when an instance is busy. A limit, if the site ever needs one, belongs in front of Cloud
+Run: a load balancer with Cloud Armor.
+
 ### Emailer
 
 `emailerService` (Cloud Run v2) runs [website-emailer](../website-emailer/README.md). Two Pub/Sub
