@@ -82,11 +82,26 @@ export function evaluatePolicy(
     }
   }
 
+  // Status gate: only a 2xx response is the feed the source was asked for.
+  // An error page, a block page or an unfollowed redirect is withheld,
+  // whatever its content-type says.
+  const status = observation.raw.http.status
+  if (status < 200 || status > 299) {
+    actions.push('QUARANTINED_UNSUCCESSFUL_STATUS')
+    return {
+      label: 'QUARANTINED',
+      actions,
+      error: `Unsuccessful status: ${status}`,
+      rewriteBody: false,
+    }
+  }
+
   const rule = pickRule(policy, observation.source)
 
-  // Empty-body gate: a 0-byte body (e.g. an unfollowed HTTP redirect that
-  // inherited the target's content-type header) can otherwise pass every
-  // other gate and be labeled safe, then silently extract nothing.
+  // Empty-body gate: a successful response with a 0-byte body can otherwise
+  // pass every other gate and be labeled safe, then silently extract nothing.
+  // (An unfollowed redirect, the case that first showed this, is caught by the
+  // status gate above.)
   const bytes = observation.raw.content?.bytes
   if (bytes === 0) {
     actions.push('QUARANTINED_EMPTY_BODY')

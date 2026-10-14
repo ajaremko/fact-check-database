@@ -6,7 +6,7 @@
 
 **Where:** `SanitizationActionSchema`, declared in both `src/app/PolicyDecision.ts` and `ingestion-contracts/src/archive/v1/SanitizerRecord.ts`. Also the `api` and `html` collection rules in the policy files.
 
-**Root cause:** The action list was written ahead of the implementation. Four of its eleven values are never emitted: `NONE`, `URL_NORMALIZED`, `FRAGMENT_STRIPPED` and `BODY_STRIPPED`. The same literal is declared twice, so the two lists can drift. The `api` and `html` rules have no matching source type, because a source's collection can only be `rss` or `atom`.
+**Root cause:** The action list was written ahead of the implementation. Four of its twelve values are never emitted: `NONE`, `URL_NORMALIZED`, `FRAGMENT_STRIPPED` and `BODY_STRIPPED`. The same literal is declared twice, so the two lists can drift. The `api` and `html` rules have no matching source type, because a source's collection can only be `rss` or `atom`.
 
 **Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
 
@@ -16,7 +16,7 @@
 
 **Error:** No error. A stated limit of the platform.
 
-**Where:** `src/app/evaluatePolicy.ts`. The policy checks fetch outcome, body size and content type. It does not inspect content.
+**Where:** `src/app/evaluatePolicy.ts`. The policy checks fetch outcome, HTTP status, body size and content type. It does not inspect content.
 
 **Root cause:** The platform collects public fact-check feeds and assumes personal data appears only incidentally. Its controls on archived content are encryption at rest with a revocable key and the policy label on each record.
 

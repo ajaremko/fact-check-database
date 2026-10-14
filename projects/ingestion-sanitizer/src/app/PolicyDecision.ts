@@ -17,7 +17,8 @@ export const SanitizationActionSchema = Schema.Literal(
   'QUARANTINED_TOO_LARGE',
   'QUARANTINED_EMPTY_BODY',
   'QUARANTINED_UNEXPECTED_CONTENT_TYPE',
-  'QUARANTINED_FETCH_FAILED'
+  'QUARANTINED_FETCH_FAILED',
+  'QUARANTINED_UNSUCCESSFUL_STATUS'
 )
 
 /** Actions applied by the sanitizer to a record. */
