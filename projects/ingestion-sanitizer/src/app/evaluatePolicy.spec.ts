@@ -94,9 +94,10 @@ describe('evaluatePolicy', () => {
   })
 
   it('quarantines with QUARANTINED_EMPTY_BODY when the body is 0 bytes', () => {
-    // Real case: an unfollowed 301 redirect whose response inherits the
-    // target's content-type header, so it would otherwise pass every other
-    // gate and be labeled safe despite carrying no actual content.
+    // A successful response with no body would otherwise pass every other
+    // gate and be labeled safe despite carrying no content. The case that
+    // first showed this, an unfollowed 301 redirect that inherited the
+    // target's content-type, is now caught earlier by the status gate.
     const decision = evaluatePolicy(
       new SanitizerPolicy({
         version: 1,
@@ -126,7 +127,7 @@ describe('evaluatePolicy', () => {
             finalUrl: null,
             etag: null,
             lastModified: null,
-            status: 301,
+            status: 200,
             contentType: 'application/rss+xml',
             headers: {},
           },
