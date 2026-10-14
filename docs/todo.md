@@ -148,7 +148,7 @@ See [known-issues.md](../projects/website-loader/docs/known-issues.md).
 
 39. [ ] Remove search records for fact checks that are withdrawn or no longer seen — nothing prunes
         the index
-40. [ ] Keep one oversized record from failing a whole search batch: bound the size of a record
+40. [x] Keep one oversized record from failing a whole search batch: bound the size of a record
         in `transcodeBatch`, or skip and log a record the search provider would reject
 
 ### website-server

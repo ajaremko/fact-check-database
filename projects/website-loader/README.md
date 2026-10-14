@@ -16,6 +16,8 @@ transcoded here before they can be saved.
 - Receive a Pub/Sub push notification identifying a newly-staged batch object
 - Read that batch from GCS and decode each row as a `FactChecksTableRowSchema`
 - Transcode each row into a `SearchResult` ([`website-contracts`](../website-contracts/README.md))
+- Cap each record's summary at a word boundary, and leave out and log any record still over the
+  search provider's size limit, so that one record cannot fail a batch
 - Save the batch to the configured Algolia index, waiting for the indexing task to complete
 - Acknowledge or reject the push message based on the outcome
 
@@ -47,6 +49,10 @@ core-project topic — the same staging-write notification analysis-loader consu
       ▼
  Decode each row (FactChecksTableRowSchema) and transcode it into a SearchResult,
  with objectID = fact_check_id
+      │
+      ▼
+ Cap each summary at a word boundary; leave out and log any record still
+ over the search provider's size limit
       │
       ▼
  Save the batch to Algolia (saveObjects, waitForTasks: true)
