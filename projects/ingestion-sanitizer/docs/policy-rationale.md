@@ -205,6 +205,8 @@ those two rules decide every record today. They are identical.
 
 The 177 responses that were not one of the four feed media types were all `text/html`: a web
 page where a feed was expected, which is how error and block pages arrive. They are quarantined.
+Independently of these rules, a response whose status is outside 2xx is quarantined before its
+content type is looked at, so an error page served as XML is withheld too.
 
 ### `api`, `html` and `default`
 

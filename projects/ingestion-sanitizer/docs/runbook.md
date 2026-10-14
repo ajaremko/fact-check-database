@@ -79,14 +79,15 @@ what each field does. Why the deployed policy has the values it has is in
 For every record, in order:
 
 1. No `raw` content (the ingestor recorded `outcome: no_response`) → `QUARANTINED`, reason `QUARANTINED_FETCH_FAILED`. This _does_ produce a `SanitizerRecord` — it isn't skipped.
-2. Empty response body → `QUARANTINED`, reason `QUARANTINED_EMPTY_BODY`.
-3. Body larger than the matched rule's `maxBytes` → `QUARANTINED`, reason `QUARANTINED_TOO_LARGE`.
-4. No content-type → the matched rule's `onMissingContentType` decides:
+2. Status outside 200 to 299 → `QUARANTINED`, reason `QUARANTINED_UNSUCCESSFUL_STATUS`. The record's `error` says `Unsuccessful status: <code>`. This applies to every collection and comes before the content-type check, so an error or block page is reported by its status even when it is served as HTML, and is withheld even when it is served as XML. An unfollowed redirect is caught here too.
+3. Empty response body → `QUARANTINED`, reason `QUARANTINED_EMPTY_BODY`.
+4. Body larger than the matched rule's `maxBytes` → `QUARANTINED`, reason `QUARANTINED_TOO_LARGE`.
+5. No content-type → the matched rule's `onMissingContentType` decides:
    - `QUARANTINE` (the default) → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
    - `RESTRICT` → the record passes, but a `SAFE_PUBLIC` rule labels it `RESTRICTED`. The record's `error` says `Missing content-type`. A rule that is already `RESTRICTED` or `QUARANTINED` keeps its label.
    - `ALLOW` → the record passes as if the content-type had matched.
-5. Content-type not allowed by the matched rule → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
-6. Otherwise → the matched rule's `defaultLabel`.
+6. Content-type not allowed by the matched rule → `QUARANTINED`, reason `QUARANTINED_UNEXPECTED_CONTENT_TYPE`.
+7. Otherwise → the matched rule's `defaultLabel`.
 
 Only a `SAFE_PUBLIC` record is extracted. A `QUARANTINED` record also keeps its body as fetched:
 the sanitizer does not rewrite it.
