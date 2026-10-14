@@ -306,4 +306,148 @@ describe('transcodeBatch', () => {
         })
       })
   )
+
+  describe('oversized records', () => {
+    it.effect(
+      'keeps a record whose summary is a whole article, with the summary cut at a word boundary',
+      () =>
+        Effect.gen(function* () {
+          const [result] = yield* transcodeBatch(
+            encodeBatch([
+              {
+                fact_check_id: 'fact-check-long-summary',
+                content_sha256: 'sha-content-1',
+                extracted_at: '2026-01-01T00:00:00.000Z',
+                fetched_at: '2026-01-01T00:00:00.000Z',
+                ingestor_run_id: 'ingestor-run-1',
+                extractor_run_id: 'extractor-run-1',
+                source: {
+                  id: 'politifact',
+                  name: 'politifact.com',
+                  url: 'https://www.politifact.com/rss/all/',
+                  collection: 'rss',
+                },
+                extractor_id: 'extractor-1',
+                extractor_version: '1',
+                fact_check: {
+                  sha256: 'sha-factcheck-1',
+                  // 30,000 characters, about the size of the summary that
+                  // first made the search provider reject a batch
+                  summary: 'The claim is false. '.repeat(1_500),
+                },
+                http: {},
+              },
+            ]),
+            { summaryMaxLength: 30, recordMaxBytes: 10_000 }
+          )
+
+          expect(result).toStrictEqual({
+            objectID: 'fact-check-long-summary',
+            extracted_at: '2026-01-01T00:00:00.000Z',
+            source_collection: 'rss',
+            source_id: 'politifact',
+            source_url: 'https://www.politifact.com/rss/all/',
+            source_name: 'politifact.com',
+            summary: 'The claim is false. The claim…',
+          })
+        })
+    )
+
+    it.effect('leaves a summary within the cap as written', () =>
+      Effect.gen(function* () {
+        const [result] = yield* transcodeBatch(
+          encodeBatch([
+            {
+              fact_check_id: 'fact-check-short-summary',
+              content_sha256: 'sha-content-1',
+              extracted_at: '2026-01-01T00:00:00.000Z',
+              fetched_at: '2026-01-01T00:00:00.000Z',
+              ingestor_run_id: 'ingestor-run-1',
+              extractor_run_id: 'extractor-run-1',
+              source: {
+                id: 'politifact',
+                name: 'politifact.com',
+                url: 'https://www.politifact.com/rss/all/',
+                collection: 'rss',
+              },
+              extractor_id: 'extractor-1',
+              extractor_version: '1',
+              fact_check: {
+                sha256: 'sha-factcheck-1',
+                summary: 'The claim is false.',
+              },
+              http: {},
+            },
+          ]),
+          { summaryMaxLength: 30, recordMaxBytes: 10_000 }
+        )
+
+        expect(result).toStrictEqual({
+          objectID: 'fact-check-short-summary',
+          extracted_at: '2026-01-01T00:00:00.000Z',
+          source_collection: 'rss',
+          source_id: 'politifact',
+          source_url: 'https://www.politifact.com/rss/all/',
+          source_name: 'politifact.com',
+          summary: 'The claim is false.',
+        })
+      })
+    )
+
+    it.effect(
+      'leaves out a record still over the byte limit and keeps the rest of the batch',
+      () =>
+        Effect.gen(function* () {
+          const result = yield* transcodeBatch(
+            encodeBatch([
+              {
+                fact_check_id: 'fact-check-small',
+                content_sha256: 'sha-content-1',
+                extracted_at: '2026-01-01T00:00:00.000Z',
+                fetched_at: '2026-01-01T00:00:00.000Z',
+                ingestor_run_id: 'ingestor-run-1',
+                extractor_run_id: 'extractor-run-1',
+                source: {
+                  id: 'politifact',
+                  name: 'politifact.com',
+                  url: 'https://www.politifact.com/rss/all/',
+                  collection: 'rss',
+                },
+                extractor_id: 'extractor-1',
+                extractor_version: '1',
+                fact_check: {
+                  sha256: 'sha-factcheck-1',
+                },
+                http: {},
+              },
+              {
+                fact_check_id: 'fact-check-too-big',
+                content_sha256: 'sha-content-2',
+                extracted_at: '2026-01-01T00:00:00.000Z',
+                fetched_at: '2026-01-01T00:00:00.000Z',
+                ingestor_run_id: 'ingestor-run-1',
+                extractor_run_id: 'extractor-run-1',
+                source: {
+                  id: 'politifact',
+                  name: 'politifact.com',
+                  url: 'https://www.politifact.com/rss/all/',
+                  collection: 'rss',
+                },
+                extractor_id: 'extractor-1',
+                extractor_version: '1',
+                fact_check: {
+                  sha256: 'sha-factcheck-2',
+                  // About 5,500 bytes once serialized, with no summary to cut
+                  categories: Array(500).fill('Politics'),
+                },
+                http: {},
+              },
+            ]),
+            { summaryMaxLength: 30, recordMaxBytes: 1_000 }
+          )
+
+          expect(result).toMatchObject([{ objectID: 'fact-check-small' }])
+        })
+    )
+  })
 })
