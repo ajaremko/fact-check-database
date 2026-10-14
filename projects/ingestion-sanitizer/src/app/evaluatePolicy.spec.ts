@@ -196,6 +196,206 @@ describe('evaluatePolicy', () => {
     })
   })
 
+  it('quarantines with QUARANTINED_UNSUCCESSFUL_STATUS when the status is not 2xx, even with an allowed content-type', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 404,
+            contentType: 'application/rss+xml',
+            headers: {},
+          },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    expect(decision).toStrictEqual({
+      actions: ['QUARANTINED_UNSUCCESSFUL_STATUS'],
+      error: 'Unsuccessful status: 404',
+      label: 'QUARANTINED',
+      rewriteBody: false,
+    })
+  })
+
+  it('quarantines a non-standard status, such as the 520 a CDN returns when the origin is down', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 520,
+            contentType: 'text/xml',
+            headers: {},
+          },
+          content: { bytes: 16, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    expect(decision).toStrictEqual({
+      actions: ['QUARANTINED_UNSUCCESSFUL_STATUS'],
+      error: 'Unsuccessful status: 520',
+      label: 'QUARANTINED',
+      rewriteBody: false,
+    })
+  })
+
+  it('quarantines an unfollowed redirect', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 301,
+            contentType: 'application/rss+xml',
+            headers: {},
+          },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    expect(decision).toStrictEqual({
+      actions: ['QUARANTINED_UNSUCCESSFUL_STATUS'],
+      error: 'Unsuccessful status: 301',
+      label: 'QUARANTINED',
+      rewriteBody: false,
+    })
+  })
+
+  it('reports an unsuccessful status ahead of an unexpected content-type', () => {
+    const decision = evaluatePolicy(
+      new SanitizerPolicy({
+        version: 1,
+        stripQueryParams: [],
+        dropHeaders: [],
+        collections: [
+          {
+            collection: 'rss',
+            maxBytes: 1_000,
+            defaultLabel: 'SAFE_PUBLIC',
+            allowedContentTypeSubstrings: ['text/xml', 'application/rss'],
+          },
+        ],
+      }),
+      new Observation({
+        ingestorRunId: 'run-1',
+        fetchedAt: TimestampBrand(0),
+        error: null,
+        source: {
+          id: 'source-1',
+          url: 'https://example.com/feed',
+          name: 'source-1',
+          collection: 'rss',
+        },
+        raw: {
+          http: {
+            finalUrl: null,
+            etag: null,
+            lastModified: null,
+            status: 403,
+            contentType: 'text/html',
+            headers: {},
+          },
+          content: { bytes: 100, sha256: 'abc123' },
+          pointer: {
+            bucket: 'test-bucket',
+            object: 'records/path/record.yml',
+          },
+        },
+      })
+    )
+    expect(decision).toStrictEqual({
+      actions: ['QUARANTINED_UNSUCCESSFUL_STATUS'],
+      error: 'Unsuccessful status: 403',
+      label: 'QUARANTINED',
+      rewriteBody: false,
+    })
+  })
+
   it('quarantines a response with no content-type when the rule does not say otherwise', () => {
     const decision = evaluatePolicy(
       new SanitizerPolicy({

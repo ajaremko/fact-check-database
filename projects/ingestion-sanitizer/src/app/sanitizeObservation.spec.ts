@@ -271,6 +271,69 @@ describe('sanitizeObservation', () => {
   )
 
   it.effect(
+    'quarantines a response with an unsuccessful status, so the extractor skips it',
+    () =>
+      Effect.gen(function* () {
+        const storage: Record<string, string> = {
+          'record.yml': `
+            version: 1
+            kind: fetch_attempt
+            outcome: data_fetched
+            ingestor_run_id: 738aceb2-3212-4c1f-bcc4-3142f18396fb
+            fetched_at: 1777751768881
+            source:
+              id: africacheck
+              name: africacheck.org
+              url: https://africacheck.org/feed
+              collection: rss
+            status: 404
+            final_url: https://africacheck.org/feed/
+            content_type: application/rss+xml; charset=UTF-8
+            headers:
+              content-type: application/rss+xml; charset=UTF-8
+            content:
+              sha256: bf7c4ba25af87eb5dc25a6e4486b21b00e8e6766f8f226ca54566b04a0c43429
+              bytes: 113
+              raw:
+                bucket: inmemory
+                object: v1/raw/source=africacheck/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/bf7c4ba25af87eb5dc25a6e4486b21b00e8e6766f8f226ca54566b04a0c43429.bin`,
+        }
+
+        yield* sanitizeObservation({
+          policy: {
+            version: 1,
+            stripQueryParams: ['utm_'],
+            dropHeaders: ['set-cookie', 'cookie', 'authorization'],
+            collections: [
+              {
+                collection: 'rss',
+                maxBytes: 1_000,
+                defaultLabel: 'SAFE_PUBLIC',
+                allowedContentTypeSubstrings: ['application/rss'],
+              },
+            ],
+          },
+          pointer: { bucket: 'inmemory', object: 'record.yml' },
+          timestamp: 0,
+        }).pipe(
+          Effect.provide(InMemoryStorageReader.layer(storage)),
+          Effect.provide(InMemoryStorageWriter.layer(storage))
+        )
+
+        const record = decodeRecord(
+          storage[
+            'v1/records/sanitizer/source=africacheck/date=2026-05-02/ingestor_run_id=738aceb2-3212-4c1f-bcc4-3142f18396fb/fetch_attempt.yml'
+          ]
+        )
+        expect(record.label).toBe('QUARANTINED')
+        expect(record.actions).toStrictEqual([
+          'QUARANTINED_UNSUCCESSFUL_STATUS',
+        ])
+        expect(record.error).toBe('Unsuccessful status: 404')
+      })
+  )
+
+  it.effect(
     'rewrites a body whose URLs carry listed parameters and points the record at the sanitized copy',
     () =>
       Effect.gen(function* () {
