@@ -1,4 +1,4 @@
-import { Config, Effect, Logger, Layer, LogLevel } from 'effect'
+import { Config, Effect, Logger, Layer, LogLevel, Schema } from 'effect'
 import { NodeRuntime } from '@effect/platform-node'
 import { NodeSdk } from '@effect/opentelemetry'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
@@ -86,9 +86,27 @@ const otel = Layer.unwrapEffect(
   })
 )
 
+const SummaryMaxLengthConfig = Schema.Config(
+  'SEARCH_SUMMARY_MAX_LENGTH',
+  Schema.NumberFromString.pipe(Schema.int(), Schema.positive())
+)
+
+const RecordMaxBytesConfig = Schema.Config(
+  'SEARCH_RECORD_MAX_BYTES',
+  Schema.NumberFromString.pipe(Schema.int(), Schema.positive())
+)
+
 const service = Layer.effect(
   ServiceContext,
-  Config.all({ indexName: Config.string('ALGOLIA_INDEX_NAME') })
+  Config.all({
+    indexName: Config.string('ALGOLIA_INDEX_NAME'),
+    recordLimits: Config.all({
+      // The same length as the extractor's article preview
+      summaryMaxLength: Config.withDefault(SummaryMaxLengthConfig, 500),
+      // The search provider's limit on a single record, on the plan in use
+      recordMaxBytes: Config.withDefault(RecordMaxBytesConfig, 10_000),
+    }),
+  })
 )
 
 Program.pipe(

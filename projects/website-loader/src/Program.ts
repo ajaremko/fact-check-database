@@ -17,10 +17,11 @@ import {
 } from '@fact-check-database/core-contracts/gcp/v1'
 import { StorageReader } from '@fact-check-database/core-io'
 
-import { transcodeBatch } from './transcodeBatch'
+import { SearchRecordLimits, transcodeBatch } from './transcodeBatch'
 
 export interface ServiceContext {
   indexName: string
+  recordLimits: SearchRecordLimits
 }
 
 export const ServiceContext =
@@ -49,7 +50,7 @@ const loadJobs = HttpRouter.post(
       bucket: attributes.bucketId,
     })
 
-    const objects = yield* transcodeBatch(data)
+    const objects = yield* transcodeBatch(data, ctx.recordLimits)
 
     // start a batch load job and await its completion
     yield* AlgoliaSearchClient.saveObjects({

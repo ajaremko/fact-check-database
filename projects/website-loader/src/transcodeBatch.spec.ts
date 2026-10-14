@@ -54,7 +54,8 @@ describe('transcodeBatch', () => {
               },
             },
           },
-        ])
+        ]),
+        { summaryMaxLength: 500, recordMaxBytes: 10_000 }
       )
 
       expect(result).toStrictEqual({
@@ -168,7 +169,8 @@ describe('transcodeBatch', () => {
               },
             },
           },
-        ])
+        ]),
+        { summaryMaxLength: 500, recordMaxBytes: 10_000 }
       )
 
       expect(result).toMatchObject([
@@ -218,7 +220,8 @@ describe('transcodeBatch', () => {
                 content_type: 'application/rss+xml',
               },
             },
-          ])
+          ]),
+          { summaryMaxLength: 500, recordMaxBytes: 10_000 }
         )
 
         expect(result).not.toHaveProperty('content_length')
@@ -251,7 +254,8 @@ describe('transcodeBatch', () => {
               },
               http: {},
             },
-          ])
+          ]),
+          { summaryMaxLength: 500, recordMaxBytes: 10_000 }
         )
 
         expect(result).toStrictEqual({
@@ -292,7 +296,8 @@ describe('transcodeBatch', () => {
               },
               http: {},
             },
-          ])
+          ]),
+          { summaryMaxLength: 500, recordMaxBytes: 10_000 }
         )
 
         expect(result).toStrictEqual({
