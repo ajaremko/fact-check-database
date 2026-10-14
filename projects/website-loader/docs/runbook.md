@@ -9,16 +9,18 @@ All variables are `private` (internal configuration — nothing here is a secret
 Like `analysis-loader`, there are no `*_MODE` variables — this service always uses its GCP
 adapters, with no dev-mode alternative.
 
-| Variable                              | Type              | Required             | Default                   | Purpose                                                                                                                 |
-| ------------------------------------- | ----------------- | -------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `ALGOLIA_API_KEY`                     | string            | Yes                  | —                         | Algolia API key used to save objects                                                                                    |
-| `ALGOLIA_APP_ID`                      | string            | Yes                  | —                         | Algolia application ID                                                                                                  |
-| `ALGOLIA_INDEX_NAME`                  | string            | Yes                  | —                         | Destination index                                                                                                       |
-| `PORT`                                | number            | Yes                  | —                         | Port the HTTP push endpoint listens on. Cloud Run injects this automatically; `website-infra` doesn't set it explicitly |
-| `LOGGING_LEVEL`                       | Effect `LogLevel` | No                   | `info`                    | Minimum log level                                                                                                       |
-| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string            | Yes (one of the two) | —                         | Service name attached to traces/metrics                                                                                 |
-| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)      | No                   | `60000`                   | How often metrics are exported                                                                                          |
-| `OTEL_CLOUD_MONITORING_PREFIX`        | string            | No                   | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring — `website-infra` overrides this                                                 |
+| Variable                              | Type                 | Required             | Default                   | Purpose                                                                                                                                    |
+| ------------------------------------- | -------------------- | -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ALGOLIA_API_KEY`                     | string               | Yes                  | —                         | Algolia API key used to save objects                                                                                                       |
+| `ALGOLIA_APP_ID`                      | string               | Yes                  | —                         | Algolia application ID                                                                                                                     |
+| `ALGOLIA_INDEX_NAME`                  | string               | Yes                  | —                         | Destination index                                                                                                                          |
+| `SEARCH_SUMMARY_MAX_LENGTH`           | integer (characters) | No                   | `500`                     | Longest summary kept in a search record. A longer one is cut at a word boundary and ends in an ellipsis                                    |
+| `SEARCH_RECORD_MAX_BYTES`             | integer (bytes)      | No                   | `10000`                   | Largest serialized record the search provider accepts. A record still over it after its summary is cut is left out of the batch and logged |
+| `PORT`                                | number               | Yes                  | —                         | Port the HTTP push endpoint listens on. Cloud Run injects this automatically; `website-infra` doesn't set it explicitly                    |
+| `LOGGING_LEVEL`                       | Effect `LogLevel`    | No                   | `info`                    | Minimum log level                                                                                                                          |
+| `OTEL_SERVICE_NAME` or `SERVICE_NAME` | string               | Yes (one of the two) | —                         | Service name attached to traces/metrics                                                                                                    |
+| `OTEL_METRIC_EXPORT_INTERVAL`         | integer (ms)         | No                   | `60000`                   | How often metrics are exported                                                                                                             |
+| `OTEL_CLOUD_MONITORING_PREFIX`        | string               | No                   | `workload.googleapis.com` | Metric name prefix in Cloud Monitoring — `website-infra` overrides this                                                                    |
 
 The Algolia client's transformation region is hardcoded to `us` in `main.ts`
 (`transformationOptions: Config.succeed({ region: 'us' })`) — not configurable via environment
@@ -31,12 +33,13 @@ dead.
 
 ## Logging
 
-The simplest logging profile of any service in this pipeline — two levels, nothing else:
+The simplest logging profile of any service in this pipeline — three levels, nothing else:
 
-| Level   | Used for                                                                                                      |
-| ------- | ------------------------------------------------------------------------------------------------------------- |
-| `info`  | Logged by `HttpMiddleware.logger` for each request; no other explicit `info` calls in this service's own code |
-| `error` | The full failure cause, dumped via `Effect.tapErrorCause(Effect.logError)` around the route handler           |
+| Level     | Used for                                                                                                                                             |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `info`    | Logged by `HttpMiddleware.logger` for each request; no other explicit `info` calls in this service's own code                                        |
+| `error`   | The full failure cause, dumped via `Effect.tapErrorCause(Effect.logError)` around the route handler                                                  |
+| `warning` | A search record left out of a batch for being over `SEARCH_RECORD_MAX_BYTES`, annotated with `record.objectID`, `record.bytes` and `record.maxBytes` |
 
 `core-io` (`StorageReader`) and `core-vendor` (`AlgoliaSearchClient`) each separately log at
 `trace` only, at construction time — see their own READMEs. `core-data` logs nothing.

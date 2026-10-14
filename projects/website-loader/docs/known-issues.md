@@ -1,25 +1,18 @@
 # Known Issues
 
-## One oversized record fails the whole batch
+## Effects of the oversized-record failure that outlast its fix
 
-**Error:** `AlgoliaSearchClientIOError: Failed to save objects: Record at the position 534
-objectID=… is too big size=31099/10000 bytes`. The `/load-jobs` route returns 500. Pub/Sub
-redelivers the message, and after five attempts it goes to the dead-letter topic.
-**Where:** `src/Program.ts`, which saves a batch with one `saveObjects` call, and
-`src/transcodeBatch.ts`, which copies `fact_check.summary` into the search record whole.
-**Root cause:** The search provider limits the size of a single record (10,000 bytes on the plan
-in use) and rejects the whole save when one record is over it. Nothing bounds a record's size: a
-publisher that puts a full article in its feed's description produces a summary of any length.
-The record that first showed this, in dev on 2026-10-07, has a summary of 29,393 characters. A
-fact check stays in its feed for days, so every later batch contains the same record and fails
-the same way. While it does, no record from any batch reaches the index. At the time, 14 of the
-1,223 fact checks in the staging table were over 9,000 bytes as table rows.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Bound the record in `transcodeBatch`: truncate `summary` to a
-length that keeps the record under the limit. The alternative is to leave out a record that is
-too big and log it, so the rest of the batch is saved. Batches that were dead-lettered need no
-replay for fact checks still in a feed, because the next batch sends them again. A fact check
-that left its feed while batches were failing has to be reloaded from its staging batch.
+**Error:** No error. Some search records carry a long summary, and some fact checks are missing.
+**Where:** The Algolia index written by `src/transcodeBatch.ts`.
+**Root cause:** Until summaries were capped, a summary of any length went into the index, and from
+2026-10-07 every batch that held one record over the provider's 10,000-byte limit was rejected
+whole and dead-lettered. Two effects remain after the fix. A record indexed before it keeps its
+longer summary until a later batch rewrites it, which happens only while the fact check is still
+in its feed. A fact check that left its feed while batches were failing never reached the index.
+**Decision:** Leave the longer summaries to be rewritten as fact checks are fetched again.
+**If this ever needs to be fixed:** Rebuild the index from the curated BigQuery table, one record
+per `fact_check_id`, applying the same summary cap. The same rebuild resolves the two issues
+about older records below.
 
 ## The `/load-jobs` route has no test coverage
 
