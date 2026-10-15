@@ -51,6 +51,14 @@ const decodeContext = Schema.decodeUnknown(
 
 const contentRequestResults = Metric.counter('content_request_results')
 
+// The status code's standard name, for logs and metrics. A code with no
+// standard name, such as Cloudflare's 520, gets a generic one; the code
+// itself is recorded alongside it.
+const statusName = (status: number) =>
+  Effect.try(() => getReasonPhrase(status)).pipe(
+    Effect.orElseSucceed(() => 'Unknown Status')
+  )
+
 export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
     ingestorRunId: string
@@ -176,9 +184,10 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
 
     // Record the response code for sent requests to
     // allow monitoring of source health
+    const status = yield* statusName(result.status)
     yield* Metric.increment(contentRequestResults).pipe(
       Effect.tagMetrics({
-        result_status: `${getReasonPhrase(result.status)}`,
+        result_status: status,
         result_status_code: String(result.status),
         result_content_type: result.contentType || 'unknown',
       })
@@ -196,7 +205,7 @@ export const ingestFromSource = Effect.fn('ingestFromSource')(
       Effect.annotateLogs(
         IngestionSucceededSchema.make({
           event: IngestionSucceededKey,
-          'result.status': getReasonPhrase(result.status),
+          'result.status': status,
           'result.status_code': result.status,
           'result.content_type': result.contentType || 'unknown',
         })

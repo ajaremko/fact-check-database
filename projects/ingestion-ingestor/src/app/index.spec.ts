@@ -5,7 +5,11 @@ import * as InMemoryStorageWriter from '@fact-check-database/core-io/adapters/In
 import { StorageWriteError, StorageWriter } from '@fact-check-database/core-io'
 
 import * as InMemoryFetcher from '../adapters/InMemoryFetcher'
-import { FetchFailureSchema, FetchSuccessSchema } from '../ports/Fetcher'
+import {
+  Fetcher,
+  FetchFailureSchema,
+  FetchSuccessSchema,
+} from '../ports/Fetcher'
 import { SourceList } from './SourceList'
 
 import { App, JobContext, SuccessThresholdNotMet } from './index'
@@ -186,6 +190,119 @@ describe('App', () => {
               event: 'ingestor_job_completed',
               'job.successRate': 0,
               'job.result': 'failure',
+            },
+          },
+        ])
+      })
+  )
+
+  it.effect(
+    'counts a source that fails unexpectedly as one failed source and finishes the run',
+    () =>
+      Effect.gen(function* () {
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
+
+        yield* App.pipe(
+          Effect.provide(
+            Layer.succeed(JobContext, {
+              runId: 'run-1',
+              concurrency: 1,
+              startedAt: 0,
+              successThreshold: 0.5,
+            })
+          ),
+          Effect.provide(
+            Layer.succeed(
+              SourceList,
+              SourceList.of({
+                sources: [
+                  {
+                    id: 'brokenfeed',
+                    name: 'brokenfeed.example',
+                    url: 'https://brokenfeed.example/rss.xml',
+                    collection: 'rss',
+                    timeoutSeconds: 30,
+                  },
+                  {
+                    id: 'politifact',
+                    name: 'politifact.com',
+                    url: 'https://www.politifact.com/rss/all/',
+                    collection: 'rss',
+                    timeoutSeconds: 30,
+                  },
+                ],
+              })
+            )
+          ),
+          // The first source's fetch throws an unexpected error (a defect),
+          // and the second responds normally
+          Effect.provide(
+            Layer.succeed(Fetcher, {
+              fetch: (source) =>
+                source.id === 'brokenfeed'
+                  ? Effect.die(new Error('Unexpected failure'))
+                  : Effect.succeed(
+                      FetchSuccessSchema.make({
+                        finalUrl: 'https://www.politifact.com/rss/all/',
+                        status: 200,
+                        headers: {},
+                        contentType: 'application/rss+xml',
+                        etag: null,
+                        lastModified: null,
+                        bytes: 0,
+                        sha256:
+                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+                        body: new Uint8Array(),
+                        error: null,
+                      })
+                    ),
+            })
+          ),
+          Effect.provide(InMemoryStorageWriter.layer({})),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
+        )
+
+        expect(logs).toMatchObject([
+          {
+            level: 'ERROR',
+            message: ['Source ingestion failed'],
+            annotations: {
+              'source.id': 'brokenfeed',
+              'error._tag': 'Defect',
+            },
+          },
+          {
+            level: 'INFO',
+            message: ['Source fetched'],
+            annotations: { 'source.id': 'politifact' },
+          },
+          {
+            level: 'INFO',
+            message: ['Ingestor job completed'],
+            annotations: {
+              event: 'ingestor_job_completed',
+              'job.successRate': 0.5,
+              'job.tasks': 2,
+              'job.successes': 1,
+              'job.failures': 1,
+              'job.result': 'success',
             },
           },
         ])
