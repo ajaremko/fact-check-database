@@ -324,6 +324,84 @@ describe('ingestFromSourceTarget', () => {
   )
 
   it.effect(
+    'when the source responds with a status code that has no standard name, archives it and logs a warning',
+    () =>
+      Effect.gen(function* () {
+        const storage: Record<string, string> = {}
+        const logs: Array<{
+          level: string
+          message: unknown
+          annotations: object
+        }> = []
+
+        // 520 is a code Cloudflare sends when the site behind it fails. It
+        // has no standard name.
+        yield* ingestFromSource({
+          ingestorRunId: 'run-1',
+          timestamp: 0,
+          source: {
+            id: 'examplefeed',
+            name: 'examplefeed.example',
+            url: 'https://examplefeed.example/feed/',
+            collection: 'rss',
+          },
+          timeoutSeconds: 30,
+        }).pipe(
+          Effect.provide(
+            InMemoryFetcher.layer(
+              FetchSuccessSchema.make({
+                finalUrl: 'https://examplefeed.example/feed/',
+                status: 520,
+                headers: {},
+                contentType: 'text/plain',
+                etag: null,
+                lastModified: null,
+                bytes: 15,
+                sha256:
+                  '88a2a33269c6699da8da7c736965b21a88f4b687d3f739d55258296322d21f15',
+                body: new TextEncoder().encode('error code: 520'),
+                error:
+                  'StatusCode: non 2xx status code (520 GET https://examplefeed.example/feed/)',
+              })
+            )
+          ),
+          Effect.provide(InMemoryStorageWriter.layer(storage)),
+          Effect.provide(
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.make(({ logLevel, message, annotations }) => {
+                logs.push({
+                  level: logLevel.label,
+                  message,
+                  annotations: Object.fromEntries(
+                    HashMap.toEntries(annotations)
+                  ),
+                })
+              })
+            )
+          )
+        )
+
+        expect(Object.keys(storage)).toStrictEqual([
+          'v1/raw/source=examplefeed/date=1970-01-01/ingestor_run_id=run-1/88a2a33269c6699da8da7c736965b21a88f4b687d3f739d55258296322d21f15.bin',
+          'v1/records/ingestion/source=examplefeed/date=1970-01-01/ingestor_run_id=run-1/fetch_attempt.yml',
+        ])
+        expect(logs).toMatchObject([
+          {
+            level: 'WARN',
+            message: ['Source returned an error status'],
+            annotations: {
+              event: 'fetch_success',
+              'result.status': 'Unknown Status',
+              'result.status_code': 520,
+              'result.content_type': 'text/plain',
+            },
+          },
+        ])
+      })
+  )
+
+  it.effect(
     'when a fetch outlasts its timeout, records it as a fetch with no response',
     () =>
       Effect.gen(function* () {
