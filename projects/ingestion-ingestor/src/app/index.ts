@@ -25,6 +25,11 @@ export class SuccessThresholdNotMet extends Data.TaggedError(
   readonly successThreshold: number
 }> {}
 
+/** A source's ingestion failed with an unexpected error (a defect). */
+export class SourceIngestionDefect extends Data.TaggedError(
+  'SourceIngestionDefect'
+)<{ readonly cause: unknown }> {}
+
 function processTarget(source: ResolvedSource, index: number) {
   return Effect.gen(function* () {
     yield* Effect.annotateLogsScoped({
@@ -52,6 +57,12 @@ function processTarget(source: ResolvedSource, index: number) {
             }),
           })
         )
+      ),
+      // A defect has been logged above. As a failure, it is counted against
+      // the success threshold like any other failed source, instead of
+      // ending the run and interrupting the sources still in flight
+      Effect.catchAllDefect((cause) =>
+        Effect.fail(new SourceIngestionDefect({ cause }))
       )
     )
   }).pipe(Effect.scoped, Effect.withSpan('processTarget'))
