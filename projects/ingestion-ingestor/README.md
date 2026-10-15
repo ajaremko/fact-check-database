@@ -67,7 +67,7 @@ A run fetches each source once, so `source.id` + `ingestor_run_id` identify a fe
 
 ### Partial failure behavior
 
-Each target's fetch, archive, and record-write sequence runs independently through `Effect.all(..., { mode: 'either' })`, so one bad target doesn't fail the run — the run only fails afterward, if the overall success rate falls below `SUCCESS_THRESHOLD`.
+Each target's fetch, archive, and record-write sequence runs independently through `Effect.all(..., { mode: 'either' })`, so one bad target doesn't fail the run — the run only fails afterward, if the overall success rate falls below `SUCCESS_THRESHOLD`. This includes an unexpected error thrown inside a target's sequence (a defect): it is logged and counted as one failed target, rather than ending the run and interrupting the targets still in flight.
 
 ## Development
 
