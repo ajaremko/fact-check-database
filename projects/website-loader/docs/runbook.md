@@ -64,7 +64,9 @@ actually happened, and the full underlying error detail.
 
 **Symptom:** the same batch keeps triggering `POST /load-jobs` again.
 **Cause:** any non-2xx response nacks the Pub/Sub message, and the subscription retries up to 5
-times before routing to its dead-letter topic.
+times before routing to its dead-letter topic. A response that arrives after the subscription's
+300-second acknowledgement deadline counts as a failed delivery too, because the loader answers
+only once the whole batch is saved. The deadline is set in `website-infra`.
 **Steps:** fix the underlying cause (see above), or, if the batch itself is unrecoverable, let it
 exhaust its delivery attempts and inspect it in the dead-letter bucket rather than letting it
 retry indefinitely.

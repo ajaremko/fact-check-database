@@ -99,6 +99,11 @@ export const stagingStorageSubscription = new gcp.pubsub.Subscription(
       deadLetterTopic: loaderDeadletterTopic.id,
       maxDeliveryAttempts: 5,
     },
+    // The loader responds only after the search index has saved the whole
+    // batch, which can take longer than the 10s default. Redeliveries leave
+    // the index unchanged (records are keyed by objectID), but a longer
+    // deadline avoids writing every record twice.
+    ackDeadlineSeconds: 300,
     retryPolicy: {
       minimumBackoff: '10s',
       maximumBackoff: '600s',
