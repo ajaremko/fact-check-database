@@ -100,7 +100,9 @@ without their entry and deploy a new secret version.
 ### Messages are being redelivered repeatedly
 
 **Symptom:** the emailer or search loader keeps reprocessing the same message.
-**Cause:** any non-2xx response nacks the Pub/Sub message. The emailer's
+**Cause:** any non-2xx response nacks the Pub/Sub message. So does a response that arrives after
+the subscription's acknowledgement deadline: 300 seconds for the search loader, which answers only
+once the whole batch is saved, and Pub/Sub's 10-second default for the emailer's two. The emailer's
 `confirmationEmailSubscription` and the search loader's staging-storage subscription both
 dead-letter after 5 attempts into the shared `deadletterBucket`; `notificationEmailSubscription`
 does not — see [website-emailer's known-issues.md](../website-emailer/docs/known-issues.md).

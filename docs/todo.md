@@ -127,7 +127,7 @@ See [known-issues.md](../projects/website-infra/docs/known-issues.md).
 34. [x] Remove rate-limiting from the production website. It does little to protect the site and can cause a bad UX.
 35. [x] Grant the search loader's service account `roles/monitoring.metricWriter` — its metric
         exports are denied, so none of its metrics are recorded
-36. [ ] Raise the search loader subscription's ack deadline. At Pub/Sub's 10-second default, a
+36. [x] Raise the search loader subscription's ack deadline. At Pub/Sub's 10-second default, a
         batch that takes longer to save is delivered, and saved, twice
 
 ### website-contracts

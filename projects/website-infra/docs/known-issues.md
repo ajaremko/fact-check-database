@@ -57,11 +57,3 @@ provider SDK (bridged from `k-yomo/terraform-provider-algolia`), linked into thi
 **Root cause:** The site's sign-in is an htpasswd form. oauth2-proxy will not start without an OAuth provider, so the config names Google with a placeholder client id that is never used.
 **Decision:** Won't fix. This is acceptable for a demonstration deployment.
 **If this ever needs to be fixed:** Configure a real OAuth provider, or replace oauth2-proxy with a proxy that supports basic authentication on its own.
-
-## The search loader's subscription redelivers a batch that takes over 10 seconds to save
-
-**Error:** No error. A batch is saved to the search index twice. On 2026-10-14 in dev, one batch file of 2,940 records drew two `201` responses from the search loader. The first took 11.05 seconds, and a second delivery of the same notification arrived 21 seconds after the first began: the deadline plus the subscription's 10-second minimum backoff.
-**Where:** `src/search/loader/subscription.ts`, which creates the loader's push subscription without `ackDeadlineSeconds`, so Pub/Sub's 10-second default applies.
-**Root cause:** The loader answers only after the search provider has indexed the whole batch (`saveObjects` with `waitForTasks: true`, in `website-loader`). A full batch of about 3,000 records can take longer than 10 seconds. Pub/Sub treats the late answer as a failed delivery and sends the message again. The upsert by `objectID` leaves the index's contents unchanged, but every write is repeated. Until the oversized-record fix of 2026-10-14, batches failed outright, so the extra delivery did not show. In production, the three successful saves in the logs kept since 2026-09-14 took 5.6 to 6.2 seconds, under the deadline.
-**Decision:** Not yet addressed. Tracked in [docs/todo.md](../../../docs/todo.md).
-**If this ever needs to be fixed:** Set `ackDeadlineSeconds` on the subscription to cover a full save, as `analysis-infra` does for its loader with 300 seconds. Pub/Sub allows up to 600.
