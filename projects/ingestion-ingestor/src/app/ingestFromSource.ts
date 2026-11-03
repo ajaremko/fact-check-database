@@ -55,9 +55,10 @@ const contentRequestResults = Metric.counter('content_request_results')
 // standard name, such as Cloudflare's 520, gets a generic one; the code
 // itself is recorded alongside it.
 const statusName = (status: number) =>
-  Effect.try(() => getReasonPhrase(status)).pipe(
-    Effect.orElseSucceed(() => 'Unknown Status')
-  )
+  Effect.try({
+    try: () => getReasonPhrase(status),
+    catch: (err) => err,
+  }).pipe(Effect.orElseSucceed(() => 'Unknown Status'))
 
 export const ingestFromSource = Effect.fn('ingestFromSource')(
   function* (args: {
