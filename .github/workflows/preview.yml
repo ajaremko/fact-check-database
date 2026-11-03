@@ -66,7 +66,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           status=0
-          pulumi preview --stack=${{ matrix.environment }} --diff --expect-no-changes --non-interactive --color=never 2>&1 \
+          npx pulumi preview --stack=${{ matrix.environment }} --diff --expect-no-changes --non-interactive --color=never 2>&1 \
             | tee -a "$GITHUB_STEP_SUMMARY" || status=$?
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           exit $status
