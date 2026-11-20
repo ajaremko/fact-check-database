@@ -30,8 +30,9 @@ hand, so it needs a second branch to record what production runs.
   the prod stacks are deployed from it.
 - It holds only commits that were on `main` first. The one exception is a hotfix, described below.
 - It cannot be pushed to directly. It moves when `main` is promoted.
-- To see what production runs, read `prod`. To see what is waiting to be released, compare the
-  two: `git log prod..main`.
+- To see what production runs, read `prod`. To see what is waiting to be released, fetch and
+  compare the two: `git log origin/prod..origin/main`. See
+  [check what is waiting](#check-what-is-waiting).
 
 ## The life of a change
 
@@ -51,6 +52,8 @@ hand, so it needs a second branch to record what production runs.
 - Cut it from an up-to-date `main`.
 - Name it for the kind of work and the subject: `feat/yaml-source-list`, `fix/dashboard-drift`,
   `docs/git-strategy`. The prefix `hotfix/` is reserved for production hotfixes.
+- Name a branch that only sets image tags for the tag it sets: `deploy/dev-454`,
+  `deploy/prod-449-10.07.26-bf4bb8b`.
 - Keep it to one change. A short-lived branch is easier to review and less likely to conflict.
 
 ```bash
@@ -103,17 +106,13 @@ which containerized services the merge affected:
   config): it publishes nothing and the run ends.
 
 Publishing an image does not deploy it. To run a new image, set its tag in the stack's
-`Pulumi.dev.yml`, merge that change the same way, and deploy the stack.
+`Pulumi.dev.yml` on a `deploy/dev-<build>` branch, merge that change the same way, and deploy the
+stack.
 
 ## Promoting `main` to production
 
 A promotion moves everything on `main` into `prod`. It is a pull request, so the checks run and
 the release is recorded.
-
-```bash
-gh pr create --base prod --head main --title "Promote main to prod"
-gh pr merge --merge
-```
 
 - **Merge with a merge commit.** It is the only merge method GitHub allows into `prod`. A squash
   would put a new commit on `prod` that `main` does not have, and the two branches would no
@@ -125,19 +124,130 @@ gh pr merge --merge
   source-branch check on a pull request into `prod` from any other branch. That check does not
   block the merge yet: see [what is not enforced](#not-enforced).
 
-After the merge, [`release.yml`](../.github/workflows/release.yml) runs the checks on every
-project, not only the affected ones. If the promotion changed a service, it publishes production
-images tagged `<build>-<date>-<commit>`. If it did not, it publishes nothing.
+### Check what is waiting
+
+List the commits the promotion will carry, and the infrastructure files they change:
+
+```bash
+git fetch origin
+git log --oneline origin/prod..origin/main
+git diff --stat origin/prod origin/main -- 'projects/*-infra/*'
+```
+
+Compare the `origin/` copies, not your local branches. `git fetch` updates every `origin/` copy
+at once. A local branch moves only when you check it out and pull, so a local `prod` is often
+behind.
+
+Each change should have run in dev before it is promoted. For a service change, that means the
+dev stack's tag in `Pulumi.dev.yml` names an image built after the change merged.
+
+### Open the promotion pull request
+
+Open the pull request from `main` itself:
+
+```bash
+gh pr create --base prod --head main --title "Promote main to prod"
+```
+
+There is no local merge. GitHub makes the merge commit on `prod` when the pull request merges.
+Do not check out `prod` and merge `main` into it yourself. GitHub rejects a direct push to
+`prod`, and a pull request from any branch other than `main` fails the source-branch check.
+
+### Merge the promotion
+
+Wait for the checks, then merge with a merge commit:
+
+```bash
+gh pr checks <number> --watch
+gh pr merge <number> --merge
+```
+
+Give the pull request's number. Without it, `gh pr merge` acts on the pull request for whichever
+branch is checked out. Do not pass `--delete-branch`. This pull request's head is `main`.
+
+### What happens on `prod` after the merge
+
+[`release.yml`](../.github/workflows/release.yml) runs the checks on every project, not only the
+affected ones. If the promotion changed a service, it publishes production images. If it did not,
+it publishes nothing.
+
+Wait for the run to finish, then read the new tag from its log:
+
+```bash
+gh run list --workflow=release.yml --limit 1
+gh run watch <run-id>
+gh run view <run-id> --log | grep "Successfully pushed"
+```
+
+A run that publishes gives every app's image the same tag, whether or not that app changed. The
+tag reads `<build>-<MM.DD.YY>-<commit>`, where `<commit>` is the short hash of the promotion's
+merge commit on `prod`. For example: `449-10.07.26-bf4bb8b`.
 
 ### Releasing new images to production
 
 A production image's tag is not known until the image is published, so a service change reaches
 production in two promotions:
 
-1. Promote `main`. `release.yml` publishes the production images.
-2. On a working branch, set the new tag in the affected `Pulumi.prod.yml` files. Merge it into
-   `main`, then promote again. This promotion changes no service, so nothing is published.
-3. Deploy the prod stacks from `prod`.
+1. Promote `main`, and read the new tag from the `release.yml` run.
+2. On a `deploy/prod-<tag>` branch, set the tag in each stack's `Pulumi.prod.yml`, and merge it
+   into `main`:
+
+   ```bash
+   git switch main
+   git pull
+   git switch -c deploy/prod-<tag>
+   # set <tag> in projects/{analysis,ingestion,website}-infra/Pulumi.prod.yml
+   git commit -am "Bump prod image tags to <tag>"
+   git push -u origin deploy/prod-<tag>
+   gh pr create --base main --fill
+   gh pr checks --watch
+   gh pr merge --squash --delete-branch
+   ```
+
+3. Promote again. This promotion changes no service, so `release.yml` runs the checks and
+   publishes nothing.
+4. [Deploy from `prod`](#deploy-from-prod).
+
+Set the same tag in all three stacks, so production runs a single build. Then deploy every stack
+whose tag changed. Until you do, that stack keeps running the old image, and the daily preview
+reports it as drifted. `website-infra` is the exception. The daily preview does not cover it, so
+nothing flags it.
+
+### Deploy from `prod`
+
+Deploy each prod stack from a clean, current checkout of `prod`:
+
+```bash
+git switch prod
+git pull
+git status
+nx preview <project> --stack=prod
+nx deploy <project> --stack=prod
+```
+
+Pulumi Cloud records the commit each deployment ran from. Pulling first makes that commit the one
+GitHub holds. `git status` should report a clean working tree. A deployment runs the files on
+disk, and an uncommitted change is code that no branch holds.
+
+- **Which stacks:** each infrastructure project whose code or `Pulumi.prod.yml` appeared in the
+  `git diff --stat` before the first promotion, and each stack whose tag you set.
+- **In what order:** `core-infra` first when it changed, and `research-infra` after
+  `analysis-infra`. See
+  [deployment ordering](../projects/core-infra/docs/runbook.md#deployment-ordering).
+- **Read each preview before you deploy.** For the `website-infra` prod stack, it is the only
+  preview there is.
+
+### After a promotion
+
+Switch back to `main`, so the next working branch is cut from it:
+
+```bash
+git switch main
+```
+
+`git log origin/main..origin/prod` now lists the promotion merge commits. That is expected. A
+merge commit carries no change of its own, so `main` does not need it, and the next promotion
+still merges cleanly.
 
 ## Hotfixes
 
@@ -224,8 +334,9 @@ table is the record to rebuild them from.
 
 ## What this strategy does not cover
 
-- **Deploying infrastructure.** No workflow deploys. Every stack is deployed by hand, as each
-  infra project's runbook describes.
+- **How each stack is deployed.** No workflow deploys. Every stack is deployed by hand. This
+  document says which branch to deploy from. Each infra project's runbook covers the stack
+  itself.
 - **Release versions.** There are no version numbers or release branches. An image is identified
   by its build number, and production by the commit `prod` points at.
 - **The website stack's preview.** `website-infra` is not part of the daily preview.
